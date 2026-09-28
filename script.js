@@ -347,15 +347,18 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
     date: new Date().toISOString()
   };
 
-  const applications = JSON.parse(localStorage.getItem('institutionApplications') || '[]');
-  applications.push(application);
-  localStorage.setItem('institutionApplications', JSON.stringify(applications));
-
-  closeModal('institutionModal');
-  e.target.reset();
-  showToast('Kurum başvurunuz alındı.');
-});
-
+  db.collection('institutionApplications')
+  .add(application)
+  .then(() => {
+    closeModal('institutionModal');
+    e.target.reset();
+    showToast('Kurum başvurunuz alındı.');
+  })
+  .catch(error => {
+    console.error('Başvuru kaydedilemedi:', error);
+    showToast('Başvuru gönderilemedi. Lütfen tekrar deneyin.');
+  });
+  
 async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
   const districtSelect = document.getElementById('institutionDistrict');
