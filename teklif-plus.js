@@ -617,14 +617,31 @@
     });
   }
 
+  function formatChatTime(value){
+    if(!value)return "";
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return "";
+    return date.toLocaleTimeString("tr-TR",{
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
+
   function messageHtml(msg){
     const mine=msg.sender==="customer";
-    const label=msg.kind==="revision_request"?"Revizyon Talebi":msg.kind==="revision_response"?"Revizyon Yanıtı":mine?"Siz":"Firma";
-    return `<div class="djy-message ${mine?"mine":"theirs"} ${msg.kind||""}">
-      <div class="djy-message-label">${safe(label)}</div>
-      <div>${safe(msg.text||"")}</div>
-      <small>${fmtDate(msg.date)}</small>
-    </div>`;
+    const text=safe(msg.text||"").replace(/\n/g,"<br>");
+    const time=safe(formatChatTime(msg.date));
+    return `
+      <div class="djy-message-row ${mine?"mine":"theirs"}">
+        <div class="djy-message ${mine?"mine":"theirs"} ${msg.kind||""}">
+          <div class="djy-message-text">${text}</div>
+          <div class="djy-message-meta">
+            <span class="djy-message-time">${time}</span>
+            ${mine?'<span class="djy-message-check">✓✓</span>':""}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   async function sendCustomerMessage(kind){
