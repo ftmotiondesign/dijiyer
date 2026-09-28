@@ -352,3 +352,181 @@ button{
     width:100%;
   }
 }
+
+
+/* Kurum yönetimi arama ve filtreleme */
+.institution-toolbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:grid;
+  grid-template-columns:minmax(260px,1.6fr) repeat(4,minmax(130px,.7fr)) auto;
+  gap:10px;
+  padding:12px;
+  margin-bottom:8px;
+  background:#f4f7fb;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+}
+
+.toolbar-search{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#fff;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  padding:0 11px;
+}
+
+.toolbar-search input{
+  width:100%;
+  height:42px;
+  border:0;
+  outline:0;
+  background:transparent;
+}
+
+.institution-toolbar select,
+#clearInstitutionFilters{
+  height:42px;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  background:#fff;
+  padding:0 10px;
+}
+
+#clearInstitutionFilters{
+  color:#475569;
+  font-weight:bold;
+}
+
+.toolbar-result{
+  margin:8px 2px 14px;
+  color:#64748b;
+  font-size:13px;
+}
+
+.institution-manage-card{
+  padding:16px 18px;
+}
+
+.manage-title h3{
+  margin-bottom:8px;
+}
+
+.manage-info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
+}
+
+.manage-info-grid > div{
+  background:#f8fafc;
+  border-radius:10px;
+  padding:10px 12px;
+}
+
+.manage-info-grid .wide{
+  grid-column:1 / -1;
+}
+
+.manage-info-grid small{
+  display:block;
+  color:#64748b;
+  margin-bottom:4px;
+}
+
+.manage-info-grid strong{
+  font-size:14px;
+  font-weight:600;
+  color:#334155;
+}
+
+.manage-badges .badge-offer{
+  background:#f0fdf4;
+  color:#15803d;
+}
+
+.quick-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #e5e7eb;
+}
+
+.quick-actions button{
+  border:1px solid #dbe3ee;
+  background:#fff;
+  color:#475569;
+  border-radius:9px;
+  padding:8px 11px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.quick-actions .quick-toggle.on{
+  background:#ecfdf5;
+  border-color:#bbf7d0;
+  color:#15803d;
+}
+
+.quick-actions .whatsapp-manage-btn{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.quick-actions .website-manage-btn{
+  background:#eef5ff;
+  color:#1677ff;
+}
+
+.map-institution-btn{
+  background:#f1f5f9;
+  color:#334155;
+}
+
+.empty-state{
+  padding:34px;
+  text-align:center;
+  background:#fff;
+  border:1px dashed #cbd5e1;
+  border-radius:14px;
+  color:#64748b;
+}
+
+@media(max-width:1050px){
+  .institution-toolbar{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .toolbar-search{
+    grid-column:1 / -1;
+  }
+}
+
+@media(max-width:700px){
+  .institution-toolbar{
+    position:static;
+    grid-template-columns:1fr;
+  }
+
+  .toolbar-search{
+    grid-column:auto;
+  }
+
+  .manage-info-grid{
+    grid-template-columns:1fr;
+  }
+
+  .manage-info-grid .wide{
+    grid-column:auto;
+  }
+
+  .manage-actions{
+    flex-wrap:wrap;
+  }
+}
