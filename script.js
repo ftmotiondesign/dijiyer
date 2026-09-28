@@ -319,7 +319,7 @@ document.querySelectorAll('.categoryFilter').forEach(el => el.addEventListener('
 document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
-document.getElementById('addInstitutionBtn').onclick = () => showToast('Kurum ekleme formu V2 sürümünde bağlanacak.');
+document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
 
 renderList();
 renderDetail();
