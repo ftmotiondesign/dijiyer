@@ -199,6 +199,9 @@ function updateProfileCompletion() {
   if (percentEl) percentEl.textContent = "%" + result.percent;
   if (barEl) barEl.style.width = result.percent + "%";
 
+  const firmHomeProfilePercent = document.getElementById("firmHomeProfilePercent");
+  if (firmHomeProfilePercent) firmHomeProfilePercent.textContent = "%" + result.percent;
+
   if (textEl) {
     textEl.textContent = result.missing.length
       ? "Eksik: " + result.missing.join(", ")
@@ -424,6 +427,58 @@ document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
 });
 document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
 document.getElementById("completeProfileBtn")?.addEventListener("click", () => setPanelTab("profile"));
+
+function openFirmDashboardQuotes(filter = "") {
+  if (quotePanelFilter) quotePanelFilter.value = filter;
+  setPanelTab("quotes");
+  if (typeof syncQuoteShortcutActive === "function") syncQuoteShortcutActive();
+  if (typeof renderQuotes === "function") renderQuotes();
+}
+
+document.getElementById("firmHomeNewBtn")?.addEventListener("click", () => {
+  openFirmDashboardQuotes("new");
+});
+
+document.getElementById("firmHomeOfferedBtn")?.addEventListener("click", () => {
+  openFirmDashboardQuotes("offered");
+});
+
+document.getElementById("firmHomeProfileBtn")?.addEventListener("click", () => {
+  setPanelTab("profile");
+});
+
+document.getElementById("firmHomeMessagesBtn")?.addEventListener("click", () => {
+  openFirmDashboardQuotes("");
+
+  setTimeout(() => {
+    const unreadButton =
+      document.querySelector(".firm-open-chat-btn.has-unread") ||
+      document.querySelector(".firm-open-chat-btn");
+
+    unreadButton?.click();
+  }, 80);
+});
+
+document.getElementById("firmAllOpportunitiesBtn")?.addEventListener("click", () => {
+  openFirmDashboardQuotes("new");
+});
+
+document.getElementById("firmOpportunityList")?.addEventListener("click", event => {
+  const button = event.target.closest("[data-firm-opportunity]");
+  if (!button) return;
+
+  const quoteId = button.dataset.firmOpportunity;
+  openFirmDashboardQuotes("new");
+
+  setTimeout(() => {
+    const form = document.querySelector(
+      '[data-real-offer-form][data-quote-id="' + CSS.escape(String(quoteId)) + '"]'
+    );
+    const card = form?.closest(".quote-card") || form;
+    card?.scrollIntoView({ behavior:"smooth", block:"center" });
+    form?.querySelector('input[name="price"]')?.focus();
+  }, 100);
+});
 
 document.getElementById("liveQuoteAlertBtn")?.addEventListener("click", () => {
   hideLiveQuoteAlert();
