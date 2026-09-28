@@ -1421,7 +1421,46 @@ function setInstitutionAccessMode(mode) {
   institutionRegisterMessage.textContent = '';
 }
 
-institutionLoginBtn.addEventListener('click', () => {
+let institutionSessionUser = null;
+
+institutionAuth.onAuthStateChanged(user => {
+  institutionSessionUser = user || null;
+
+  if (user) {
+    institutionLoginBtn.textContent = '🏢 Kurum Panelim';
+    institutionLoginBtn.dataset.loggedIn = 'true';
+  } else {
+    institutionLoginBtn.textContent = '🏢 Kurum Girişi';
+    institutionLoginBtn.dataset.loggedIn = 'false';
+  }
+});
+
+institutionLoginBtn.addEventListener('click', async () => {
+  if (institutionSessionUser) {
+    try {
+      const accountDoc =
+        await institutionDb.collection('institutionUsers')
+          .doc(institutionSessionUser.uid)
+          .get();
+
+      if (accountDoc.exists && accountDoc.data().status === 'approved') {
+        window.location.replace('institution.html?session=institution');
+        return;
+      }
+
+      setInstitutionAccessMode('login');
+      openModal('institutionAccessModal');
+
+      institutionLoginMessage.textContent =
+        accountDoc.exists
+          ? 'Kurum hesabınız henüz yönetici onayında.'
+          : 'Bu kullanıcıya bağlı kurum hesabı bulunamadı.';
+      return;
+    } catch (error) {
+      console.error('Kurum oturumu kontrol edilemedi:', error);
+    }
+  }
+
   setInstitutionAccessMode('login');
   openModal('institutionAccessModal');
 });
