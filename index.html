@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=14" />
 </head>
 <body>
   <header class="topbar">
@@ -24,7 +24,40 @@
       <input id="searchInput" type="search" placeholder="Sürücü kursu, kreş, yurt veya hizmet ara..." />
     </div>
 
-    <button class="location-btn" id="locationBtn">📍 Çanakkale, Merkez ▾</button>
+    <div class="location-picker" id="locationPicker">
+      <button class="location-btn" id="locationBtn" type="button" aria-expanded="false">
+        <span class="location-pin">📍</span>
+        <span id="locationBtnText">Çanakkale, Merkez</span>
+        <span class="location-arrow">⌄</span>
+      </button>
+
+      <div class="location-popover hidden" id="locationPopover">
+        <div class="location-popover-head">
+          <div>
+            <strong>Konum Seç</strong>
+            <small>İl ve ilçeye göre kurumları filtrele</small>
+          </div>
+          <button type="button" class="location-close" id="locationCloseBtn" aria-label="Kapat">×</button>
+        </div>
+
+        <label>İl
+          <select id="mainLocationCity">
+            <option value="">Tüm İller</option>
+          </select>
+        </label>
+
+        <label>İlçe
+          <select id="mainLocationDistrict" disabled>
+            <option value="">Tüm İlçeler</option>
+          </select>
+        </label>
+
+        <div class="location-actions">
+          <button type="button" class="btn btn-light" id="clearMainLocationBtn">Tüm Türkiye</button>
+          <button type="button" class="btn btn-primary" id="applyMainLocationBtn">Uygula</button>
+        </div>
+      </div>
+    </div>
     <button class="btn btn-primary" id="addInstitutionBtn">Toplu Teklif Al</button>
     <button class="btn btn-light" id="institutionAddBtn">+ Kurum Ekle</button>
     <button class="btn btn-light" id="institutionLoginBtn">🏢 Kurum Girişi</button>
@@ -369,6 +402,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=25"""""></script>
+<script src="script.js?v=27"""""></script>
 </body>
 </html>
