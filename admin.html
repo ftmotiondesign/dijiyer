@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=14">
+  <link rel="stylesheet" href="admin.css?v=15">
 </head>
 
 <body>
@@ -203,21 +203,31 @@
       </section>
 
       <section id="offerReportSection" hidden>
-        <div class="section-title">
-          <h3>Teklif Veren Kurumlar</h3>
-          <p id="offerReportCount">Teklif performansı yükleniyor...</p>
+        <div class="section-title offer-report-title-row">
+          <div>
+            <h3>Teklif Veren Kurumlar</h3>
+            <p id="offerReportCount">Teklif performansı yükleniyor...</p>
+          </div>
+          <button type="button" class="offer-report-export-btn" id="offerReportExportBtn">
+            CSV İndir
+          </button>
         </div>
 
         <div class="offer-report-summary">
           <article>
             <span>Teklif Veren Kurum</span>
             <strong id="offerReportInstitutionCount">0</strong>
-            <small>En az bir fiyat teklifi veren kurum</small>
+            <small>Seçili dönemde teklif veren kurum</small>
           </article>
           <article>
             <span>Toplam Teklif</span>
             <strong id="offerReportTotalOffers">0</strong>
-            <small>Tüm kurumların gönderdiği teklifler</small>
+            <small>Gönderilen fiyat teklifleri</small>
+          </article>
+          <article>
+            <span>Teklif Hacmi</span>
+            <strong id="offerReportTotalVolume">0 TL</strong>
+            <small>Gönderilen tekliflerin toplam tutarı</small>
           </article>
           <article>
             <span>Genel Ortalama</span>
@@ -225,28 +235,55 @@
             <small>Tüm tekliflerin ortalama tutarı</small>
           </article>
           <article>
-            <span>Kilitlenen</span>
+            <span>Aktif Teklif</span>
+            <strong id="offerReportActiveCount">0</strong>
+            <small>Karar bekleyen geçerli teklifler</small>
+          </article>
+          <article>
+            <span>Seçilen / Kilitlenen</span>
             <strong id="offerReportLockedCount">0</strong>
-            <small>Müşteri tarafından seçilen teklifler</small>
+            <small>Müşterinin seçtiği teklifler</small>
           </article>
           <article>
             <span>Kullanılan</span>
             <strong id="offerReportUsedCount">0</strong>
             <small>Doğrulanıp kullanılan teklifler</small>
           </article>
+          <article>
+            <span>Seçilme Oranı</span>
+            <strong id="offerReportSelectionRate">%0</strong>
+            <small>Seçilen teklif / toplam teklif</small>
+          </article>
         </div>
 
-        <div class="offer-report-toolbar">
+        <div class="offer-report-toolbar detailed">
           <input
             type="search"
             id="offerReportSearch"
             placeholder="Kurum adı ara..."
           >
 
+          <select id="offerReportPeriod">
+            <option value="all">Tüm zamanlar</option>
+            <option value="7">Son 7 gün</option>
+            <option value="30">Son 30 gün</option>
+            <option value="90">Son 90 gün</option>
+          </select>
+
+          <select id="offerReportCategory">
+            <option value="">Tüm kategoriler</option>
+          </select>
+
+          <select id="offerReportCity">
+            <option value="">Tüm şehirler</option>
+          </select>
+
           <select id="offerReportSort">
             <option value="offers_desc">En çok teklif veren</option>
             <option value="locked_desc">En çok seçilen</option>
             <option value="used_desc">En çok kullanılan</option>
+            <option value="selection_desc">En yüksek seçilme oranı</option>
+            <option value="volume_desc">En yüksek teklif hacmi</option>
             <option value="average_asc">En düşük ortalama fiyat</option>
             <option value="average_desc">En yüksek ortalama fiyat</option>
             <option value="latest_desc">En son teklif veren</option>
@@ -254,31 +291,81 @@
           </select>
         </div>
 
+        <div class="offer-report-status-strip">
+          <span><i class="status-dot active"></i> Aktif</span>
+          <span><i class="status-dot locked"></i> Kilitli</span>
+          <span><i class="status-dot used"></i> Kullanıldı</span>
+          <span><i class="status-dot lost"></i> Kaybedildi</span>
+          <span><i class="status-dot expired"></i> Süresi Doldu</span>
+        </div>
+
         <div class="offer-report-table-wrap">
-          <table class="offer-report-table">
+          <table class="offer-report-table detailed">
             <thead>
               <tr>
                 <th>Kurum</th>
-                <th>Toplam Teklif</th>
-                <th>Ortalama Teklif</th>
-                <th>En Düşük</th>
-                <th>En Yüksek</th>
-                <th>Kilitlenen</th>
+                <th>Kategori / Bölge</th>
+                <th>Teklif</th>
+                <th>Teklif Hacmi</th>
+                <th>Ortalama</th>
+                <th>Aktif</th>
+                <th>Seçilen</th>
                 <th>Kullanılan</th>
+                <th>Seçilme %</th>
                 <th>Son Teklif</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="offerReportTableBody">
               <tr>
-                <td colspan="8">Rapor yükleniyor...</td>
+                <td colspan="11">Rapor yükleniyor...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
-
     </section>
 
+  </div>
+
+
+  <div class="admin-modal hidden" id="offerReportDetailModal">
+    <div class="admin-modal-card offer-report-detail-card">
+      <button class="modal-close" id="closeOfferReportDetailModal">×</button>
+
+      <div class="offer-detail-header">
+        <div>
+          <span class="offer-detail-eyebrow">KURUM TEKLİF PERFORMANSI</span>
+          <h2 id="offerReportDetailTitle">Kurum Detayı</h2>
+          <p id="offerReportDetailMeta">Detaylar yükleniyor...</p>
+        </div>
+      </div>
+
+      <div class="offer-detail-summary" id="offerReportDetailSummary"></div>
+
+      <div class="offer-detail-section-title">
+        <div>
+          <h3>Teklif Geçmişi</h3>
+          <p>Seçili dönemde kurumun verdiği tüm teklifler</p>
+        </div>
+      </div>
+
+      <div class="offer-detail-table-wrap">
+        <table class="offer-detail-table">
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Hizmet / Müşteri</th>
+              <th>Konum</th>
+              <th>Teklif</th>
+              <th>Teklif No</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="offerReportDetailTableBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 
@@ -381,7 +468,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=19"></script>
+  <script src="admin.js?v=20"></script>
 
 </body>
 </html>
