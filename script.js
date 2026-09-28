@@ -166,8 +166,77 @@ function fillSubCategorySelect(mainCategory, selectId, placeholder) {
   select.disabled = rows.length === 0;
 }
 
+
 populateMainCategorySelect('quoteCategory','Ana kategori seçin');
 populateMainCategorySelect('institutionCategory','Ana kategori seçin');
+
+const categoryIcons = {
+  egitim:'📚',
+  otomotiv:'🚗',
+  yemeicme:'🍽️',
+  saglikguzellik:'🩺',
+  evyapi:'🏠',
+  emlak:'🏢',
+  turizm:'🏨',
+  organizasyonmedya:'📸',
+  tasimacilik:'🚚',
+  profesyonel:'💼',
+  alisveris:'🛒',
+  diger:'➕'
+};
+
+function renderSidebarCategories() {
+  const root = document.getElementById('sidebarCategories');
+  if (!root) return;
+
+  root.innerHTML = Object.entries(categoryTaxonomy).map(([mainKey,item]) => {
+    const subs = Object.entries(item.subs || {});
+    return `
+      <div class="category-group" data-category-group="${mainKey}">
+        <div class="category-main-row">
+          <label class="category-main-label">
+            <input type="checkbox" class="categoryFilter" value="${mainKey}">
+            <span class="category-icon">${categoryIcons[mainKey] || '•'}</span>
+            <span class="category-name">${item.label}</span>
+          </label>
+          <button
+            type="button"
+            class="category-toggle"
+            data-category-toggle="${mainKey}"
+            aria-expanded="false"
+            aria-label="${item.label} alt kategorilerini aç"
+          >⌄</button>
+        </div>
+        <div class="subcategory-list hidden" data-subcategory-list="${mainKey}">
+          ${subs.map(([subKey,subLabel]) => `
+            <label class="subcategory-label">
+              <input
+                type="checkbox"
+                class="subCategoryFilter"
+                value="${subKey}"
+                data-main-category="${mainKey}"
+              >
+              <span>${subLabel}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  root.querySelectorAll('.category-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.categoryToggle;
+      const list = root.querySelector('[data-subcategory-list="' + key + '"]');
+      const willOpen = list.classList.contains('hidden');
+      list.classList.toggle('hidden', !willOpen);
+      button.classList.toggle('open', willOpen);
+      button.setAttribute('aria-expanded', String(willOpen));
+    });
+  });
+}
+
+renderSidebarCategories();
 
 const institutions = [
   {
@@ -317,15 +386,38 @@ setTimeout(() => {
 function getFilteredInstitutions() {
   const query = document.getElementById('searchInput').value.trim().toLowerCase();
   const checkedCategories = [...document.querySelectorAll('.categoryFilter:checked')].map(x => x.value);
+  const checkedSubCategories = [...document.querySelectorAll('.subCategoryFilter:checked')].map(x => ({
+    mainCategory: x.dataset.mainCategory,
+    subCategory: x.value
+  }));
   const videoOnly = document.getElementById('videoOnly').checked;
   const offerOnly = document.getElementById('offerOnly').checked;
 
   let data = institutions.filter(inst => {
-    const [mainCategory] = resolveTaxonomy(inst);
-    const matchesCategory = checkedCategories.length === 0 || checkedCategories.includes(mainCategory);
-    const matchesQuery = !query || `${inst.name} ${inst.location} ${inst.address} ${inst.classes}`.toLowerCase().includes(query);
+    const [mainCategory, subCategory] = resolveTaxonomy(inst);
+
+    const mainCategorySelected = checkedCategories.includes(mainCategory);
+    const subCategorySelected = checkedSubCategories.some(item =>
+      item.mainCategory === mainCategory && item.subCategory === subCategory
+    );
+
+    const hasCategoryFilter =
+      checkedCategories.length > 0 || checkedSubCategories.length > 0;
+
+    const matchesCategory =
+      !hasCategoryFilter || mainCategorySelected || subCategorySelected;
+
+    const mainLabel = categoryTaxonomy[mainCategory]?.label || '';
+    const subLabel = categoryTaxonomy[mainCategory]?.subs?.[subCategory] || '';
+
+    const matchesQuery = !query ||
+      `${inst.name} ${inst.location} ${inst.address} ${inst.classes} ${mainLabel} ${subLabel}`
+        .toLowerCase()
+        .includes(query);
+
     const matchesVideo = !videoOnly || inst.video;
     const matchesOffer = !offerOnly || inst.offer;
+
     return matchesCategory && matchesQuery && matchesVideo && matchesOffer;
   });
 
@@ -586,6 +678,7 @@ function escapeHtml(s){
 
 document.getElementById('searchInput').addEventListener('input', renderList);
 document.querySelectorAll('.categoryFilter').forEach(el => el.addEventListener('change', renderList));
+document.querySelectorAll('.subCategoryFilter').forEach(el => el.addEventListener('change', renderList));
 document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
