@@ -974,6 +974,7 @@ async function loadApprovedInstitutions() {
 }
 
 loadProvinces();
+loadQuoteProvinces();
 renderList();
 renderDetail();
 loadApprovedInstitutions();
