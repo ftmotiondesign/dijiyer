@@ -577,6 +577,8 @@
     markCustomerConversationRead(bundle.access.quoteId,String(institutionId));
     document.getElementById("customerMessageAlert")?.classList.add("hidden");
     listenConversation();
+    scrollCustomerChatToBottom("auto");
+    setTimeout(()=>scrollCustomerChatToBottom("auto"),100);
     renderLiveTracking();
   }
 
@@ -585,6 +587,24 @@
     if(conversationUnsub)conversationUnsub();
     conversationUnsub=null;
     activeConversation=null;
+  }
+
+  function scrollCustomerChatToBottom(behavior="auto"){
+    const box=document.getElementById("djyMessages");
+    if(!box)return;
+
+    const run=()=>{
+      box.scrollTo({
+        top:box.scrollHeight,
+        behavior
+      });
+    };
+
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(run);
+    });
+
+    setTimeout(run,80);
   }
 
   function listenConversation(){
@@ -601,7 +621,7 @@
         box.innerHTML=rows.length?renderCustomerConversation(rows):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
         customerMessageRows.set(activeConversation.institutionId,rows);
         markCustomerConversationRead(activeConversation.quoteId,activeConversation.institutionId);
-        box.scrollTop=box.scrollHeight;
+        scrollCustomerChatToBottom("smooth");
       },error=>{
         console.error(error);
         box.innerHTML='<div class="empty">Mesajlar yüklenemedi. Firestore kurallarını güncelleyin.</div>';
@@ -719,6 +739,7 @@
         toast("Mesaj gönderildi.");
       }
       input.value="";
+      scrollCustomerChatToBottom("smooth");
     }catch(error){
       console.error(error);
       toast("Mesaj gönderilemedi. Firestore kurallarını güncelleyin.");
