@@ -1773,6 +1773,17 @@ function buildAdminQuoteActivityEvents(request, engagementRecords, messages) {
         date:offer.updatedAt
       });
     }
+
+    if (offer.expiresAt && new Date(offer.expiresAt).getTime() <= Date.now()) {
+      pushAdminActivity(events,{
+        category:"offer",
+        actor:"Sistem",
+        title:"Teklif süresi doldu",
+        detail:"Firma: " + institutionName + " · Teklif No: " + (offer.offerCode || "-"),
+        institutionId:offer.institutionId || offer.id,
+        date:offer.expiresAt
+      });
+    }
   });
 
   (engagementRecords || []).forEach(engagement => {
@@ -1860,6 +1871,15 @@ function buildAdminQuoteActivityEvents(request, engagementRecords, messages) {
         detail:"Teklif No: " + (lock.offerCode || "-") + " · Fiyat: " + quoteMoney(lock.lockedPrice != null ? lock.lockedPrice : lock.price),
         institutionId:lock.institutionId,
         date:lock.usedAt
+      });
+    } else if (lock.expiresAt && new Date(lock.expiresAt).getTime() <= Date.now()) {
+      pushAdminActivity(events,{
+        category:"lock",
+        actor:"Sistem",
+        title:"Kilitli teklifin süresi doldu",
+        detail:"Firma: " + (lock.institutionName || "-") + " · Fiyat: " + quoteMoney(lock.lockedPrice != null ? lock.lockedPrice : lock.price),
+        institutionId:lock.institutionId,
+        date:lock.expiresAt
       });
     }
   }
@@ -1981,6 +2001,9 @@ function adminActivityCategoryLabel(category) {
 function quoteActivitySummaryHtml(request,bundle) {
   const revisionCount = (bundle.engagementRecords || []).filter(item => item.revisionRequestedAt).length;
   const messageCount = (bundle.messages || []).length;
+  const priceUpdateCount = (bundle.messages || []).filter(item =>
+    /^(Teklif güncellendi|Revizyon talebinize göre teklif güncellendi)/i.test(String(item.text || ""))
+  ).length;
   const issues = Array.isArray(request.liveIssues) ? request.liveIssues.length : 0;
   const offers = Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
   const state = request.currentState || getAdminQuoteLiveState(request);
@@ -1989,6 +2012,7 @@ function quoteActivitySummaryHtml(request,bundle) {
   return [
     '<article><span>Teklif</span><strong>' + offers + '</strong></article>',
     '<article><span>Mesaj</span><strong>' + messageCount + '</strong></article>',
+    '<article><span>Fiyat Güncelleme</span><strong>' + priceUpdateCount + '</strong></article>',
     '<article><span>Revizyon İsteği</span><strong>' + revisionCount + '</strong></article>',
     '<article><span>Sorun Bildirimi</span><strong>' + issues + '</strong></article>',
     '<article class="wide"><span>Son Durum</span><strong>' + escapeHtml(stateLabel) + '</strong></article>'
@@ -2136,6 +2160,11 @@ quoteActivityCsvBtn?.addEventListener("click",() => {
   const request = quoteRequestRecords.find(item => String(item.id) === String(activeAdminActivityQuoteId));
   const bundle = getActiveQuoteActivityBundle();
   if (request && bundle) exportQuoteActivityCsv(request,bundle);
+});
+document.addEventListener("keydown",event => {
+  if (event.key === "Escape" && quoteActivityModal && !quoteActivityModal.classList.contains("hidden")) {
+    quoteActivityModal.classList.add("hidden");
+  }
 });
 function renderQuoteRequests() {
   const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
@@ -2509,7 +2538,12 @@ async function updateQuoteStatus(id, status) {
     });
 
     const item = quoteRequestRecords.find(record => record.id === id);
-    if (item) item.status = status;
+    if (item) {
+      item.status = status;
+      item.updatedAt = new Date().toISOString();
+      item.currentState = getAdminQuoteLiveState(item);
+    }
+    adminQuoteActivityCache.delete(id);
 
     renderQuoteRequests();
   } catch (error) {
