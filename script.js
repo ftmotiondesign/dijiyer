@@ -824,6 +824,7 @@ function makeQuoteTrackingCode() {
 
 function getQuoteTrackingUrl(trackingCode) {
   const url = new URL('teklif.html', window.location.href);
+  url.searchParams.set('v', '5');
   url.searchParams.set('kod', trackingCode);
   return url.toString();
 }
