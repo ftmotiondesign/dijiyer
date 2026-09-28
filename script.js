@@ -91,11 +91,13 @@ function addMarkers() {
       iconAnchor: [21, 38]
     });
 
-    const marker = L.marker([inst.lat, inst.lng], { icon })
-      .addTo(map)
-      .bindTooltip(`${inst.vip ? 'VIP: ' : ''}${inst.short}`, {direction:'top', offset:[0,-30]});
-    marker.on('click', () => selectInstitution(inst.id));
-    markers.set(inst.id, marker);
+    if (Number.isFinite(inst.lat) && Number.isFinite(inst.lng)) {
+      const marker = L.marker([inst.lat, inst.lng], { icon })
+        .addTo(map)
+        .bindTooltip(`${inst.vip ? 'VIP: ' : ''}${inst.short || inst.name}`, {direction:'top', offset:[0,-30]});
+      marker.on('click', () => selectInstitution(inst.id));
+      markers.set(String(inst.id), marker);
+    }
   });
 }
 addMarkers();
@@ -125,7 +127,7 @@ function renderList() {
   document.getElementById('resultCount').textContent = `${data.length} sonuç`;
 
   list.innerHTML = data.map(inst => `
-    <article class="institution-card ${inst.id === selectedId ? 'active' : ''}" data-id="${inst.id}">
+    <article class="institution-card ${String(inst.id) === String(selectedId) ? 'active' : ''}" data-id="${inst.id}">
       <div class="thumb">
         <span>${inst.emoji}</span>
         ${inst.video ? '<div class="video-badge">▶ Videolu</div>' : ''}
@@ -147,14 +149,14 @@ function renderList() {
   document.querySelectorAll('.institution-card').forEach(card => {
     card.addEventListener('click', e => {
       if (e.target.matches('[data-quick-offer]')) return;
-      selectInstitution(Number(card.dataset.id));
+      selectInstitution(card.dataset.id);
     });
   });
 
   document.querySelectorAll('[data-quick-offer]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      selectedId = Number(btn.dataset.quickOffer);
+      selectedId = btn.dataset.quickOffer;
       renderDetail();
       openModal('quoteModal');
     });
@@ -162,7 +164,7 @@ function renderList() {
 }
 
 function renderDetail() {
-  const inst = institutions.find(i => i.id === selectedId) || institutions[0];
+  const inst = institutions.find(i => String(i.id) === String(selectedId)) || institutions[0];
   const panel = document.getElementById('detailPanel');
 
   const savedReviews = JSON.parse(localStorage.getItem(`reviews_${inst.id}`) || '[]');
@@ -264,7 +266,7 @@ function selectInstitution(id) {
   selectedId = id;
   renderList();
   renderDetail();
-  const marker = markers.get(id);
+  const marker = markers.get(String(id));
   if (marker) {
     map.flyTo(marker.getLatLng(), 15, {duration:.6});
     marker.openTooltip();
@@ -457,7 +459,48 @@ document
     }
   });
 
-loadProvinces();
+async function loadApprovedInstitutions() {
+  try {
+    const snapshot = await db.collection('institutions').get();
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      const exists = institutions.some(inst => String(inst.id) === String(doc.id));
+      if (exists) return;
+
+      institutions.push({
+        id: doc.id,
+        name: data.name || 'Kurum',
+        short: data.short || data.name || 'Kurum',
+        category: data.category || 'diger',
+        rating: Number(data.rating || 0),
+        reviewCount: Number(data.reviewCount || 0),
+        location: data.location || [data.city, data.district].filter(Boolean).join(', '),
+        city: data.city || '',
+        district: data.district || '',
+        address: data.address || '',
+        phone: data.phone || '',
+        website: data.website || '',
+        classes: data.classes || 'Bilgi eklenecek',
+        video: Boolean(data.video),
+        offer: data.offer !== false,
+        vip: Boolean(data.vip),
+        lat: Number.isFinite(data.lat) ? data.lat : null,
+        lng: Number.isFinite(data.lng) ? data.lng : null,
+        emoji: data.emoji || '🏢'
+      });
+    });
+
+    addMarkers();
+    renderList();
+    renderDetail();
+  } catch (error) {
+    console.error('Onaylı kurumlar yüklenemedi:', error);
+  }
+}
+
 loadProvinces();
 renderList();
 renderDetail();
+loadApprovedInstitutions();
