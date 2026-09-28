@@ -240,15 +240,27 @@
     card.dataset.institutionId = data.id;
 
     const health = getInstitutionHealth(data);
+    const selectSlot = card.querySelector(".institution-select-slot");
     const manageMain = card.querySelector(".manage-main");
-    if (manageMain) {
+    if (selectSlot || manageMain) {
       const selector = document.createElement("label");
       selector.className = "institution-select-box";
       selector.innerHTML = `
         <input type="checkbox" class="institution-bulk-check" data-id="${escapeHtml(data.id)}">
         <span>Seç</span>
       `;
-      manageMain.prepend(selector);
+      (selectSlot || manageMain).prepend(selector);
+    }
+
+    const badgeWrap = card.querySelector(".manage-badges");
+    if (badgeWrap) {
+      const healthBadge = document.createElement("span");
+      healthBadge.className = "badge-health health-" + health.state;
+      healthBadge.textContent = "Sağlık %" + health.score;
+      healthBadge.title = health.missing.length
+        ? "Eksik: " + health.missing.join(", ")
+        : "Profil bilgileri yeterli";
+      badgeWrap.appendChild(healthBadge);
     }
 
     const healthBox = document.createElement("div");
@@ -271,7 +283,8 @@
         <strong>${health.latestEvent ? formatDateLocal(health.latestEvent) : "Henüz yok"}</strong>
       </div>
     `;
-    card.appendChild(healthBox);
+    const healthSlot = card.querySelector(".institution-health-slot");
+    (healthSlot || card).appendChild(healthBox);
 
     const checkbox = card.querySelector(".institution-bulk-check");
     if (selectedInstitutionIds.has(String(data.id))) checkbox.checked = true;
