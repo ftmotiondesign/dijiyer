@@ -336,9 +336,13 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Gönderiliyor...';
 
+  const searchText = document.getElementById('quoteSearch').value.trim();
+  const selectedCategory = document.getElementById('quoteCategory').value;
+  const inferredCategory = inferQuoteCategory(searchText);
+
   const request = {
-    category: document.getElementById('quoteCategory').value,
-    service: document.getElementById('quoteService').value,
+    category: selectedCategory || inferredCategory || 'diger',
+    service: document.getElementById('quoteService').value || searchText,
     city: document.getElementById('quoteCity').value,
     district: document.getElementById('quoteDistrict').value,
     name: document.getElementById('quoteName').value.trim(),
@@ -354,7 +358,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     closeModal('quoteModal');
     e.target.reset();
     document.getElementById('quoteService').innerHTML =
-      '<option value="">Önce kategori seçin</option>';
+      '<option value="">Kategori seçmeden de devam edebilirsiniz</option>';
     document.getElementById('quoteService').disabled = true;
     document.getElementById('quoteDistrict').innerHTML =
       '<option value="">Önce şehir seçin</option>';
@@ -801,16 +805,85 @@ const quoteServices = {
   ]
 };
 
-document.getElementById('quoteCategory').addEventListener('change', function () {
+function fillQuoteServices(category) {
   const serviceSelect = document.getElementById('quoteService');
-  const services = quoteServices[this.value] || [];
+  const services = quoteServices[category] || [];
 
   serviceSelect.innerHTML = services.length
     ? '<option value="">Hizmet seçin</option>' +
       services.map(service => `<option value="${service}">${service}</option>`).join('')
-    : '<option value="">Önce kategori seçin</option>';
+    : '<option value="">Kategori seçmeden de devam edebilirsiniz</option>';
 
   serviceSelect.disabled = services.length === 0;
+}
+
+function normalizeQuoteSearch(value) {
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i')
+    .replace(/ş/g, 's')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c');
+}
+
+function inferQuoteCategory(value) {
+  const q = normalizeQuoteSearch(value);
+
+  const rules = [
+    ['surucu', ['ehliyet','surucu','direksiyon','otomatik vites','motosiklet ehliyeti']],
+    ['kres', ['kres','anaokulu','gunduz bakim','cocuk bakim']],
+    ['yurt', ['yurt','ogrenci yurdu','barinma']],
+    ['egitim', ['dershane','kurs','ozel ders','lgs','tyt','ayt','deneme','egitim']],
+    ['emlak', ['emlak','kiralik','satilik','arsa','tarla','daire','konut','isyeri']],
+    ['oto', ['oto','araba tamir','servis','kaporta','boya','lastik','jant','yedek parca','oto elektrik']],
+    ['restoran', ['restoran','kafe','yemek','pizza','kahvalti','cafe']],
+    ['guzellik', ['kuafor','guzellik','cilt bakimi','manikur','pedikur']],
+    ['saglik', ['klinik','doktor','dis','diyetisyen','fizik tedavi','muayene','saglik']],
+    ['dugun', ['dugun','organizasyon','gelinlik','damatlik','fotografci','dugun salonu']],
+    ['evteknik', ['elektrikci','tesisat','klima','beyaz esya','tadilat','boyaci','teknik servis']],
+    ['turizm', ['otel','pansiyon','konaklama','tur','gezi','transfer']],
+    ['esnaf', ['esnaf','magaza','dukkân','dukkan']]
+  ];
+
+  for (const [category, keywords] of rules) {
+    if (keywords.some(keyword => q.includes(keyword))) return category;
+  }
+
+  return '';
+}
+
+document.getElementById('quoteCategory').addEventListener('change', function () {
+  fillQuoteServices(this.value);
+});
+
+document.getElementById('detectQuoteCategoryBtn').addEventListener('click', () => {
+  const searchText = document.getElementById('quoteSearch').value.trim();
+
+  if (!searchText) {
+    showToast('Önce ne aradığınızı yazın.');
+    return;
+  }
+
+  const category = inferQuoteCategory(searchText);
+  const categorySelect = document.getElementById('quoteCategory');
+
+  if (!category) {
+    categorySelect.value = 'diger';
+    fillQuoteServices('diger');
+    showToast('Kategori otomatik bulunamadı. Talebiniz yine de gönderilebilir.');
+    return;
+  }
+
+  categorySelect.value = category;
+  fillQuoteServices(category);
+
+  const selectedText =
+    categorySelect.options[categorySelect.selectedIndex]?.textContent || 'Kategori';
+
+  showToast(`Uygun kategori: ${selectedText}`);
 });
 
 async function loadQuoteProvinces() {
