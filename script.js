@@ -1037,8 +1037,13 @@ async function createQuoteTrackingAccess(quoteId, request) {
       trackingCode,
       phoneHash,
       service: request.service,
+      mainCategory: request.mainCategory || '',
+      subCategory: request.subCategory || request.category || '',
+      mainCategoryLabel: categoryTaxonomy[request.mainCategory]?.label || '',
+      subCategoryLabel: categoryTaxonomy[request.mainCategory]?.subs?.[request.subCategory] || request.service || '',
       city: request.city,
       district: request.district,
+      note: request.note || '',
       date: request.date,
       status: 'active',
       createdAt: new Date().toISOString()
