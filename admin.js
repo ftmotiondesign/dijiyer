@@ -539,6 +539,7 @@ function renderManagedInstitutions() {
   data.forEach((data) => {
     const card = document.createElement("div");
     card.className = "institution-manage-card";
+    card.dataset.institutionId = data.id;
 
     const categoryLabels = {
       surucu: "Sürücü Kursu",
@@ -677,6 +678,10 @@ function renderManagedInstitutions() {
         }
         window.open(url, "_blank");
       });
+    }
+
+    if (typeof window.decorateAdminInstitutionCard === "function") {
+      window.decorateAdminInstitutionCard(card, data);
     }
 
     institutionsList.appendChild(card);
