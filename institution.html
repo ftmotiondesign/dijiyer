@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=21">
+  <link rel="stylesheet" href="institution.css?v=22">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -517,16 +517,45 @@
               </div>
             </div>
 
-            <div class="form-grid">
-              <label>Logo Görsel URL
-                <input id="profileLogoUrl" type="url" placeholder="https://.../logo.jpg">
+            <div class="firm-upload-grid">
+              <label class="firm-upload-box">
+                <input id="profileLogoFile" type="file" accept="image/*" hidden>
+                <span class="firm-upload-icon">🖼️</span>
+                <span class="firm-upload-copy">
+                  <strong>Logo Yükle</strong>
+                  <small>Telefondan veya bilgisayardan seç</small>
+                </span>
+                <span class="firm-upload-action">Dosya Seç</span>
               </label>
 
-              <label>Kapak Görsel URL
-                <input id="profileCoverUrl" type="url" placeholder="https://.../kapak.jpg">
+              <label class="firm-upload-box">
+                <input id="profileCoverFile" type="file" accept="image/*" hidden>
+                <span class="firm-upload-icon">🌄</span>
+                <span class="firm-upload-copy">
+                  <strong>Kapak Görseli Yükle</strong>
+                  <small>Yatay görsel önerilir</small>
+                </span>
+                <span class="firm-upload-action">Dosya Seç</span>
               </label>
             </div>
-            <small class="profile-field-help">Şimdilik görsel bağlantısı eklenir. Sonraki aşamada doğrudan fotoğraf yükleme ekleyebiliriz.</small>
+
+            <div class="firm-upload-status-row">
+              <span id="profileLogoUploadStatus">Logo: JPG, PNG veya WebP · en fazla 8 MB</span>
+              <span id="profileCoverUploadStatus">Kapak: JPG, PNG veya WebP · en fazla 8 MB</span>
+            </div>
+
+            <details class="profile-url-fallback">
+              <summary>Görsel bağlantısı kullanmak istiyorum</summary>
+              <div class="form-grid">
+                <label>Logo Görsel URL
+                  <input id="profileLogoUrl" type="url" placeholder="https://.../logo.jpg">
+                </label>
+
+                <label>Kapak Görsel URL
+                  <input id="profileCoverUrl" type="url" placeholder="https://.../kapak.jpg">
+                </label>
+              </div>
+            </details>
           </section>
 
           <section class="firm-profile-section">
@@ -638,12 +667,29 @@
               </div>
             </div>
 
-            <label>Galeri Görsel Bağlantıları
-              <textarea id="profileGalleryUrls" rows="4"
-                placeholder="Her satıra bir görsel bağlantısı ekleyin."></textarea>
-              <small>En fazla 6 görsel kullanılır.</small>
+            <label class="firm-gallery-upload-box">
+              <input id="profileGalleryFiles" type="file" accept="image/*" multiple hidden>
+              <span class="firm-upload-icon">📷</span>
+              <span class="firm-upload-copy">
+                <strong>Galeri Fotoğrafları Seç</strong>
+                <small>Aynı anda birden fazla fotoğraf seçebilirsiniz · en fazla 6 görsel</small>
+              </span>
+              <span class="firm-upload-action">Fotoğraf Seç</span>
             </label>
+
+            <div class="firm-gallery-upload-status" id="profileGalleryUploadStatus">
+              JPG, PNG veya WebP · görsel başına en fazla 8 MB
+            </div>
+
             <div class="firm-gallery-preview" id="profileGalleryPreview"></div>
+
+            <details class="profile-url-fallback">
+              <summary>Galeri bağlantılarını elle girmek istiyorum</summary>
+              <label>Galeri Görsel Bağlantıları
+                <textarea id="profileGalleryUrls" rows="4"
+                  placeholder="Her satıra bir görsel bağlantısı ekleyin."></textarea>
+              </label>
+            </details>
           </section>
 
           <label class="switch-row">
@@ -943,7 +989,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=15"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="institution.js?v=16"></script>
   <script src="institution-layout.js?v=2"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
