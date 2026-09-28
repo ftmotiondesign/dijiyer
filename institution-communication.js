@@ -6,6 +6,7 @@
   const openConversationQuoteIds=new Set();
   let communicationRefreshBusy=false;
   let activeMessageQuoteId=null;
+  let activeInstitutionChatQuoteId=null;
   const institutionMessageTitleBase=document.title;
 
   const baseQuoteCardHtml=quoteCardHtml;
@@ -39,22 +40,10 @@
       <section class="firm-communication-box" data-firm-communication="${offerSafe(quote.id)}">
         <div class="firm-com-status-row">${viewedHtml}${revisionHtml}${messageBadge}</div>
         ${timeline}
-        <details class="firm-conversation" data-firm-conversation="${offerSafe(quote.id)}" ${openConversationQuoteIds.has(String(quote.id))?"open":""}>
-          <summary>
-            💬 Müşteri ile mesajlaş
-            <span>${unreadMessages ? '<b class="firm-unread-count">'+unreadMessages+'</b>' : (messages.length?"("+messages.length+")":"")}</span>
-          </summary>
-          <div class="firm-message-thread" data-firm-thread="${offerSafe(quote.id)}">
-            ${messages.length?messages.map(firmMessageHtml).join(""):'<div class="firm-empty-message">Henüz mesaj yok.</div>'}
-          </div>
-          <form class="firm-message-form" data-firm-message-form data-quote-id="${offerSafe(quote.id)}">
-            <textarea name="text" maxlength="1000" rows="2" placeholder="Müşteriye mesaj yazın..."></textarea>
-            <div class="firm-message-actions">
-              <button type="button" class="secondary-action" data-firm-refresh-chat="${offerSafe(quote.id)}">↻ Yenile</button>
-              <button type="submit" class="primary-action">Mesaj Gönder</button>
-            </div>
-          </form>
-        </details>
+        <button type="button" class="firm-open-chat-btn ${unreadMessages?"has-unread":""}" data-open-firm-chat="${offerSafe(quote.id)}">
+          <span>💬 Müşteri ile mesajlaş</span>
+          <span class="firm-open-chat-meta">${unreadMessages ? unreadMessages+" yeni mesaj" : (messages.length ? messages.length+" mesaj" : "Sohbeti aç")}</span>
+        </button>
       </section>`;
 
     const cardHtml=html.replace(
@@ -237,6 +226,7 @@
 
       initial=false;
       renderQuotes();
+      if(String(activeInstitutionChatQuoteId||"")===String(quoteId))renderInstitutionChat();
     },error=>{
       console.warn("Mesaj bildirimi dinlenemedi:",quoteId,error);
     });
@@ -288,48 +278,115 @@
     bindCommunicationUi();
   };
 
+  function ensureInstitutionChatModal(){
+    if(document.getElementById("institutionChatModal"))return;
+
+    document.body.insertAdjacentHTML("beforeend",`
+      <div class="institution-chat-modal hidden" id="institutionChatModal">
+        <div class="institution-chat-shell">
+          <div class="institution-chat-header">
+            <button type="button" class="institution-chat-back" id="institutionChatClose">←</button>
+            <div class="institution-chat-avatar">👤</div>
+            <div class="institution-chat-title">
+              <strong id="institutionChatCustomer">Müşteri</strong>
+              <span id="institutionChatService">Teklif görüşmesi</span>
+            </div>
+          </div>
+
+          <div class="institution-chat-messages" id="institutionChatMessages">
+            <div class="firm-empty-message">Mesajlar yükleniyor...</div>
+          </div>
+
+          <form class="institution-chat-compose" id="institutionChatForm">
+            <textarea id="institutionChatText" maxlength="1000" rows="1" placeholder="Mesaj yazın"></textarea>
+            <button type="submit" class="institution-chat-send" aria-label="Gönder">➤</button>
+          </form>
+        </div>
+      </div>
+    `);
+
+    document.getElementById("institutionChatClose").onclick=closeInstitutionChat;
+
+    document.getElementById("institutionChatModal").addEventListener("click",event=>{
+      if(event.target.id==="institutionChatModal")closeInstitutionChat();
+    });
+
+    const textarea=document.getElementById("institutionChatText");
+    textarea.addEventListener("keydown",event=>{
+      if(event.key==="Enter" && !event.shiftKey && !event.isComposing){
+        event.preventDefault();
+        document.getElementById("institutionChatForm").requestSubmit();
+      }
+    });
+
+    document.getElementById("institutionChatForm").addEventListener("submit",async event=>{
+      event.preventDefault();
+      const quoteId=activeInstitutionChatQuoteId;
+      const input=document.getElementById("institutionChatText");
+      const text=String(input.value||"").trim();
+      if(!quoteId||!text)return;
+
+      const send=document.querySelector(".institution-chat-send");
+      send.disabled=true;
+
+      try{
+        await sendFirmMessage(quoteId,text,"message");
+        input.value="";
+        await loadCommunicationForQuote(quoteId);
+        renderInstitutionChat();
+      }finally{
+        send.disabled=false;
+        input.focus();
+      }
+    });
+  }
+
+  function renderInstitutionChat(){
+    if(!activeInstitutionChatQuoteId)return;
+
+    const quote=quoteRecords.find(item=>String(item.id)===String(activeInstitutionChatQuoteId));
+    const rows=sortConversationMessages(messagesMap.get(activeInstitutionChatQuoteId)||[]);
+    const box=document.getElementById("institutionChatMessages");
+    if(!box)return;
+
+    document.getElementById("institutionChatCustomer").textContent=quote?.name||"Müşteri";
+    document.getElementById("institutionChatService").textContent=
+      [quote?.service,quote?.city,quote?.district].filter(Boolean).join(" · ")||"Teklif görüşmesi";
+
+    box.innerHTML=rows.length
+      ? rows.map(firmMessageHtml).join("")
+      : '<div class="firm-empty-message">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
+
+    requestAnimationFrame(()=>{
+      box.scrollTop=box.scrollHeight;
+    });
+  }
+
+  function openInstitutionChat(quoteId){
+    ensureInstitutionChatModal();
+    activeInstitutionChatQuoteId=String(quoteId);
+    markInstitutionConversationRead(activeInstitutionChatQuoteId);
+    hideInstitutionMessageAlert();
+    renderInstitutionChat();
+    document.getElementById("institutionChatModal").classList.remove("hidden");
+    setTimeout(()=>document.getElementById("institutionChatText")?.focus(),80);
+  }
+
+  function closeInstitutionChat(){
+    document.getElementById("institutionChatModal")?.classList.add("hidden");
+    activeInstitutionChatQuoteId=null;
+  }
+
   function bindCommunicationUi(){
-    institutionQuotesList.querySelectorAll("[data-firm-message-form]").forEach(form=>{
-      form.onsubmit=async e=>{
-        e.preventDefault();
-        const text=String(form.elements.text.value||"").trim();
-        if(!text)return;
-        const submit=form.querySelector('button[type="submit"]');
-        submit.disabled=true;
-        try{
-          await sendFirmMessage(form.dataset.quoteId,text,"message");
-          form.reset();
-          await loadCommunicationForQuote(form.dataset.quoteId);
-          renderQuotes();
-          scrollFirmConversationToLatest(form.dataset.quoteId,"smooth");
-        }finally{
-          submit.disabled=false;
-        }
-      };
+    ensureInstitutionChatModal();
+
+    institutionQuotesList.querySelectorAll("[data-open-firm-chat]").forEach(button=>{
+      button.onclick=()=>openInstitutionChat(button.dataset.openFirmChat);
     });
 
-    institutionQuotesList.querySelectorAll("[data-firm-conversation]").forEach(details=>{
-      details.ontoggle=()=>{
-        const quoteId=String(details.dataset.firmConversation||"");
-
-        if(details.open){
-          openConversationQuoteIds.add(quoteId);
-          markInstitutionConversationRead(quoteId);
-          hideInstitutionMessageAlert();
-          scrollFirmConversationToLatest(quoteId,"smooth");
-        }else{
-          openConversationQuoteIds.delete(quoteId);
-        }
-      };
-    });
-
-    institutionQuotesList.querySelectorAll("[data-firm-refresh-chat]").forEach(btn=>{
-      btn.onclick=async()=>{
-        btn.disabled=true;
-        await loadCommunicationForQuote(btn.dataset.firmRefreshChat);
-        renderQuotes();
-      };
-    });
+    if(activeInstitutionChatQuoteId){
+      renderInstitutionChat();
+    }
   }
 
   async function sendFirmMessage(quoteId,text,kind){
@@ -410,13 +467,8 @@
         '[data-quote-card="'+CSS.escape(String(activeMessageQuoteId))+'"]'
       );
 
-      if(details){
-        openConversationQuoteIds.add(String(activeMessageQuoteId));
-        details.open=true;
-        markInstitutionConversationRead(activeMessageQuoteId);
-        scrollFirmConversationToLatest(activeMessageQuoteId,"smooth");
-      }
       card?.scrollIntoView({behavior:"smooth",block:"center"});
+      openInstitutionChat(activeMessageQuoteId);
     });
   });
 
