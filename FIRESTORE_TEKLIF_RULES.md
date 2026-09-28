@@ -202,3 +202,16 @@ match /quoteRequests/{quoteId}/offerIssues/{issueId} {
 
 Mevcut `quoteRequests`, `institutionUsers`, `institutions` ve yönetici kurallarınızı silmeyin.
 Bu dosya yalnızca Garantili Teklif Sistemi için ek kural bloklarını içerir.
+
+
+## 6) Müşteri teklif takip erişimi
+
+Takip linki için Firestore yolu:
+
+```text
+quoteAccess/{phoneHash}/codes/{trackingCode}
+```
+
+Bu yapıda özel link yalnızca takip kodunu taşır. Kullanıcı ayrıca talep formunda kullandığı telefon numarasını girer; tarayıcı telefonun SHA-256 özetini üretir ve ancak iki bilgi birlikte doğruysa erişim belgesinin yolu bulunur. Koleksiyon listeleme kapalı tutulmalıdır.
+
+Tam uygulanabilir sürüm için sohbet içinde üretilen `firestore_garantili_teklif_takip.rules` dosyasını kullanın.
