@@ -13,7 +13,7 @@
     if(compact)return html;
 
     const engagement=engagementMap.get(quote.id)||{};
-    const messages=messagesMap.get(quote.id)||[];
+    const messages=sortConversationMessages(messagesMap.get(quote.id)||[]);
     const customerMessages=messages.filter(m=>m.sender==="customer").length;
     const unreadMessages=unreadMessageMap.get(quote.id)||0;
     const pendingRevision=!!(engagement.revisionRequestedAt&&!engagement.revisionRespondedAt);
@@ -79,6 +79,28 @@
       <div class="firm-progress-step ${done?"done":""}">
         <span></span><div><strong>${offerSafe(label)}</strong><small>${date?formatDate(date):"Bekliyor"}</small></div>
       </div>`).join("")}</div>`;
+  }
+
+  function sortConversationMessages(rows){
+    return [...rows].sort((a,b)=>{
+      const aDate=String(a.date||"");
+      const bDate=String(b.date||"");
+      if(aDate===bDate)return String(a.id||"").localeCompare(String(b.id||""));
+      return aDate.localeCompare(bDate);
+    });
+  }
+
+  function scrollFirmConversationToLatest(quoteId,behavior="auto"){
+    requestAnimationFrame(()=>{
+      const thread=document.querySelector(
+        '[data-firm-thread="'+CSS.escape(String(quoteId))+'"]'
+      );
+      if(!thread)return;
+      thread.scrollTo({
+        top:thread.scrollHeight,
+        behavior
+      });
+    });
   }
 
   function firmMessageHtml(msg){
@@ -180,7 +202,9 @@
       .collection("messages").orderBy("date","asc");
 
     const unsubscribe=ref.onSnapshot(snapshot=>{
-      const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+      const rows=sortConversationMessages(
+        snapshot.docs.map(d=>({id:d.id,...d.data()}))
+      );
       messagesMap.set(quoteId,rows);
 
       const unread=incomingCustomerMessages(quoteId,rows);
@@ -234,7 +258,9 @@
           .collection("messages").orderBy("date","asc").get()
       ]);
       engagementMap.set(quoteId,engSnap.exists?engSnap.data():{});
-      const rows=msgSnap.docs.map(d=>({id:d.id,...d.data()}));
+      const rows=sortConversationMessages(
+        msgSnap.docs.map(d=>({id:d.id,...d.data()}))
+      );
       messagesMap.set(quoteId,rows);
       unreadMessageMap.set(quoteId,incomingCustomerMessages(quoteId,rows).length);
       updateInstitutionMessageCount();
@@ -274,6 +300,7 @@
           form.reset();
           await loadCommunicationForQuote(form.dataset.quoteId);
           renderQuotes();
+          scrollFirmConversationToLatest(form.dataset.quoteId,"smooth");
         }finally{
           submit.disabled=false;
         }
@@ -287,6 +314,7 @@
           markInstitutionConversationRead(quoteId);
           hideInstitutionMessageAlert();
           renderQuotes();
+          scrollFirmConversationToLatest(quoteId,"smooth");
         }
       };
     });
