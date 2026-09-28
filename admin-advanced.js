@@ -407,53 +407,146 @@
     return supportAdminRecords;
   }
 
+  function supportTicketAgeMs(ticket) {
+    const date = new Date(ticket.date || ticket.updatedAt || 0);
+    return Number.isNaN(date.getTime()) ? 0 : Math.max(0, Date.now() - date.getTime());
+  }
+
+  function supportTicketIsOverdue(ticket) {
+    if (String(ticket.status || "new") === "resolved") return false;
+    const slaMs = Number(adminSettings.supportSlaDays || 2) * 86400000;
+    return supportTicketAgeMs(ticket) > slaMs;
+  }
+
+  function supportAgeLabel(ticket) {
+    const ms = supportTicketAgeMs(ticket);
+    if (!ms) return "-";
+    const hours = Math.floor(ms / 3600000);
+    if (hours < 1) return "Yeni";
+    if (hours < 24) return hours + " saattir açık";
+    const days = Math.floor(hours / 24);
+    return days + " gündür açık";
+  }
+
+  function populateSupportAdminCategories() {
+    const select = $("supportAdminCategory");
+    if (!select) return;
+    const current = select.value;
+    const categories = [...new Set(
+      supportAdminRecords.map(item => String(item.category || "").trim()).filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
+    select.innerHTML = '<option value="">Tüm konular</option>' +
+      categories.map(value =>
+        '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>'
+      ).join("");
+    if (categories.includes(current)) select.value = current;
+  }
+
+  function supportStatusLabel(status) {
+    if (status === "resolved") return "Çözüldü";
+    if (status === "answered") return "Cevaplandı";
+    if (status === "reviewing") return "İnceleniyor";
+    return "Yeni";
+  }
+
   async function renderSupportCenter() {
     const root = $("supportAdminList");
     if (!root) return;
 
     await loadSupportAdminRecords();
+    populateSupportAdminCategories();
 
     const query = normalize($("supportAdminSearch")?.value);
     const status = $("supportAdminStatus")?.value || "";
-    const tickets = supportAdminRecords.filter(item => {
-      const haystack = normalize([
-        item.institutionName,item.subject,item.message,item.adminReply,item.email,
-        item.relatedRequestId,item.relatedOfferCode,item.relatedService
-      ].filter(Boolean).join(" "));
-      return (!query || haystack.includes(query)) &&
-        (!status || String(item.status || "new") === status);
-    });
+    const category = $("supportAdminCategory")?.value || "";
+    const sort = $("supportAdminSort")?.value || "newest";
 
-    const open = supportAdminRecords.filter(
-      x => String(x.status || "new") !== "resolved"
-    ).length;
+    const newCount = supportAdminRecords.filter(x => String(x.status || "new") === "new").length;
+    const reviewingCount = supportAdminRecords.filter(x => String(x.status || "") === "reviewing").length;
+    const answeredCount = supportAdminRecords.filter(x => String(x.status || "") === "answered").length;
+    const resolvedCount = supportAdminRecords.filter(x => String(x.status || "") === "resolved").length;
+    const overdueCount = supportAdminRecords.filter(supportTicketIsOverdue).length;
+    const open = supportAdminRecords.length - resolvedCount;
+
+    if ($("supportKpiNew")) $("supportKpiNew").textContent = newCount;
+    if ($("supportKpiReviewing")) $("supportKpiReviewing").textContent = reviewingCount;
+    if ($("supportKpiAnswered")) $("supportKpiAnswered").textContent = answeredCount;
+    if ($("supportKpiOverdue")) $("supportKpiOverdue").textContent = overdueCount;
 
     $("supportAdminCount").textContent =
       supportAdminRecords.length + " talep · " + open + " açık · " +
-      (supportAdminRecords.length-open) + " çözüldü";
+      resolvedCount + " çözüldü";
 
-    if ($("adminSupportTabCount")) {
-      $("adminSupportTabCount").textContent = open;
+    if ($("adminSupportTabCount")) $("adminSupportTabCount").textContent = open;
+    if ($("quickSupportCount")) $("quickSupportCount").textContent = open;
+
+    let tickets = supportAdminRecords.filter(item => {
+      const haystack = normalize([
+        item.id,item.institutionName,item.subject,item.message,item.adminReply,item.email,
+        item.category,item.relatedRequestId,item.relatedOfferCode,item.relatedService
+      ].filter(Boolean).join(" "));
+
+      const statusMatch = !status ||
+        (status === "overdue"
+          ? supportTicketIsOverdue(item)
+          : String(item.status || "new") === status);
+
+      const categoryMatch = !category || String(item.category || "") === category;
+
+      return (!query || haystack.includes(query)) && statusMatch && categoryMatch;
+    });
+
+    tickets = [...tickets].sort((a,b) => {
+      if (sort === "oldest") {
+        return new Date(a.date || 0) - new Date(b.date || 0);
+      }
+      if (sort === "priority") {
+        const overdueDiff = Number(supportTicketIsOverdue(b)) - Number(supportTicketIsOverdue(a));
+        if (overdueDiff) return overdueDiff;
+        const stateRank = {new:0,reviewing:1,answered:2,resolved:3};
+        const stateDiff =
+          (stateRank[String(a.status || "new")] ?? 9) -
+          (stateRank[String(b.status || "new")] ?? 9);
+        if (stateDiff) return stateDiff;
+      }
+      return new Date(b.updatedAt || b.date || 0) - new Date(a.updatedAt || a.date || 0);
+    });
+
+    if ($("supportFilterSummary")) {
+      const parts = [];
+      if (status) parts.push(status === "overdue" ? "Geciken" : supportStatusLabel(status));
+      if (category) parts.push(category);
+      if (query) parts.push('Arama: "' + $("supportAdminSearch").value.trim() + '"');
+      $("supportFilterSummary").textContent =
+        tickets.length + " kayıt gösteriliyor" + (parts.length ? " · " + parts.join(" · ") : "");
     }
-    const quickSupportCount = $("quickSupportCount");
-    if (quickSupportCount) quickSupportCount.textContent = open;
 
-    root.innerHTML = tickets.length ? tickets.map(ticket => `
-      <article class="support-admin-card">
+    root.innerHTML = tickets.length ? tickets.map(ticket => {
+      const isOverdue = supportTicketIsOverdue(ticket);
+      const ticketNo = String(ticket.id || "").slice(0,8).toUpperCase();
+
+      return `
+      <article class="support-admin-card ${isOverdue ? "overdue" : ""}" data-support-ticket-id="${escapeHtml(ticket.id)}">
         <div class="support-admin-head">
-          <div>
+          <div class="support-admin-title-wrap">
+            <div class="support-admin-labels">
+              <span class="support-category-chip">${escapeHtml(ticket.category || "Destek")}</span>
+              <span class="support-ticket-no">#${escapeHtml(ticketNo)}</span>
+              ${isOverdue ? '<span class="support-overdue-chip">Gecikiyor</span>' : ""}
+            </div>
             <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
-            <p>${escapeHtml(ticket.institutionName || "Kurum")} · ${formatDateLocal(ticket.date)}</p>
+            <p>
+              <b>${escapeHtml(ticket.institutionName || "Kurum")}</b>
+              · ${formatDateLocal(ticket.date)}
+              ${ticket.email ? " · " + escapeHtml(ticket.email) : ""}
+            </p>
           </div>
-          <span class="support-state state-${escapeHtml(ticket.status || "new")}">
-            ${ticket.status === "resolved"
-              ? "Çözüldü"
-              : ticket.status === "answered"
-                ? "Cevaplandı"
-                : ticket.status === "reviewing"
-                  ? "İnceleniyor"
-                  : "Yeni"}
-          </span>
+          <div class="support-admin-state-column">
+            <span class="support-state state-${escapeHtml(ticket.status || "new")}">
+              ${supportStatusLabel(ticket.status)}
+            </span>
+            <small class="${isOverdue ? "overdue-text" : ""}">${escapeHtml(supportAgeLabel(ticket))}</small>
+          </div>
         </div>
 
         ${ticket.relatedRequestId ? `
@@ -482,30 +575,56 @@
           </div>
         ` : ""}
 
-        <div class="support-admin-message">${escapeHtml(ticket.message || "")}</div>
+        <div class="support-admin-message">
+          <strong>Kurumun mesajı</strong>
+          <p>${escapeHtml(ticket.message || "")}</p>
+        </div>
+
         ${ticket.adminReply ? `
           <div class="support-admin-existing-reply">
-            <strong>Son yanıt</strong>
+            <strong>Son Dijiyer yanıtı · ${formatDateLocal(ticket.adminReplyAt || ticket.updatedAt)}</strong>
             <p>${escapeHtml(ticket.adminReply)}</p>
           </div>
         ` : ""}
+
         <div class="support-admin-controls">
-          <select data-support-status="${escapeHtml(ticket.id)}">
+          <select data-support-status="${escapeHtml(ticket.id)}" aria-label="Destek durumu">
             <option value="new" ${(ticket.status||"new")==="new"?"selected":""}>Yeni</option>
             <option value="reviewing" ${ticket.status==="reviewing"?"selected":""}>İnceleniyor</option>
             <option value="answered" ${ticket.status==="answered"?"selected":""}>Cevaplandı</option>
             <option value="resolved" ${ticket.status==="resolved"?"selected":""}>Çözüldü</option>
           </select>
-          <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma yanıt yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
-          <button type="button" data-support-save="${escapeHtml(ticket.id)}">Kaydet</button>
+          <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma verilecek yanıtı yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
+          <button type="button" data-support-save="${escapeHtml(ticket.id)}">Yanıtı Kaydet</button>
+        </div>
+
+        <div class="support-quick-actions">
+          ${String(ticket.status || "new") === "new"
+            ? `<button type="button" data-support-quick="reviewing" data-support-id="${escapeHtml(ticket.id)}">İncelemeye Al</button>`
+            : ""}
+          ${String(ticket.status || "new") !== "resolved"
+            ? `<button type="button" class="success" data-support-quick="resolved" data-support-id="${escapeHtml(ticket.id)}">Çözüldü Yap</button>`
+            : `<span class="support-done-note">✓ Bu destek talebi kapatıldı.</span>`}
         </div>
       </article>
-    `).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
+    `;
+    }).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
 
     root.querySelectorAll("[data-support-save]").forEach(button => {
       button.addEventListener("click", () =>
         saveSupportTicketAdmin(button.dataset.supportSave)
       );
+    });
+
+    root.querySelectorAll("[data-support-quick]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const ticketId = button.dataset.supportId;
+        const select = document.querySelector(
+          `[data-support-status="${CSS.escape(ticketId)}"]`
+        );
+        if (select) select.value = button.dataset.supportQuick;
+        await saveSupportTicketAdmin(ticketId);
+      });
     });
 
     root.querySelectorAll("[data-support-open-quote]").forEach(button => {
@@ -573,6 +692,28 @@
 
   $("supportAdminSearch")?.addEventListener("input", renderSupportCenter);
   $("supportAdminStatus")?.addEventListener("change", renderSupportCenter);
+  $("supportAdminCategory")?.addEventListener("change", renderSupportCenter);
+  $("supportAdminSort")?.addEventListener("change", renderSupportCenter);
+
+  $("supportAdminRefresh")?.addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const oldText = button.textContent;
+    button.disabled = true;
+    button.textContent = "Yenileniyor...";
+    await renderSupportCenter();
+    button.disabled = false;
+    button.textContent = oldText;
+  });
+
+  document.querySelectorAll("[data-support-kpi]").forEach(button => {
+    button.addEventListener("click", () => {
+      const statusSelect = $("supportAdminStatus");
+      if (!statusSelect) return;
+      const value = button.dataset.supportKpi || "";
+      statusSelect.value = statusSelect.value === value ? "" : value;
+      renderSupportCenter();
+    });
+  });
 
   function getAnnouncementTargets() {
     const type = $("announcementTargetType")?.value || "all";
