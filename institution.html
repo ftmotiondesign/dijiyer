@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=19">
+  <link rel="stylesheet" href="institution.css?v=20">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -236,6 +236,73 @@
     </nav>
 
     <section class="panel-view active" data-panel-view="summary">
+
+      <section class="firm-home-command">
+        <div class="firm-home-command-head">
+          <div>
+            <span class="eyebrow">HIZLI BAŞLANGIÇ</span>
+            <h2>Bugün ne yapmak istiyorsunuz?</h2>
+            <p>Yeni müşterileri, tekliflerinizi, mesajları ve kurum profilinizi tek yerden yönetin.</p>
+          </div>
+          <span class="firm-home-status" id="firmHomeOfferStatus">Teklif alımı kontrol ediliyor...</span>
+        </div>
+
+        <div class="firm-home-action-grid">
+          <button type="button" class="firm-home-action primary" id="firmHomeNewBtn">
+            <span class="firm-home-action-icon">🔔</span>
+            <span class="firm-home-action-copy">
+              <strong>Yeni Talepler</strong>
+              <small>Size uygun yeni müşteri talepleri</small>
+            </span>
+            <span class="firm-home-action-value" id="firmHomeNewCount">0</span>
+          </button>
+
+          <button type="button" class="firm-home-action" id="firmHomeOfferedBtn">
+            <span class="firm-home-action-icon">₺</span>
+            <span class="firm-home-action-copy">
+              <strong>Verdiğim Teklifler</strong>
+              <small>Gönderdiğiniz fiyat teklifleri</small>
+            </span>
+            <span class="firm-home-action-value" id="firmHomeOfferedCount">0</span>
+          </button>
+
+          <button type="button" class="firm-home-action" id="firmHomeMessagesBtn">
+            <span class="firm-home-action-icon">💬</span>
+            <span class="firm-home-action-copy">
+              <strong>Mesajlar</strong>
+              <small>Müşterilerden gelen mesajlar</small>
+            </span>
+            <span class="firm-home-action-value" id="firmHomeMessageCount">0</span>
+          </button>
+
+          <button type="button" class="firm-home-action" id="firmHomeProfileBtn">
+            <span class="firm-home-action-icon">🏢</span>
+            <span class="firm-home-action-copy">
+              <strong>Profilim</strong>
+              <small>Kurum bilgilerinizi tamamlayın</small>
+            </span>
+            <span class="firm-home-action-value profile" id="firmHomeProfilePercent">%0</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="firm-opportunity-card">
+        <div class="firm-opportunity-head">
+          <div>
+            <span class="eyebrow">SİZE UYGUN İŞLER</span>
+            <h2>Sana uygun yeni talepler</h2>
+            <p>Kategori ve hizmet bölgenizle eşleşen, henüz fiyat vermediğiniz talepler.</p>
+          </div>
+          <div class="firm-opportunity-head-actions">
+            <span><strong id="firmOpportunityCount">0</strong> yeni talep</span>
+            <button type="button" id="firmAllOpportunitiesBtn">Tümünü Gör</button>
+          </div>
+        </div>
+
+        <div id="firmOpportunityList" class="firm-opportunity-list">
+          <div class="empty-state">Uygun talepler yükleniyor...</div>
+        </div>
+      </section>
 
       <section class="work-focus-card" id="workFocusCard">
         <div class="work-focus-top">
@@ -750,10 +817,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=12"></script>
+  <script src="institution.js?v=13"></script>
   <script src="institution-layout.js?v=2"></script>
-  <script src="institution-offers.js?v=9"></script>
-  <script src="institution-communication.js?v=10"></script>
+  <script src="institution-offers.js?v=10"></script>
+  <script src="institution-communication.js?v=11"></script>
   <script src="institution-announcements.js?v=2"></script>
 </body>
 </html>
