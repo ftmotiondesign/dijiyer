@@ -379,6 +379,8 @@ document.addEventListener("keydown", () => {
 }, { once:true });
 
 function setPanelTab(name) {
+  document.body.dataset.panelCurrent = name;
+
   document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.panelTab === name);
   });
@@ -386,6 +388,10 @@ function setPanelTab(name) {
   document.querySelectorAll("[data-panel-view]").forEach(view => {
     view.classList.toggle("active", view.dataset.panelView === name);
   });
+
+  if (typeof window.updateInstitutionNavigation === "function") {
+    window.updateInstitutionNavigation(name);
+  }
 }
 
 document.querySelectorAll("[data-panel-tab]").forEach(btn => {
@@ -491,6 +497,12 @@ function updateOfferUi() {
     active
       ? "Yeni eşleşmeler almaya devam ediyorsunuz."
       : "Yeni teklif eşleşmeleri şu anda kapalı.";
+
+  const sideOfferStatus = document.getElementById("sideOfferStatus");
+  if (sideOfferStatus) {
+    sideOfferStatus.textContent = active ? "● Açık" : "● Kapalı";
+    sideOfferStatus.classList.toggle("off", !active);
+  }
 
   if (quoteRecords.length || document.getElementById("workPriorityText")) {
     renderSummary();
