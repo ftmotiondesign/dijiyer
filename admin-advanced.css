@@ -1,0 +1,104 @@
+
+.admin-title-actions{display:flex;align-items:center;gap:8px}
+.admin-notification-wrap{position:relative}
+.admin-notification-btn{border:1px solid #d9e0ea;background:#fff;padding:10px 12px;border-radius:9px;font-weight:800;color:#334155}
+.admin-notification-btn span{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:5px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px}
+.admin-notification-btn span.empty{background:#cbd5e1}
+.admin-notification-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:60;width:340px;max-height:420px;overflow:auto;padding:10px;background:#fff;border:1px solid #dfe5ee;border-radius:14px;box-shadow:0 18px 45px rgba(15,23,42,.18)}
+.admin-notification-head{display:flex;align-items:center;justify-content:space-between;padding:6px 7px 10px;border-bottom:1px solid #edf1f5}
+.admin-notification-head button{border:0;background:#eef5ff;color:#1677ff;border-radius:8px;padding:7px 9px;font-weight:800}
+.admin-notification-item{width:100%;margin-top:7px;border:1px solid #e6ebf2;background:#fff;border-radius:10px;padding:10px;text-align:left;color:#334155;font-weight:750}
+.admin-notification-item:hover{background:#f7faff}
+.admin-notification-item.urgent{border-color:#fecaca;background:#fff7f7;color:#b91c1c}
+
+.bulk-institution-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 12px;margin:8px 0 14px;border:1px solid #dce5f0;border-radius:12px;background:#f8fbff}
+.bulk-select-all{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:750;color:#475569}
+.bulk-institution-toolbar strong{font-size:12px;color:#334155}
+.bulk-institution-toolbar select{height:38px;min-width:210px;border:1px solid #d5dfeb;border-radius:9px;background:#fff;padding:0 9px}
+.bulk-institution-toolbar button{height:38px;border:0;border-radius:9px;background:#1677ff;color:#fff;padding:0 13px;font-weight:800}
+.institution-select-box{display:flex;align-items:center;gap:5px;margin-right:7px;font-size:11px;color:#64748b}
+.institution-select-box input{width:17px;height:17px}
+.institution-health-box{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px;padding:10px;border-radius:11px;border:1px solid #dfe7f1;background:#f8fafc}
+.institution-health-box>div{display:grid;gap:3px}
+.institution-health-box span{font-size:9px;color:#7b8798;font-weight:750}
+.institution-health-box strong{font-size:11px;color:#334155;line-height:1.3}
+.institution-health-box.health-good{border-left:4px solid #22c55e}
+.institution-health-box.health-warning{border-left:4px solid #f59e0b}
+.institution-health-box.health-danger{border-left:4px solid #ef4444}
+
+.advanced-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 180px;gap:10px;margin-bottom:14px}
+.advanced-toolbar input,.advanced-toolbar select,.advanced-card input,.advanced-card select,.advanced-card textarea{width:100%;border:1px solid #d8e1ec;border-radius:9px;background:#fff;padding:10px;outline:none}
+.advanced-toolbar input,.advanced-toolbar select{height:42px}
+.advanced-card{background:#fff;border:1px solid #e1e6ee;border-radius:14px;padding:17px;box-shadow:0 5px 18px rgba(15,23,42,.035)}
+.advanced-card h4{margin:0 0 13px}
+.advanced-card label{display:grid;gap:6px;margin-bottom:11px;font-size:12px;font-weight:750;color:#475569}
+.advanced-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.advanced-card-head h4{margin:0 0 3px}
+.advanced-card-head p{margin:0;color:#64748b;font-size:11px}
+.advanced-card-head button{border:1px solid #d7e0eb;background:#fff;border-radius:8px;padding:8px 10px;color:#475569;font-weight:750}
+.advanced-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.advanced-primary-btn{border:0;border-radius:9px;background:#1677ff;color:#fff;padding:10px 13px;font-weight:800}
+.advanced-message{min-height:18px;color:#64748b;font-size:11px;font-weight:700}
+.advanced-empty{padding:18px;border:1px dashed #cbd5e1;border-radius:10px;color:#64748b;text-align:center}
+.advanced-empty.success{border-color:#bbf7d0;background:#f0fdf4;color:#15803d}
+
+.support-admin-list{display:grid;gap:12px}
+.support-admin-card{background:#fff;border:1px solid #e1e6ee;border-radius:14px;padding:16px}
+.support-admin-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.support-admin-head h4{margin:0 0 4px}
+.support-admin-head p{margin:0;color:#64748b;font-size:11px}
+.support-state{padding:6px 9px;border-radius:999px;font-size:10px;font-weight:850}
+.support-state.state-new{background:#fff7ed;color:#c2410c}
+.support-state.state-in_progress{background:#eff6ff;color:#1d4ed8}
+.support-state.state-resolved{background:#ecfdf5;color:#15803d}
+.support-admin-message{margin:12px 0;padding:11px;border-radius:10px;background:#f8fafc;color:#334155;line-height:1.5;font-size:12px}
+.support-admin-controls{display:grid;grid-template-columns:150px 1fr auto;gap:9px;align-items:start}
+.support-admin-controls select,.support-admin-controls textarea{border:1px solid #d8e0ea;border-radius:9px;padding:9px;background:#fff}
+.support-admin-controls textarea{min-height:70px;resize:vertical}
+.support-admin-controls button{min-height:40px;border:0;border-radius:9px;background:#1677ff;color:#fff;padding:0 13px;font-weight:800}
+
+.announcement-admin-grid{display:grid;grid-template-columns:minmax(340px,.9fr) minmax(360px,1.1fr);gap:16px}
+.announcement-target-info{margin:2px 0 12px;padding:9px 10px;border-radius:9px;background:#f1f5f9;color:#475569;font-size:11px}
+.announcement-history-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f5}
+.announcement-history-row:last-child{border-bottom:0}
+.announcement-history-row>div{display:grid;gap:4px}
+.announcement-history-row span{color:#64748b;font-size:11px;line-height:1.4}
+.announcement-history-row small{color:#94a3b8;font-size:10px;white-space:nowrap}
+.announcement-history-row.priority-important strong{color:#c2410c}
+.announcement-history-row.priority-urgent strong{color:#b91c1c}
+
+.system-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.system-kpi-grid article{padding:14px;background:#fff;border:1px solid #e1e7ef;border-radius:12px}
+.system-kpi-grid span{display:block;color:#64748b;font-size:10px;font-weight:750}
+.system-kpi-grid strong{display:block;margin-top:6px;font-size:24px;color:#172033}
+.system-tools-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:16px;margin-bottom:16px}
+.system-check-row{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid #edf1f5}
+.system-check-row:last-child{border-bottom:0}
+.system-check-level{display:inline-flex;justify-content:center;padding:5px 7px;border-radius:999px;font-size:9px;font-weight:850}
+.system-check-row.level-critical .system-check-level{background:#fff1f2;color:#be123c}
+.system-check-row.level-warning .system-check-level{background:#fff7ed;color:#c2410c}
+.system-check-row.level-info .system-check-level{background:#eff6ff;color:#1d4ed8}
+.system-check-row>div{display:grid;gap:3px}
+.system-check-row small{color:#64748b;font-size:10px}
+.audit-card{margin-top:14px}
+.audit-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:10px 0;border-bottom:1px solid #edf1f5}
+.audit-row:last-child{border-bottom:0}
+.audit-row>div{display:grid;gap:3px}
+.audit-row span{color:#64748b;font-size:10px}
+.audit-row small{color:#94a3b8;font-size:10px;white-space:nowrap}
+
+.hidden{display:none!important}
+
+@media(max-width:900px){
+  .announcement-admin-grid,.system-tools-grid{grid-template-columns:1fr}
+  .system-kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .institution-health-box{grid-template-columns:repeat(2,1fr)}
+  .support-admin-controls{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .admin-title-actions{width:100%;justify-content:space-between}
+  .admin-notification-panel{position:fixed;left:10px;right:10px;top:80px;width:auto}
+  .advanced-toolbar,.advanced-form-grid{grid-template-columns:1fr}
+  .announcement-history-row{grid-template-columns:1fr}
+  .system-kpi-grid{grid-template-columns:1fr 1fr}
+}
