@@ -345,5 +345,68 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
   showToast('Kurum başvurunuz alındı.');
 });
 
+async function loadProvinces() {
+  const citySelect = document.getElementById('institutionCity');
+  const districtSelect = document.getElementById('institutionDistrict');
+
+  try {
+    const response = await fetch(
+      'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=100'
+    );
+
+    const result = await response.json();
+
+    citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+
+    result.data.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city.id;
+      option.textContent = city.name;
+      option.dataset.name = city.name;
+      citySelect.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error('Şehirler yüklenemedi:', error);
+    citySelect.innerHTML = '<option value="">Şehirler yüklenemedi</option>';
+  }
+
+  citySelect.addEventListener('change', async function () {
+    const provinceId = this.value;
+
+    districtSelect.innerHTML = '<option value="">İlçe yükleniyor...</option>';
+    districtSelect.disabled = true;
+
+    if (!provinceId) {
+      districtSelect.innerHTML = '<option value="">Önce şehir seçin</option>';
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.turkiyeapi.dev/v2/provinces/${provinceId}/districts?fields=id,name&limit=100`
+      );
+
+      const result = await response.json();
+
+      districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+
+      result.data.forEach(district => {
+        const option = document.createElement('option');
+        option.value = district.name;
+        option.textContent = district.name;
+        districtSelect.appendChild(option);
+      });
+
+      districtSelect.disabled = false;
+
+    } catch (error) {
+      console.error('İlçeler yüklenemedi:', error);
+      districtSelect.innerHTML = '<option value="">İlçeler yüklenemedi</option>';
+    }
+  });
+}
+
+loadProvinces();
 renderList();
 renderDetail();
