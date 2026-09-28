@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dijiyer - Kurum Paneli</title>
+  <link rel="stylesheet" href="institution.css?v=1">
+</head>
+<body>
+  <header class="panel-header">
+    <a class="panel-brand" href="index.html">Dijiyer</a>
+    <div class="panel-actions">
+      <a href="index.html">Ana Sayfa</a>
+      <button id="institutionLogoutBtn">Çıkış Yap</button>
+    </div>
+  </header>
+
+  <main class="panel-shell">
+    <section class="welcome-card">
+      <div>
+        <div class="eyebrow">KURUM PANELİ</div>
+        <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
+        <p id="panelInstitutionLocation"></p>
+      </div>
+      <span class="approved-badge">✓ Onaylı Hesap</span>
+    </section>
+
+    <section class="panel-grid">
+      <article class="panel-card">
+        <h2>Kurum Bilgileri</h2>
+        <div class="info-row"><span>E-posta</span><strong id="panelEmail">-</strong></div>
+        <div class="info-row"><span>Telefon</span><strong id="panelPhone">-</strong></div>
+        <div class="info-row"><span>Adres</span><strong id="panelAddress">-</strong></div>
+      </article>
+
+      <article class="panel-card">
+        <h2>Teklifler</h2>
+        <div class="empty-box">
+          <strong>Teklif ekranı hazır olmak üzere.</strong>
+          <p>Bir sonraki adımda sadece kurumunuza uygun teklifleri burada göstereceğiz.</p>
+        </div>
+      </article>
+    </section>
+
+    <section id="panelError" class="panel-error" hidden></section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="institution.js?v=1"></script>
+</body>
+</html>
