@@ -492,3 +492,87 @@ button{cursor:pointer}
   .quote-head select{width:100%}
   .info-row{grid-template-columns:1fr}
 }
+
+
+.traffic-stats-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+.stats-panel-grid{
+  align-items:start;
+}
+.traffic-bars{
+  min-height:190px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 4px 2px;
+}
+.traffic-day{
+  flex:1;
+  min-width:0;
+  display:grid;
+  justify-items:center;
+  gap:6px;
+}
+.traffic-value{
+  font-size:12px;
+  font-weight:800;
+  color:#334155;
+}
+.traffic-bar-track{
+  width:min(34px,80%);
+  height:128px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  border-radius:9px;
+  background:#eef3f8;
+  overflow:hidden;
+}
+.traffic-bar-fill{
+  width:100%;
+  min-height:8px;
+  background:#1677ff;
+  border-radius:9px 9px 0 0;
+}
+.traffic-day-label{
+  font-size:11px;
+  color:var(--muted);
+  text-transform:capitalize;
+}
+.panel-reviews-list{
+  display:grid;
+  gap:10px;
+}
+.panel-review-item{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:13px;
+  background:#f8fafc;
+}
+.panel-review-stars{
+  color:#f59e0b;
+  letter-spacing:1px;
+  margin-bottom:6px;
+}
+.panel-review-text{
+  line-height:1.45;
+  margin-bottom:7px;
+}
+.panel-review-item small{
+  color:var(--muted);
+}
+@media(max-width:780px){
+  .traffic-stats-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:480px){
+  .traffic-stats-grid{
+    grid-template-columns:1fr;
+  }
+}
