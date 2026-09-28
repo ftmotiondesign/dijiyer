@@ -158,6 +158,7 @@ async function loadApplications() {
       .get();
 
     applicationRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    refreshAdminOverview();
 
     applicationCount.textContent =
       `${snapshot.size} kurum başvurusu`;
@@ -271,6 +272,7 @@ async function approveApplication(id, data) {
 
     alert("Kurum onaylandı.");
     await loadApplications();
+    await loadInstitutions();
   } catch (error) {
     console.error("Onaylama hatası:", error);
     alert("Kurum onaylanamadı. Firestore kurallarını kontrol edin.");
@@ -1970,6 +1972,7 @@ async function loadInstitutionAccounts() {
       .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
 
     const records = institutionAccountRecords;
+    refreshAdminOverview();
 
     accountCount.textContent = `${records.length} kurum hesabı`;
 
