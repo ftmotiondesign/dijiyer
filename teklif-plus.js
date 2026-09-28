@@ -598,7 +598,7 @@
         const rows=sortCustomerConversationMessages(
           snapshot.docs.map(d=>({id:d.id,...d.data()}))
         );
-        box.innerHTML=rows.length?rows.map(messageHtml).join(""):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
+        box.innerHTML=rows.length?renderCustomerConversation(rows):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
         customerMessageRows.set(activeConversation.institutionId,rows);
         markCustomerConversationRead(activeConversation.quoteId,activeConversation.institutionId);
         box.scrollTop=box.scrollHeight;
@@ -627,12 +627,49 @@
     });
   }
 
-  function messageHtml(msg){
+  function customerChatDayKey(value){
+    if(!value)return "";
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return "";
+    return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+  }
+
+  function customerChatDayLabel(value){
+    if(!value)return "";
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return "";
+
+    const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+    const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+    const diff=Math.round((today-day)/86400000);
+
+    if(diff===0)return "Bugün";
+    if(diff===1)return "Dün";
+    return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  }
+
+  function renderCustomerConversation(rows){
+    let previousDay="";
+    let previousSender="";
+    return rows.map(msg=>{
+      const day=customerChatDayKey(msg.date);
+      const divider=day!==previousDay
+        ? '<div class="chat-day-divider"><span>'+safe(customerChatDayLabel(msg.date))+'</span></div>'
+        : '';
+      const sameSender=previousDay===day && previousSender===msg.sender;
+      previousDay=day;
+      previousSender=msg.sender;
+      return divider + messageHtml(msg,sameSender);
+    }).join("");
+  }
+
+  function messageHtml(msg,sameSender=false){
     const mine=msg.sender==="customer";
     const text=safe(msg.text||"").replace(/\n/g,"<br>");
     const time=safe(formatChatTime(msg.date));
     return `
-      <div class="djy-message-row ${mine?"mine":"theirs"}">
+      <div class="djy-message-row ${mine?"mine":"theirs"} ${sameSender?"same-sender":""}">
         <div class="djy-message ${mine?"mine":"theirs"} ${msg.kind||""}">
           <div class="djy-message-text">${text}</div>
           <div class="djy-message-meta">
