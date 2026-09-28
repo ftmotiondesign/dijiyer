@@ -251,7 +251,8 @@ form.addEventListener("submit",async e=>{
 });
 
 const urlCode=normalizeCode(new URLSearchParams(location.search).get("kod")||"");
-if(urlCode)codeInput.value=urlCode;
+const rememberedCode=normalizeCode(sessionStorage.getItem("dijiyerTrackingCode")||localStorage.getItem("dijiyerLastTrackingCode")||"");
+if(urlCode||rememberedCode)codeInput.value=urlCode||rememberedCode;
 const rememberedPhone=sessionStorage.getItem("dijiyerTrackingPhone");
 if(rememberedPhone)phoneInput.value=rememberedPhone;
 setInterval(updateCountdowns,60000);
