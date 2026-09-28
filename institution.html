@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=7">
+  <link rel="stylesheet" href="institution.css?v=8">
   <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
@@ -56,6 +56,9 @@
       <button class="panel-tab" data-panel-tab="verify">✓ Teklif Doğrula</button>
       <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
       <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
+      <button class="panel-tab" data-panel-tab="support">
+        🛟 Destek <span class="tab-count support-tab-count" id="supportTabCount">0</span>
+      </button>
       <button class="panel-tab" data-panel-tab="account">Hesap</button>
     </nav>
 
@@ -166,6 +169,11 @@
             <button class="quick-card" id="goVerifyBtn">
               <strong>✓ Teklif Doğrula</strong>
               <span>Müşterinin teklif kodunu kontrol et</span>
+            </button>
+
+            <button class="quick-card" id="goSupportBtn">
+              <strong>🛟 Destek Talebi</strong>
+              <span>Dijiyer desteğe ulaşın</span>
             </button>
 
             <button class="quick-card" id="toggleOfferBtn">
@@ -326,6 +334,64 @@
       </div>
     </section>
 
+
+    <section class="panel-view" data-panel-view="support">
+      <div class="support-layout">
+        <article class="panel-card support-create-card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow">DİJİYER DESTEK</span>
+              <h2>Yeni Destek Talebi</h2>
+              <p>Sorununuzu bize iletin. Yanıtınızı yine bu bölümden takip edebilirsiniz.</p>
+            </div>
+          </div>
+
+          <form id="supportTicketForm" class="support-form">
+            <label>Konu Türü
+              <select id="supportCategory" required>
+                <option value="">Seçin</option>
+                <option value="Teklif Sorunu">Teklif Sorunu</option>
+                <option value="Fiyat Kilidi">Fiyat Kilidi / Doğrulama</option>
+                <option value="Hesap">Hesap / Giriş</option>
+                <option value="Kurum Bilgileri">Kurum Bilgileri</option>
+                <option value="Teknik Sorun">Teknik Sorun</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+            </label>
+
+            <label>Konu Başlığı
+              <input id="supportSubject" type="text" maxlength="120" required
+                placeholder="Sorunu kısaca yazın">
+            </label>
+
+            <label>Açıklama
+              <textarea id="supportMessage" rows="6" maxlength="1500" required
+                placeholder="Yaşadığınız sorunu ayrıntılı şekilde açıklayın..."></textarea>
+            </label>
+
+            <button class="primary-btn" type="submit" id="supportSubmitBtn">
+              Destek Talebi Gönder
+            </button>
+            <p class="form-message" id="supportFormMessage"></p>
+          </form>
+        </article>
+
+        <article class="panel-card support-history-card">
+          <div class="card-head">
+            <div>
+              <h2>Destek Taleplerim</h2>
+              <p>Açık ve geçmiş destek taleplerinizi buradan takip edin.</p>
+            </div>
+            <span class="support-open-badge" id="supportOpenCount">0 açık</span>
+          </div>
+
+          <div id="supportTicketsList" class="support-ticket-list">
+            <div class="empty-state">Destek talepleri yükleniyor...</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="panel-view" data-panel-view="account">
       <div class="panel-grid">
         <article class="panel-card">
@@ -439,7 +505,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=8"></script>
+  <script src="institution.js?v=9"></script>
   <script src="institution-offers.js?v=3"></script>
 </body>
 </html>
