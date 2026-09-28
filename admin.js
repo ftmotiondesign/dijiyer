@@ -402,6 +402,20 @@ function renderManagedInstitutions() {
       dugun: "Düğün & Organizasyon",
       evteknik: "Ev & Teknik Servis",
       turizm: "Turizm & Konaklama",
+      nakliyat: "Nakliyat & Taşımacılık",
+      temizlik: "Temizlik Hizmetleri",
+      mobilya: "Mobilya & Dekorasyon",
+      teknoloji: "Bilgisayar & Teknoloji",
+      veteriner: "Veteriner & Evcil Hayvan",
+      spor: "Spor & Fitness",
+      medya: "Fotoğraf & Video",
+      reklam: "Matbaa, Reklam & Tasarım",
+      insaat: "İnşaat & Tadilat",
+      tarim: "Tarım & Hayvancılık",
+      hukuk: "Hukuk & Danışmanlık",
+      muhasebe: "Muhasebe & Mali Müşavirlik",
+      kurye: "Kurye & Teslimat",
+      perakende: "Mağaza & Perakende",
       esnaf: "Yerel Esnaf",
       diger: "Diğer"
     };
@@ -706,6 +720,20 @@ function renderQuoteRequests() {
       if (["dugun", "dugun & organizasyon", "organizasyon"].includes(raw)) return "dugun";
       if (["evteknik", "ev & teknik servis", "teknik servis"].includes(raw)) return "evteknik";
       if (["turizm", "turizm & konaklama", "konaklama"].includes(raw)) return "turizm";
+      if (["nakliyat", "nakliyat & tasimacilik", "tasimacilik"].includes(raw)) return "nakliyat";
+      if (["temizlik", "temizlik hizmetleri"].includes(raw)) return "temizlik";
+      if (["mobilya", "mobilya & dekorasyon", "dekorasyon"].includes(raw)) return "mobilya";
+      if (["teknoloji", "bilgisayar & teknoloji", "bilgisayar"].includes(raw)) return "teknoloji";
+      if (["veteriner", "veteriner & evcil hayvan", "evcil hayvan"].includes(raw)) return "veteriner";
+      if (["spor", "spor & fitness", "fitness"].includes(raw)) return "spor";
+      if (["medya", "fotograf & video", "fotograf", "video"].includes(raw)) return "medya";
+      if (["reklam", "matbaa, reklam & tasarim", "matbaa", "grafik tasarim"].includes(raw)) return "reklam";
+      if (["insaat", "insaat & tadilat", "tadilat"].includes(raw)) return "insaat";
+      if (["tarim", "tarim & hayvancilik", "hayvancilik"].includes(raw)) return "tarim";
+      if (["hukuk", "hukuk & danismanlik", "avukat"].includes(raw)) return "hukuk";
+      if (["muhasebe", "muhasebe & mali musavirlik", "mali musavirlik"].includes(raw)) return "muhasebe";
+      if (["kurye", "kurye & teslimat", "teslimat"].includes(raw)) return "kurye";
+      if (["perakende", "magaza & perakende", "magaza"].includes(raw)) return "perakende";
       if (["esnaf", "yerel esnaf"].includes(raw)) return "esnaf";
       if (["diger"].includes(raw)) return "diger";
       return raw;
@@ -752,6 +780,20 @@ function renderQuoteRequests() {
       dugun: "Düğün & Organizasyon",
       evteknik: "Ev & Teknik Servis",
       turizm: "Turizm & Konaklama",
+      nakliyat: "Nakliyat & Taşımacılık",
+      temizlik: "Temizlik Hizmetleri",
+      mobilya: "Mobilya & Dekorasyon",
+      teknoloji: "Bilgisayar & Teknoloji",
+      veteriner: "Veteriner & Evcil Hayvan",
+      spor: "Spor & Fitness",
+      medya: "Fotoğraf & Video",
+      reklam: "Matbaa, Reklam & Tasarım",
+      insaat: "İnşaat & Tadilat",
+      tarim: "Tarım & Hayvancılık",
+      hukuk: "Hukuk & Danışmanlık",
+      muhasebe: "Muhasebe & Mali Müşavirlik",
+      kurye: "Kurye & Teslimat",
+      perakende: "Mağaza & Perakende",
       esnaf: "Yerel Esnaf",
       diger: "Diğer"
     };
