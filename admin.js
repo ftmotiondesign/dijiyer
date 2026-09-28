@@ -116,6 +116,110 @@ const issueKpiCustomer = document.getElementById("issueKpiCustomer");
 const issueKpiResolved = document.getElementById("issueKpiResolved");
 const issuesList = document.getElementById("issuesList");
 
+const adminSubtabs = document.getElementById("adminSubtabs");
+const adminCurrentSection = document.getElementById("adminCurrentSection");
+const adminCurrentHint = document.getElementById("adminCurrentHint");
+const adminBackOverview = document.getElementById("adminBackOverview");
+const quickQuoteCount = document.getElementById("quickQuoteCount");
+const quickApplicationCount = document.getElementById("quickApplicationCount");
+const quickIssueCount = document.getElementById("quickIssueCount");
+const quickSupportCount = document.getElementById("quickSupportCount");
+
+const ADMIN_TAB_META = {
+  overviewTabBtn:["overview","Genel Bakış","Bugün ilgilenmeniz gereken konuları ve temel rakamları görün."],
+  quotesTabBtn:["quotes","Teklif Talepleri","Müşteri taleplerini, gelen teklifleri ve tüm teklif hareketlerini yönetin."],
+  issuesTabBtn:["quotes","Sorun Çözüm Merkezi","Müşteri ve firma beyanlarını kilitli teklif kayıtlarıyla birlikte tarafsız inceleyin."],
+  offerReportTabBtn:["quotes","Teklif Raporu","Kurumların teklif performansını ve teklif sonuçlarını inceleyin."],
+  institutionsTabBtn:["institutions","Kurumlar","Yayındaki kurumları arayın, düzenleyin ve teklif durumlarını yönetin."],
+  applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
+  accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
+  supportTabBtn:["support","Destek Merkezi","Kurumların destek taleplerini takip edin ve yanıtlayın."],
+  announcementsTabBtn:["support","Duyurular","Kurumlara yönetim duyuruları gönderin."],
+  systemTabBtn:["system","Sistem","Sistem kontrollerini, ayarları ve yönetim işlem geçmişini görüntüleyin."]
+};
+
+function syncSimpleAdminNavigation(tabId){
+  const meta=ADMIN_TAB_META[tabId] || ADMIN_TAB_META.overviewTabBtn;
+  const group=meta[0];
+
+  document.querySelectorAll("[data-admin-main]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.adminMain===group);
+  });
+
+  document.querySelectorAll("#adminSubtabs .admin-tab").forEach(button=>{
+    const visible=button.dataset.adminGroup===group;
+    button.hidden=!visible;
+  });
+
+  const visibleSubtabs=[...document.querySelectorAll("#adminSubtabs .admin-tab")]
+    .filter(button=>!button.hidden);
+
+  if(adminSubtabs){
+    adminSubtabs.classList.toggle(
+      "single-or-hidden",
+      group==="overview" || group==="system" || visibleSubtabs.length<=1
+    );
+  }
+
+  if(adminCurrentSection)adminCurrentSection.textContent=meta[1];
+  if(adminCurrentHint)adminCurrentHint.textContent=meta[2];
+  if(adminBackOverview)adminBackOverview.hidden=group==="overview";
+
+  localStorage.setItem("dijiyerAdminLastTab",tabId);
+}
+
+function openSimpleAdminTab(tabId){
+  const button=document.getElementById(tabId);
+  if(button)button.click();
+}
+
+function initSimpleAdminNavigation(){
+  document.querySelectorAll("[data-admin-main]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const map={
+        overview:"overviewTabBtn",
+        quotes:"quotesTabBtn",
+        institutions:"institutionsTabBtn",
+        support:"supportTabBtn",
+        system:"systemTabBtn"
+      };
+      openSimpleAdminTab(map[button.dataset.adminMain] || "overviewTabBtn");
+    });
+  });
+
+  Object.keys(ADMIN_TAB_META).forEach(tabId=>{
+    document.getElementById(tabId)?.addEventListener("click",()=>{
+      syncSimpleAdminNavigation(tabId);
+    });
+  });
+
+  document.querySelectorAll("[data-admin-open]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const map={
+        quotes:"quotesTabBtn",
+        applications:"applicationsTabBtn",
+        issues:"issuesTabBtn",
+        support:"supportTabBtn"
+      };
+      openSimpleAdminTab(map[button.dataset.adminOpen]);
+    });
+  });
+
+  adminBackOverview?.addEventListener("click",()=>openSimpleAdminTab("overviewTabBtn"));
+  syncSimpleAdminNavigation("overviewTabBtn");
+}
+
+function restoreSimpleAdminNavigation(){
+  const saved=localStorage.getItem("dijiyerAdminLastTab");
+  if(saved && ADMIN_TAB_META[saved] && document.getElementById(saved)){
+    document.getElementById(saved).click();
+  }else{
+    syncSimpleAdminNavigation("overviewTabBtn");
+  }
+}
+
+initSimpleAdminNavigation();
+
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 
 let applicationRecords = [];
@@ -155,6 +259,7 @@ auth.onAuthStateChanged(async (user) => {
     await loadInstitutionAccounts();
     refreshAdminOverview();
     renderIssueCenter();
+    setTimeout(restoreSimpleAdminNavigation, 120);
   } else {
     if (user && user.uid !== ADMIN_UID) {
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
@@ -2718,6 +2823,9 @@ function refreshAdminOverview() {
   setOverviewText(overviewLockedCount, lockedCount);
   setOverviewText(overviewUsedCount, usedCount);
   setOverviewText(overviewIssueCount, openIssues.length);
+  setOverviewText(quickQuoteCount, quoteRequestRecords.length);
+  setOverviewText(quickApplicationCount, getOverviewPendingApplications());
+  setOverviewText(quickIssueCount, openIssues.length);
 
   renderOverviewAttention(noOfferRequests, openIssues);
   renderOverviewRecentActivity();
