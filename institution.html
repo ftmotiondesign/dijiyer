@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=23">
+  <link rel="stylesheet" href="institution.css?v=24">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -499,6 +499,67 @@
 
         <form id="institutionProfileForm" class="profile-form firm-profile-form">
 
+          <section class="firm-profile-section firm-profile-primary">
+            <div class="firm-profile-section-head firm-profile-primary-head">
+              <div>
+                <span class="eyebrow">KURUM BİLGİLERİ</span>
+                <h3>Temel kurum bilgileri</h3>
+                <p>Müşterilerin profilinizde ilk göreceği ana bilgiler.</p>
+              </div>
+              <span class="firm-profile-required-badge">Öncelikli</span>
+            </div>
+
+            <label class="firm-profile-main-name">Kurum Adı
+              <input id="profileName" type="text" required placeholder="Kurumunuzun görünen adı">
+            </label>
+
+            <div class="readonly-grid firm-profile-identity-grid">
+              <div>
+                <span>Şehir / İlçe</span>
+                <strong id="profileLocation">-</strong>
+              </div>
+              <div>
+                <span>Kategori</span>
+                <strong id="profileCategory">-</strong>
+              </div>
+            </div>
+
+            <label>Kısa Açıklama
+              <textarea id="profileDescription" rows="4" maxlength="700"
+                placeholder="Firmanızı, deneyiminizi ve sunduğunuz hizmetleri kısaca anlatın."></textarea>
+              <small>En fazla 700 karakter. Müşteri profilinizde görünür.</small>
+            </label>
+          </section>
+
+          <section class="firm-profile-section">
+            <div class="firm-profile-section-head">
+              <div>
+                <span class="eyebrow">İLETİŞİM</span>
+                <h3>Müşteriler size nasıl ulaşsın?</h3>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label>Telefon
+                <input id="profilePhone" type="tel" placeholder="05xx xxx xx xx">
+              </label>
+
+              <label>WhatsApp
+                <input id="profileWhatsapp" type="tel" placeholder="05xx xxx xx xx">
+              </label>
+            </div>
+
+            <div class="form-grid">
+              <label>Web Sitesi
+                <input id="profileWebsite" type="url" placeholder="https://...">
+              </label>
+
+              <label>Instagram
+                <input id="profileInstagram" type="text" placeholder="@kullaniciadi veya profil linki">
+              </label>
+            </div>
+          </section>
+
           <section class="firm-profile-section">
             <div class="firm-profile-section-head">
               <div>
@@ -562,54 +623,6 @@
           <section class="firm-profile-section">
             <div class="firm-profile-section-head">
               <div>
-                <span class="eyebrow">KURUM HAKKINDA</span>
-                <h3>Müşteriye kendinizi anlatın</h3>
-              </div>
-            </div>
-
-            <label>Kurum Adı
-              <input id="profileName" type="text" required>
-            </label>
-
-            <label>Kısa Açıklama
-              <textarea id="profileDescription" rows="4" maxlength="700"
-                placeholder="Firmanızı, deneyiminizi ve sunduğunuz hizmetleri kısaca anlatın."></textarea>
-              <small>En fazla 700 karakter.</small>
-            </label>
-          </section>
-
-          <section class="firm-profile-section">
-            <div class="firm-profile-section-head">
-              <div>
-                <span class="eyebrow">İLETİŞİM</span>
-                <h3>Müşteriler size nasıl ulaşsın?</h3>
-              </div>
-            </div>
-
-            <div class="form-grid">
-              <label>Telefon
-                <input id="profilePhone" type="tel" placeholder="05xx xxx xx xx">
-              </label>
-
-              <label>WhatsApp
-                <input id="profileWhatsapp" type="tel" placeholder="05xx xxx xx xx">
-              </label>
-            </div>
-
-            <div class="form-grid">
-              <label>Web Sitesi
-                <input id="profileWebsite" type="url" placeholder="https://...">
-              </label>
-
-              <label>Instagram
-                <input id="profileInstagram" type="text" placeholder="@kullaniciadi veya profil linki">
-              </label>
-            </div>
-          </section>
-
-          <section class="firm-profile-section">
-            <div class="firm-profile-section-head">
-              <div>
                 <span class="eyebrow">HİZMET BÖLGESİ</span>
                 <h3>Nerelere hizmet veriyorsunuz?</h3>
               </div>
@@ -625,16 +638,6 @@
               <textarea id="profileAddress" rows="3"></textarea>
             </label>
 
-            <div class="readonly-grid">
-              <div>
-                <span>Kayıtlı Şehir / İlçe</span>
-                <strong id="profileLocation">-</strong>
-              </div>
-              <div>
-                <span>Kategori</span>
-                <strong id="profileCategory">-</strong>
-              </div>
-            </div>
           </section>
 
           <section class="firm-profile-section">
