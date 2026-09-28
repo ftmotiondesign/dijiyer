@@ -44,6 +44,10 @@ const institutionFeatureFilter = document.getElementById("institutionFeatureFilt
 const institutionSort = document.getElementById("institutionSort");
 const clearInstitutionFilters = document.getElementById("clearInstitutionFilters");
 const institutionFilterResult = document.getElementById("institutionFilterResult");
+const institutionStatTotal = document.getElementById("institutionStatTotal");
+const institutionStatOffer = document.getElementById("institutionStatOffer");
+const institutionStatVip = document.getElementById("institutionStatVip");
+const institutionStatVideo = document.getElementById("institutionStatVideo");
 
 const quoteRequestsList = document.getElementById("quoteRequestsList");
 const quoteRequestCount = document.getElementById("quoteRequestCount");
@@ -627,6 +631,7 @@ function getFilteredManagedInstitutions() {
     if (feature === "vip") matchesFeature = Boolean(item.vip);
     if (feature === "video") matchesFeature = Boolean(item.video);
     if (feature === "offer") matchesFeature = item.offer !== false;
+    if (feature === "offer_off") matchesFeature = item.offer === false;
 
     return matchesQuery && matchesCategory && matchesCity && matchesFeature;
   });
@@ -648,7 +653,18 @@ function getFilteredManagedInstitutions() {
   return data;
 }
 
+function refreshInstitutionMiniStats() {
+  if (institutionStatTotal) institutionStatTotal.textContent = institutionRecords.length;
+  if (institutionStatOffer) institutionStatOffer.textContent =
+    institutionRecords.filter(item => item.offer !== false).length;
+  if (institutionStatVip) institutionStatVip.textContent =
+    institutionRecords.filter(item => Boolean(item.vip)).length;
+  if (institutionStatVideo) institutionStatVideo.textContent =
+    institutionRecords.filter(item => Boolean(item.video)).length;
+}
+
 function renderManagedInstitutions() {
+  refreshInstitutionMiniStats();
   const data = getFilteredManagedInstitutions();
 
   institutionFilterResult.textContent =
@@ -706,53 +722,96 @@ function renderManagedInstitutions() {
       phoneDigits.startsWith("0") ? "90" + phoneDigits.slice(1) : phoneDigits;
 
     card.innerHTML = `
-      <div class="manage-main">
+      <div class="manage-main institution-compact-head">
+        <div class="institution-select-slot"></div>
+
         <div class="manage-title">
           <h3>${escapeHtml(data.name || "-")}</h3>
+          <div class="institution-summary-line">
+            <span>📍 ${escapeHtml([data.city, data.district].filter(Boolean).join(" / ") || "-")}</span>
+            <span>☎ ${escapeHtml(data.phone || "Telefon yok")}</span>
+          </div>
           <div class="manage-badges">
             <span>${escapeHtml(categoryLabels[data.category] || data.category || "Diğer")}</span>
+            ${data.offer !== false ? '<span class="badge-offer">Teklif Açık</span>' : '<span class="badge-offer-off">Teklif Kapalı</span>'}
             ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
             ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
-            ${data.offer !== false ? '<span class="badge-offer">Teklif</span>' : ''}
           </div>
         </div>
 
-        <div class="manage-actions">
+        <div class="manage-actions compact">
           <button class="edit-institution-btn">✏ Düzenle</button>
-          ${hasCoordinates ? '<button class="map-institution-btn">📍 Harita</button>' : ''}
-          <button class="delete-institution-btn">🗑 Sil</button>
+          <button class="institution-detail-btn" type="button" aria-expanded="false">Detay</button>
         </div>
       </div>
 
-      <div class="manage-info-grid">
-        <div>
-          <small>Konum</small>
-          <strong>${escapeHtml([data.city, data.district].filter(Boolean).join(" / ") || "-")}</strong>
-        </div>
-        <div>
-          <small>Telefon</small>
-          <strong>${escapeHtml(data.phone || "-")}</strong>
-        </div>
-        <div class="wide">
-          <small>Adres</small>
-          <strong>${escapeHtml(data.address || "-")}</strong>
-        </div>
-      </div>
-
-      <div class="quick-actions">
+      <div class="institution-primary-actions">
+        <button class="quick-toggle ${data.offer !== false ? "on" : ""}" data-field="offer">
+          ₺ ${data.offer !== false ? "Teklif Açık" : "Teklif Kapalı"}
+        </button>
         <button class="quick-toggle ${data.vip ? "on" : ""}" data-field="vip">
-          ★ VIP: ${data.vip ? "Açık" : "Kapalı"}
+          ★ ${data.vip ? "VIP Açık" : "VIP Kapalı"}
         </button>
         <button class="quick-toggle ${data.video ? "on" : ""}" data-field="video">
-          ▶ Video: ${data.video ? "Var" : "Yok"}
-        </button>
-        <button class="quick-toggle ${data.offer !== false ? "on" : ""}" data-field="offer">
-          ₺ Teklif: ${data.offer !== false ? "Açık" : "Kapalı"}
+          ▶ ${data.video ? "Video Var" : "Video Yok"}
         </button>
         ${whatsappDigits ? '<button class="whatsapp-manage-btn">WhatsApp</button>' : ''}
-        ${data.website ? '<button class="website-manage-btn">Web / Instagram</button>' : ''}
+      </div>
+
+      <div class="institution-detail-panel hidden">
+        <div class="manage-info-grid">
+          <div>
+            <small>Konum</small>
+            <strong>${escapeHtml([data.city, data.district].filter(Boolean).join(" / ") || "-")}</strong>
+          </div>
+          <div>
+            <small>Telefon</small>
+            <strong>${escapeHtml(data.phone || "-")}</strong>
+          </div>
+          <div class="wide">
+            <small>Adres</small>
+            <strong>${escapeHtml(data.address || "-")}</strong>
+          </div>
+          ${data.website ? `
+            <div class="wide">
+              <small>Web / Instagram</small>
+              <strong>${escapeHtml(data.website)}</strong>
+            </div>
+          ` : ""}
+        </div>
+
+        <div class="institution-secondary-actions">
+          ${hasCoordinates ? '<button class="map-institution-btn">📍 Haritada Aç</button>' : ''}
+          ${data.website ? '<button class="website-manage-btn">Web / Instagram</button>' : ''}
+          <button class="delete-institution-btn">🗑 Kurumu Sil</button>
+        </div>
+
+        <div class="institution-health-slot"></div>
       </div>
     `;
+    card.querySelector(".institution-detail-btn")?.addEventListener("click", () => {
+      const panel = card.querySelector(".institution-detail-panel");
+      const button = card.querySelector(".institution-detail-btn");
+      const opening = panel?.classList.contains("hidden");
+
+      document.querySelectorAll(".institution-manage-card").forEach(otherCard => {
+        if (otherCard === card) return;
+        otherCard.querySelector(".institution-detail-panel")?.classList.add("hidden");
+        const otherButton = otherCard.querySelector(".institution-detail-btn");
+        if (otherButton) {
+          otherButton.setAttribute("aria-expanded","false");
+          otherButton.textContent = "Detay";
+        }
+        otherCard.classList.remove("expanded");
+      });
+
+      if (panel) panel.classList.toggle("hidden", !opening);
+      if (button) {
+        button.setAttribute("aria-expanded", opening ? "true" : "false");
+        button.textContent = opening ? "Kapat" : "Detay";
+      }
+      card.classList.toggle("expanded", opening);
+    });
 
     card.querySelector(".edit-institution-btn").addEventListener("click", () => {
       openInstitutionEdit(data.id, data);
@@ -838,6 +897,13 @@ async function quickUpdateInstitution(id, field, value) {
       renderManagedInstitutions
     );
   });
+
+document.querySelectorAll("[data-institution-stat-filter]").forEach(button => {
+  button.addEventListener("click", () => {
+    institutionFeatureFilter.value = button.dataset.institutionStatFilter || "";
+    renderManagedInstitutions();
+  });
+});
 
 clearInstitutionFilters.addEventListener("click", () => {
   institutionSearch.value = "";
