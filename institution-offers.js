@@ -98,10 +98,52 @@ getQuoteViewStatus = function(quote){
 };
 
 renderSummary = function(){
-  const newCount=quoteRecords.filter(q=>sellerOfferState(q)==="new").length;
-  document.getElementById("newQuoteCount").textContent=newCount;
-  document.getElementById("totalQuoteCount").textContent=quoteRecords.length;
-  document.getElementById("quoteTabCount").textContent=newCount;
+  const states = quoteRecords.map(q => sellerOfferState(q));
+  const newCount = states.filter(state => state === "new").length;
+  const offeredCount = states.filter(state => state === "offered").length;
+  const lockedCount = states.filter(state => state === "locked").length;
+  const usedCount = states.filter(state => state === "used").length;
+
+  document.getElementById("newQuoteCount").textContent = newCount;
+  document.getElementById("totalQuoteCount").textContent = quoteRecords.length;
+  document.getElementById("quoteTabCount").textContent = newCount;
+
+  document.getElementById("workNewCount").textContent = newCount;
+  document.getElementById("workLockedCount").textContent = lockedCount;
+  document.getElementById("pendingQuoteCount").textContent = newCount;
+  document.getElementById("offeredQuoteCount").textContent = offeredCount;
+  document.getElementById("lockedQuoteCount").textContent = lockedCount;
+  document.getElementById("latestQuoteTime").textContent =
+    quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
+
+  const priorityText = document.getElementById("workPriorityText");
+  const focusCard = document.getElementById("workFocusCard");
+
+  if (currentInstitution?.offer === false) {
+    priorityText.textContent =
+      "Teklif alımınız kapalı. Yeni müşteri talepleriyle eşleşmek için tekrar açabilirsiniz.";
+    focusCard.dataset.state = "paused";
+  } else if (lockedCount > 0) {
+    priorityText.textContent =
+      lockedCount + " teklif müşteriler tarafından kilitlendi. Müşteri geldiğinde teklif kodunu doğrulayın.";
+    focusCard.dataset.state = "locked";
+  } else if (newCount > 0) {
+    priorityText.textContent =
+      newCount + " yeni müşteri talebi sizi bekliyor. Teklif vererek hızlı dönüş yapabilirsiniz.";
+    focusCard.dataset.state = "urgent";
+  } else if (offeredCount > 0) {
+    priorityText.textContent =
+      offeredCount + " aktif teklifiniz müşterilerin kararını bekliyor.";
+    focusCard.dataset.state = "waiting";
+  } else if (usedCount > 0) {
+    priorityText.textContent =
+      "Şu anda yeni işlem yok. Son kullanılan teklifleriniz tamamlanmış görünüyor.";
+    focusCard.dataset.state = "clear";
+  } else {
+    priorityText.textContent =
+      "Şu anda cevap bekleyen yeni müşteri talebi yok.";
+    focusCard.dataset.state = "clear";
+  }
 
   const latest=quoteRecords.slice(0,3);
   recentQuotes.innerHTML=latest.length
