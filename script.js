@@ -349,10 +349,16 @@ async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
   const districtSelect = document.getElementById('institutionDistrict');
 
+  citySelect.innerHTML = '<option value="">Şehirler yükleniyor...</option>';
+
   try {
     const response = await fetch(
-      'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=100'
+      'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=81'
     );
+
+    if (!response.ok) {
+      throw new Error('Şehir verisi alınamadı');
+    }
 
     const result = await response.json();
 
@@ -360,53 +366,82 @@ async function loadProvinces() {
 
     result.data.forEach(city => {
       const option = document.createElement('option');
-      option.value = city.id;
+
+      option.value = city.name;
       option.textContent = city.name;
-      option.dataset.name = city.name;
+      option.dataset.id = city.id;
+
       citySelect.appendChild(option);
     });
 
   } catch (error) {
-    console.error('Şehirler yüklenemedi:', error);
-    citySelect.innerHTML = '<option value="">Şehirler yüklenemedi</option>';
+    console.error(error);
+    citySelect.innerHTML =
+      '<option value="">Şehirler yüklenemedi</option>';
   }
+}
 
-  citySelect.addEventListener('change', async function () {
-    const provinceId = this.value;
+document
+  .getElementById('institutionCity')
+  .addEventListener('change', async function () {
 
-    districtSelect.innerHTML = '<option value="">İlçe yükleniyor...</option>';
-    districtSelect.disabled = true;
+    const selectedOption =
+      this.options[this.selectedIndex];
+
+    const provinceId =
+      selectedOption.dataset.id;
+
+    const districtSelect =
+      document.getElementById('institutionDistrict');
 
     if (!provinceId) {
-      districtSelect.innerHTML = '<option value="">Önce şehir seçin</option>';
+      districtSelect.innerHTML =
+        '<option value="">Önce şehir seçin</option>';
+
+      districtSelect.disabled = true;
       return;
     }
+
+    districtSelect.disabled = true;
+
+    districtSelect.innerHTML =
+      '<option value="">İlçeler yükleniyor...</option>';
 
     try {
       const response = await fetch(
         `https://api.turkiyeapi.dev/v2/provinces/${provinceId}/districts?fields=id,name&limit=100`
       );
 
+      if (!response.ok) {
+        throw new Error('İlçe verisi alınamadı');
+      }
+
       const result = await response.json();
 
-      districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+      districtSelect.innerHTML =
+        '<option value="">İlçe seçin</option>';
 
       result.data.forEach(district => {
-        const option = document.createElement('option');
+        const option =
+          document.createElement('option');
+
         option.value = district.name;
         option.textContent = district.name;
+
         districtSelect.appendChild(option);
       });
 
       districtSelect.disabled = false;
 
     } catch (error) {
-      console.error('İlçeler yüklenemedi:', error);
-      districtSelect.innerHTML = '<option value="">İlçeler yüklenemedi</option>';
+      console.error(error);
+
+      districtSelect.innerHTML =
+        '<option value="">İlçeler yüklenemedi</option>';
     }
   });
-}
 
+loadProvinces();
 loadProvinces();
 renderList();
 renderDetail();
