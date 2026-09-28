@@ -1,5 +1,5 @@
 (function(){
-  const STORAGE_KEY = "dijiyerCustomerQuoteIds";
+  const STORAGE_KEY = "dijiyerCustomerQuoteIds";\n  const DATA_KEY = "dijiyerCustomerQuoteData";
   const myOffersBtn = document.getElementById("myOffersBtn");
   const myOffersCount = document.getElementById("myOffersCount");
   const myOffersList = document.getElementById("myOffersList");
@@ -17,11 +17,17 @@
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]").filter(Boolean); }
     catch(e){ return []; }
   }
-  window.rememberCustomerQuote = function(id){
+  window.rememberCustomerQuote = function(id,data){
     if(!id) return;
     const ids = getQuoteIds();
     if(!ids.includes(id)) ids.unshift(id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.slice(0,30)));
+    if(data){
+      let map={};
+      try{map=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");}catch(e){}
+      map[id]=data;
+      localStorage.setItem(DATA_KEY,JSON.stringify(map));
+    }
     refreshMyOffersBadge();
   };
   window.refreshMyOffersBadge = function(){
@@ -46,15 +52,15 @@
 
   async function getRequestBundle(quoteId){
     const quoteRef = db.collection("quoteRequests").doc(quoteId);
-    const [quoteSnap, offersSnap, lockSnap] = await Promise.all([
-      quoteRef.get(),
+    const [offersSnap, lockSnap] = await Promise.all([
       quoteRef.collection("offers").get(),
       quoteRef.collection("locks").doc("main").get()
     ]);
-    if(!quoteSnap.exists) return null;
+    let localData={};
+    try{localData=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");}catch(e){}
     return {
       id: quoteId,
-      quote: quoteSnap.data(),
+      quote: localData[quoteId] || {service:"Teklif Talebi",date:""},
       offers: offersSnap.docs.map(d => ({id:d.id,...d.data()})),
       lock: lockSnap.exists ? lockSnap.data() : null
     };
