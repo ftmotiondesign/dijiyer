@@ -576,3 +576,130 @@ button{cursor:pointer}
     grid-template-columns:1fr;
   }
 }
+
+
+/* Kurum panelinde her zaman görünen performans alanı */
+.persistent-performance{
+  margin:16px 0 18px;
+  padding:18px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(15,23,42,.045);
+}
+.performance-title-row,
+.sector-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+.performance-title-row > div,
+.sector-head > div{
+  display:grid;
+  gap:4px;
+}
+.performance-title-row strong,
+.sector-head strong{
+  font-size:17px;
+}
+.performance-title-row small,
+.sector-head small{
+  color:var(--muted);
+  text-align:right;
+  line-height:1.4;
+}
+.persistent-performance .traffic-stats-grid{
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+.persistent-performance .stat-card{
+  min-width:0;
+  padding:14px;
+  background:#f8fafc;
+  box-shadow:none;
+}
+.persistent-performance .stat-card strong{
+  font-size:24px;
+}
+.persistent-performance .stat-card span{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+}
+.persistent-performance .stat-card small{
+  display:block;
+  margin-top:5px;
+  font-size:10px;
+  line-height:1.35;
+}
+.sector-overview{
+  padding:16px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff,#f6f8fc);
+  border:1px solid #dce7f5;
+}
+.sector-stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.sector-stat{
+  padding:13px;
+  background:#fff;
+  border:1px solid #e5ebf3;
+  border-radius:11px;
+}
+.sector-stat span{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:6px;
+}
+.sector-stat strong{
+  font-size:21px;
+}
+.sector-note{
+  margin:10px 0 0;
+  color:var(--muted);
+  font-size:11px;
+}
+.section-intro{
+  margin-bottom:14px;
+  padding:4px 2px;
+}
+.section-intro h2{
+  margin:5px 0 4px;
+  font-size:21px;
+}
+.section-intro p{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+}
+@media(max-width:1050px){
+  .persistent-performance .traffic-stats-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+@media(max-width:780px){
+  .performance-title-row,
+  .sector-head{
+    flex-direction:column;
+  }
+  .performance-title-row small,
+  .sector-head small{
+    text-align:left;
+  }
+  .persistent-performance .traffic-stats-grid,
+  .sector-stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media(max-width:480px){
+  .persistent-performance{
+    padding:13px;
+  }
+}
