@@ -97,7 +97,7 @@
         <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
         <button class="admin-tab" id="offerReportTabBtn">Teklif Veren Kurumlar</button>
         <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri</button>
-        <button class="admin-tab" id="supportTabBtn">Destek Merkezi</button>
+        <button class="admin-tab" id="supportTabBtn">Destek Merkezi <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="announcementsTabBtn">Duyurular</button>
         <button class="admin-tab" id="systemTabBtn">Sistem</button>
         <button class="admin-tab" id="accountsTabBtn">Kurum Hesapları</button>
@@ -353,7 +353,8 @@
           <select id="supportAdminStatus">
             <option value="">Tüm durumlar</option>
             <option value="new">Yeni</option>
-            <option value="in_progress">İşlemde</option>
+            <option value="reviewing">İnceleniyor</option>
+            <option value="answered">Cevaplandı</option>
             <option value="resolved">Çözüldü</option>
           </select>
         </div>
@@ -763,7 +764,7 @@
 
 
   <script src="admin.js?v=21"></script>
-  <script src="admin-advanced.js?v=1"></script>
+  <script src="admin-advanced.js?v=2"></script>
 
 </body>
 </html>
