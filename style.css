@@ -2174,3 +2174,261 @@ button{cursor:pointer}
     justify-content:center;
   }
 }
+
+
+/* =========================================================
+   Kurumları Keşfet - Hızlı kontrol alanı
+   ========================================================= */
+
+.explore-control-center{
+  max-width:1408px;
+  margin-top:48px;
+  padding:24px;
+  align-items:stretch;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(520px,.95fr);
+  gap:24px;
+  border:1px solid #e0e8f2;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 0 0,rgba(22,119,255,.07),transparent 32%),
+    #fff;
+  box-shadow:0 12px 34px rgba(16,40,74,.055);
+}
+
+.explore-copy{
+  min-width:0;
+  align-self:center;
+}
+
+.explore-topline{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.explore-topline .explore-kicker{
+  margin:0;
+}
+
+.explore-live-count{
+  min-height:27px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:0 9px;
+  border-radius:999px;
+  background:#edf5ff;
+  color:#4d6480;
+  font-size:10.5px;
+  font-weight:750;
+}
+
+.explore-live-count strong{
+  color:#1268da;
+  font-size:12px;
+}
+
+.explore-control-center h2{
+  max-width:680px;
+  font-size:clamp(27px,2.55vw,37px);
+}
+
+.explore-control-center .explore-copy > p{
+  max-width:720px;
+  margin-top:10px;
+  font-size:13.5px;
+  line-height:1.55;
+}
+
+.explore-clear-btn{
+  margin-top:13px;
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid #d9e4f1;
+  border-radius:9px;
+  background:#f8fbff;
+  color:#41617f;
+  font-size:11px;
+  font-weight:800;
+}
+
+.explore-clear-btn:hover{
+  border-color:#a9c8ef;
+  color:#1268da;
+  background:#eff6ff;
+}
+
+.explore-quick-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  align-content:center;
+}
+
+.explore-filter-card{
+  position:relative;
+  min-height:78px;
+  padding:12px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  border:1px solid #dfe7f1;
+  border-radius:14px;
+  background:#fff;
+  color:#1f2e44;
+  text-align:left;
+  transition:
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
+}
+
+.explore-filter-card.location{
+  grid-column:1/-1;
+}
+
+.explore-filter-card:hover{
+  transform:translateY(-1px);
+  border-color:#b9cfea;
+  box-shadow:0 7px 18px rgba(17,54,100,.07);
+}
+
+.explore-filter-card.active{
+  border-color:#83b5fb;
+  background:#f4f9ff;
+  box-shadow:0 0 0 3px rgba(22,119,255,.06);
+}
+
+.explore-filter-icon{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:#eaf4ff;
+  font-size:18px;
+}
+
+.explore-filter-icon.offer{
+  background:#fff5d9;
+}
+
+.explore-filter-icon.video{
+  background:#f1ecff;
+}
+
+.explore-filter-copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+
+.explore-filter-copy strong{
+  color:#17243a;
+  font-size:13px;
+  font-weight:850;
+}
+
+.explore-filter-copy small{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#77869a;
+  font-size:10.5px;
+}
+
+.explore-filter-action{
+  color:#5681ad;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.explore-filter-check{
+  width:25px;
+  height:25px;
+  display:grid;
+  place-items:center;
+  border:1px solid #d8e2ed;
+  border-radius:50%;
+  color:transparent;
+  background:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.explore-filter-card.active .explore-filter-check{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+
+#exploreSection + .app-layout{
+  margin-top:14px;
+}
+
+@media(max-width:1050px){
+  .explore-control-center{
+    grid-template-columns:1fr;
+  }
+
+  .explore-quick-actions{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .explore-filter-card.location{
+    grid-column:auto;
+  }
+
+  .explore-filter-card{
+    grid-template-columns:38px minmax(0,1fr) auto;
+  }
+}
+
+@media(max-width:760px){
+  .explore-control-center{
+    margin-top:22px;
+    padding:17px;
+    border-radius:17px;
+  }
+
+  .explore-control-center h2{
+    font-size:25px;
+  }
+
+  .explore-quick-actions{
+    grid-template-columns:1fr;
+  }
+
+  .explore-filter-card{
+    min-height:68px;
+  }
+
+  .explore-filter-card.location{
+    grid-column:auto;
+  }
+}
+
+@media(max-width:440px){
+  .explore-control-center{
+    padding:14px;
+  }
+
+  .explore-control-center h2{
+    font-size:23px;
+  }
+
+  .explore-live-count{
+    width:max-content;
+  }
+
+  .explore-filter-copy small{
+    white-space:normal;
+    line-height:1.25;
+  }
+}
