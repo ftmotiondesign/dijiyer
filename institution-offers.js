@@ -430,6 +430,20 @@ async function verifyOfferByCode(rawCode){
     return;
   }
 
+  if(code.startsWith("DJY-T-")){
+    result.innerHTML=`
+      <div class="verify-result-card invalid">
+        <div class="verify-result-title">ℹ️ Bu bir talep takip kodu</div>
+        <div class="muted" style="text-align:center;line-height:1.55">
+          <b>${offerSafe(code)}</b> müşterinin tekliflerini takip etmek için kullanılır.<br>
+          Buraya müşterinin seçtiği teklif üzerinde yazan <b>Teklif No</b> bilgisini girin
+          veya teklifin QR kodunu okutun.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   result.innerHTML='<div class="empty-state">Teklif doğrulanıyor...</div>';
 
   try{
