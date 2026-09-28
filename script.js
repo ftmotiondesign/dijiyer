@@ -1002,14 +1002,22 @@ function getQuoteTrackingUrl(trackingCode) {
 
 function getMatchingInstitutionCount(request) {
   try {
+    const requestDistrict = String(request.district || '').trim().toLocaleLowerCase('tr-TR');
+
     return institutions.filter(inst => {
       const [, subCategory] = resolveTaxonomy(inst);
-      const sameCategory = String(subCategory || inst.category || '') === String(request.category || '');
-      const sameCity =
-        String(inst.city || '').toLocaleLowerCase('tr-TR') ===
-        String(request.city || '').toLocaleLowerCase('tr-TR');
+      const sameCategory =
+        String(subCategory || inst.category || '') === String(request.category || '');
 
-      return sameCategory && sameCity && inst.offer !== false;
+      const sameCity =
+        String(inst.city || '').trim().toLocaleLowerCase('tr-TR') ===
+        String(request.city || '').trim().toLocaleLowerCase('tr-TR');
+
+      const sameDistrict =
+        !requestDistrict ||
+        String(inst.district || '').trim().toLocaleLowerCase('tr-TR') === requestDistrict;
+
+      return sameCategory && sameCity && sameDistrict && inst.offer !== false;
     }).length;
   } catch (error) {
     console.warn('Eşleşen kurum sayısı hesaplanamadı:', error);
@@ -1064,10 +1072,14 @@ function showQuoteTrackingSuccess(tracking, matchedCount) {
   document.getElementById('quoteSuccessCode').textContent = tracking.trackingCode;
   document.getElementById('quoteSuccessLink').value = tracking.trackingUrl;
 
+  const areaText = tracking.requestDistrict
+    ? tracking.requestDistrict + ' ilçesindeki'
+    : (tracking.requestCity ? tracking.requestCity + ' genelindeki' : 'bölgedeki');
+
   document.getElementById('quoteSuccessCount').textContent =
     matchedCount > 0
-      ? `Talebiniz ${matchedCount} uygun kuruma ulaştı. Gelen fiyatları bu bağlantıdan takip edebilirsiniz.`
-      : 'Talebiniz alındı. Uygun kurumlar teklif verdikçe bu bağlantıda görünecek.';
+      ? `Talebiniz ${areaText} ${matchedCount} uygun kuruma ulaştı. Gelen fiyatları bu bağlantıdan takip edebilirsiniz.`
+      : `Talebiniz alındı. ${areaText.charAt(0).toUpperCase() + areaText.slice(1)} uygun kurumlar teklif verdikçe bu bağlantıda görünecek.`;
 
   document.getElementById('quoteOpenTrackingBtn').onclick = () => {
     window.location.href = tracking.trackingUrl;
@@ -1194,6 +1206,8 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     document.getElementById('quoteDistrict').disabled = true;
 
     if (tracking) {
+      tracking.requestDistrict = request.district || '';
+      tracking.requestCity = request.city || '';
       showQuoteTrackingSuccess(tracking, matchedCount);
     } else {
       showToast(
@@ -1761,7 +1775,7 @@ document.getElementById('quoteCity').addEventListener('change', async function (
     if (!response.ok) throw new Error('İlçe verisi alınamadı');
 
     const result = await response.json();
-    districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+    districtSelect.innerHTML = '<option value="">Tüm şehir (ilçe seçmeden devam et)</option>';
 
     result.data.forEach(district => {
       const option = document.createElement('option');
