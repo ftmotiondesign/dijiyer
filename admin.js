@@ -103,6 +103,19 @@ async function loadApplications() {
           <p><strong>Başvuru Tarihi:</strong>
           ${formatDate(data.date)}</p>
         </div>
+        <div class="application-actions">
+  <button class="approve-btn" data-id="${doc.id}">
+    ✓ Onayla
+  </button>
+
+  <button class="reject-btn" data-id="${doc.id}">
+    ✕ Reddet
+  </button>
+
+  <button class="delete-btn" data-id="${doc.id}">
+    🗑 Sil
+  </button>
+</div>
       `;
 
       applicationsList.appendChild(card);
