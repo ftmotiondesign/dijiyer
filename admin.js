@@ -73,6 +73,17 @@ const offerReportDetailTitle = document.getElementById("offerReportDetailTitle")
 const offerReportDetailMeta = document.getElementById("offerReportDetailMeta");
 const offerReportDetailSummary = document.getElementById("offerReportDetailSummary");
 const offerReportDetailTableBody = document.getElementById("offerReportDetailTableBody");
+const quoteActivityModal = document.getElementById("quoteActivityModal");
+const closeQuoteActivityModal = document.getElementById("closeQuoteActivityModal");
+const quoteActivityTitle = document.getElementById("quoteActivityTitle");
+const quoteActivityMeta = document.getElementById("quoteActivityMeta");
+const quoteActivitySummary = document.getElementById("quoteActivitySummary");
+const quoteActivityFilter = document.getElementById("quoteActivityFilter");
+const quoteActivityCopyBtn = document.getElementById("quoteActivityCopyBtn");
+const quoteActivityCsvBtn = document.getElementById("quoteActivityCsvBtn");
+const quoteActivityRefreshBtn = document.getElementById("quoteActivityRefreshBtn");
+const quoteActivityCompleteness = document.getElementById("quoteActivityCompleteness");
+const quoteActivityTimeline = document.getElementById("quoteActivityTimeline");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
@@ -113,6 +124,8 @@ let quoteRequestRecords = [];
 let institutionAccountRecords = [];
 let institutionOfferReportRecords = [];
 let institutionOfferReportEvents = [];
+const adminQuoteActivityCache = new Map();
+let activeAdminActivityQuoteId = null;
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -814,6 +827,7 @@ function quoteMoney(value) {
 }
 
 function getAdminQuoteLiveState(request) {
+  if (String(request.status || "") === "archived") return "archived";
   const lock = request.liveLock || null;
   const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
   const now = Date.now();
@@ -841,7 +855,8 @@ function getAdminQuoteStateMeta(state) {
     used: ["Kullanıldı", "status-used"],
     expired: ["Süresi Doldu", "status-expired"],
     sent: ["İletildi", "status-sent"],
-    done: ["Sonuçlandı", "status-done"]
+    done: ["Sonuçlandı", "status-done"],
+    archived: ["Arşivlendi", "status-expired"]
   };
   return map[state] || [state || "Yeni", "status-new"];
 }
@@ -941,6 +956,7 @@ function adminOfferListHtml(request) {
 }
 
 async function loadQuoteRequests() {
+  adminQuoteActivityCache.clear();
   quoteRequestsList.innerHTML = "Teklif talepleri yükleniyor...";
 
   try {
@@ -1677,6 +1693,450 @@ offerReportDetailModal?.addEventListener("click", event => {
   }
 });
 
+function adminActivityInstitutionName(request, institutionId) {
+  const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
+  const offer = offers.find(item =>
+    String(item.institutionId || item.id || "") === String(institutionId || "")
+  );
+  if (offer && offer.institutionName) return offer.institutionName;
+
+  const institution = institutionRecords.find(item =>
+    String(item.id) === String(institutionId || "")
+  );
+  return institution && institution.name ? institution.name : "Kurum";
+}
+
+function adminActivityDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function pushAdminActivity(events, event) {
+  const date = adminActivityDate(event.date);
+  if (!date) return;
+  events.push({
+    category:event.category || "admin",
+    actor:event.actor || "Sistem",
+    title:event.title || "İşlem",
+    detail:event.detail || "",
+    institutionId:event.institutionId || "",
+    date
+  });
+}
+
+function buildAdminQuoteActivityEvents(request, engagementRecords, messages) {
+  const events = [];
+
+  pushAdminActivity(events,{
+    category:"request",
+    actor:"Müşteri · " + (request.name || "Müşteri"),
+    title:"Teklif talebi oluşturuldu",
+    detail:[
+      request.service || "",
+      [request.city,request.district].filter(Boolean).join(" / "),
+      request.note ? "Not: " + request.note : ""
+    ].filter(Boolean).join(" · "),
+    date:request.date
+  });
+
+  (Array.isArray(request.liveOffers) ? request.liveOffers : []).forEach(offer => {
+    const institutionName = offer.institutionName || adminActivityInstitutionName(request, offer.institutionId || offer.id);
+    const offerDetail = [
+      "Fiyat: " + quoteMoney(offer.price),
+      "KDV: " + (offer.vatStatus || "-"),
+      offer.extraFee ? "Ek ücret: " + offer.extraFee : "",
+      offer.scope ? "Kapsam: " + offer.scope : "",
+      offer.conditions ? "Şart: " + offer.conditions : "",
+      offer.expiresAt ? "Son geçerlilik: " + formatDate(offer.expiresAt) : ""
+    ].filter(Boolean).join(" · ");
+
+    pushAdminActivity(events,{
+      category:"offer",
+      actor:"Firma · " + institutionName,
+      title:"Teklif gönderildi",
+      detail:offerDetail,
+      institutionId:offer.institutionId || offer.id,
+      date:offer.createdAt || offer.updatedAt
+    });
+
+    const createdMs = new Date(offer.createdAt || 0).getTime();
+    const updatedMs = new Date(offer.updatedAt || 0).getTime();
+    if (offer.updatedAt && Number.isFinite(updatedMs) &&
+        (!Number.isFinite(createdMs) || Math.abs(updatedMs - createdMs) > 5000)) {
+      pushAdminActivity(events,{
+        category:"offer",
+        actor:"Firma · " + institutionName,
+        title:"Teklifin güncel hali kaydedildi",
+        detail:offerDetail,
+        institutionId:offer.institutionId || offer.id,
+        date:offer.updatedAt
+      });
+    }
+  });
+
+  (engagementRecords || []).forEach(engagement => {
+    const institutionId = engagement.institutionId || engagement.id;
+    const institutionName = adminActivityInstitutionName(request, institutionId);
+
+    if (engagement.viewedAt) {
+      pushAdminActivity(events,{
+        category:"offer",
+        actor:"Müşteri · " + (request.name || "Müşteri"),
+        title:"Teklif görüntülendi",
+        detail:"Firma: " + institutionName,
+        institutionId,
+        date:engagement.viewedAt
+      });
+    }
+    if (engagement.revisionRequestedAt) {
+      pushAdminActivity(events,{
+        category:"revision",
+        actor:"Müşteri · " + (request.name || "Müşteri"),
+        title:"Teklif revizyonu istendi",
+        detail:"Firma: " + institutionName,
+        institutionId,
+        date:engagement.revisionRequestedAt
+      });
+    }
+    if (engagement.revisionRespondedAt) {
+      pushAdminActivity(events,{
+        category:"revision",
+        actor:"Firma · " + institutionName,
+        title:"Revizyon yanıtlandı",
+        detail:"Teklif güncellemesi / revizyon yanıtı kaydedildi.",
+        institutionId,
+        date:engagement.revisionRespondedAt
+      });
+    }
+  });
+
+  (messages || []).forEach(message => {
+    const institutionName = adminActivityInstitutionName(request, message.institutionId);
+    const isCustomer = message.sender === "customer";
+    const isOfferUpdate = /^(Teklif güncellendi|Revizyon talebinize göre teklif güncellendi)/i.test(String(message.text || ""));
+    const category = isOfferUpdate
+      ? "offer"
+      : String(message.kind || "").startsWith("revision") ? "revision" : "message";
+
+    pushAdminActivity(events,{
+      category,
+      actor:isCustomer
+        ? "Müşteri · " + (request.name || "Müşteri")
+        : "Firma · " + institutionName,
+      title:isOfferUpdate
+        ? "Fiyat / teklif güncelleme bildirimi"
+        : message.kind === "revision_request" ? "Revizyon mesajı"
+        : message.kind === "revision_response" ? "Revizyon yanıt mesajı"
+        : "Mesaj gönderildi",
+      detail:String(message.text || ""),
+      institutionId:message.institutionId,
+      date:message.date
+    });
+  });
+
+  const lock = request.liveLock || null;
+  if (lock) {
+    pushAdminActivity(events,{
+      category:"lock",
+      actor:"Müşteri · " + (request.name || "Müşteri"),
+      title:"Teklif fiyatı kilitlendi",
+      detail:[
+        "Firma: " + (lock.institutionName || "-"),
+        "Fiyat: " + quoteMoney(lock.lockedPrice != null ? lock.lockedPrice : lock.price),
+        lock.vatStatus ? "KDV: " + lock.vatStatus : "",
+        lock.scope ? "Kapsam: " + lock.scope : "",
+        lock.conditions ? "Şart: " + lock.conditions : ""
+      ].filter(Boolean).join(" · "),
+      institutionId:lock.institutionId,
+      date:lock.lockedAt
+    });
+
+    if (lock.usedAt) {
+      pushAdminActivity(events,{
+        category:"lock",
+        actor:"Firma · " + (lock.institutionName || "Kurum"),
+        title:"Kilitli teklif kullanıldı / doğrulandı",
+        detail:"Teklif No: " + (lock.offerCode || "-") + " · Fiyat: " + quoteMoney(lock.lockedPrice != null ? lock.lockedPrice : lock.price),
+        institutionId:lock.institutionId,
+        date:lock.usedAt
+      });
+    }
+  }
+
+  (Array.isArray(request.liveIssues) ? request.liveIssues : []).forEach(issue => {
+    pushAdminActivity(events,{
+      category:"issue",
+      actor:"Müşteri · " + (request.name || "Müşteri"),
+      title:"Sorun bildirimi oluşturuldu",
+      detail:issue.reason || "Açıklama yok",
+      date:issue.date
+    });
+
+    (Array.isArray(issue.statusHistory) ? issue.statusHistory : []).forEach(entry => {
+      pushAdminActivity(events,{
+        category:"issue",
+        actor:"Yönetim",
+        title:"Sorun dosyası güncellendi",
+        detail:[
+          entry.status ? "Durum: " + entry.status : "",
+          entry.decision ? "Karar: " + entry.decision : "",
+          entry.summary || ""
+        ].filter(Boolean).join(" · "),
+        date:entry.date
+      });
+    });
+  });
+
+  if (request.updatedAt && ["sent","done","archived"].includes(String(request.status || ""))) {
+    const labels = {sent:"Talep iletildi",done:"Talep sonuçlandı",archived:"Talep arşivlendi"};
+    pushAdminActivity(events,{
+      category:"admin",
+      actor:"Yönetim",
+      title:labels[request.status] || "Talep durumu güncellendi",
+      detail:"Yönetim durumu: " + request.status,
+      date:request.updatedAt
+    });
+  }
+
+  return events.sort((a,b) => {
+    const diff = new Date(a.date) - new Date(b.date);
+    if (diff !== 0) return diff;
+    return String(a.title).localeCompare(String(b.title),"tr");
+  });
+}
+
+async function loadAdminQuoteActivity(requestId, options = {}) {
+  const force = Boolean(options.force);
+  if (!force && adminQuoteActivityCache.has(requestId)) {
+    return adminQuoteActivityCache.get(requestId);
+  }
+
+  const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
+  if (!request) throw new Error("Teklif talebi bulunamadı.");
+
+  const quoteRef = db.collection("quoteRequests").doc(requestId);
+  const errors = [];
+  let engagementRecords = [];
+
+  try {
+    const engagementSnapshot = await quoteRef.collection("engagement").get();
+    engagementRecords = engagementSnapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
+  } catch (error) {
+    console.warn("Admin engagement okunamadı:",requestId,error);
+    errors.push("Görüntülenme / revizyon durumları okunamadı.");
+  }
+
+  const institutionIds = new Set();
+  (Array.isArray(request.liveOffers) ? request.liveOffers : []).forEach(offer => {
+    const id = offer.institutionId || offer.id;
+    if (id) institutionIds.add(String(id));
+  });
+  if (request.liveLock && request.liveLock.institutionId) institutionIds.add(String(request.liveLock.institutionId));
+  engagementRecords.forEach(item => {
+    const id = item.institutionId || item.id;
+    if (id) institutionIds.add(String(id));
+  });
+
+  const messageGroups = await Promise.all([...institutionIds].map(async institutionId => {
+    try {
+      const snapshot = await quoteRef
+        .collection("conversations").doc(institutionId)
+        .collection("messages").orderBy("date","asc").get();
+      return snapshot.docs.map(doc => ({id:doc.id,institutionId,...doc.data()}));
+    } catch (error) {
+      console.warn("Admin mesajları okunamadı:",requestId,institutionId,error);
+      errors.push(adminActivityInstitutionName(request,institutionId) + " mesaj geçmişi okunamadı.");
+      return [];
+    }
+  }));
+
+  const messages = messageGroups.flat();
+  const events = buildAdminQuoteActivityEvents(request,engagementRecords,messages);
+  const bundle = {
+    requestId,
+    engagementRecords,
+    messages,
+    events,
+    errors:[...new Set(errors)],
+    loadedAt:new Date().toISOString()
+  };
+  adminQuoteActivityCache.set(requestId,bundle);
+  return bundle;
+}
+
+function adminActivityCategoryLabel(category) {
+  const map = {
+    request:"Talep",
+    offer:"Teklif / Fiyat",
+    message:"Mesaj",
+    revision:"Revizyon",
+    lock:"Kilit / Kullanım",
+    issue:"Sorun",
+    admin:"Yönetim"
+  };
+  return map[category] || category || "İşlem";
+}
+
+function quoteActivitySummaryHtml(request,bundle) {
+  const revisionCount = (bundle.engagementRecords || []).filter(item => item.revisionRequestedAt).length;
+  const messageCount = (bundle.messages || []).length;
+  const issues = Array.isArray(request.liveIssues) ? request.liveIssues.length : 0;
+  const offers = Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
+  const state = request.currentState || getAdminQuoteLiveState(request);
+  const stateLabel = getAdminQuoteStateMeta(state)[0];
+
+  return [
+    '<article><span>Teklif</span><strong>' + offers + '</strong></article>',
+    '<article><span>Mesaj</span><strong>' + messageCount + '</strong></article>',
+    '<article><span>Revizyon İsteği</span><strong>' + revisionCount + '</strong></article>',
+    '<article><span>Sorun Bildirimi</span><strong>' + issues + '</strong></article>',
+    '<article class="wide"><span>Son Durum</span><strong>' + escapeHtml(stateLabel) + '</strong></article>'
+  ].join("");
+}
+
+function renderQuoteActivityTimeline(request,bundle) {
+  const filter = quoteActivityFilter ? quoteActivityFilter.value : "all";
+  const events = (bundle.events || []).filter(event => filter === "all" || event.category === filter);
+  quoteActivitySummary.innerHTML = quoteActivitySummaryHtml(request,bundle);
+
+  if (bundle.errors.length) {
+    quoteActivityCompleteness.className = "quote-activity-completeness warning";
+    quoteActivityCompleteness.innerHTML = "<strong>⚠ Kısmi kayıt</strong><span>" + escapeHtml(bundle.errors.join(" ")) + "</span>";
+  } else {
+    quoteActivityCompleteness.className = "quote-activity-completeness success";
+    quoteActivityCompleteness.innerHTML = "<strong>✓ Kayıtlar yüklendi</strong><span>Mevcut teklif, mesaj, revizyon, kilit ve sorun kayıtları birleştirildi. Eski sistem döneminde ayrıca saklanmamış fiyat sürümleri geriye dönük üretilemez.</span>";
+  }
+
+  if (!events.length) {
+    quoteActivityTimeline.innerHTML = '<div class="empty-state">Bu filtrede hareket bulunamadı.</div>';
+    return;
+  }
+
+  quoteActivityTimeline.innerHTML = events.map(event => {
+    return '<div class="quote-activity-event category-' + escapeHtml(event.category) + '">' +
+      '<div class="quote-activity-dot"></div>' +
+      '<div class="quote-activity-event-body">' +
+        '<div class="quote-activity-event-top">' +
+          '<span class="quote-activity-type">' + escapeHtml(adminActivityCategoryLabel(event.category)) + '</span>' +
+          '<time>' + formatDate(event.date) + '</time>' +
+        '</div>' +
+        '<strong>' + escapeHtml(event.title) + '</strong>' +
+        '<small>' + escapeHtml(event.actor) + '</small>' +
+        (event.detail ? '<p>' + escapeHtml(event.detail) + '</p>' : "") +
+      '</div></div>';
+  }).join("");
+}
+
+async function openQuoteActivityModal(requestId, options = {}) {
+  const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
+  if (!request) return;
+
+  activeAdminActivityQuoteId = requestId;
+  quoteActivityModal.classList.remove("hidden");
+  quoteActivityTitle.textContent = request.service || "Teklif Hareketleri";
+  quoteActivityMeta.textContent = [
+    request.name || "Müşteri",
+    [request.city,request.district].filter(Boolean).join(" / "),
+    "Talep ID: " + request.id
+  ].filter(Boolean).join(" · ");
+  quoteActivitySummary.innerHTML = '<div class="quote-activity-loading">Özet yükleniyor...</div>';
+  quoteActivityCompleteness.className = "quote-activity-completeness";
+  quoteActivityCompleteness.textContent = "Kayıtlar okunuyor...";
+  quoteActivityTimeline.innerHTML = '<div class="quote-activity-loading">Teklif hareketleri yükleniyor...</div>';
+
+  try {
+    const bundle = await loadAdminQuoteActivity(requestId,{force:Boolean(options.force)});
+    renderQuoteActivityTimeline(request,bundle);
+  } catch (error) {
+    console.error("Teklif hareketleri yüklenemedi:",error);
+    quoteActivityTimeline.innerHTML = '<div class="empty-state">Teklif hareketleri yüklenemedi.</div>';
+  }
+}
+
+function getActiveQuoteActivityBundle() {
+  if (!activeAdminActivityQuoteId) return null;
+  return adminQuoteActivityCache.get(activeAdminActivityQuoteId) || null;
+}
+
+function quoteActivityPlainText(request,bundle) {
+  const lines = [
+    "Dijiyer Teklif Hareket Dökümü",
+    "Talep: " + (request.service || "-"),
+    "Müşteri: " + (request.name || "-"),
+    "Konum: " + ([request.city,request.district].filter(Boolean).join(" / ") || "-"),
+    "Talep ID: " + request.id,
+    ""
+  ];
+  (bundle.events || []).forEach(event => {
+    lines.push("[" + formatDate(event.date) + "] " +
+      adminActivityCategoryLabel(event.category) + " · " +
+      event.actor + " · " + event.title +
+      (event.detail ? " · " + event.detail : ""));
+  });
+  return lines.join("\n");
+}
+
+function exportQuoteActivityCsv(request,bundle) {
+  const csvCell = value => '"' + String(value == null ? "" : value).replace(/"/g,'""') + '"';
+  const rows = [
+    ["Tarih","Tür","Taraf","Başlık","Detay"],
+    ...(bundle.events || []).map(event => [
+      formatDate(event.date),
+      adminActivityCategoryLabel(event.category),
+      event.actor,
+      event.title,
+      event.detail
+    ])
+  ];
+  const csv = "\uFEFF" + rows.map(row => row.map(csvCell).join(";")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "dijiyer-teklif-hareketleri-" + String(request.id).slice(0,12) + ".csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+closeQuoteActivityModal?.addEventListener("click",() => quoteActivityModal.classList.add("hidden"));
+quoteActivityModal?.addEventListener("click",event => {
+  if (event.target === quoteActivityModal) quoteActivityModal.classList.add("hidden");
+});
+quoteActivityFilter?.addEventListener("change",() => {
+  if (!activeAdminActivityQuoteId) return;
+  const request = quoteRequestRecords.find(item => String(item.id) === String(activeAdminActivityQuoteId));
+  const bundle = getActiveQuoteActivityBundle();
+  if (request && bundle) renderQuoteActivityTimeline(request,bundle);
+});
+quoteActivityRefreshBtn?.addEventListener("click",async() => {
+  if (!activeAdminActivityQuoteId) return;
+  adminQuoteActivityCache.delete(activeAdminActivityQuoteId);
+  await openQuoteActivityModal(activeAdminActivityQuoteId,{force:true});
+});
+quoteActivityCopyBtn?.addEventListener("click",async() => {
+  if (!activeAdminActivityQuoteId) return;
+  const request = quoteRequestRecords.find(item => String(item.id) === String(activeAdminActivityQuoteId));
+  const bundle = getActiveQuoteActivityBundle();
+  if (!request || !bundle) return;
+  try {
+    await navigator.clipboard.writeText(quoteActivityPlainText(request,bundle));
+    const old = quoteActivityCopyBtn.textContent;
+    quoteActivityCopyBtn.textContent = "Kopyalandı";
+    setTimeout(() => quoteActivityCopyBtn.textContent = old,1200);
+  } catch (error) {
+    console.error(error);
+    alert("Özet kopyalanamadı.");
+  }
+});
+quoteActivityCsvBtn?.addEventListener("click",() => {
+  if (!activeAdminActivityQuoteId) return;
+  const request = quoteRequestRecords.find(item => String(item.id) === String(activeAdminActivityQuoteId));
+  const bundle = getActiveQuoteActivityBundle();
+  if (request && bundle) exportQuoteActivityCsv(request,bundle);
+});
 function renderQuoteRequests() {
   const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
   const status = quoteStatusFilter.value;
@@ -1691,8 +2151,16 @@ function renderQuoteRequests() {
       item.note
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
-    return (!query || haystack.includes(query)) &&
-      (!status || (item.currentState || getAdminQuoteLiveState(item)) === status);
+    const currentState = item.currentState || getAdminQuoteLiveState(item);
+    const statusMatches = !status ||
+      (status === "issue" ? Number(item.issueCount || 0) > 0 : currentState === status);
+    const offerSearch = (Array.isArray(item.liveOffers) ? item.liveOffers : [])
+      .map(offer => [offer.institutionName, offer.offerCode, offer.price].filter(Boolean).join(" "))
+      .join(" ")
+      .toLocaleLowerCase("tr-TR");
+
+    return (!query || haystack.includes(query) || offerSearch.includes(query)) &&
+      statusMatches;
   });
 
   if (!data.length) {
@@ -1924,6 +2392,11 @@ function renderQuoteRequests() {
         ${diagnosticHtml}
       </div>
 
+      <div class="quote-activity-launch">
+        <button type="button" class="quote-activity-btn">🕒 Teklif Hareketlerini Gör</button>
+        <span>Mesajlar · revizyonlar · fiyat değişiklikleri · kilit · sorun kayıtları</span>
+      </div>
+
       <div class="quote-actions">
         <a class="customer-whatsapp" target="_blank"
           href="https://wa.me/${normalizeWhatsApp(request.phone)}">
@@ -1932,7 +2405,7 @@ function renderQuoteRequests() {
 
         <button class="quote-status-btn" data-status="sent">İletildi</button>
         <button class="quote-status-btn" data-status="done">Sonuçlandı</button>
-        <button class="quote-delete-btn">Sil</button>
+        <button class="quote-archive-btn">${request.status==="archived"?"Arşivden Çıkar":"Arşivle"}</button>
       </div>
     `;
 
@@ -1983,16 +2456,39 @@ function renderQuoteRequests() {
       });
     });
 
-    card.querySelector(".quote-delete-btn").addEventListener("click", async () => {
-      const ok = confirm("Bu teklif talebini silmek istiyor musunuz?");
+    card.querySelector(".quote-activity-btn")?.addEventListener("click", async () => {
+      await openQuoteActivityModal(request.id);
+    });
+
+    card.querySelector(".quote-archive-btn")?.addEventListener("click", async () => {
+      const archived = String(request.status || "") === "archived";
+      const ok = confirm(archived
+        ? "Bu talebi arşivden çıkarıp yeniden aktif listeye almak istiyor musunuz?"
+        : "Bu talep silinmeyecek. Mesajlar, teklifler ve sorun kayıtları korunarak arşive taşınacak. Devam edilsin mi?");
       if (!ok) return;
 
       try {
-        await db.collection("quoteRequests").doc(request.id).delete();
+        const now = new Date().toISOString();
+        if (archived) {
+          const restoreStatus = request.archivedFromStatus || "new";
+          await db.collection("quoteRequests").doc(request.id).update({
+            status:restoreStatus,
+            archivedAt:null,
+            updatedAt:now
+          });
+        } else {
+          await db.collection("quoteRequests").doc(request.id).update({
+            archivedFromStatus:request.status || "new",
+            status:"archived",
+            archivedAt:now,
+            updatedAt:now
+          });
+        }
+        adminQuoteActivityCache.delete(request.id);
         await loadQuoteRequests();
       } catch (error) {
-        console.error("Teklif talebi silinemedi:", error);
-        alert("Teklif talebi silinemedi.");
+        console.error("Teklif talebi arşivlenemedi:", error);
+        alert("Arşiv işlemi tamamlanamadı.");
       }
     });
 
