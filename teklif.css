@@ -411,3 +411,109 @@ button,input{font:inherit}.hidden{display:none!important}
     width:42px;
   }
 }
+
+
+/* WhatsApp koyu musteri sohbeti - final */
+.djy-modal-card{
+  background:#0b141a!important;
+}
+.djy-modal-head{
+  background:#202c33!important;
+  color:#f1f4f5!important;
+  border-bottom:1px solid #2a3942!important;
+}
+.djy-modal-head h2{color:#f1f4f5!important}
+.djy-modal-close{
+  background:#2a3942!important;
+  color:#d9fdd3!important;
+}
+.djy-conversation-context{
+  background:#111b21!important;
+  color:#d1d7db!important;
+  border-bottom:1px solid #2a3942!important;
+}
+.djy-conversation-context strong{color:#d9fdd3!important}
+.djy-conversation-context span{color:#aebac1!important}
+.djy-messages{
+  background-color:#0b141a!important;
+  background-image:
+    radial-gradient(circle at 12px 12px,rgba(255,255,255,.035) 1px,transparent 1.5px),
+    radial-gradient(circle at 31px 27px,rgba(255,255,255,.025) 1px,transparent 1.5px)!important;
+  background-size:44px 44px,52px 52px!important;
+  padding:14px 12px!important;
+  gap:5px!important;
+}
+.djy-message-row{
+  display:flex!important;
+  width:100%!important;
+}
+.djy-message-row.mine{justify-content:flex-end!important}
+.djy-message-row.theirs{justify-content:flex-start!important}
+.djy-messages .djy-message{
+  display:block!important;
+  width:auto!important;
+  max-width:min(78%,520px)!important;
+  padding:7px 9px 5px!important;
+  border:0!important;
+  border-radius:8px!important;
+  box-shadow:0 1px 1px rgba(0,0,0,.35)!important;
+  color:#e9edef!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+.djy-messages .djy-message.mine{
+  align-self:auto!important;
+  background:#005c4b!important;
+  border-bottom-right-radius:2px!important;
+}
+.djy-messages .djy-message.theirs{
+  align-self:auto!important;
+  background:#202c33!important;
+  border-bottom-left-radius:2px!important;
+}
+.djy-message-text{
+  overflow-wrap:anywhere;
+}
+.djy-message-meta{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  min-width:42px;
+  margin-top:2px!important;
+  color:#aebac1!important;
+  font-size:10px!important;
+  line-height:1!important;
+}
+.djy-message-check{
+  color:#53bdeb!important;
+  font-size:11px!important;
+  letter-spacing:-2px;
+  margin-right:2px;
+}
+.djy-message-form{
+  background:#202c33!important;
+  border-top:1px solid #2a3942!important;
+  padding:8px 10px!important;
+}
+.djy-message-form textarea{
+  background:#2a3942!important;
+  color:#e9edef!important;
+  border:0!important;
+  border-radius:22px!important;
+  padding:11px 14px!important;
+}
+.djy-message-form textarea::placeholder{color:#8696a0!important}
+.djy-chat-send{
+  background:#00a884!important;
+  color:#fff!important;
+}
+.djy-messages .djy-message.revision_request,
+.djy-messages .djy-message.revision_response{
+  outline:0!important;
+}
+@media(max-width:640px){
+  .djy-messages .djy-message{
+    max-width:84%!important;
+  }
+}
