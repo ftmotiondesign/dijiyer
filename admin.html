@@ -578,6 +578,8 @@
             <option value="locked_desc">En çok seçilen</option>
             <option value="used_desc">En çok kullanılan</option>
             <option value="selection_desc">En yüksek seçilme oranı</option>
+            <option value="response_desc">En yüksek teklif verme oranı</option>
+            <option value="response_time_asc">En hızlı teklif veren</option>
             <option value="volume_desc">En yüksek teklif hacmi</option>
             <option value="average_asc">En düşük ortalama fiyat</option>
             <option value="average_desc">En yüksek ortalama fiyat</option>
@@ -606,14 +608,16 @@
                 <th>Aktif</th>
                 <th>Seçilen</th>
                 <th>Kullanılan</th>
+                <th>Teklif Verme %</th>
                 <th>Seçilme %</th>
+                <th>Ort. Yanıt</th>
                 <th>Son Teklif</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="offerReportTableBody">
               <tr>
-                <td colspan="11">Rapor yükleniyor...</td>
+                <td colspan="13">Rapor yükleniyor...</td>
               </tr>
             </tbody>
           </table>
@@ -763,7 +767,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=21"></script>
+  <script src="admin.js?v=22"></script>
   <script src="admin-advanced.js?v=4"></script>
 
 </body>
