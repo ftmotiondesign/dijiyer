@@ -499,35 +499,79 @@
     renderSummary();
   };
 
+  function updatedOfferValidityText(offer){
+    if(!offer?.expiresAt)return "";
+    const start=offer.updatedAt || offer.createdAt;
+    const startMs=new Date(start||0).getTime();
+    const endMs=new Date(offer.expiresAt).getTime();
+    if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs)return "";
+    const hours=Math.max(1,Math.round((endMs-startMs)/3600000));
+    if(hours===1)return "1 saat";
+    if(hours===3)return "3 saat";
+    if(hours===12)return "12 saat";
+    if(hours===24)return "24 saat";
+    if(hours===72)return "3 gün";
+    if(hours===168)return "7 gün";
+    if(hours>24 && hours%24===0)return (hours/24)+" gün";
+    return hours+" saat";
+  }
+
+  function offerUpdateNotificationText(offer,revisionPending){
+    const validity=updatedOfferValidityText(offer);
+    const price=new Intl.NumberFormat("tr-TR").format(Number(offer?.price||0))+" TL";
+    const parts=[
+      revisionPending ? "Revizyon talebinize göre teklif güncellendi." : "Teklif güncellendi.",
+      "Yeni fiyat: "+price+"."
+    ];
+
+    if(validity)parts.push("Bu fiyat "+validity+" için geçerlidir.");
+    if(offer?.expiresAt)parts.push("Son kabul: "+formatDate(offer.expiresAt)+".");
+    if(offer?.conditions)parts.push("Kabul şartı: "+offer.conditions);
+
+    return parts.join(" ");
+  }
+
   const baseSaveRealOffer=saveRealOffer;
   saveRealOffer=async function(form){
     const quoteId=form.dataset.quoteId;
-    const before=institutionOfferMap.get(quoteId)?.updatedAt||null;
+    const beforeOffer=institutionOfferMap.get(quoteId) || null;
+    const before=beforeOffer?.updatedAt||null;
     const engagement=engagementMap.get(quoteId)||{};
     const revisionPending=!!(engagement.revisionRequestedAt&&!engagement.revisionRespondedAt);
 
     await baseSaveRealOffer(form);
 
-    const after=institutionOfferMap.get(quoteId)?.updatedAt||null;
-    if(revisionPending&&after&&after!==before){
+    const updatedOffer=institutionOfferMap.get(quoteId) || null;
+    const after=updatedOffer?.updatedAt||null;
+    const wasUpdated=!!beforeOffer && !!after && after!==before;
+
+    if(wasUpdated){
       const now=new Date().toISOString();
       try{
         await sendFirmMessage(
           quoteId,
-          "İstediğiniz revizyona göre teklifimizi güncelledik. Yeni fiyat ve kapsamı teklif ekranından inceleyebilirsiniz.",
-          "revision_response"
+          offerUpdateNotificationText(updatedOffer,revisionPending),
+          revisionPending ? "revision_response" : "message"
         );
-        await db.collection("quoteRequests").doc(quoteId)
-          .collection("engagement").doc(currentAccount.institutionId).set({
-            institutionId:currentAccount.institutionId,
-            revisionRespondedAt:now,
-            revisionRespondedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
-            lastInstitutionActionAt:now
-          },{merge:true});
+
+        if(revisionPending){
+          await db.collection("quoteRequests").doc(quoteId)
+            .collection("engagement").doc(currentAccount.institutionId).set({
+              institutionId:currentAccount.institutionId,
+              revisionRespondedAt:now,
+              revisionRespondedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
+              lastInstitutionActionAt:now
+            },{merge:true});
+        }
+
         await loadCommunicationForQuote(quoteId);
+        if(activeInstitutionChatQuoteId===String(quoteId)){
+          renderInstitutionChat();
+          scrollInstitutionChatToBottom("smooth");
+        }
         renderQuotes();
       }catch(error){
-        console.warn("Revizyon yanıtı kaydedilemedi:",error);
+        console.warn("Teklif güncelleme bildirimi kaydedilemedi:",error);
       }
     }
   };
