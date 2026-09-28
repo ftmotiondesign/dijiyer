@@ -279,6 +279,39 @@ function playNewQuoteSound() {
   } catch (_) {}
 }
 
+function getInstitutionQuoteQueries() {
+  if (!currentInstitution?.category || !currentInstitution?.city) return [];
+
+  const collection = db.collection("quoteRequests");
+  const district = String(currentInstitution.district || "").trim();
+
+  const districts = district ? ["", district] : [""];
+
+  return districts.map(value =>
+    collection
+      .where("category", "==", currentInstitution.category)
+      .where("city", "==", currentInstitution.city)
+      .where("district", "==", value)
+  );
+}
+
+async function fetchInstitutionMatchedQuotes() {
+  const queries = getInstitutionQuoteQueries();
+  if (!queries.length) return [];
+
+  const snapshots = await Promise.all(queries.map(query => query.get()));
+  const unique = new Map();
+
+  snapshots.forEach(snapshot => {
+    snapshot.docs.forEach(doc => {
+      unique.set(doc.id, { id: doc.id, ...doc.data() });
+    });
+  });
+
+  return [...unique.values()]
+    .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+}
+
 function quoteMatchesInstitutionArea(quote) {
   if (!currentInstitution) return false;
 
@@ -302,21 +335,21 @@ function startLiveQuoteWatcher() {
     liveQuoteUnsubscribe = null;
   }
 
-  liveQuoteWatcherReady = false;
+  const queries = getInstitutionQuoteQueries();
+  if (!queries.length) return;
 
-  liveQuoteUnsubscribe = db.collection("quoteRequests")
-    .where("category", "==", currentInstitution.category)
-    .where("city", "==", currentInstitution.city)
-    .onSnapshot(async snapshot => {
-      if (!liveQuoteWatcherReady) {
-        liveQuoteWatcherReady = true;
+  const unsubscribers = queries.map(query => {
+    let initialSnapshot = true;
+
+    return query.onSnapshot(async snapshot => {
+      if (initialSnapshot) {
+        initialSnapshot = false;
         return;
       }
 
       const added = snapshot.docChanges()
         .filter(change => change.type === "added")
-        .map(change => ({ id: change.doc.id, ...change.doc.data() }))
-        .filter(quoteMatchesInstitutionArea);
+        .map(change => ({ id: change.doc.id, ...change.doc.data() }));
 
       if (!added.length) return;
 
@@ -328,6 +361,13 @@ function startLiveQuoteWatcher() {
     }, error => {
       console.error("Canlı teklif takibi başlatılamadı:", error);
     });
+  });
+
+  liveQuoteUnsubscribe = () => {
+    unsubscribers.forEach(unsubscribe => {
+      try { unsubscribe(); } catch (_) {}
+    });
+  };
 }
 
 document.addEventListener("pointerdown", () => {
@@ -475,15 +515,7 @@ async function loadMatchedQuotes() {
   recentQuotes.innerHTML = '<div class="empty-state">Teklifler yükleniyor...</div>';
 
   try {
-    const snapshot = await db.collection("quoteRequests")
-      .where("category", "==", currentInstitution.category)
-      .where("city", "==", currentInstitution.city)
-      .get();
-
-    quoteRecords = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(quoteMatchesInstitutionArea)
-      .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+    quoteRecords = await fetchInstitutionMatchedQuotes();
 
     await loadQuoteResponses();
     renderQuotes();
