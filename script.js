@@ -211,7 +211,7 @@ function renderSidebarCategories() {
             data-category-toggle="${mainKey}"
             aria-expanded="false"
             aria-label="${item.label} alt kategorilerini aç"
-          >⌄</button>
+          ><span class="category-chevron" aria-hidden="true"></span></button>
         </div>
         <div class="subcategory-list hidden" data-subcategory-list="${mainKey}">
           ${subs.map(([subKey,subLabel]) => `
