@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <header class="topbar">
@@ -128,15 +128,6 @@
         />
       </label>
 
-      <button
-        type="button"
-        class="btn btn-light full"
-        id="findInstitutionBtn"
-        style="margin-top:-4px;margin-bottom:10px;"
-      >
-        🔎 Kurumu Haritada Bul
-      </button>
-
       <label>Google Maps Bağlantısı
         <input
           type="text"
@@ -176,6 +167,18 @@
     <option value="">Önce şehir seçin</option>
   </select>
 </label>
+
+<button
+  type="button"
+  class="btn btn-light full"
+  id="findInstitutionBtn"
+>
+  🔎 Kurumu Ücretsiz Haritada Ara
+</button>
+
+<p style="font-size:12px; color:#68758a; margin-top:-4px;">
+  Önce şehir ve ilçeyi seçin. Bulunamazsa Google Maps bağlantısını kullanabilirsiniz.
+</p>
 
       <label>Adres
         <textarea
@@ -252,6 +255,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=9"></script>
+<script src="script.js?v=10"></script>
 </body>
 </html>
