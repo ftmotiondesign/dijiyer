@@ -23,9 +23,11 @@ const institutionCount = document.getElementById("institutionCount");
 const applicationsSection = document.getElementById("applicationsSection");
 const institutionsSection = document.getElementById("institutionsSection");
 const quotesSection = document.getElementById("quotesSection");
+const accountsSection = document.getElementById("accountsSection");
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
+const accountsTabBtn = document.getElementById("accountsTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
 const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
@@ -39,6 +41,10 @@ const quoteRequestsList = document.getElementById("quoteRequestsList");
 const quoteRequestCount = document.getElementById("quoteRequestCount");
 const quoteRequestSearch = document.getElementById("quoteRequestSearch");
 const quoteStatusFilter = document.getElementById("quoteStatusFilter");
+const accountsList = document.getElementById("accountsList");
+const accountCount = document.getElementById("accountCount");
+
+const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 
 let institutionRecords = [];
 let quoteRequestRecords = [];
@@ -61,14 +67,20 @@ loginForm.addEventListener("submit", async (e) => {
 });
 
 auth.onAuthStateChanged(async (user) => {
-  if (user) {
+  if (user && user.uid === ADMIN_UID) {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
 
     await loadApplications();
     await loadInstitutions();
     await loadQuoteRequests();
+    await loadInstitutionAccounts();
   } else {
+    if (user && user.uid !== ADMIN_UID) {
+      await auth.signOut();
+      loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
+    }
+
     loginSection.hidden = false;
     dashboardSection.hidden = true;
   }
@@ -259,15 +271,18 @@ applicationsTabBtn.addEventListener("click", () => {
   applicationsSection.hidden = false;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  accountsSection.hidden = true;
   applicationsTabBtn.classList.add("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
+  accountsTabBtn.classList.remove("active");
 });
 
 institutionsTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = false;
   quotesSection.hidden = true;
+  accountsSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
   quotesTabBtn.classList.remove("active");
@@ -278,9 +293,11 @@ quotesTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = false;
+  accountsSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.add("active");
+  accountsTabBtn.classList.remove("active");
   await loadQuoteRequests();
 });
 
@@ -1014,3 +1031,102 @@ async function updateQuoteStatus(id, status) {
 
 quoteRequestSearch.addEventListener("input", renderQuoteRequests);
 quoteStatusFilter.addEventListener("change", renderQuoteRequests);
+
+
+accountsTabBtn.addEventListener("click", async () => {
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  accountsSection.hidden = false;
+
+  applicationsTabBtn.classList.remove("active");
+  institutionsTabBtn.classList.remove("active");
+  quotesTabBtn.classList.remove("active");
+  accountsTabBtn.classList.add("active");
+
+  await loadInstitutionAccounts();
+});
+
+async function loadInstitutionAccounts() {
+  accountsList.innerHTML = "Kurum hesapları yükleniyor...";
+
+  try {
+    const snapshot = await db.collection("institutionUsers").get();
+
+    const records = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    accountCount.textContent = `${records.length} kurum hesabı`;
+
+    if (!records.length) {
+      accountsList.innerHTML =
+        '<div class="empty-state">Henüz kurum hesabı başvurusu yok.</div>';
+      return;
+    }
+
+    accountsList.innerHTML = "";
+
+    records.forEach(account => {
+      const card = document.createElement("div");
+      card.className = "account-card";
+
+      const statusLabels = {
+        pending: "Onay Bekliyor",
+        approved: "Onaylandı",
+        rejected: "Reddedildi"
+      };
+
+      card.innerHTML = `
+        <div class="account-card-main">
+          <div>
+            <h3>${escapeHtml(account.institutionName || "Kurum")}</h3>
+            <div class="account-email">${escapeHtml(account.email || "-")}</div>
+          </div>
+          <span class="account-status status-${escapeHtml(account.status || "pending")}">
+            ${statusLabels[account.status] || "Onay Bekliyor"}
+          </span>
+        </div>
+
+        <div class="account-meta">
+          <span>Kurum ID: ${escapeHtml(account.institutionId || "-")}</span>
+          <span>Başvuru: ${formatDate(account.date)}</span>
+        </div>
+
+        <div class="account-actions">
+          <button class="approve-account-btn">✓ Onayla</button>
+          <button class="reject-account-btn">✕ Reddet</button>
+        </div>
+      `;
+
+      card.querySelector(".approve-account-btn").addEventListener("click", async () => {
+        await updateInstitutionAccountStatus(account.id, "approved");
+      });
+
+      card.querySelector(".reject-account-btn").addEventListener("click", async () => {
+        await updateInstitutionAccountStatus(account.id, "rejected");
+      });
+
+      accountsList.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Kurum hesapları yüklenemedi:", error);
+    accountsList.innerHTML =
+      "<p>Kurum hesapları yüklenemedi. Firestore kurallarını kontrol edin.</p>";
+  }
+}
+
+async function updateInstitutionAccountStatus(id, status) {
+  try {
+    await db.collection("institutionUsers").doc(id).update({
+      status,
+      updatedAt: new Date().toISOString()
+    });
+
+    await loadInstitutionAccounts();
+  } catch (error) {
+    console.error("Kurum hesabı güncellenemedi:", error);
+    alert("Kurum hesabı güncellenemedi.");
+  }
+}
