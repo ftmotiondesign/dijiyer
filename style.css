@@ -738,3 +738,130 @@ button{cursor:pointer}
     font-size:13.5px !important;
   }
 }
+
+
+/* Üst konum seçici */
+.location-picker{
+  position:relative;
+  min-width:0;
+}
+
+.location-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+}
+
+.location-pin{
+  flex:0 0 auto;
+}
+
+#locationBtnText{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.location-arrow{
+  flex:0 0 auto;
+  color:#64748b;
+  transition:transform .18s ease;
+}
+
+.location-picker.open .location-arrow{
+  transform:rotate(180deg);
+}
+
+.location-popover{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  z-index:1800;
+  width:340px;
+  padding:18px;
+  background:#fff;
+  border:1px solid #dde5ef;
+  border-radius:16px;
+  box-shadow:0 18px 50px rgba(18,38,67,.18);
+}
+
+.location-popover-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:15px;
+}
+
+.location-popover-head strong{
+  display:block;
+  font-size:17px;
+  color:#14233b;
+}
+
+.location-popover-head small{
+  display:block;
+  margin-top:3px;
+  color:#6b7a90;
+  font-size:12px;
+}
+
+.location-close{
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:9px;
+  background:#f3f6fa;
+  color:#526176;
+  font-size:21px;
+  line-height:1;
+}
+
+.location-popover label{
+  display:grid;
+  gap:6px;
+  margin-top:11px;
+  font-size:13px;
+  font-weight:750;
+  color:#23324a;
+}
+
+.location-popover select{
+  width:100%;
+  height:44px;
+  padding:0 11px;
+  border:1px solid #d9e2ee;
+  border-radius:10px;
+  outline:none;
+  background:#fff;
+  color:#162238;
+}
+
+.location-popover select:focus{
+  border-color:#8fbdff;
+  box-shadow:0 0 0 3px rgba(22,119,255,.09);
+}
+
+.location-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:16px;
+}
+
+@media(max-width:820px){
+  .location-picker{
+    grid-column:1/2;
+  }
+
+  .location-popover{
+    position:fixed;
+    left:12px;
+    right:12px;
+    top:150px;
+    width:auto;
+  }
+}
