@@ -338,6 +338,9 @@ const institutions = [
 let selectedId = 1;
 let currentRating = 0;
 
+let activeLocationCity = 'Çanakkale';
+let activeLocationDistrict = 'Merkez';
+
 let institutionMapInstance = null;
 let institutionLocationMarker = null;
 
@@ -479,7 +482,23 @@ function getFilteredInstitutions() {
     const matchesVideo = !videoOnly || inst.video;
     const matchesOffer = !offerOnly || inst.offer;
 
-    return matchesCategory && matchesQuery && matchesVideo && matchesOffer;
+    const locationParts = String(inst.location || '')
+      .split(',')
+      .map(part => part.trim());
+
+    const institutionCity = String(inst.city || locationParts[0] || '').trim();
+    const institutionDistrict = String(inst.district || locationParts[1] || '').trim();
+
+    const normalizedInstitutionCity = normalizeQuoteSearch(institutionCity);
+    const normalizedInstitutionDistrict = normalizeQuoteSearch(institutionDistrict);
+    const normalizedActiveCity = normalizeQuoteSearch(activeLocationCity);
+    const normalizedActiveDistrict = normalizeQuoteSearch(activeLocationDistrict);
+
+    const matchesLocation =
+      (!activeLocationCity || normalizedInstitutionCity === normalizedActiveCity) &&
+      (!activeLocationDistrict || normalizedInstitutionDistrict === normalizedActiveDistrict);
+
+    return matchesCategory && matchesQuery && matchesVideo && matchesOffer && matchesLocation;
   });
 
   const sort = document.getElementById('sortSelect').value;
@@ -1243,6 +1262,183 @@ document.getElementById('quoteCity').addEventListener('change', async function (
   }
 });
 
+
+const locationBtn = document.getElementById('locationBtn');
+const locationBtnText = document.getElementById('locationBtnText');
+const locationPopover = document.getElementById('locationPopover');
+const mainLocationCity = document.getElementById('mainLocationCity');
+const mainLocationDistrict = document.getElementById('mainLocationDistrict');
+const applyMainLocationBtn = document.getElementById('applyMainLocationBtn');
+const clearMainLocationBtn = document.getElementById('clearMainLocationBtn');
+const locationCloseBtn = document.getElementById('locationCloseBtn');
+
+function setLocationPopover(open) {
+  locationPopover.classList.toggle('hidden', !open);
+  locationBtn.setAttribute('aria-expanded', String(open));
+  document.getElementById('locationPicker')?.classList.toggle('open', open);
+}
+
+locationBtn?.addEventListener('click', (event) => {
+  event.stopPropagation();
+  setLocationPopover(locationPopover.classList.contains('hidden'));
+});
+
+locationCloseBtn?.addEventListener('click', () => setLocationPopover(false));
+
+document.addEventListener('click', (event) => {
+  const picker = document.getElementById('locationPicker');
+  if (picker && !picker.contains(event.target)) {
+    setLocationPopover(false);
+  }
+});
+
+locationPopover?.addEventListener('click', event => event.stopPropagation());
+
+function updateMainLocationButton() {
+  if (!activeLocationCity) {
+    locationBtnText.textContent = 'Tüm Türkiye';
+    return;
+  }
+
+  locationBtnText.textContent = activeLocationDistrict
+    ? activeLocationCity + ', ' + activeLocationDistrict
+    : activeLocationCity;
+}
+
+async function loadMainLocationDistricts(provinceId, selectedDistrict = '') {
+  mainLocationDistrict.disabled = true;
+  mainLocationDistrict.innerHTML = '<option value="">İlçeler yükleniyor...</option>';
+
+  if (!provinceId) {
+    mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+    mainLocationDistrict.disabled = true;
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.turkiyeapi.dev/v2/provinces/${provinceId}/districts?fields=id,name&limit=100`
+    );
+
+    if (!response.ok) throw new Error('İlçe verisi alınamadı');
+
+    const result = await response.json();
+    mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+
+    result.data.forEach(district => {
+      const option = document.createElement('option');
+      option.value = district.name;
+      option.textContent = district.name;
+      mainLocationDistrict.appendChild(option);
+    });
+
+    mainLocationDistrict.disabled = false;
+
+    if (selectedDistrict) {
+      const wanted = [...mainLocationDistrict.options].find(
+        option => normalizeQuoteSearch(option.value) === normalizeQuoteSearch(selectedDistrict)
+      );
+      if (wanted) mainLocationDistrict.value = wanted.value;
+    }
+  } catch (error) {
+    console.error('Ana konum ilçeleri yüklenemedi:', error);
+    mainLocationDistrict.innerHTML = '<option value="">İlçeler yüklenemedi</option>';
+  }
+}
+
+async function loadMainLocationProvinces() {
+  mainLocationCity.innerHTML = '<option value="">İller yükleniyor...</option>';
+
+  try {
+    const response = await fetch(
+      'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=81'
+    );
+
+    if (!response.ok) throw new Error('İl verisi alınamadı');
+
+    const result = await response.json();
+    mainLocationCity.innerHTML = '<option value="">Tüm İller</option>';
+
+    result.data.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city.name;
+      option.textContent = city.name;
+      option.dataset.id = city.id;
+      mainLocationCity.appendChild(option);
+    });
+
+    const currentCityOption = [...mainLocationCity.options].find(
+      option => normalizeQuoteSearch(option.value) === normalizeQuoteSearch(activeLocationCity)
+    );
+
+    if (currentCityOption) {
+      mainLocationCity.value = currentCityOption.value;
+      await loadMainLocationDistricts(currentCityOption.dataset.id, activeLocationDistrict);
+    } else {
+      mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+      mainLocationDistrict.disabled = true;
+    }
+  } catch (error) {
+    console.error('Ana konum illeri yüklenemedi:', error);
+    mainLocationCity.innerHTML = '<option value="">İller yüklenemedi</option>';
+  }
+}
+
+mainLocationCity?.addEventListener('change', async function () {
+  const option = this.options[this.selectedIndex];
+  const provinceId = option?.dataset?.id || '';
+
+  if (!this.value) {
+    mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+    mainLocationDistrict.disabled = true;
+    return;
+  }
+
+  await loadMainLocationDistricts(provinceId);
+});
+
+applyMainLocationBtn?.addEventListener('click', () => {
+  activeLocationCity = mainLocationCity.value || '';
+  activeLocationDistrict = activeLocationCity ? (mainLocationDistrict.value || '') : '';
+
+  updateMainLocationButton();
+  setLocationPopover(false);
+  renderList();
+
+  const filtered = getFilteredInstitutions();
+  const firstWithCoords = filtered.find(inst =>
+    Number.isFinite(inst.lat) && Number.isFinite(inst.lng)
+  );
+
+  if (firstWithCoords) {
+    map.flyTo([firstWithCoords.lat, firstWithCoords.lng], 13, { duration: .6 });
+  }
+
+  showToast(
+    activeLocationCity
+      ? (activeLocationDistrict
+          ? activeLocationCity + ' / ' + activeLocationDistrict + ' seçildi.'
+          : activeLocationCity + ' seçildi.')
+      : 'Tüm Türkiye gösteriliyor.'
+  );
+});
+
+clearMainLocationBtn?.addEventListener('click', () => {
+  activeLocationCity = '';
+  activeLocationDistrict = '';
+  mainLocationCity.value = '';
+  mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+  mainLocationDistrict.disabled = true;
+
+  updateMainLocationButton();
+  setLocationPopover(false);
+  renderList();
+  map.setView([39.0, 35.0], 6);
+  showToast('Tüm Türkiye gösteriliyor.');
+});
+
+updateMainLocationButton();
+
 async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
   const districtSelect = document.getElementById('institutionDistrict');
@@ -1651,6 +1847,7 @@ document.getElementById('institutionForgotPasswordBtn').addEventListener('click'
 });
 
 
+loadMainLocationProvinces();
 loadProvinces();
 loadQuoteProvinces();
 loadInstitutionRegistrationOptions();
