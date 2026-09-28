@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=2">
+  <link rel="stylesheet" href="institution.css?v=3">
 </head>
 <body>
   <header class="panel-header">
@@ -39,6 +39,7 @@
         Teklifler <span class="tab-count" id="quoteTabCount">0</span>
       </button>
       <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
+      <button class="panel-tab" data-panel-tab="stats">📊 İstatistikler</button>
       <button class="panel-tab" data-panel-tab="account">Hesap</button>
     </nav>
 
@@ -161,6 +162,69 @@
       </article>
     </section>
 
+
+    <section class="panel-view" data-panel-view="stats">
+      <div class="traffic-stats-grid">
+        <article class="stat-card">
+          <span>Bugünkü Ziyaret</span>
+          <strong id="todayProfileViews">0</strong>
+          <small>Bugün profilinizi görüntüleyenler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Son 7 Gün</span>
+          <strong id="weekProfileViews">0</strong>
+          <small>Profil görüntülenmesi</small>
+        </article>
+
+        <article class="stat-card">
+          <span>WhatsApp Tıklaması</span>
+          <strong id="whatsappClickCount">0</strong>
+          <small>Profilinizden WhatsApp'a geçenler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Yol Tarifi</span>
+          <strong id="routeClickCount">0</strong>
+          <small>Yol tarifi butonuna tıklayanlar</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Toplam Yorum</span>
+          <strong id="reviewCountStat">0</strong>
+          <small>Kurumunuza bırakılan yorumlar</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Ortalama Puan</span>
+          <strong id="averageRatingStat">0.0</strong>
+          <small>5 üzerinden ortalama</small>
+        </article>
+      </div>
+
+      <div class="panel-grid stats-panel-grid">
+        <article class="panel-card">
+          <div class="card-head">
+            <div>
+              <h2>Son 7 Günlük Trafik</h2>
+              <p>Profil görüntülenmelerinin günlük dağılımı.</p>
+            </div>
+          </div>
+          <div id="trafficBars" class="traffic-bars"></div>
+        </article>
+
+        <article class="panel-card">
+          <div class="card-head">
+            <div>
+              <h2>Son Yorumlar</h2>
+              <p>Müşterilerin verdiği son puan ve yorumlar.</p>
+            </div>
+          </div>
+          <div id="panelReviewsList" class="panel-reviews-list"></div>
+        </article>
+      </div>
+    </section>
+
     <section class="panel-view" data-panel-view="account">
       <div class="panel-grid">
         <article class="panel-card">
@@ -184,6 +248,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=3""></script>
+  <script src="institution.js?v=4"""></script>
 </body>
 </html>
