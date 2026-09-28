@@ -2,6 +2,7 @@
   const compareIds=new Set();
   const engagementMap=new Map();
   const markedViewed=new Set();
+  const engagementFetchedAt=new Map();
   let activeConversation=null;
   let conversationUnsub=null;
   let enhancing=false;
@@ -103,9 +104,11 @@
       bindTools(bundle);
       ensureConversationModal();
 
+      const nowMs=Date.now();
       const missing=bundle.offers.filter(o=>{
         const id=String(o.institutionId||o.id||"");
-        return id && !engagementMap.has(id);
+        const fetchedAt=engagementFetchedAt.get(id)||0;
+        return id && (!engagementMap.has(id) || nowMs-fetchedAt>10000);
       });
 
       if(missing.length){
@@ -120,7 +123,10 @@
             return [id,{}];
           }
         }));
-        rows.forEach(([id,data])=>engagementMap.set(id,data));
+        rows.forEach(([id,data])=>{
+          engagementMap.set(id,data);
+          engagementFetchedAt.set(id,Date.now());
+        });
         bindTools(bundle);
       }
 
@@ -314,6 +320,7 @@
           revisionRequestedAt:now,
           lastCustomerActionAt:now
         });
+        engagementFetchedAt.set(activeConversation.institutionId,Date.now());
         toast("Revizyon talebi firmaya gönderildi.");
       }else{
         toast("Mesaj gönderildi.");
