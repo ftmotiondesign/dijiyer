@@ -240,6 +240,37 @@ function renderSidebarCategories() {
       button.setAttribute('aria-expanded', String(willOpen));
     });
   });
+
+  root.querySelectorAll('.subCategoryFilter').forEach(input => {
+    input.addEventListener('change', () => {
+      const mainKey = input.dataset.mainCategory;
+      const parent = root.querySelector('.categoryFilter[value="' + mainKey + '"]');
+
+      // Alt kategori seçildiğinde ana kategori de görsel olarak seçili kalsın.
+      if (input.checked && parent) {
+        parent.checked = true;
+      }
+
+      // Son alt kategori kaldırıldıysa ana kategoriyi kullanıcı seçimine bırak.
+      renderList();
+    });
+  });
+
+  root.querySelectorAll('.categoryFilter').forEach(input => {
+    input.addEventListener('change', () => {
+      const mainKey = input.value;
+      const childInputs = root.querySelectorAll(
+        '.subCategoryFilter[data-main-category="' + mainKey + '"]'
+      );
+
+      // Ana kategori kapatılırsa altında seçilmiş alt kategorileri de temizle.
+      if (!input.checked) {
+        childInputs.forEach(child => { child.checked = false; });
+      }
+
+      renderList();
+    });
+  });
 }
 
 renderSidebarCategories();
@@ -378,6 +409,23 @@ function addMarkers() {
 }
 addMarkers();
 
+function updateMarkerVisibility(visibleInstitutions) {
+  const visibleIds = new Set(
+    visibleInstitutions.map(inst => String(inst.id))
+  );
+
+  markers.forEach((marker, id) => {
+    const shouldShow = visibleIds.has(String(id));
+    const isShown = map.hasLayer(marker);
+
+    if (shouldShow && !isShown) {
+      marker.addTo(map);
+    } else if (!shouldShow && isShown) {
+      map.removeLayer(marker);
+    }
+  });
+}
+
 // Temel kurum listesini ve detay kartını hemen göster.
 // Aşağıdaki ek özelliklerden biri hata verse bile ana ekran boş kalmasın.
 setTimeout(() => {
@@ -403,15 +451,22 @@ function getFilteredInstitutions() {
     const [mainCategory, subCategory] = resolveTaxonomy(inst);
 
     const mainCategorySelected = checkedCategories.includes(mainCategory);
-    const subCategorySelected = checkedSubCategories.some(item =>
-      item.mainCategory === mainCategory && item.subCategory === subCategory
-    );
+    const selectedSubsForMain = checkedSubCategories
+      .filter(item => item.mainCategory === mainCategory)
+      .map(item => item.subCategory);
 
-    const hasCategoryFilter =
+    const hasAnyCategoryFilter =
       checkedCategories.length > 0 || checkedSubCategories.length > 0;
 
-    const matchesCategory =
-      !hasCategoryFilter || mainCategorySelected || subCategorySelected;
+    let matchesCategory = !hasAnyCategoryFilter;
+
+    if (selectedSubsForMain.length > 0) {
+      // Bu ana kategoride alt kategori seçildiyse alt kategori önceliklidir.
+      matchesCategory = selectedSubsForMain.includes(subCategory);
+    } else if (mainCategorySelected) {
+      // Alt kategori seçilmemişse ana kategorinin tamamını göster.
+      matchesCategory = true;
+    }
 
     const mainLabel = categoryTaxonomy[mainCategory]?.label || '';
     const subLabel = categoryTaxonomy[mainCategory]?.subs?.[subCategory] || '';
@@ -435,6 +490,16 @@ function getFilteredInstitutions() {
 function renderList() {
   const list = document.getElementById('institutionList');
   const data = getFilteredInstitutions();
+
+  const selectedStillVisible = data.some(
+    inst => String(inst.id) === String(selectedId)
+  );
+
+  if (!selectedStillVisible) {
+    selectedId = data.length ? data[0].id : null;
+  }
+
+  updateMarkerVisibility(data);
   document.getElementById('resultCount').textContent = `${data.length} sonuç`;
 
   list.innerHTML = data.map(inst => `
@@ -472,11 +537,23 @@ function renderList() {
       openModal('quoteModal');
     });
   });
+
+  renderDetail();
 }
 
 function renderDetail() {
-  const inst = institutions.find(i => String(i.id) === String(selectedId)) || institutions[0];
   const panel = document.getElementById('detailPanel');
+  const inst = institutions.find(i => String(i.id) === String(selectedId));
+
+  if (!inst) {
+    panel.innerHTML = `
+      <div class="empty-detail-state">
+        <strong>Bu filtreye uygun kurum bulunamadı.</strong>
+        <span>Farklı bir alt kategori seçebilir veya filtreyi kaldırabilirsiniz.</span>
+      </div>
+    `;
+    return;
+  }
 
   const savedReviews = JSON.parse(localStorage.getItem(`reviews_${inst.id}`) || '[]');
   const userReviewHtml = savedReviews.slice(-2).reverse().map(r => `
@@ -689,8 +766,6 @@ function escapeHtml(s){
 }
 
 document.getElementById('searchInput').addEventListener('input', renderList);
-document.querySelectorAll('.categoryFilter').forEach(el => el.addEventListener('change', renderList));
-document.querySelectorAll('.subCategoryFilter').forEach(el => el.addEventListener('change', renderList));
 document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
