@@ -2008,3 +2008,251 @@ button{
     min-height:40px;
   }
 }
+
+
+/* ===== SORUN ÇÖZÜM MERKEZİ V2 ===== */
+.issue-fairness-banner{
+  display:grid;
+  gap:5px;
+  margin:12px 0 15px;
+  padding:13px 15px;
+  border:1px solid #bfdbfe;
+  border-radius:13px;
+  background:#f8fbff;
+}
+.issue-fairness-banner strong{color:#1d4ed8;font-size:13px}
+.issue-fairness-banner span{color:#475569;font-size:11px;line-height:1.55}
+
+.issue-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.issue-kpi-grid article{
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#fff;
+}
+.issue-kpi-grid span{display:block;color:#64748b;font-size:10px;font-weight:800;margin-bottom:6px}
+.issue-kpi-grid strong{font-size:23px;color:#172033}
+.issue-kpi-grid article.danger{background:#fff7f7;border-color:#fecaca}
+.issue-kpi-grid article.info{background:#f8fbff;border-color:#bfdbfe}
+.issue-kpi-grid article.warning{background:#fffbeb;border-color:#fde68a}
+.issue-kpi-grid article.success{background:#f0fdf4;border-color:#bbf7d0}
+
+.issue-toolbar.detailed{
+  grid-template-columns:minmax(280px,1fr) 220px 270px;
+}
+
+.issue-case-card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-left:5px solid #ef4444;
+  border-radius:16px;
+  padding:17px;
+  box-shadow:0 5px 20px rgba(15,23,42,.04);
+}
+.issue-case-card.state-reviewing{border-left-color:#3b82f6}
+.issue-case-card.state-waiting{border-left-color:#f59e0b}
+.issue-case-card.state-resolved{border-left-color:#22c55e}
+.issue-case-card.state-archived{border-left-color:#94a3b8;opacity:.92}
+
+.issue-case-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.issue-case-kicker{
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  margin-bottom:5px;
+}
+.issue-case-head h4{margin:0 0 5px;font-size:18px}
+.issue-case-statuses{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.issue-status.reviewing{background:#eff6ff;color:#1d4ed8}
+.issue-status.waiting{background:#fffbeb;color:#b45309}
+.issue-status.archived{background:#f1f5f9;color:#64748b}
+.issue-decision-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 9px;
+  border-radius:999px;
+  background:#f3e8ff;
+  color:#7e22ce;
+  font-size:10px;
+  font-weight:900;
+}
+
+.issue-claim-block{
+  display:grid;
+  gap:4px;
+  margin:14px 0;
+  padding:12px 13px;
+  border:1px solid #fecaca;
+  border-radius:11px;
+  background:#fff8f8;
+}
+.issue-claim-block span{color:#b91c1c;font-size:10px;font-weight:900;text-transform:uppercase}
+.issue-claim-block strong{color:#172033;font-size:13px;line-height:1.5}
+.issue-claim-block small{color:#64748b}
+
+.issue-evidence-title{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-end;
+  margin:15px 0 8px;
+}
+.issue-evidence-title strong{font-size:13px;color:#172033}
+.issue-evidence-title span{font-size:10px;color:#64748b;text-align:right}
+
+.issue-evidence-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.issue-evidence-grid>div{
+  padding:10px;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#f8fafc;
+}
+.issue-evidence-grid .wide{grid-column:span 2}
+.issue-evidence-grid small{display:block;color:#64748b;font-size:9px;font-weight:900;margin-bottom:4px;text-transform:uppercase}
+.issue-evidence-grid strong{display:block;color:#172033;font-size:12px;line-height:1.45}
+
+.issue-parties-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:13px;
+}
+.issue-parties-grid>section{
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#fff;
+}
+.issue-party-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+  margin-bottom:10px;
+}
+.issue-party-head>div{display:grid;gap:2px}
+.issue-party-head span{font-size:9px;color:#64748b;font-weight:900;letter-spacing:.06em}
+.issue-party-head strong{font-size:13px;color:#172033}
+.issue-party-head small{color:#64748b}
+.issue-contact-btn{
+  border:0;
+  border-radius:9px;
+  padding:8px 10px;
+  background:#2563eb;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+}
+.issue-contact-btn.business{background:#16a34a}
+.issue-parties-grid label,
+.issue-admin-review label{
+  display:grid;
+  gap:6px;
+  color:#475569;
+  font-size:11px;
+  font-weight:800;
+}
+.issue-parties-grid label small,
+.issue-admin-review label small{font-weight:500;color:#94a3b8}
+.issue-parties-grid textarea,
+.issue-admin-review textarea,
+.issue-admin-review select{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #cbd5e1;
+  border-radius:9px;
+  padding:9px 10px;
+  background:#fff;
+  font:inherit;
+  font-weight:400;
+}
+
+.issue-admin-review{
+  display:grid;
+  gap:10px;
+  margin-top:13px;
+  padding:13px;
+  border:1px solid #c7d2fe;
+  border-radius:12px;
+  background:#f8faff;
+}
+.issue-admin-review-title{display:grid;gap:3px}
+.issue-admin-review-title strong{color:#3730a3;font-size:13px}
+.issue-admin-review-title span{color:#64748b;font-size:10px;line-height:1.45}
+.issue-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+.issue-case-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.issue-case-actions button{
+  border:1px solid #d8e0ea;
+  border-radius:9px;
+  padding:9px 12px;
+  background:#fff;
+  color:#334155;
+  font-weight:800;
+}
+.issue-case-actions button.primary{
+  border-color:#2563eb;
+  background:#2563eb;
+  color:#fff;
+}
+.issue-case-actions button.archive{
+  margin-left:auto;
+  color:#64748b;
+}
+
+.issue-history{margin-top:12px;border-top:1px solid #e5e7eb;padding-top:10px}
+.issue-history summary{cursor:pointer;color:#475569;font-size:11px;font-weight:900}
+.issue-history-list{display:grid;gap:8px;margin-top:10px}
+.issue-history-row{display:grid;grid-template-columns:12px 1fr;gap:8px}
+.issue-history-row>span{width:8px;height:8px;border-radius:50%;background:#93c5fd;margin-top:5px}
+.issue-history-row strong{display:block;color:#334155;font-size:11px}
+.issue-history-row small{display:block;color:#94a3b8;font-size:9px;margin-top:2px}
+.issue-history-row p{margin:4px 0 0;color:#64748b;font-size:10px;line-height:1.4}
+.issue-history-empty{color:#94a3b8;font-size:10px}
+
+.admin-focus-flash{
+  animation:adminFocusFlash 1.7s ease;
+}
+@keyframes adminFocusFlash{
+  0%,100%{box-shadow:none}
+  25%,70%{box-shadow:0 0 0 4px rgba(37,99,235,.22)}
+}
+
+@media(max-width:1180px){
+  .issue-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .issue-toolbar.detailed{grid-template-columns:1fr 1fr}
+  .issue-toolbar.detailed input{grid-column:1/-1}
+  .issue-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .issue-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .issue-toolbar.detailed,
+  .issue-parties-grid,
+  .issue-review-grid{grid-template-columns:1fr}
+  .issue-evidence-title,
+  .issue-case-head{align-items:flex-start;flex-direction:column}
+  .issue-case-statuses{justify-content:flex-start}
+  .issue-evidence-grid{grid-template-columns:1fr}
+  .issue-evidence-grid .wide{grid-column:auto}
+  .issue-case-actions button{width:100%}
+  .issue-case-actions button.archive{margin-left:0}
+}
