@@ -425,3 +425,316 @@ button{cursor:pointer}
   margin:0;
   accent-color:#1677ff;
 }
+
+
+/* =========================================================
+   DIJIYER - Profesyonel filtre paneli
+   ========================================================= */
+
+.app-layout{
+  grid-template-columns:310px minmax(0,1fr);
+  gap:18px;
+}
+
+.sidebar{
+  background:#fff;
+  border:1px solid #e4eaf2;
+  border-radius:20px;
+  box-shadow:0 12px 32px rgba(22,45,78,.08);
+  overflow:hidden;
+}
+
+.panel-title{
+  min-height:72px;
+  padding:0 22px;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  font-size:22px;
+  font-weight:850;
+  letter-spacing:-.35px;
+  color:#10203b;
+  border-bottom:1px solid #e8edf4;
+}
+
+.filter-menu-icon{
+  width:28px;
+  display:inline-grid;
+  place-items:center;
+  font-size:25px;
+  line-height:1;
+  color:#173766;
+}
+
+.filter-section{
+  padding:20px 18px;
+}
+
+.filter-section h3{
+  margin:0 0 15px;
+  font-size:16px;
+  font-weight:850;
+  color:#14233b;
+  letter-spacing:-.15px;
+}
+
+.category-filter-section{
+  max-height:calc(100vh - 330px);
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#c9d4e2 transparent;
+}
+
+.category-filter-section::-webkit-scrollbar{
+  width:6px;
+}
+
+.category-filter-section::-webkit-scrollbar-thumb{
+  background:#c9d4e2;
+  border-radius:20px;
+}
+
+.sidebar-categories{
+  gap:10px;
+}
+
+.category-group{
+  border:0;
+  padding:0;
+}
+
+.category-main-row{
+  min-height:58px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 38px;
+  align-items:center;
+  gap:4px;
+  padding:0 8px 0 12px;
+  background:#fff;
+  border:1px solid #e1e8f0;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(20,45,78,.035);
+  transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.category-main-row:hover{
+  border-color:#cbd9eb;
+  box-shadow:0 5px 14px rgba(22,119,255,.07);
+}
+
+.filter-section .category-main-label{
+  height:56px;
+  display:grid;
+  grid-template-columns:20px 38px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  padding:0;
+  margin:0;
+  cursor:pointer;
+}
+
+/* Eski genel span stili bu alanda uygulanmasın */
+.filter-section .category-main-label span,
+.filter-section .subcategory-label span,
+.filter-section .option-card span{
+  margin-left:0;
+  background:transparent;
+  padding:0;
+  border-radius:0;
+  font-size:inherit;
+}
+
+.category-main-label input,
+.option-card input,
+.subcategory-label input{
+  width:17px;
+  height:17px;
+  margin:0;
+  accent-color:var(--blue);
+  cursor:pointer;
+}
+
+.category-icon,
+.option-icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:50% !important;
+  font-size:17px !important;
+  line-height:1;
+  flex:0 0 38px;
+}
+
+.category-group[data-category-group="egitim"] .category-icon{background:#e9f3ff}
+.category-group[data-category-group="otomotiv"] .category-icon{background:#fff0f0}
+.category-group[data-category-group="yemeicme"] .category-icon{background:#f1ecff}
+.category-group[data-category-group="saglikguzellik"] .category-icon{background:#eaf4ff}
+.category-group[data-category-group="evyapi"] .category-icon{background:#eaf8ef}
+.category-group[data-category-group="emlak"] .category-icon{background:#edf7ff}
+.category-group[data-category-group="turizm"] .category-icon{background:#fff3e6}
+.category-group[data-category-group="organizasyonmedya"] .category-icon{background:#f2edff}
+.category-group[data-category-group="tasimacilik"] .category-icon{background:#fff6dc}
+.category-group[data-category-group="profesyonel"] .category-icon{background:#fff0f0}
+.category-group[data-category-group="alisveris"] .category-icon{background:#eaf4ff}
+.category-group[data-category-group="diger"] .category-icon{background:#f1eff8}
+
+.category-name{
+  min-width:0;
+  color:#14213a !important;
+  font-size:14px !important;
+  font-weight:720;
+  line-height:1.22;
+  overflow-wrap:anywhere;
+}
+
+.category-toggle{
+  width:36px;
+  height:36px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#64748b;
+}
+
+.category-toggle:hover{
+  background:#f4f7fb;
+}
+
+.category-toggle.open{
+  transform:none;
+  color:var(--blue);
+}
+
+.category-chevron{
+  width:9px;
+  height:9px;
+  display:block;
+  border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;
+  transform:rotate(45deg) translate(-2px,-2px);
+  transition:transform .18s ease;
+}
+
+.category-toggle.open .category-chevron{
+  transform:rotate(225deg) translate(-2px,-2px);
+}
+
+.subcategory-list{
+  margin:7px 8px 3px 39px;
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  border:1px solid #e7edf5;
+  border-left:3px solid #cfe0f7;
+  border-radius:10px;
+  background:#f8fafc;
+}
+
+.filter-section .subcategory-label{
+  min-height:34px;
+  display:grid;
+  grid-template-columns:17px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  margin:0;
+  padding:6px 8px;
+  border-radius:8px;
+  color:#485a71;
+  font-size:12.5px;
+  font-weight:620;
+  cursor:pointer;
+}
+
+.filter-section .subcategory-label:hover{
+  background:#fff;
+  color:#14213a;
+}
+
+.filter-section .subcategory-label:has(input:checked){
+  background:#eaf3ff;
+  color:#0f67d7;
+}
+
+/* Diğer seçenekler */
+.other-filter-section{
+  padding-top:20px;
+}
+
+.filter-section .option-card{
+  min-height:56px;
+  margin:0 0 10px;
+  padding:0 14px 0 12px;
+  display:grid;
+  grid-template-columns:20px 38px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  background:#fff;
+  border:1px solid #e1e8f0;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(20,45,78,.03);
+  color:#14213a;
+  cursor:pointer;
+}
+
+.filter-section .option-card:last-child{
+  margin-bottom:0;
+}
+
+.filter-section .option-card:hover{
+  border-color:#cbd9eb;
+  box-shadow:0 5px 14px rgba(22,119,255,.06);
+}
+
+.option-icon-video{background:#f1ecff !important}
+.option-icon-offer{background:#fff4d8 !important}
+
+.option-name{
+  color:#14213a !important;
+  font-size:14px !important;
+  font-weight:720;
+}
+
+.sidebar-note{
+  padding:18px 20px 22px;
+  font-size:12px;
+  color:var(--muted);
+  background:#fbfcfe;
+  border-top:1px solid #edf1f6;
+}
+
+@media(max-width:1150px){
+  .app-layout{
+    grid-template-columns:280px minmax(0,1fr);
+  }
+
+  .filter-section{
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .category-main-row{
+    padding-left:10px;
+  }
+
+  .filter-section .category-main-label{
+    grid-template-columns:18px 34px minmax(0,1fr);
+    gap:9px;
+  }
+
+  .category-icon,
+  .option-icon{
+    width:34px;
+    height:34px;
+    font-size:15px !important;
+  }
+
+  .category-name,
+  .option-name{
+    font-size:13.5px !important;
+  }
+}
