@@ -59,10 +59,21 @@
       <button type="button" class="live-quote-alert-close" id="liveQuoteAlertClose" aria-label="Kapat">×</button>
     </div>
 
+    <div class="live-quote-alert live-message-alert hidden" id="liveMessageAlert">
+      <div class="live-quote-alert-icon">💬</div>
+      <div class="live-quote-alert-copy">
+        <strong>Yeni müşteri mesajı</strong>
+        <span id="liveMessageAlertText">Bir müşteri size mesaj gönderdi.</span>
+      </div>
+      <button type="button" id="liveMessageAlertBtn">Mesajı Gör</button>
+      <button type="button" class="live-quote-alert-close" id="liveMessageAlertClose" aria-label="Kapat">×</button>
+    </div>
+
     <nav class="panel-tabs primary-panel-tabs">
       <button class="panel-tab active" data-panel-tab="summary">📌 Özet</button>
       <button class="panel-tab" data-panel-tab="quotes">
         🔔 Teklifler <span class="tab-count" id="quoteTabCount">0</span>
+        <span class="tab-count message-tab-count" id="messageTabCount" title="Okunmamış müşteri mesajları">💬 0</span>
       </button>
       <button class="panel-tab" data-panel-tab="verify">✓ Teklif Doğrula</button>
       <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
@@ -539,7 +550,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="institution.js?v=10"></script>
   <script src="institution-offers.js?v=4"></script>
-  <script src="institution-communication.js?v=1"></script>
+  <script src="institution-communication.js?v=2"></script>
   <script src="institution-announcements.js?v=2"></script>
 </body>
 </html>
