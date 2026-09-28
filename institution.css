@@ -1729,3 +1729,19 @@ button{cursor:pointer}
     max-width:82%!important;
   }
 }
+
+
+/* Telefon mesaj sıralaması - son */
+.institution-chat-messages{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.firm-message-row{
+  flex:0 0 auto!important;
+}
+.firm-message-row.same-sender{
+  margin-top:1px!important;
+}
+.firm-message-row:not(.same-sender){
+  margin-top:6px!important;
+}
