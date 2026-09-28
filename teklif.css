@@ -75,3 +75,15 @@ button,input{font:inherit}.hidden{display:none!important}
 .djy-message-form{margin-top:10px}.djy-message-form textarea{width:100%;resize:vertical;border:1px solid #d7e0eb;border-radius:11px;padding:11px;outline:none}.djy-message-form textarea:focus{border-color:#86b5ff}
 .djy-message-actions{display:flex;justify-content:space-between;gap:8px;margin-top:8px}.djy-revision-btn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
 @media(max-width:640px){.djy-offer-meta-flags{width:100%;margin-left:0}.djy-message-actions{flex-direction:column}.djy-message-actions button{width:100%}.djy-compare-head{flex-direction:column}.djy-clear-compare{width:100%}}
+
+/* Talep detayları */
+.request-detail-box{margin-top:14px;border:1px solid #dce5f0;border-radius:13px;background:#f8fbff;overflow:hidden}
+.request-detail-box summary{cursor:pointer;list-style:none;padding:12px 14px;font-size:12px;font-weight:900;color:#1d4ed8;display:flex;align-items:center;gap:7px}
+.request-detail-box summary::-webkit-details-marker{display:none}
+.request-detail-box[open] summary{border-bottom:1px solid #e4ebf4;background:#f0f6ff}
+.request-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:13px}
+.request-detail-grid>div{padding:10px;border:1px solid #e6edf5;border-radius:10px;background:#fff}
+.request-detail-grid span{display:block;font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.request-detail-grid strong{display:block;font-size:12px;color:#172033;line-height:1.45}
+.request-detail-note{grid-column:1/-1}
+@media(max-width:640px){.request-detail-grid{grid-template-columns:1fr}.request-detail-note{grid-column:auto}}
