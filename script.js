@@ -771,4 +771,6 @@ async function loadApprovedInstitutions() {
 }
 
 loadProvinces();
+renderList();
+renderDetail();
 loadApprovedInstitutions();
