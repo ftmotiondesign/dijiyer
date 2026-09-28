@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=3">
+  <link rel="stylesheet" href="institution.css?v=4">
   <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
@@ -34,6 +34,88 @@
       </div>
     </section>
 
+    <section class="persistent-performance">
+      <div class="performance-title-row">
+        <div>
+          <span class="eyebrow">PROFİL PERFORMANSI</span>
+          <strong>İstatistikleriniz her zaman burada</strong>
+        </div>
+        <small>Veriler otomatik güncellenir</small>
+      </div>
+
+      <div class="traffic-stats-grid">
+        <article class="stat-card">
+          <span>Bugünkü Ziyaret</span>
+          <strong id="todayProfileViews">0</strong>
+          <small>Bugün profilinizi görüntüleyenler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Son 7 Gün</span>
+          <strong id="weekProfileViews">0</strong>
+          <small>Profil görüntülenmesi</small>
+        </article>
+
+        <article class="stat-card">
+          <span>WhatsApp Tıklaması</span>
+          <strong id="whatsappClickCount">0</strong>
+          <small>Profilinizden WhatsApp'a geçenler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Yol Tarifi</span>
+          <strong id="routeClickCount">0</strong>
+          <small>Yol tarifi butonuna tıklayanlar</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Toplam Yorum</span>
+          <strong id="reviewCountStat">0</strong>
+          <small>Kurumunuza bırakılan yorumlar</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Ortalama Puan</span>
+          <strong id="averageRatingStat">0.0</strong>
+          <small>5 üzerinden ortalama</small>
+        </article>
+      </div>
+
+      <div class="sector-overview">
+        <div class="sector-head">
+          <div>
+            <span class="eyebrow">SEKTÖR İSTATİSTİKLERİ</span>
+            <strong id="sectorLabel">Sektör yükleniyor...</strong>
+          </div>
+          <small>Aynı sektördeki Dijiyer kurumlarının toplam görünümü</small>
+        </div>
+
+        <div class="sector-stats-grid">
+          <div class="sector-stat">
+            <span>Sektördeki Kurum</span>
+            <strong id="sectorInstitutionCount">0</strong>
+          </div>
+
+          <div class="sector-stat">
+            <span>Son 7 Gün Sektör Ziyareti</span>
+            <strong id="sectorWeekViews">0</strong>
+          </div>
+
+          <div class="sector-stat">
+            <span>Sektör Yorumları</span>
+            <strong id="sectorReviewCount">0</strong>
+          </div>
+
+          <div class="sector-stat">
+            <span>Sektör Ort. Puan</span>
+            <strong id="sectorAverageRating">0.0</strong>
+          </div>
+        </div>
+
+        <p class="sector-note" id="sectorStatsNote">Sektör verileri yükleniyor...</p>
+      </div>
+    </section>
+
     <nav class="panel-tabs">
       <button class="panel-tab active" data-panel-tab="summary">Özet</button>
       <button class="panel-tab" data-panel-tab="quotes">
@@ -41,7 +123,7 @@
       </button>
       <button class="panel-tab" data-panel-tab="verify">Teklif Doğrula</button>
       <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
-      <button class="panel-tab" data-panel-tab="stats">📊 İstatistikler</button>
+      <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
       <button class="panel-tab" data-panel-tab="account">Hesap</button>
     </nav>
 
@@ -189,42 +271,12 @@
 
 
     <section class="panel-view" data-panel-view="stats">
-      <div class="traffic-stats-grid">
-        <article class="stat-card">
-          <span>Bugünkü Ziyaret</span>
-          <strong id="todayProfileViews">0</strong>
-          <small>Bugün profilinizi görüntüleyenler</small>
-        </article>
-
-        <article class="stat-card">
-          <span>Son 7 Gün</span>
-          <strong id="weekProfileViews">0</strong>
-          <small>Profil görüntülenmesi</small>
-        </article>
-
-        <article class="stat-card">
-          <span>WhatsApp Tıklaması</span>
-          <strong id="whatsappClickCount">0</strong>
-          <small>Profilinizden WhatsApp'a geçenler</small>
-        </article>
-
-        <article class="stat-card">
-          <span>Yol Tarifi</span>
-          <strong id="routeClickCount">0</strong>
-          <small>Yol tarifi butonuna tıklayanlar</small>
-        </article>
-
-        <article class="stat-card">
-          <span>Toplam Yorum</span>
-          <strong id="reviewCountStat">0</strong>
-          <small>Kurumunuza bırakılan yorumlar</small>
-        </article>
-
-        <article class="stat-card">
-          <span>Ortalama Puan</span>
-          <strong id="averageRatingStat">0.0</strong>
-          <small>5 üzerinden ortalama</small>
-        </article>
+      <div class="section-intro">
+        <div>
+          <span class="eyebrow">DETAYLI İSTATİSTİK</span>
+          <h2>Trafik ve müşteri etkileşimleri</h2>
+          <p>Profilinizin son 7 günlük hareketini ve son yorumları inceleyin.</p>
+        </div>
       </div>
 
       <div class="panel-grid stats-panel-grid">
@@ -273,7 +325,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=5"></script>
+  <script src="institution.js?v=6""></script>
   <script src="institution-offers.js?v=1"></script>
 </body>
 </html>
