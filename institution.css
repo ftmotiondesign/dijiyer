@@ -2463,3 +2463,108 @@ body[data-panel-current="stats"] .persistent-performance{
     border-bottom:0;
   }
 }
+
+
+/* Destek talebini ilgili teklif/talep ile bağlama */
+.support-reference-wrap{
+  padding:12px;
+  border:1px solid #cfe0f7;
+  border-radius:12px;
+  background:#f8fbff;
+}
+
+.support-reference-wrap label{
+  margin-bottom:8px;
+}
+
+.support-reference-wrap select{
+  width:100%;
+}
+
+.support-reference-help{
+  display:block;
+  margin-top:8px;
+  color:#65758a;
+  font-size:10px;
+  line-height:1.4;
+}
+
+.support-reference-preview{
+  margin-top:9px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+
+.support-reference-preview > div{
+  min-width:0;
+  padding:9px;
+  border:1px solid #e0e8f2;
+  border-radius:9px;
+  background:#fff;
+}
+
+.support-reference-preview span{
+  display:block;
+  margin-bottom:3px;
+  color:#8a96a8;
+  font-size:9px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.support-reference-preview strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#26364d;
+  font-size:11px;
+}
+
+.support-linked-reference{
+  margin:10px 0;
+  padding:11px;
+  border:1px solid #cfe0f7;
+  border-left:4px solid #1677ff;
+  border-radius:10px;
+  background:#f8fbff;
+}
+
+.support-linked-reference > div:first-child{
+  display:grid;
+  gap:3px;
+  margin-bottom:7px;
+}
+
+.support-linked-reference > div:first-child span{
+  color:#1677ff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+
+.support-linked-reference > div:first-child strong{
+  color:#172033;
+  font-size:12px;
+}
+
+.support-linked-reference-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 12px;
+}
+
+.support-linked-reference-grid span{
+  color:#64748b;
+  font-size:10px;
+}
+
+.support-linked-reference-grid b{
+  color:#334155;
+}
+
+@media(max-width:560px){
+  .support-reference-preview{
+    grid-template-columns:1fr;
+  }
+}
