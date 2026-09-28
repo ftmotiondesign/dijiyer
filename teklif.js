@@ -16,6 +16,7 @@ const phoneInput=document.getElementById("trackingPhone");
 const submitBtn=document.getElementById("trackingSubmitBtn");
 const message=document.getElementById("trackingMessage");
 const results=document.getElementById("trackingResults");
+const TRACKING_REFRESH_MS=15000;
 let currentAccess=null;
 let stopOffersListener=null;
 let stopLockListener=null;
@@ -327,3 +328,15 @@ if(urlCode||rememberedCode)codeInput.value=urlCode||rememberedCode;
 const rememberedPhone=sessionStorage.getItem("dijiyerTrackingPhone");
 if(rememberedPhone)phoneInput.value=rememberedPhone;
 setInterval(updateCountdowns,60000);
+
+setInterval(()=>{
+  if(currentAccess && !document.hidden){
+    refreshTracking();
+  }
+},TRACKING_REFRESH_MS);
+
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden && currentAccess){
+    refreshTracking();
+  }
+});
