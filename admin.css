@@ -9,6 +9,14 @@ body{
   color:#172033;
 }
 
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
 .admin-page{
   max-width:1200px;
   margin:auto;
@@ -41,7 +49,7 @@ body{
 .admin-card{
   max-width:450px;
   margin:60px auto;
-  background:white;
+  background:#fff;
   padding:30px;
   border-radius:16px;
   box-shadow:0 8px 30px rgba(0,0,0,.08);
@@ -51,32 +59,39 @@ body{
   margin-top:0;
 }
 
-.admin-card form{
+.admin-card form,
+.admin-modal-card form{
   display:grid;
-  gap:16px;
+  gap:14px;
 }
 
-.admin-card label{
+.admin-card label,
+.admin-modal-card label{
   display:grid;
   gap:7px;
   font-weight:bold;
+  font-size:14px;
 }
 
-.admin-card input{
-  padding:13px;
+.admin-card input,
+.admin-modal-card input,
+.admin-modal-card select,
+.admin-modal-card textarea{
+  width:100%;
+  padding:12px;
   border:1px solid #d9e0ea;
   border-radius:9px;
-  font-size:15px;
+  background:#fff;
 }
 
-.admin-card button{
+.admin-card button,
+.save-btn{
   border:0;
   background:#1677ff;
-  color:white;
+  color:#fff;
   padding:13px;
   border-radius:9px;
   font-weight:bold;
-  cursor:pointer;
 }
 
 #loginMessage{
@@ -88,94 +103,78 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:20px;
+  gap:16px;
+  margin-bottom:18px;
 }
 
 .dashboard-title h2{
-  margin-bottom:5px;
+  margin:0 0 5px;
 }
 
-.dashboard-title p{
+.dashboard-title p,
+.section-title p{
   margin:0;
   color:#6b7280;
 }
 
 #logoutBtn{
   border:1px solid #d9e0ea;
-  background:white;
+  background:#fff;
   padding:10px 16px;
   border-radius:9px;
-  cursor:pointer;
 }
 
-#applicationsList{
+.admin-tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.admin-tab{
+  border:1px solid #d9e0ea;
+  background:#fff;
+  padding:11px 16px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.admin-tab.active{
+  background:#1677ff;
+  border-color:#1677ff;
+  color:#fff;
+}
+
+.section-title{
+  margin-bottom:14px;
+}
+
+.section-title h3{
+  margin:0 0 5px;
+}
+
+#applicationsList,
+#institutionsList{
   display:grid;
   gap:15px;
 }
 
-.application-card{
-  background:white;
+.application-card,
+.institution-manage-card{
+  background:#fff;
   border:1px solid #e1e6ee;
   border-radius:14px;
   padding:20px;
   box-shadow:0 5px 18px rgba(0,0,0,.05);
-  card.querySelector(".approve-btn").addEventListener("click", () => {
-  approveApplication(doc.id, data);
-});
 }
 
-.application-card h3{
-  margin:0 0 5px;
+.application-card h3,
+.institution-manage-card h3{
+  margin:0 0 7px;
   font-size:20px;
-  async function approveApplication(id, data) {
-  try {
-
-    const institution = {
-      name: data.name || "",
-      category: data.category || "",
-      city: data.city || "",
-      district: data.district || "",
-      location: `${data.city || ""}, ${data.district || ""}`,
-      address: data.address || "",
-      phone: data.phone || "",
-      website: data.website || "",
-
-      rating: 0,
-      reviewCount: 0,
-
-      video: false,
-      offer: true,
-      vip: false,
-
-      status: "active",
-      createdAt: new Date().toISOString()
-    };
-
-    const batch = db.batch();
-
-    const institutionRef =
-      db.collection("institutions").doc(id);
-
-    const applicationRef =
-      db.collection("institutionApplications").doc(id);
-
-    batch.set(institutionRef, institution);
-    batch.delete(applicationRef);
-
-    await batch.commit();
-
-    alert("Kurum onaylandı.");
-
-    loadApplications();
-
-  } catch (error) {
-    console.error("Onaylama hatası:", error);
-    alert("Kurum onaylanamadı.");
-  }
-}
 }
 
-.application-top span{
+.application-top span,
+.manage-badges span{
   display:inline-block;
   background:#edf5ff;
   color:#1677ff;
@@ -185,25 +184,35 @@ body{
   font-weight:bold;
 }
 
-.application-info{
+.manage-badges{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.manage-badges .badge-vip{
+  background:#fff3cd;
+  color:#8a5b00;
+}
+
+.manage-badges .badge-video{
+  background:#eafaf0;
+  color:#15803d;
+}
+
+.application-info,
+.manage-info{
   margin-top:15px;
 }
 
-.application-info p{
+.application-info p,
+.manage-info p{
   margin:8px 0;
   color:#4b5563;
 }
 
-@media(max-width:700px){
-  .admin-page{
-    padding:15px;
-  }
-
-  .admin-header{
-    align-items:flex-start;
-  }
-}
-.application-actions{
+.application-actions,
+.manage-actions{
   display:flex;
   gap:10px;
   margin-top:16px;
@@ -211,17 +220,17 @@ body{
   border-top:1px solid #e5e7eb;
 }
 
-.application-actions button{
+.application-actions button,
+.manage-actions button{
   border:0;
   border-radius:9px;
   padding:10px 15px;
   font-weight:bold;
-  cursor:pointer;
 }
 
 .approve-btn{
   background:#16a34a;
-  color:white;
+  color:#fff;
 }
 
 .reject-btn{
@@ -229,7 +238,117 @@ body{
   color:#be123c;
 }
 
-.delete-btn{
+.delete-btn,
+.delete-institution-btn{
   background:#f3f4f6;
   color:#374151;
+}
+
+.edit-institution-btn{
+  background:#eaf3ff;
+  color:#1677ff;
+}
+
+.manage-main{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+
+.manage-main .manage-actions{
+  margin:0;
+  padding:0;
+  border:0;
+  flex-shrink:0;
+}
+
+.admin-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(9,20,38,.55);
+  display:grid;
+  place-items:center;
+  padding:20px;
+  z-index:3000;
+}
+
+.admin-modal.hidden{
+  display:none;
+}
+
+.admin-modal-card{
+  width:min(680px,96vw);
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+  background:#fff;
+  border-radius:16px;
+  padding:24px;
+  position:relative;
+  box-shadow:0 24px 80px rgba(0,0,0,.25);
+}
+
+.admin-modal-card h2{
+  margin-top:0;
+}
+
+.modal-close{
+  position:absolute;
+  top:10px;
+  right:14px;
+  border:0;
+  background:transparent;
+  font-size:28px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.check-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  background:#f7f9fc;
+  padding:12px;
+  border-radius:10px;
+}
+
+.check-grid label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-weight:normal;
+}
+
+.check-grid input{
+  width:auto;
+}
+
+@media(max-width:700px){
+  .admin-page{
+    padding:15px;
+  }
+
+  .admin-header,
+  .dashboard-title,
+  .manage-main{
+    align-items:flex-start;
+  }
+
+  .dashboard-title,
+  .manage-main{
+    flex-direction:column;
+  }
+
+  .form-grid,
+  .check-grid{
+    grid-template-columns:1fr;
+  }
+
+  .manage-main .manage-actions{
+    width:100%;
+  }
 }
