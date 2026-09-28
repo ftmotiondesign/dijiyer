@@ -22,15 +22,19 @@ const applicationsList = document.getElementById("applicationsList");
 const applicationCount = document.getElementById("applicationCount");
 const institutionsList = document.getElementById("institutionsList");
 const institutionCount = document.getElementById("institutionCount");
+const overviewSection = document.getElementById("overviewSection");
 const applicationsSection = document.getElementById("applicationsSection");
 const institutionsSection = document.getElementById("institutionsSection");
 const quotesSection = document.getElementById("quotesSection");
 const offerReportSection = document.getElementById("offerReportSection");
+const issuesSection = document.getElementById("issuesSection");
 const accountsSection = document.getElementById("accountsSection");
+const overviewTabBtn = document.getElementById("overviewTabBtn");
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
 const offerReportTabBtn = document.getElementById("offerReportTabBtn");
+const issuesTabBtn = document.getElementById("issuesTabBtn");
 const accountsTabBtn = document.getElementById("accountsTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
@@ -73,10 +77,32 @@ const offerReportDetailTableBody = document.getElementById("offerReportDetailTab
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
 
+const overviewInstitutionCount = document.getElementById("overviewInstitutionCount");
+const overviewPendingApplications = document.getElementById("overviewPendingApplications");
+const overviewQuoteCount = document.getElementById("overviewQuoteCount");
+const overviewNoOfferCount = document.getElementById("overviewNoOfferCount");
+const overviewOfferCount = document.getElementById("overviewOfferCount");
+const overviewLockedCount = document.getElementById("overviewLockedCount");
+const overviewUsedCount = document.getElementById("overviewUsedCount");
+const overviewIssueCount = document.getElementById("overviewIssueCount");
+const overviewAttentionCount = document.getElementById("overviewAttentionCount");
+const overviewAttentionList = document.getElementById("overviewAttentionList");
+const overviewRecentActivity = document.getElementById("overviewRecentActivity");
+const overviewCategoryTableBody = document.getElementById("overviewCategoryTableBody");
+const overviewCityList = document.getElementById("overviewCityList");
+const overviewRefreshBtn = document.getElementById("overviewRefreshBtn");
+
+const issueSearch = document.getElementById("issueSearch");
+const issueStatusFilter = document.getElementById("issueStatusFilter");
+const issueCount = document.getElementById("issueCount");
+const issuesList = document.getElementById("issuesList");
+
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 
+let applicationRecords = [];
 let institutionRecords = [];
 let quoteRequestRecords = [];
+let institutionAccountRecords = [];
 let institutionOfferReportRecords = [];
 let institutionOfferReportEvents = [];
 
@@ -106,6 +132,8 @@ auth.onAuthStateChanged(async (user) => {
     await loadInstitutions();
     await loadQuoteRequests();
     await loadInstitutionAccounts();
+    refreshAdminOverview();
+    renderIssueCenter();
   } else {
     if (user && user.uid !== ADMIN_UID) {
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
@@ -128,6 +156,8 @@ async function loadApplications() {
       .collection("institutionApplications")
       .orderBy("date", "desc")
       .get();
+
+    applicationRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     applicationCount.textContent =
       `${snapshot.size} kurum başvurusu`;
@@ -297,6 +327,48 @@ function escapeHtml(text) {
 }
 
 
+[applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn]
+  .forEach(button => button?.addEventListener("click", () => {
+    overviewSection.hidden = true;
+    issuesSection.hidden = true;
+    overviewTabBtn.classList.remove("active");
+    issuesTabBtn.classList.remove("active");
+  }, true));
+
+overviewTabBtn?.addEventListener("click", () => {
+  overviewSection.hidden = false;
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  offerReportSection.hidden = true;
+  issuesSection.hidden = true;
+  accountsSection.hidden = true;
+
+  [applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn]
+    .forEach(button => button?.classList.remove("active"));
+  overviewTabBtn.classList.add("active");
+  refreshAdminOverview();
+});
+
+issuesTabBtn?.addEventListener("click", async () => {
+  overviewSection.hidden = true;
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  offerReportSection.hidden = true;
+  issuesSection.hidden = false;
+  accountsSection.hidden = true;
+
+  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn]
+    .forEach(button => button?.classList.remove("active"));
+  issuesTabBtn.classList.add("active");
+
+  if (!quoteRequestRecords.length) {
+    await loadQuoteRequests();
+  }
+  renderIssueCenter();
+});
+
 applicationsTabBtn.addEventListener("click", () => {
   applicationsSection.hidden = false;
   institutionsSection.hidden = true;
@@ -369,6 +441,7 @@ async function loadInstitutions() {
     institutionCount.textContent = `${institutionRecords.length} yayındaki kurum`;
     populateInstitutionCityFilter();
     renderManagedInstitutions();
+    refreshAdminOverview();
 
     if (quoteRequestRecords.length) {
       buildInstitutionOfferReport();
@@ -877,11 +950,14 @@ async function loadQuoteRequests() {
             quoteRef.collection("offerIssues").get()
           ]);
 
+          const liveIssues = issuesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
           const enriched = {
             ...request,
             liveOffers: offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
             liveLock: lockSnapshot.exists ? lockSnapshot.data() : null,
-            issueCount: issuesSnapshot.size
+            liveIssues,
+            issueCount: liveIssues.length
           };
 
           enriched.currentState = getAdminQuoteLiveState(enriched);
@@ -893,6 +969,7 @@ async function loadQuoteRequests() {
             ...request,
             liveOffers: [],
             liveLock: null,
+            liveIssues: [],
             issueCount: 0,
             liveDetailError: true
           };
@@ -908,6 +985,8 @@ async function loadQuoteRequests() {
     renderQuoteRequests();
     buildInstitutionOfferReport();
     renderInstitutionOfferReport();
+    refreshAdminOverview();
+    renderIssueCenter();
 
   } catch (error) {
     console.error("Teklif talepleri yüklenemedi:", error);
@@ -1886,9 +1965,11 @@ async function loadInstitutionAccounts() {
   try {
     const snapshot = await db.collection("institutionUsers").get();
 
-    const records = snapshot.docs
+    institutionAccountRecords = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    const records = institutionAccountRecords;
 
     accountCount.textContent = `${records.length} kurum hesabı`;
 
