@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=12">
+  <link rel="stylesheet" href="admin.css?v=13">
 </head>
 
 <body>
@@ -188,7 +188,11 @@
 
           <select id="quoteStatusFilter">
             <option value="">Tüm durumlar</option>
-            <option value="new">Yeni</option>
+            <option value="new">Yeni / Teklif Yok</option>
+            <option value="offered">Teklif Geldi</option>
+            <option value="locked">Fiyat Kilitlendi</option>
+            <option value="used">Kullanıldı</option>
+            <option value="expired">Süresi Doldu</option>
             <option value="sent">İletildi</option>
             <option value="done">Sonuçlandı</option>
           </select>
@@ -301,7 +305,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=16"></script>
+  <script src="admin.js?v=17"></script>
 
 </body>
 </html>
