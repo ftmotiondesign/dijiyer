@@ -705,7 +705,16 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   };
 
   try {
-    await db.collection('quoteRequests').add(request);
+    const quoteRef = await db.collection('quoteRequests').add(request);
+
+    if (typeof window.rememberCustomerQuote === 'function') {
+      window.rememberCustomerQuote(quoteRef.id);
+    } else {
+      const key = 'dijiyerCustomerQuoteIds';
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!saved.includes(quoteRef.id)) saved.unshift(quoteRef.id);
+      localStorage.setItem(key, JSON.stringify(saved.slice(0, 30)));
+    }
 
     closeModal('quoteModal');
     e.target.reset();
