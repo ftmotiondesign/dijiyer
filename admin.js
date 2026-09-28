@@ -22,8 +22,10 @@ const institutionsList = document.getElementById("institutionsList");
 const institutionCount = document.getElementById("institutionCount");
 const applicationsSection = document.getElementById("applicationsSection");
 const institutionsSection = document.getElementById("institutionsSection");
+const quotesSection = document.getElementById("quotesSection");
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
+const quotesTabBtn = document.getElementById("quotesTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
 const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
@@ -33,7 +35,13 @@ const institutionSort = document.getElementById("institutionSort");
 const clearInstitutionFilters = document.getElementById("clearInstitutionFilters");
 const institutionFilterResult = document.getElementById("institutionFilterResult");
 
+const quoteRequestsList = document.getElementById("quoteRequestsList");
+const quoteRequestCount = document.getElementById("quoteRequestCount");
+const quoteRequestSearch = document.getElementById("quoteRequestSearch");
+const quoteStatusFilter = document.getElementById("quoteStatusFilter");
+
 let institutionRecords = [];
+let quoteRequestRecords = [];
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -59,6 +67,7 @@ auth.onAuthStateChanged(async (user) => {
 
     await loadApplications();
     await loadInstitutions();
+    await loadQuoteRequests();
   } else {
     loginSection.hidden = false;
     dashboardSection.hidden = true;
@@ -249,16 +258,30 @@ function escapeHtml(text) {
 applicationsTabBtn.addEventListener("click", () => {
   applicationsSection.hidden = false;
   institutionsSection.hidden = true;
+  quotesSection.hidden = true;
   applicationsTabBtn.classList.add("active");
   institutionsTabBtn.classList.remove("active");
+  quotesTabBtn.classList.remove("active");
 });
 
 institutionsTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = false;
+  quotesSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
+  quotesTabBtn.classList.remove("active");
   await loadInstitutions();
+});
+
+quotesTabBtn.addEventListener("click", async () => {
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = false;
+  applicationsTabBtn.classList.remove("active");
+  institutionsTabBtn.classList.remove("active");
+  quotesTabBtn.classList.add("active");
+  await loadQuoteRequests();
 });
 
 async function loadInstitutions() {
@@ -597,3 +620,198 @@ async function deleteInstitution(id, name) {
     alert("Kurum silinemedi.");
   }
 }
+
+
+async function loadQuoteRequests() {
+  quoteRequestsList.innerHTML = "Teklif talepleri yükleniyor...";
+
+  try {
+    const snapshot = await db
+      .collection("quoteRequests")
+      .orderBy("date", "desc")
+      .get();
+
+    quoteRequestRecords = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    quoteRequestCount.textContent = `${quoteRequestRecords.length} teklif talebi`;
+    renderQuoteRequests();
+
+  } catch (error) {
+    console.error("Teklif talepleri yüklenemedi:", error);
+    quoteRequestsList.innerHTML =
+      "<p>Teklif talepleri yüklenemedi. Firestore kurallarını kontrol edin.</p>";
+  }
+}
+
+function renderQuoteRequests() {
+  const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
+  const status = quoteStatusFilter.value;
+
+  const data = quoteRequestRecords.filter(item => {
+    const haystack = [
+      item.name,
+      item.phone,
+      item.city,
+      item.district,
+      item.service,
+      item.note
+    ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
+
+    return (!query || haystack.includes(query)) &&
+      (!status || item.status === status);
+  });
+
+  if (!data.length) {
+    quoteRequestsList.innerHTML =
+      '<div class="empty-state">Filtreye uygun teklif talebi bulunamadı.</div>';
+    return;
+  }
+
+  quoteRequestsList.innerHTML = "";
+
+  data.forEach(request => {
+    const matching = institutionRecords.filter(inst => {
+      const sameCategory = inst.category === request.category;
+      const sameCity = (inst.city || "") === (request.city || "");
+      const sameDistrict = (inst.district || "") === (request.district || "");
+
+      return sameCategory && sameCity && (sameDistrict || !request.district);
+    });
+
+    const statusLabels = {
+      new: "Yeni",
+      sent: "İletildi",
+      done: "Sonuçlandı"
+    };
+
+    const card = document.createElement("div");
+    card.className = "quote-request-card";
+
+    const institutionButtons = matching.length
+      ? matching.map(inst => {
+          const digits = String(inst.phone || "").replace(/\D/g, "");
+          const whatsapp =
+            digits.startsWith("0") ? "90" + digits.slice(1) : digits;
+
+          if (!whatsapp) {
+            return `<span class="match-chip">${escapeHtml(inst.name || "Kurum")} · telefon yok</span>`;
+          }
+
+          return `<button
+            class="matched-institution-btn"
+            data-phone="${whatsapp}"
+            data-name="${escapeHtml(inst.name || "Kurum")}"
+          >WhatsApp → ${escapeHtml(inst.name || "Kurum")}</button>`;
+        }).join("")
+      : '<span class="no-match">Bu konum ve kategoride eşleşen kurum yok.</span>';
+
+    card.innerHTML = `
+      <div class="quote-request-top">
+        <div>
+          <h3>${escapeHtml(request.name || "-")}</h3>
+          <div class="quote-badges">
+            <span>${escapeHtml(request.service || "-")}</span>
+            <span class="quote-status status-${escapeHtml(request.status || "new")}">
+              ${statusLabels[request.status] || "Yeni"}
+            </span>
+          </div>
+        </div>
+
+        <div class="quote-date">${formatDate(request.date)}</div>
+      </div>
+
+      <div class="quote-info-grid">
+        <div><small>Telefon</small><strong>${escapeHtml(request.phone || "-")}</strong></div>
+        <div><small>Konum</small><strong>${escapeHtml([request.city, request.district].filter(Boolean).join(" / ") || "-")}</strong></div>
+        <div class="wide"><small>Not</small><strong>${escapeHtml(request.note || "Not yok")}</strong></div>
+      </div>
+
+      <div class="matching-institutions">
+        <strong>Uygun kurumlar (${matching.length})</strong>
+        <div class="matching-buttons">${institutionButtons}</div>
+      </div>
+
+      <div class="quote-actions">
+        <a class="customer-whatsapp" target="_blank"
+          href="https://wa.me/${normalizeWhatsApp(request.phone)}">
+          Müşteriye WhatsApp
+        </a>
+
+        <button class="quote-status-btn" data-status="sent">İletildi</button>
+        <button class="quote-status-btn" data-status="done">Sonuçlandı</button>
+        <button class="quote-delete-btn">Sil</button>
+      </div>
+    `;
+
+    card.querySelectorAll(".matched-institution-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        const institutionName = button.dataset.name;
+        const message = [
+          "Merhaba, Dijiyer üzerinden yeni bir teklif talebi geldi.",
+          "",
+          "Hizmet: " + (request.service || "-"),
+          "Konum: " + [request.city, request.district].filter(Boolean).join(" / "),
+          "Müşteri: " + (request.name || "-"),
+          "Telefon: " + (request.phone || "-"),
+          request.note ? "Not: " + request.note : "",
+          "",
+          "Bu talep " + institutionName + " için uygun görünüyor."
+        ].filter(Boolean).join("\n");
+
+        window.open(
+          `https://wa.me/${button.dataset.phone}?text=${encodeURIComponent(message)}`,
+          "_blank"
+        );
+      });
+    });
+
+    card.querySelectorAll(".quote-status-btn").forEach(button => {
+      button.addEventListener("click", async () => {
+        await updateQuoteStatus(request.id, button.dataset.status);
+      });
+    });
+
+    card.querySelector(".quote-delete-btn").addEventListener("click", async () => {
+      const ok = confirm("Bu teklif talebini silmek istiyor musunuz?");
+      if (!ok) return;
+
+      try {
+        await db.collection("quoteRequests").doc(request.id).delete();
+        await loadQuoteRequests();
+      } catch (error) {
+        console.error("Teklif talebi silinemedi:", error);
+        alert("Teklif talebi silinemedi.");
+      }
+    });
+
+    quoteRequestsList.appendChild(card);
+  });
+}
+
+function normalizeWhatsApp(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  return digits.startsWith("0") ? "90" + digits.slice(1) : digits;
+}
+
+async function updateQuoteStatus(id, status) {
+  try {
+    await db.collection("quoteRequests").doc(id).update({
+      status,
+      updatedAt: new Date().toISOString()
+    });
+
+    const item = quoteRequestRecords.find(record => record.id === id);
+    if (item) item.status = status;
+
+    renderQuoteRequests();
+  } catch (error) {
+    console.error("Teklif durumu güncellenemedi:", error);
+    alert("Teklif durumu güncellenemedi.");
+  }
+}
+
+quoteRequestSearch.addEventListener("input", renderQuoteRequests);
+quoteStatusFilter.addEventListener("change", renderQuoteRequests);
