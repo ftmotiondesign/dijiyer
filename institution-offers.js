@@ -33,6 +33,20 @@ function offerValidityLabel(hours){
   return h+" saat";
 }
 
+function offerRemainingLabel(expiresAt){
+  if(!expiresAt) return "-";
+  const diff=new Date(expiresAt).getTime()-Date.now();
+  if(!Number.isFinite(diff)) return "-";
+  if(diff<=0) return "Süre doldu";
+  const totalMinutes=Math.ceil(diff/60000);
+  const days=Math.floor(totalMinutes/1440);
+  const hours=Math.floor((totalMinutes%1440)/60);
+  const minutes=totalMinutes%60;
+  if(days>0) return days+" gün "+hours+" saat";
+  if(hours>0) return hours+" saat "+minutes+" dk";
+  return minutes+" dk";
+}
+
 function sellerOfferState(quote){
   const offer=institutionOfferMap.get(quote.id);
   const lock=institutionLockMap.get(quote.id);
@@ -514,10 +528,15 @@ async function verifyOfferByCode(rawCode){
         <div class="verify-result-title">${valid?"✅ TEKLİF GEÇERLİ":used?"✓ TEKLİF KULLANILDI":"⛔ TEKLİF SÜRESİ DOLDU"}</div>
         <div class="verify-data">
           <div><span>Teklif No</span><strong>${offerSafe(lock.offerCode || code)}</strong></div>
+          <div><span>Kurum</span><strong>${offerSafe(lock.institutionName || currentInstitution?.name || "-")}</strong></div>
           <div><span>Müşteri</span><strong>${offerSafe(quote.name || "-")}</strong></div>
-          <div><span>Hizmet</span><strong>${offerSafe(lock.scope || quote.service || "-")}</strong></div>
+          <div><span>Hizmet</span><strong>${offerSafe(quote.service || "-")}</strong></div>
+          <div class="verify-data-wide"><span>Teklif Kapsamı</span><strong>${offerSafe(lock.scope || "-")}</strong></div>
           <div><span>Tutar</span><strong>${offerMoney(lock.price)}</strong></div>
+          <div><span>KDV</span><strong>${offerSafe(lock.vatStatus || "-")}</strong></div>
+          <div><span>Fiyat Kilidi</span><strong class="verify-lock-value">🔒 Kilitli</strong></div>
           <div><span>Geçerlilik</span><strong>${formatDate(lock.expiresAt)}</strong></div>
+          <div><span>Kalan Süre</span><strong>${offerSafe(offerRemainingLabel(lock.expiresAt))}</strong></div>
           <div><span>Durum</span><strong>${used?"Kullanıldı":expired?"Süresi Doldu":"Geçerli"}</strong></div>
         </div>
         ${valid ? `<button class="mark-used-btn" data-mark-offer-used data-quote-id="${offerSafe(lookup.quoteId)}">Teklif Kullanıldı Olarak İşaretle</button>` : ""}
