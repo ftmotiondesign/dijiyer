@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=18">
+  <link rel="stylesheet" href="admin.css?v=19">
   <link rel="stylesheet" href="admin-advanced.css?v=3">
 </head>
 
@@ -90,17 +90,62 @@
         </div>
       </div>
 
-      <div class="admin-tabs">
-        <button class="admin-tab active" id="overviewTabBtn">Genel Bakış</button>
-        <button class="admin-tab" id="applicationsTabBtn">Kurum Başvuruları</button>
-        <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
-        <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
-        <button class="admin-tab" id="offerReportTabBtn">Teklif Veren Kurumlar</button>
-        <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri <span id="issueTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="supportTabBtn">Destek Merkezi <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="announcementsTabBtn">Duyurular</button>
-        <button class="admin-tab" id="systemTabBtn">Sistem</button>
-        <button class="admin-tab" id="accountsTabBtn">Kurum Hesapları</button>
+      <nav class="admin-main-nav" aria-label="Yönetim ana menüsü">
+        <button type="button" class="admin-main-nav-btn active" data-admin-main="overview">
+          <span>Ana Sayfa</span>
+        </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="quotes">
+          <span>Teklifler</span>
+        </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="institutions">
+          <span>Kurumlar</span>
+        </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="support">
+          <span>İletişim</span>
+        </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="system">
+          <span>Yönetim</span>
+        </button>
+      </nav>
+
+      <div class="admin-tabs admin-subtabs" id="adminSubtabs">
+        <button class="admin-tab active" id="overviewTabBtn" data-admin-group="overview">Genel Bakış</button>
+
+        <button class="admin-tab" id="quotesTabBtn" data-admin-group="quotes">Talepler</button>
+        <button class="admin-tab" id="issuesTabBtn" data-admin-group="quotes">Sorunlar <span id="issueTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="offerReportTabBtn" data-admin-group="quotes">Teklif Raporu</button>
+
+        <button class="admin-tab" id="institutionsTabBtn" data-admin-group="institutions">Kurumlar</button>
+        <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
+        <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
+
+        <button class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</button>
+
+        <button class="admin-tab" id="systemTabBtn" data-admin-group="system">Sistem</button>
+      </div>
+
+      <div class="admin-section-context">
+        <div>
+          <strong id="adminCurrentSection">Genel Bakış</strong>
+          <span id="adminCurrentHint">Bugün ilgilenmeniz gereken konuları ve temel rakamları görün.</span>
+        </div>
+        <button type="button" id="adminBackOverview">Ana Sayfaya Dön</button>
+      </div>
+
+      <div class="admin-quick-strip" aria-label="Hızlı erişim">
+        <button type="button" data-admin-open="quotes">
+          <span>Teklif Talepleri</span><b id="quickQuoteCount">0</b>
+        </button>
+        <button type="button" data-admin-open="applications">
+          <span>Bekleyen Başvurular</span><b id="quickApplicationCount">0</b>
+        </button>
+        <button type="button" data-admin-open="issues">
+          <span>Açık Sorunlar</span><b id="quickIssueCount">0</b>
+        </button>
+        <button type="button" data-admin-open="support">
+          <span>Destek</span><b id="quickSupportCount">0</b>
+        </button>
       </div>
 
       <section id="overviewSection">
@@ -112,13 +157,13 @@
           <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
         </div>
 
-        <div class="overview-kpi-grid">
+        <div class="overview-kpi-grid overview-kpi-primary">
           <article class="overview-kpi">
             <span>Yayındaki Kurum</span>
             <strong id="overviewInstitutionCount">0</strong>
             <small>Aktif kurum toplamı</small>
           </article>
-          <article class="overview-kpi">
+          <article class="overview-kpi warning">
             <span>Bekleyen Başvuru</span>
             <strong id="overviewPendingApplications">0</strong>
             <small>İncelenmesi gereken kurumlar</small>
@@ -128,32 +173,38 @@
             <strong id="overviewQuoteCount">0</strong>
             <small>Tüm müşteri talepleri</small>
           </article>
-          <article class="overview-kpi warning">
-            <span>Henüz Teklif Yok</span>
-            <strong id="overviewNoOfferCount">0</strong>
-            <small>Cevap bekleyen talepler</small>
-          </article>
-          <article class="overview-kpi">
-            <span>Toplam Teklif</span>
-            <strong id="overviewOfferCount">0</strong>
-            <small>Kurumların verdiği fiyatlar</small>
-          </article>
-          <article class="overview-kpi success">
-            <span>Seçilen / Kilitlenen</span>
-            <strong id="overviewLockedCount">0</strong>
-            <small>Müşteri tarafından seçilenler</small>
-          </article>
-          <article class="overview-kpi success">
-            <span>Kullanılan</span>
-            <strong id="overviewUsedCount">0</strong>
-            <small>İşletmede doğrulanan teklifler</small>
-          </article>
           <article class="overview-kpi danger">
             <span>Açık Sorun</span>
             <strong id="overviewIssueCount">0</strong>
             <small>İncelenmesi gereken bildirimler</small>
           </article>
         </div>
+
+        <details class="overview-extra-stats">
+          <summary>Diğer teklif istatistiklerini göster</summary>
+          <div class="overview-kpi-grid">
+            <article class="overview-kpi warning">
+              <span>Henüz Teklif Yok</span>
+              <strong id="overviewNoOfferCount">0</strong>
+              <small>Cevap bekleyen talepler</small>
+            </article>
+            <article class="overview-kpi">
+              <span>Toplam Teklif</span>
+              <strong id="overviewOfferCount">0</strong>
+              <small>Kurumların verdiği fiyatlar</small>
+            </article>
+            <article class="overview-kpi success">
+              <span>Seçilen / Kilitlenen</span>
+              <strong id="overviewLockedCount">0</strong>
+              <small>Müşteri tarafından seçilenler</small>
+            </article>
+            <article class="overview-kpi success">
+              <span>Kullanılan</span>
+              <strong id="overviewUsedCount">0</strong>
+              <small>İşletmede doğrulanan teklifler</small>
+            </article>
+          </div>
+        </details>
 
         <div class="overview-two-column">
           <section class="overview-panel">
@@ -833,7 +884,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=24"></script>
+  <script src="admin.js?v=25"></script>
   <script src="admin-advanced.js?v=4"></script>
 
 </body>
