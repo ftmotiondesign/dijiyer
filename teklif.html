@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dijiyer - Teklif Takibi</title>
+  <meta name="description" content="Dijiyer teklif takip kodunuzla gelen fiyat tekliflerini görüntüleyin.">
+  <link rel="stylesheet" href="teklif.css?v=1">
+</head>
+<body>
+  <header class="tracking-header">
+    <a href="index.html" class="tracking-brand">
+      <span class="tracking-mark">D</span>
+      <span>Dijiyer</span>
+    </a>
+    <a href="index.html" class="home-link">Ana Sayfa</a>
+  </header>
+
+  <main class="tracking-shell">
+    <section class="tracking-hero">
+      <div class="hero-icon">🔒</div>
+      <div>
+        <span class="eyebrow">GARANTİLİ TEKLİF TAKİBİ</span>
+        <h1>Gelen tekliflerinizi güvenle takip edin.</h1>
+        <p>Takip kodunuz ve talepte kullandığınız telefon numarasıyla tekliflerinizi başka cihazdan da açabilirsiniz.</p>
+      </div>
+    </section>
+
+    <section class="tracking-card" id="trackingLoginCard">
+      <h2>Tekliflerimi Aç</h2>
+      <p class="muted">Talep gönderirken kullandığınız telefon numarasını ve takip kodunuzu girin.</p>
+
+      <form id="trackingForm" class="tracking-form">
+        <label>Takip Kodu
+          <input id="trackingCode" type="text" autocomplete="off" placeholder="DJY-T-XXXX-XXXX-XXXX" required>
+        </label>
+
+        <label>Telefon
+          <input id="trackingPhone" type="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required>
+        </label>
+
+        <button id="trackingSubmitBtn" type="submit">Tekliflerimi Göster</button>
+      </form>
+
+      <div class="privacy-note">
+        🔐 Telefon numaranız bu takip sayfasında açık olarak saklanmaz. Erişim kontrolü için özetlenmiş bir doğrulama değeri kullanılır.
+      </div>
+
+      <p class="tracking-message" id="trackingMessage"></p>
+    </section>
+
+    <section id="trackingResults" class="tracking-results hidden"></section>
+  </main>
+
+  <div class="toast" id="trackingToast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="teklif.js?v=1"></script>
+</body>
+</html>
