@@ -170,16 +170,31 @@
       </label>
 
       <label>Instagram veya Web Sitesi
-        <input
-          type="text"
-          id="institutionWebsite"
-          placeholder="İsteğe bağlı"
-        />
-      </label>
+  <input
+    type="text"
+    id="institutionWebsite"
+    placeholder="İsteğe bağlı"
+  />
+</label>
 
-      <button class="btn btn-primary full" type="submit">
-        Kurum Başvurusu Gönder
-      </button>
+<label>
+  Kurum Konumu
+  <div
+    id="institutionMap"
+    style="height:260px; border-radius:12px; margin-top:8px;"
+  ></div>
+</label>
+
+<p style="font-size:12px; color:#68758a; margin-top:0;">
+  Haritada kurumun bulunduğu noktaya tıklayın.
+</p>
+
+<input type="hidden" id="institutionLat">
+<input type="hidden" id="institutionLng">
+
+<button class="btn btn-primary full" type="submit">
+  Kurum Başvurusu Gönder
+</button>
 
     </form>
   </div>
