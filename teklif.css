@@ -571,3 +571,94 @@ button,input{font:inherit}.hidden{display:none!important}
     max-width:82%!important;
   }
 }
+
+
+/* Teklif kabul şartları */
+.offer-updated-meta{
+  margin-top:5px;
+  color:#1d4ed8;
+  font-size:11px;
+  font-weight:800;
+}
+.offer-acceptance-box{
+  margin-top:12px;
+  padding:13px;
+  border:2px solid #bfdbfe;
+  border-radius:13px;
+  background:#f8fbff;
+}
+.offer-acceptance-title{
+  margin-bottom:10px;
+  color:#102454;
+  font-size:14px;
+  font-weight:900;
+}
+.offer-acceptance-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+.offer-acceptance-grid>div{
+  padding:8px 9px;
+  border:1px solid #e2e8f0;
+  border-radius:9px;
+  background:#fff;
+}
+.offer-acceptance-grid span,
+.offer-condition span{
+  display:block;
+  margin-bottom:3px;
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.offer-acceptance-grid strong,
+.offer-condition strong{
+  display:block;
+  color:#172033;
+  font-size:12px;
+  line-height:1.4;
+}
+.offer-acceptance-warning{
+  margin-top:9px;
+  padding:10px;
+  border-radius:9px;
+  background:#fff7ed;
+  color:#9a3412;
+  font-size:12px;
+  line-height:1.45;
+}
+.offer-condition{
+  margin-top:9px;
+  padding:10px;
+  border-radius:9px;
+  background:#fff;
+  border:1px solid #fde68a;
+}
+.accept-lock-btn{
+  width:100%;
+  background:#15803d!important;
+  color:#fff!important;
+  font-size:13px;
+}
+@media(max-width:560px){
+  .offer-acceptance-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Telefon mesajlaşması gibi sıralama: eski üstte, yeni altta */
+.djy-message-row,
+.firm-message-row{
+  flex:0 0 auto;
+}
+.djy-message-row.same-sender,
+.firm-message-row.same-sender{
+  margin-top:1px!important;
+}
+.djy-message-row:not(.same-sender),
+.firm-message-row:not(.same-sender){
+  margin-top:6px!important;
+}
