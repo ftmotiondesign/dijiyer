@@ -153,7 +153,13 @@ function setPanelTab(name) {
 }
 
 document.querySelectorAll("[data-panel-tab]").forEach(btn => {
-  btn.addEventListener("click", () => setPanelTab(btn.dataset.panelTab));
+  btn.addEventListener("click", async () => {
+    setPanelTab(btn.dataset.panelTab);
+
+    if (btn.dataset.panelTab === "stats" && currentInstitution) {
+      await loadInstitutionStats();
+    }
+  });
 });
 
 document.getElementById("goQuotesBtn").addEventListener("click", () => setPanelTab("quotes"));
@@ -444,6 +450,136 @@ document.getElementById("sendPasswordResetBtn").addEventListener("click", async 
   }
 });
 
+
+function panelLocalDayKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getLastDays(count) {
+  const days = [];
+
+  for (let i = count - 1; i >= 0; i -= 1) {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - i);
+
+    days.push({
+      key: panelLocalDayKey(date),
+      label: date.toLocaleDateString("tr-TR", { weekday: "short" })
+    });
+  }
+
+  return days;
+}
+
+async function loadInstitutionStats() {
+  try {
+    const institutionId = currentAccount.institutionId;
+
+    const [analyticsSnapshot, reviewsSnapshot] = await Promise.all([
+      db.collection("institutionAnalytics")
+        .where("institutionId", "==", institutionId)
+        .get(),
+
+      db.collection("institutionReviews")
+        .where("institutionId", "==", institutionId)
+        .get()
+    ]);
+
+    const events = analyticsSnapshot.docs.map(doc => doc.data());
+    const reviews = reviewsSnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(item => item.status === "published")
+      .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    const today = panelLocalDayKey();
+    const days = getLastDays(7);
+    const weekKeys = new Set(days.map(item => item.key));
+
+    const todayViews = events.filter(item =>
+      item.type === "profile_view" && item.day === today
+    ).length;
+
+    const weekViews = events.filter(item =>
+      item.type === "profile_view" && weekKeys.has(item.day)
+    ).length;
+
+    const whatsappClicks = events.filter(item =>
+      item.type === "whatsapp_click"
+    ).length;
+
+    const routeClicks = events.filter(item =>
+      item.type === "route_click"
+    ).length;
+
+    const average = reviews.length
+      ? reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviews.length
+      : 0;
+
+    document.getElementById("todayProfileViews").textContent = todayViews;
+    document.getElementById("weekProfileViews").textContent = weekViews;
+    document.getElementById("whatsappClickCount").textContent = whatsappClicks;
+    document.getElementById("routeClickCount").textContent = routeClicks;
+    document.getElementById("reviewCountStat").textContent = reviews.length;
+    document.getElementById("averageRatingStat").textContent =
+      reviews.length ? average.toFixed(1) : "0.0";
+
+    const dayCounts = days.map(day => ({
+      ...day,
+      count: events.filter(item =>
+        item.type === "profile_view" && item.day === day.key
+      ).length
+    }));
+
+    const maxCount = Math.max(1, ...dayCounts.map(item => item.count));
+
+    document.getElementById("trafficBars").innerHTML = dayCounts.map(item => {
+      const height = Math.max(8, Math.round((item.count / maxCount) * 120));
+
+      return `
+        <div class="traffic-day">
+          <div class="traffic-value">${item.count}</div>
+          <div class="traffic-bar-track">
+            <div class="traffic-bar-fill" style="height:${height}px"></div>
+          </div>
+          <div class="traffic-day-label">${escapeHtml(item.label)}</div>
+        </div>
+      `;
+    }).join("");
+
+    document.getElementById("panelReviewsList").innerHTML = reviews.length
+      ? reviews.slice(0, 6).map(item => `
+          <div class="panel-review-item">
+            <div class="panel-review-stars">
+              ${"★".repeat(Number(item.rating || 0))}${"☆".repeat(5 - Number(item.rating || 0))}
+            </div>
+            <div class="panel-review-text">${escapeHtml(item.text || "")}</div>
+            <small>${formatDate(item.date)}</small>
+          </div>
+        `).join("")
+      : '<div class="empty-state">Henüz yorum veya puan bulunmuyor.</div>';
+
+  } catch (error) {
+    console.error("İstatistikler yüklenemedi:", error);
+
+    const bars = document.getElementById("trafficBars");
+    const reviews = document.getElementById("panelReviewsList");
+
+    if (bars) {
+      bars.innerHTML =
+        '<div class="empty-state">İstatistikler yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+    }
+
+    if (reviews) {
+      reviews.innerHTML =
+        '<div class="empty-state">Yorumlar yüklenemedi.</div>';
+    }
+  }
+}
+
 let authResolved = false;
 
 const authRestoreTimer = setTimeout(() => {
@@ -489,7 +625,10 @@ auth.onAuthStateChanged(async user => {
     currentInstitution = { id: institutionDoc.id, ...institutionDoc.data() };
 
     renderInstitutionHeader();
-    await loadMatchedQuotes();
+    await Promise.all([
+      loadMatchedQuotes(),
+      loadInstitutionStats()
+    ]);
 
   } catch (error) {
     console.error(error);
