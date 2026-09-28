@@ -1669,3 +1669,63 @@ button{cursor:pointer}
     max-width:84%!important;
   }
 }
+
+/* WhatsApp mesaj görünümü v2 - zorunlu son katman */
+.institution-chat-messages{
+  background:#0b141a!important;
+  gap:2px!important;
+}
+.chat-day-divider{
+  display:flex!important;
+  justify-content:center!important;
+  margin:8px 0 10px!important;
+  width:100%!important;
+}
+.chat-day-divider span{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:26px!important;
+  padding:4px 10px!important;
+  border-radius:8px!important;
+  background:#182229!important;
+  color:#d7dde1!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.25)!important;
+}
+.firm-message-row{
+  margin:3px 0!important;
+}
+.firm-message-row.same-sender{
+  margin-top:1px!important;
+}
+.institution-chat-messages .firm-message{
+  max-width:76%!important;
+  min-width:72px!important;
+  padding:7px 8px 5px!important;
+}
+.institution-chat-messages .firm-message-text{
+  display:inline!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+.institution-chat-messages .firm-message-meta{
+  display:inline-flex!important;
+  float:right!important;
+  margin:7px 0 -1px 9px!important;
+  vertical-align:bottom!important;
+}
+.institution-chat-messages .firm-message-row.mine .firm-message{
+  background:#005c4b!important;
+}
+.institution-chat-messages .firm-message-row.theirs .firm-message{
+  background:#202c33!important;
+}
+@media(max-width:640px){
+  .institution-chat-messages{
+    padding:10px 7px!important;
+  }
+  .institution-chat-messages .firm-message{
+    max-width:82%!important;
+  }
+}
