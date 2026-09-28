@@ -174,7 +174,11 @@
       ["İlçe", Boolean(safeText(inst.district).trim())],
       ["Telefon", Boolean(safeText(inst.phone).trim())],
       ["Adres", Boolean(safeText(inst.address).trim())],
-      ["Konum", Number.isFinite(Number(inst.lat)) && Number.isFinite(Number(inst.lng))],
+      ["Konum",
+        inst.lat !== null && inst.lat !== "" && inst.lat !== undefined &&
+        inst.lng !== null && inst.lng !== "" && inst.lng !== undefined &&
+        Number.isFinite(Number(inst.lat)) && Number.isFinite(Number(inst.lng))
+      ],
       ["Web / Instagram", Boolean(safeText(inst.website).trim())]
     ];
 
@@ -684,6 +688,81 @@
           level:"critical",
           title:"Olası mükerrer kurum",
           detail:items.map(x=>x.name + " (" + (x.city||"-") + "/" + (x.district||"-") + ")").join(" · ")
+        });
+      }
+    });
+
+    // Şüpheli / sıra dışı teklif davranışlarını kontrol et.
+    const institutionRisk = new Map();
+
+    quoteRequestRecords.forEach(request => {
+      const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
+      const validPrices = offers
+        .map(offer => Number(offer.price || 0))
+        .filter(price => Number.isFinite(price) && price > 0)
+        .sort((a,b) => a-b);
+
+      offers.forEach(offer => {
+        const price = Number(offer.price || 0);
+        if (!Number.isFinite(price) || price <= 0) {
+          checks.push({
+            level:"critical",
+            title:"Geçersiz teklif fiyatı",
+            detail:(offer.institutionName || "Kurum") + " · " +
+              (request.service || "Teklif talebi") + " · fiyat: " + String(offer.price || 0)
+          });
+        }
+
+        const institutionId = String(offer.institutionId || offer.id || offer.institutionName || "");
+        if (!institutionRisk.has(institutionId)) {
+          institutionRisk.set(institutionId,{
+            name:offer.institutionName || "Kurum",
+            total:0,
+            problematic:0
+          });
+        }
+
+        const risk = institutionRisk.get(institutionId);
+        risk.total += 1;
+
+        try {
+          const state = typeof getAdminOfferEventState === "function"
+            ? getAdminOfferEventState(offer,request)
+            : "";
+          if (state === "lost" || state === "expired") risk.problematic += 1;
+        } catch (_) {}
+      });
+
+      if (validPrices.length >= 3) {
+        const middle = Math.floor(validPrices.length / 2);
+        const median = validPrices.length % 2
+          ? validPrices[middle]
+          : (validPrices[middle-1] + validPrices[middle]) / 2;
+
+        offers.forEach(offer => {
+          const price = Number(offer.price || 0);
+          if (!price || !median) return;
+
+          if (price < median * 0.5 || price > median * 2) {
+            checks.push({
+              level:"warning",
+              title:"Sıra dışı teklif fiyatı",
+              detail:(offer.institutionName || "Kurum") + " · " +
+                (request.service || "Teklif talebi") + " · " +
+                money(price) + " · medyan " + money(median)
+            });
+          }
+        });
+      }
+    });
+
+    institutionRisk.forEach(risk => {
+      if (risk.total >= 5 && risk.problematic / risk.total >= 0.7) {
+        checks.push({
+          level:"warning",
+          title:risk.name + " için yüksek sonuçsuz teklif oranı",
+          detail:risk.problematic + "/" + risk.total +
+            " teklif kaybedilmiş veya süresi dolmuş."
         });
       }
     });
