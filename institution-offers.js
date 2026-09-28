@@ -13,6 +13,26 @@ function makeOfferCode(){
   for(let i=0;i<bytes.length;i++) out+=chars[bytes[i]%chars.length];
   return out;
 }
+function offerValidityHours(offer){
+  if(!offer?.expiresAt)return 72;
+  const start=offer.updatedAt || offer.createdAt;
+  if(!start)return 72;
+  const diff=new Date(offer.expiresAt).getTime()-new Date(start).getTime();
+  if(!Number.isFinite(diff)||diff<=0)return 72;
+  return Math.max(1,Math.round(diff/3600000));
+}
+function offerValidityLabel(hours){
+  const h=Number(hours||0);
+  if(h===1)return "1 saat";
+  if(h===3)return "3 saat";
+  if(h===12)return "12 saat";
+  if(h===24)return "24 saat";
+  if(h===72)return "3 gün";
+  if(h===168)return "7 gün";
+  if(h>24 && h%24===0)return (h/24)+" gün";
+  return h+" saat";
+}
+
 function sellerOfferState(quote){
   const offer=institutionOfferMap.get(quote.id);
   const lock=institutionLockMap.get(quote.id);
@@ -163,6 +183,11 @@ function sellerOfferFormHtml(quote,offer){
   const scope=offer?.scope || quote.note || quote.service || "";
   const vat=offer?.vatStatus || "Dahil";
   const conditions=offer?.conditions || "";
+  const selectedHours=offerValidityHours(offer);
+
+  const durationOption=(value,label)=>
+    `<option value="${value}" ${Number(selectedHours)===Number(value)?"selected":""}>${label}</option>`;
+
   return `
     <form class="offer-form" data-real-offer-form data-quote-id="${quote.id}">
       <label>Teklif Fiyatı
@@ -177,25 +202,30 @@ function sellerOfferFormHtml(quote,offer){
       <label class="full">Teklif Kapsamı
         <textarea name="scope" required placeholder="Nelerin fiyata dahil olduğunu açıkça yazın.">${offerSafe(scope)}</textarea>
       </label>
-      <label>Geçerlilik Süresi
+      <label>Fiyatın Geçerlilik Süresi
         <select name="durationHours">
-          <option value="1">1 saat</option>
-          <option value="3">3 saat</option>
-          <option value="12">12 saat</option>
-          <option value="24">24 saat</option>
-          <option value="72" selected>3 gün</option>
-          <option value="168">7 gün</option>
+          ${durationOption(1,"1 saat")}
+          ${durationOption(3,"3 saat")}
+          ${durationOption(12,"12 saat")}
+          ${durationOption(24,"24 saat")}
+          ${durationOption(72,"3 gün")}
+          ${durationOption(168,"7 gün")}
         </select>
+        <small class="offer-validity-help">Müşteri bu süre içinde teklifi kabul edip fiyatı kilitlemelidir.</small>
       </label>
       <label>Ek Ücret
         <select name="extraFee">
-          <option value="Yok">Yok</option>
-          <option value="Var">Var</option>
+          <option value="Yok" ${offer?.extraFee!=="Var"?"selected":""}>Yok</option>
+          <option value="Var" ${offer?.extraFee==="Var"?"selected":""}>Var</option>
         </select>
       </label>
-      <label class="full">Özel Şartlar <span style="font-weight:400">(opsiyonel)</span>
-        <input name="conditions" value="${offerSafe(conditions)}" placeholder="Örn. 205/55 R16 için geçerlidir.">
+      <label class="full">Kabul / Özel Şartlar <span style="font-weight:400">(opsiyonel)</span>
+        <input name="conditions" value="${offerSafe(conditions)}" placeholder="Örn. Bu fiyat yalnızca belirtilen ürün/hizmet için geçerlidir.">
       </label>
+      <div class="offer-validity-preview full">
+        <strong>⏱ Kabul şartı:</strong>
+        Seçtiğiniz süre dolmadan müşteri fiyatı kilitlemelidir. Süre dolunca teklif otomatik olarak geçersiz olur.
+      </div>
       <button class="send-real-offer-btn full" type="submit">${offer ? "Teklifi Güncelle" : "Garantili Teklif Gönder"}</button>
     </form>
   `;
@@ -232,7 +262,8 @@ quoteCardHtml = function(quote,compact=false){
         <div class="offer-summary-top">
           <div>
             <div class="offer-summary-price">${offerMoney(offer.price)}</div>
-            <div class="muted">Teklif No: <b>${offerSafe(offer.offerCode)}</b> · ${formatDate(offer.expiresAt)} tarihine kadar</div>
+            <div class="muted">Teklif No: <b>${offerSafe(offer.offerCode)}</b></div>
+            <div class="offer-validity-line">⏱ Bu fiyat <b>${offerSafe(offerValidityLabel(offerValidityHours(offer)))}</b> için geçerlidir · Son kabul: <b>${formatDate(offer.expiresAt)}</b></div>
           </div>
           <span class="quote-status status-interested">Fiyat Garantili</span>
         </div>
