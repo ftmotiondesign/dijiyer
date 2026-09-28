@@ -64,3 +64,9 @@
   #openInstitutionAnnouncements{grid-column:1/4;width:100%}
   .institution-announcement-head{flex-direction:column}
 }
+
+
+/* Yönetim duyurusu yeni değilse uyarı kartını tamamen gizle */
+.institution-announcement-alert.hidden{
+  display:none !important;
+}
