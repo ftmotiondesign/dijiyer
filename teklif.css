@@ -517,3 +517,57 @@ button,input{font:inherit}.hidden{display:none!important}
     max-width:84%!important;
   }
 }
+
+/* WhatsApp müşteri mesaj görünümü v2 - zorunlu son katman */
+.djy-messages{
+  background:#0b141a!important;
+  gap:2px!important;
+}
+.djy-messages .chat-day-divider{
+  display:flex!important;
+  justify-content:center!important;
+  margin:8px 0 10px!important;
+  width:100%!important;
+}
+.djy-messages .chat-day-divider span{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:26px!important;
+  padding:4px 10px!important;
+  border-radius:8px!important;
+  background:#182229!important;
+  color:#d7dde1!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.25)!important;
+}
+.djy-message-row{
+  margin:3px 0!important;
+}
+.djy-message-row.same-sender{
+  margin-top:1px!important;
+}
+.djy-messages .djy-message{
+  max-width:76%!important;
+  min-width:72px!important;
+  padding:7px 8px 5px!important;
+}
+.djy-messages .djy-message-text{
+  display:inline!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+.djy-messages .djy-message-meta{
+  display:inline-flex!important;
+  float:right!important;
+  margin:7px 0 -1px 9px!important;
+  vertical-align:bottom!important;
+}
+@media(max-width:640px){
+  .djy-messages{
+    padding:10px 7px!important;
+  }
+  .djy-messages .djy-message{
+    max-width:82%!important;
+  }
+}
