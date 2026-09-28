@@ -534,9 +534,13 @@ function useGoogleMapsUrl() {
   }
 
   const patterns = [
-    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    // Önce işletmenin gerçek koordinatını taşıyan Place verisini oku.
     /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
-    /[?&](?:q|query|destination)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
+    /!8m2!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+    /[?&](?:q|query|destination)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    // @ koordinatı çoğu zaman sadece ekranda görünen haritanın merkezidir.
+    // Bu yüzden en son çare olarak kullanılır.
+    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
   ];
 
   let lat = null;
