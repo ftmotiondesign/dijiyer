@@ -192,7 +192,7 @@ function renderDetail() {
 
     <div class="cta-row">
       <button class="cta whatsapp" id="whatsappBtn">💬 WhatsApp ile Fiyat Al</button>
-      <button class="cta offer" id="quoteBtn">📄 Hızlı Teklif Formu Gönder</button>
+      <button class="cta offer" id="quoteBtn">📄 Toplu Teklif Al</button>
     </div>
 
     <div class="secondary-actions">
