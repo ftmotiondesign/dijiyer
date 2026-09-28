@@ -67,6 +67,9 @@ const institutions = [
 let selectedId = 1;
 let currentRating = 0;
 
+let institutionMapInstance = null;
+let institutionLocationMarker = null;
+
 const map = L.map('map', { zoomControl: true }).setView([40.149, 26.407], 14);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -77,6 +80,8 @@ const markers = new Map();
 
 function addMarkers() {
   institutions.forEach(inst => {
+    if (markers.has(String(inst.id))) return;
+
     const icon = L.divIcon({
       className: '',
       html: `<div style="
@@ -333,10 +338,21 @@ document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
 document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
-document.getElementById('institutionAddBtn').onclick = () => openModal('institutionModal');
+document.getElementById('institutionAddBtn').onclick = () => {
+  openModal('institutionModal');
+  setTimeout(() => initInstitutionMap(), 150);
+};
 
 document.getElementById('institutionForm').addEventListener('submit', e => {
   e.preventDefault();
+
+  const lat = Number(document.getElementById('institutionLat').value);
+  const lng = Number(document.getElementById('institutionLng').value);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    showToast('Lütfen haritada kurumun konumunu işaretleyin.');
+    return;
+  }
 
   const application = {
     name: document.getElementById('institutionName').value,
@@ -346,7 +362,9 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
     address: document.getElementById('institutionAddress').value,
     phone: document.getElementById('institutionPhone').value,
     website: document.getElementById('institutionWebsite').value,
-    date: new Date().toISOString()
+    date: new Date().toISOString(),
+    lat,
+    lng
   };
 
   db.collection('institutionApplications')
@@ -354,6 +372,15 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
   .then(() => {
     closeModal('institutionModal');
     e.target.reset();
+
+    document.getElementById('institutionLat').value = '';
+    document.getElementById('institutionLng').value = '';
+
+    if (institutionLocationMarker && institutionMapInstance) {
+      institutionMapInstance.removeLayer(institutionLocationMarker);
+      institutionLocationMarker = null;
+    }
+
     showToast('Kurum başvurunuz alındı.');
   })
   .catch(error => {
@@ -362,6 +389,73 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
 });
 
 });
+
+function initInstitutionMap() {
+  const mapElement = document.getElementById('institutionMap');
+  if (!mapElement) return;
+
+  if (!institutionMapInstance) {
+    institutionMapInstance = L.map('institutionMap').setView([39.0, 35.0], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(institutionMapInstance);
+
+    institutionMapInstance.on('click', e => {
+      const { lat, lng } = e.latlng;
+
+      document.getElementById('institutionLat').value = lat.toFixed(6);
+      document.getElementById('institutionLng').value = lng.toFixed(6);
+
+      if (institutionLocationMarker) {
+        institutionLocationMarker.setLatLng([lat, lng]);
+      } else {
+        institutionLocationMarker = L.marker([lat, lng]).addTo(institutionMapInstance);
+      }
+
+      showToast('Kurum konumu işaretlendi.');
+    });
+  }
+
+  setTimeout(() => institutionMapInstance.invalidateSize(), 100);
+}
+
+async function centerInstitutionMapFromAddress() {
+  initInstitutionMap();
+
+  const city = document.getElementById('institutionCity').value;
+  const district = document.getElementById('institutionDistrict').value;
+  const address = document.getElementById('institutionAddress').value.trim();
+
+  if (!city) return;
+
+  const query = [address, district, city, 'Türkiye']
+    .filter(Boolean)
+    .join(', ');
+
+  try {
+    const response = await fetch(
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tr&accept-language=tr&q=' +
+      encodeURIComponent(query)
+    );
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    if (result.length) {
+      const lat = Number(result[0].lat);
+      const lng = Number(result[0].lon);
+
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        institutionMapInstance.setView([lat, lng], address ? 17 : 13);
+      }
+    }
+  } catch (error) {
+    console.warn('Konum merkezlenemedi:', error);
+  }
+}
 
 async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
@@ -458,6 +552,14 @@ document
         '<option value="">İlçeler yüklenemedi</option>';
     }
   });
+
+document.getElementById('institutionDistrict').addEventListener('change', () => {
+  centerInstitutionMapFromAddress();
+});
+
+document.getElementById('institutionAddress').addEventListener('blur', () => {
+  centerInstitutionMapFromAddress();
+});
 
 async function loadApprovedInstitutions() {
   try {
