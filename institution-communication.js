@@ -125,7 +125,7 @@
     return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"});
   }
 
-  function renderFirmConversation(rows){
+  function renderFirmConversation(rows,quote){
     let previousDay="";
     let previousSender="";
     return rows.map(msg=>{
@@ -136,17 +136,22 @@
       const sameSender=previousDay===day && previousSender===msg.sender;
       previousDay=day;
       previousSender=msg.sender;
-      return dayDivider + firmMessageHtml(msg,sameSender);
+      return dayDivider + firmMessageHtml(msg,sameSender,quote);
     }).join("");
   }
 
-  function firmMessageHtml(msg,sameSender=false){
+  function firmMessageHtml(msg,sameSender=false,quote=null){
     const mine=msg.sender==="institution";
     const text=offerSafe(msg.text||"").replace(/\n/g,"<br>");
     const time=offerSafe(formatChatTime(msg.date));
+    const institutionName=offerSafe(currentInstitution?.name||currentAccount?.institutionName||"Firma");
+    const customerName=offerSafe(quote?.name||"Müşteri");
+    const isOfferUpdate=/^(Teklif güncellendi|Revizyon talebinize göre teklif güncellendi)/i.test(String(msg.text||""));
+    const author=mine ? "Firma · "+institutionName+(isOfferUpdate?" · Teklif Güncellemesi":"") : "Müşteri · "+customerName;
     return `
       <div class="firm-message-row ${mine?"mine":"theirs"} ${sameSender?"same-sender":""}">
-        <div class="firm-message ${mine?"mine":"customer"} ${msg.kind||""}">
+        <div class="firm-message ${mine?"mine":"customer"} ${isOfferUpdate?"offer-update-message":""} ${msg.kind||""}">
+          <div class="firm-message-author">${author}</div>
           <div class="firm-message-text">${text}</div>
           <div class="firm-message-meta">
             <span class="firm-message-time">${time}</span>
@@ -430,7 +435,7 @@
       [quote?.service,quote?.city,quote?.district].filter(Boolean).join(" · ")||"Teklif görüşmesi";
 
     box.innerHTML=rows.length
-      ? renderFirmConversation(rows)
+      ? renderFirmConversation(rows,quote)
       : '<div class="firm-empty-message">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
 
     scrollInstitutionChatToBottom("auto");
@@ -516,13 +521,18 @@
     return hours+" saat";
   }
 
-  function offerUpdateNotificationText(offer,revisionPending){
+  function offerUpdateNotificationText(offer,revisionPending,beforeOffer=null){
     const validity=updatedOfferValidityText(offer);
     const price=new Intl.NumberFormat("tr-TR").format(Number(offer?.price||0))+" TL";
-    const parts=[
-      revisionPending ? "Revizyon talebinize göre teklif güncellendi." : "Teklif güncellendi.",
-      "Yeni fiyat: "+price+"."
-    ];
+    const oldPrice=beforeOffer ? Number(beforeOffer.price||0) : 0;
+    const newPrice=Number(offer?.price||0);
+    const parts=[revisionPending ? "Revizyon talebinize göre teklif güncellendi." : "Teklif güncellendi."];
+    if(beforeOffer && oldPrice!==newPrice){
+      parts.push("Önceki fiyat: "+new Intl.NumberFormat("tr-TR").format(oldPrice)+" TL.");
+      parts.push("Yeni fiyat: "+price+".");
+    }else{
+      parts.push("Fiyat: "+price+".");
+    }
 
     if(validity)parts.push("Bu fiyat "+validity+" için geçerlidir.");
     if(offer?.expiresAt)parts.push("Son kabul: "+formatDate(offer.expiresAt)+".");
@@ -550,7 +560,7 @@
       try{
         await sendFirmMessage(
           quoteId,
-          offerUpdateNotificationText(updatedOffer,revisionPending),
+          offerUpdateNotificationText(updatedOffer,revisionPending,beforeOffer),
           revisionPending ? "revision_response" : "message"
         );
 
