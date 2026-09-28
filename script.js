@@ -705,104 +705,34 @@ async function centerInstitutionMapFromAddress() {
 }
 
 const quoteServices = {
-  surucu: [
-    'B Sınıfı Ehliyet',
-    'A1 / A2 Motosiklet Ehliyeti',
-    'C / D Sınıfı Ehliyet',
-    'Otomatik Vites Eğitimi',
-    'Diğer Sürücü Kursu Hizmeti'
-  ],
-  kres: [
-    'Kayıt ve Ücret Bilgisi',
-    'Erken Kayıt',
-    'Tam Gün Program',
-    'Yarım Gün Program',
-    'Diğer Kreş / Anaokulu Hizmeti'
-  ],
-  yurt: [
-    'Konaklama ve Ücret Bilgisi',
-    'Yeni Kayıt',
-    'Oda Seçenekleri',
-    'Servis / Yemek Bilgisi',
-    'Diğer Yurt Hizmeti'
-  ],
-  egitim: [
-    'Kurs Kayıt ve Ücret Bilgisi',
-    'Özel Ders',
-    'Sınava Hazırlık',
-    'Deneme Kulübü',
-    'Diğer Eğitim Hizmeti'
-  ],
-  emlak: [
-    'Satılık Konut',
-    'Kiralık Konut',
-    'Arsa / Tarla',
-    'İşyeri',
-    'Değerleme / Danışmanlık'
-  ],
-  oto: [
-    'Bakım / Onarım',
-    'Kaporta / Boya',
-    'Oto Elektrik',
-    'Lastik / Jant',
-    'Yedek Parça',
-    'Diğer Oto Hizmeti'
-  ],
-  restoran: [
-    'Menü / Fiyat Bilgisi',
-    'Toplu Yemek',
-    'Paket Servis',
-    'Rezervasyon',
-    'Diğer'
-  ],
-  guzellik: [
-    'Kuaför',
-    'Cilt Bakımı',
-    'Güzellik Salonu',
-    'Manikür / Pedikür',
-    'Randevu / Fiyat Bilgisi'
-  ],
-  saglik: [
-    'Muayene / Randevu',
-    'Diş Kliniği',
-    'Fizik Tedavi',
-    'Diyetisyen',
-    'Diğer Sağlık Hizmeti'
-  ],
-  dugun: [
-    'Düğün Salonu',
-    'Fotoğraf / Video',
-    'Organizasyon',
-    'Gelinlik / Damatlık',
-    'Müzik / Eğlence',
-    'Diğer'
-  ],
-  evteknik: [
-    'Elektrikçi',
-    'Su Tesisatı',
-    'Beyaz Eşya Servisi',
-    'Klima Servisi',
-    'Tadilat / Boya',
-    'Diğer Teknik Servis'
-  ],
-  turizm: [
-    'Otel / Konaklama',
-    'Pansiyon',
-    'Tur / Gezi',
-    'Araç Transferi',
-    'Diğer Turizm Hizmeti'
-  ],
-  esnaf: [
-    'Fiyat Teklifi',
-    'Ürün / Hizmet Bilgisi',
-    'Randevu',
-    'Diğer'
-  ],
-  diger: [
-    'Fiyat Teklifi',
-    'Bilgi Talebi',
-    'Diğer'
-  ]
+  surucu: ['B Sınıfı Ehliyet','A1 / A2 Motosiklet Ehliyeti','C / D Sınıfı Ehliyet','Otomatik Vites Eğitimi','Diğer Sürücü Kursu Hizmeti'],
+  kres: ['Kayıt ve Ücret Bilgisi','Erken Kayıt','Tam Gün Program','Yarım Gün Program','Diğer Kreş / Anaokulu Hizmeti'],
+  yurt: ['Konaklama ve Ücret Bilgisi','Yeni Kayıt','Oda Seçenekleri','Servis / Yemek Bilgisi','Diğer Yurt Hizmeti'],
+  egitim: ['Kurs Kayıt ve Ücret Bilgisi','Özel Ders','Sınava Hazırlık','Deneme Kulübü','Diğer Eğitim Hizmeti'],
+  emlak: ['Satılık Konut','Kiralık Konut','Arsa / Tarla','İşyeri','Değerleme / Danışmanlık'],
+  oto: ['Bakım / Onarım','Kaporta / Boya','Oto Elektrik','Lastik / Jant','Yedek Parça','Diğer Oto Hizmeti'],
+  restoran: ['Menü / Fiyat Bilgisi','Toplu Yemek','Paket Servis','Rezervasyon','Diğer'],
+  guzellik: ['Kuaför','Cilt Bakımı','Güzellik Salonu','Manikür / Pedikür','Randevu / Fiyat Bilgisi'],
+  saglik: ['Muayene / Randevu','Diş Kliniği','Fizik Tedavi','Diyetisyen','Diğer Sağlık Hizmeti'],
+  dugun: ['Düğün Salonu','Fotoğraf / Video','Organizasyon','Gelinlik / Damatlık','Müzik / Eğlence','Diğer'],
+  evteknik: ['Elektrikçi','Su Tesisatı','Beyaz Eşya Servisi','Klima Servisi','Diğer Teknik Servis'],
+  turizm: ['Otel / Konaklama','Pansiyon','Tur / Gezi','Araç Transferi','Diğer Turizm Hizmeti'],
+  nakliyat: ['Evden Eve Nakliyat','Parça Eşya Taşıma','Ofis Taşıma','Şehirler Arası Nakliyat','Depolama'],
+  temizlik: ['Ev Temizliği','Ofis Temizliği','İnşaat Sonrası Temizlik','Koltuk / Halı Temizliği','Diğer Temizlik Hizmeti'],
+  mobilya: ['Mobilya Üretimi','Mobilya Montajı','Mutfak / Dolap','Dekorasyon','Mobilya Tamiri'],
+  teknoloji: ['Bilgisayar Tamiri','Telefon / Tablet Servisi','Yazılım / Kurulum','Ağ / İnternet','Teknoloji Danışmanlığı'],
+  veteriner: ['Veteriner Muayenesi','Aşı','Pet Kuaför','Pet Oteli','Mama / Pet Ürünleri'],
+  spor: ['Spor Salonu Üyeliği','Personal Trainer','Pilates','Yoga','Yüzme / Spor Kursu'],
+  medya: ['Fotoğraf Çekimi','Video Çekimi','Drone Çekimi','Tanıtım Videosu','Kurgu / Montaj'],
+  reklam: ['Matbaa / Baskı','Tabela','Grafik Tasarım','Sosyal Medya Tasarımı','Promosyon / Reklam Ürünleri'],
+  insaat: ['Ev Tadilatı','Boya / Badana','Alçı / Sıva','Seramik / Fayans','İnşaat Ustası'],
+  tarim: ['Tarım Ürünleri','Hayvancılık','Yem / Gübre','Tarım Makinesi','Veterinerlik Dışı Çiftlik Hizmeti'],
+  hukuk: ['Avukatlık','Hukuki Danışmanlık','Arabuluculuk','İcra / Alacak','Sözleşme Danışmanlığı'],
+  muhasebe: ['Mali Müşavirlik','Muhasebe Hizmeti','Şirket Kuruluşu','Vergi Danışmanlığı','Bordro / SGK'],
+  kurye: ['Moto Kurye','Aynı Gün Teslimat','Şehir İçi Teslimat','Evrak Teslimatı','Paket Teslimatı'],
+  perakende: ['Ürün Fiyatı','Stok Bilgisi','Sipariş','Mağazadan Teslim','Diğer Perakende Hizmeti'],
+  esnaf: ['Fiyat Teklifi','Ürün / Hizmet Bilgisi','Randevu','Diğer'],
+  diger: ['Fiyat Teklifi','Bilgi Talebi','Diğer']
 };
 
 function fillQuoteServices(category) {
@@ -838,14 +768,28 @@ function inferQuoteCategory(value) {
     ['yurt', ['yurt','ogrenci yurdu','barinma']],
     ['egitim', ['dershane','kurs','ozel ders','lgs','tyt','ayt','deneme','egitim']],
     ['emlak', ['emlak','kiralik','satilik','arsa','tarla','daire','konut','isyeri']],
+    ['nakliyat', ['nakliyat','evden eve','tasimacilik','esya tasima','ofis tasima','depolama']],
+    ['temizlik', ['temizlik','ev temizligi','ofis temizligi','koltuk temizligi','hali temizligi']],
+    ['mobilya', ['mobilya','dekorasyon','dolap','mutfak dolabi','mobilya montaj']],
+    ['teknoloji', ['bilgisayar','telefon tamiri','tablet','yazilim','format','internet kurulumu','teknoloji']],
+    ['veteriner', ['veteriner','pet','kedi','kopek','hayvan klinigi','pet kuafor']],
+    ['spor', ['spor salonu','fitness','personal trainer','pilates','yoga','yuzme']],
+    ['medya', ['fotograf','video cekimi','drone cekimi','tanitim videosu','kurgu','montaj']],
+    ['reklam', ['matbaa','baski','tabela','grafik tasarim','sosyal medya tasarim','reklam']],
+    ['insaat', ['insaat','tadilat','boya badana','alci','siva','seramik','fayans']],
+    ['tarim', ['tarim','hayvancilik','gubre','yem','ciftlik','tarim makinesi']],
+    ['hukuk', ['avukat','hukuk','arabulucu','icra','sozlesme']],
+    ['muhasebe', ['muhasebe','mali musavir','vergi','bordro','sgk']],
+    ['kurye', ['kurye','moto kurye','teslimat','evrak teslim','paket teslim']],
+    ['perakende', ['magaza','perakende','stok','magazadan teslim']],
     ['oto', ['oto','araba tamir','servis','kaporta','boya','lastik','jant','yedek parca','oto elektrik']],
     ['restoran', ['restoran','kafe','yemek','pizza','kahvalti','cafe']],
     ['guzellik', ['kuafor','guzellik','cilt bakimi','manikur','pedikur']],
     ['saglik', ['klinik','doktor','dis','diyetisyen','fizik tedavi','muayene','saglik']],
-    ['dugun', ['dugun','organizasyon','gelinlik','damatlik','fotografci','dugun salonu']],
-    ['evteknik', ['elektrikci','tesisat','klima','beyaz esya','tadilat','boyaci','teknik servis']],
+    ['dugun', ['dugun','organizasyon','gelinlik','damatlik','dugun salonu']],
+    ['evteknik', ['elektrikci','tesisat','klima','beyaz esya','teknik servis']],
     ['turizm', ['otel','pansiyon','konaklama','tur','gezi','transfer']],
-    ['esnaf', ['esnaf','magaza','dukkân','dukkan']]
+    ['esnaf', ['esnaf','dukkan']]
   ];
 
   for (const [category, keywords] of rules) {
