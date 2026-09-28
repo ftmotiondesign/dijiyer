@@ -618,7 +618,7 @@
         const rows=sortCustomerConversationMessages(
           snapshot.docs.map(d=>({id:d.id,...d.data()}))
         );
-        box.innerHTML=rows.length?renderCustomerConversation(rows):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
+        box.innerHTML=rows.length?renderCustomerConversation(rows,activeConversation.offer):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
         customerMessageRows.set(activeConversation.institutionId,rows);
         markCustomerConversationRead(activeConversation.quoteId,activeConversation.institutionId);
         scrollCustomerChatToBottom("smooth");
@@ -669,7 +669,7 @@
     return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"});
   }
 
-  function renderCustomerConversation(rows){
+  function renderCustomerConversation(rows,offer){
     let previousDay="";
     let previousSender="";
     return rows.map(msg=>{
@@ -680,17 +680,20 @@
       const sameSender=previousDay===day && previousSender===msg.sender;
       previousDay=day;
       previousSender=msg.sender;
-      return divider + messageHtml(msg,sameSender);
+      return divider + messageHtml(msg,sameSender,offer);
     }).join("");
   }
 
-  function messageHtml(msg,sameSender=false){
+  function messageHtml(msg,sameSender=false,offer=null){
     const mine=msg.sender==="customer";
     const text=safe(msg.text||"").replace(/\n/g,"<br>");
     const time=safe(formatChatTime(msg.date));
+    const isOfferUpdate=/^(Teklif güncellendi|Revizyon talebinize göre teklif güncellendi)/i.test(String(msg.text||""));
+    const author=mine ? "Siz · Müşteri" : "Firma · "+safe(offer?.institutionName||"Kurum")+(isOfferUpdate?" · Teklif Güncellemesi":"");
     return `
       <div class="djy-message-row ${mine?"mine":"theirs"} ${sameSender?"same-sender":""}">
-        <div class="djy-message ${mine?"mine":"theirs"} ${msg.kind||""}">
+        <div class="djy-message ${mine?"mine":"theirs"} ${isOfferUpdate?"offer-update-message":""} ${msg.kind||""}">
+          <div class="djy-message-author">${author}</div>
           <div class="djy-message-text">${text}</div>
           <div class="djy-message-meta">
             <span class="djy-message-time">${time}</span>
