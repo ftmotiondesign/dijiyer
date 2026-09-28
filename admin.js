@@ -1086,6 +1086,10 @@ function renderQuoteRequests() {
         <div class="wide"><small>Not</small><strong>${escapeHtml(request.note || "Not yok")}</strong></div>
       </div>
 
+      ${request.liveDetailError
+        ? '<div class="admin-offer-error">Teklif süreç ayrıntıları okunamadı.</div>'
+        : adminOfferListHtml(request)}
+
       <div class="matching-institutions">
         <strong>Uygun kurumlar (${matching.length})</strong>
         <div class="match-scope">
