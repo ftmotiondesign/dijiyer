@@ -703,3 +703,58 @@ button{cursor:pointer}
     padding:13px;
   }
 }
+
+
+/* Kurum paneli: önce iş akışı, sonra istatistikler */
+.primary-panel-tabs{
+  margin-top:16px;
+  margin-bottom:16px;
+  background:#e8f1ff;
+  border:1px solid #d7e6fb;
+  box-shadow:0 4px 14px rgba(22,119,255,.05);
+}
+
+.primary-panel-tabs .panel-tab:nth-child(-n+3){
+  color:#334155;
+}
+
+.primary-panel-tabs .panel-tab:nth-child(-n+3).active{
+  color:#0f67d7;
+  background:#fff;
+  box-shadow:0 3px 10px rgba(22,119,255,.10);
+}
+
+.business-performance-divider{
+  margin:26px 0 10px;
+  padding:0 2px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.business-performance-divider > div{
+  display:grid;
+  gap:4px;
+}
+
+.business-performance-divider strong{
+  font-size:18px;
+  color:#172033;
+}
+
+.business-performance-divider small{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.persistent-performance{
+  margin-top:10px;
+}
+
+@media(max-width:780px){
+  .business-performance-divider{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
