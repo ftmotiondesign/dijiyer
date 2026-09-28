@@ -75,3 +75,39 @@
 .quote-success-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.quote-success-actions .btn{width:100%}
 .quote-success-actions .btn-whatsapp{grid-column:1/-1;background:#16a34a;color:#fff;border:0}
 @media(max-width:560px){.quote-success-actions{grid-template-columns:1fr}.quote-success-actions .btn-whatsapp{grid-column:auto}}
+
+.tracking-floating-btn{
+  position:fixed;
+  right:20px;
+  bottom:82px;
+  z-index:1900;
+  min-height:48px;
+  padding:0 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border-radius:999px;
+  background:#102454;
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:0 12px 32px rgba(16,36,84,.24);
+  border:1px solid rgba(255,255,255,.15);
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.tracking-floating-btn:hover{
+  transform:translateY(-2px);
+  background:#1769ff;
+  box-shadow:0 15px 34px rgba(23,105,255,.25);
+}
+@media(max-width:640px){
+  .tracking-floating-btn{
+    right:12px;
+    bottom:72px;
+    min-height:44px;
+    padding:0 14px;
+    font-size:12px;
+  }
+}
