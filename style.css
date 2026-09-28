@@ -2432,3 +2432,85 @@ button{cursor:pointer}
     line-height:1.25;
   }
 }
+
+
+/* =========================================================
+   MOBİL ANA İŞLEM BUTONLARI
+   ========================================================= */
+.mobile-primary-actions{
+  display:none;
+}
+
+@media(max-width:820px){
+  body{
+    padding-bottom:82px;
+  }
+
+  .mobile-primary-actions{
+    position:fixed;
+    left:10px;
+    right:10px;
+    bottom:10px;
+    z-index:5000;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    padding:8px;
+    border:1px solid rgba(211,222,235,.95);
+    border-radius:17px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 14px 38px rgba(16,35,61,.2);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+
+  .mobile-primary-action{
+    min-height:54px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:850;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    position:relative;
+    z-index:1;
+  }
+
+  .mobile-quote-action{
+    border:0;
+    background:#1677ff;
+    color:#fff;
+    box-shadow:0 6px 16px rgba(22,119,255,.2);
+  }
+
+  .mobile-institution-action{
+    border:1px solid #d7e1ec;
+    background:#fff;
+    color:#152238;
+  }
+
+  .mobile-action-icon{
+    font-size:18px;
+  }
+
+  /* Mobilde eski üst bar butonları görünür kalsın ama tıklama alanları net olsun. */
+  .topbar .quote-main-btn,
+  .topbar .institution-actions,
+  .topbar .institution-actions-btn{
+    position:relative;
+    z-index:1100;
+    pointer-events:auto;
+    touch-action:manipulation;
+  }
+
+  .institution-actions-menu{
+    z-index:5100;
+  }
+
+  .modal{
+    z-index:6000;
+  }
+}
