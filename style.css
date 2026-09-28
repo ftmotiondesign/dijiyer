@@ -2510,6 +2510,17 @@ button{cursor:pointer}
     z-index:5100;
   }
 
+  .institution-actions.open .institution-actions-menu{
+    position:fixed;
+    left:10px;
+    right:10px;
+    top:auto;
+    bottom:82px;
+    width:auto;
+    max-width:none;
+    z-index:5200;
+  }
+
   .modal{
     z-index:6000;
   }
