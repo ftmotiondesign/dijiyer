@@ -664,6 +664,137 @@ async function deleteInstitution(id, name) {
 }
 
 
+function quoteMoney(value) {
+  return new Intl.NumberFormat("tr-TR").format(Number(value || 0)) + " TL";
+}
+
+function getAdminQuoteLiveState(request) {
+  const lock = request.liveLock || null;
+  const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
+  const now = Date.now();
+  if (lock) {
+    if (lock.status === "used") return "used";
+    if (lock.expiresAt && new Date(lock.expiresAt).getTime() <= now) return "expired";
+    return "locked";
+  }
+  if (offers.length) {
+    const hasActiveOffer = offers.some(offer =>
+      !offer.expiresAt || new Date(offer.expiresAt).getTime() > now
+    );
+    return hasActiveOffer ? "offered" : "expired";
+  }
+  if (request.status === "done") return "done";
+  if (request.status === "sent") return "sent";
+  return "new";
+}
+
+function getAdminQuoteStateMeta(state) {
+  const map = {
+    new: ["Yeni / Teklif Yok", "status-new"],
+    offered: ["Teklif Geldi", "status-offered"],
+    locked: ["Fiyat Kilitlendi", "status-locked"],
+    used: ["Kullanıldı", "status-used"],
+    expired: ["Süresi Doldu", "status-expired"],
+    sent: ["İletildi", "status-sent"],
+    done: ["Sonuçlandı", "status-done"]
+  };
+  return map[state] || [state || "Yeni", "status-new"];
+}
+
+function adminOfferListHtml(request) {
+  const offers = Array.isArray(request.liveOffers)
+    ? [...request.liveOffers].sort((a,b) => Number(a.price || 0) - Number(b.price || 0))
+    : [];
+  const lock = request.liveLock || null;
+
+  const offersHtml = offers.length
+    ? offers.map(offer => {
+        const isSelected =
+          lock && String(lock.institutionId || "") === String(offer.institutionId || "");
+        const expired =
+          offer.expiresAt &&
+          new Date(offer.expiresAt).getTime() <= Date.now();
+        const stateText = isSelected
+          ? lock.status === "used"
+            ? "Kullanıldı"
+            : expired
+              ? "Süresi Doldu"
+              : "Seçildi / Kilitli"
+          : expired
+            ? "Süresi Doldu"
+            : "Aktif Teklif";
+
+        return `
+          <div class="admin-offer-row ${isSelected ? "selected" : ""}">
+            <div class="admin-offer-main">
+              <strong>${escapeHtml(offer.institutionName || "Kurum")}</strong>
+              <small>
+                ${escapeHtml(offer.offerCode || "-")} ·
+                ${escapeHtml(offer.vatStatus || "-")} ·
+                ${formatDate(offer.expiresAt)}
+              </small>
+            </div>
+            <div class="admin-offer-price">${quoteMoney(offer.price)}</div>
+            <span class="admin-offer-state">${stateText}</span>
+          </div>
+        `;
+      }).join("")
+    : '<div class="admin-offer-empty">Henüz hiçbir kurum fiyat teklifi vermedi.</div>';
+
+  const lockHtml = lock
+    ? `
+      <div class="admin-lock-summary">
+        <div>
+          <small>Seçilen / Kilitlenen Kurum</small>
+          <strong>${escapeHtml(lock.institutionName || "-")}</strong>
+        </div>
+        <div>
+          <small>Kilitli Fiyat</small>
+          <strong>${quoteMoney(lock.lockedPrice ?? lock.price)}</strong>
+        </div>
+        <div>
+          <small>Teklif No</small>
+          <strong>${escapeHtml(lock.offerCode || "-")}</strong>
+        </div>
+        <div>
+          <small>Geçerlilik</small>
+          <strong>${formatDate(lock.expiresAt)}</strong>
+        </div>
+        <div>
+          <small>Son Durum</small>
+          <strong>${lock.status === "used"
+            ? "Kullanıldı"
+            : (lock.expiresAt && new Date(lock.expiresAt).getTime() <= Date.now()
+                ? "Süresi Doldu"
+                : "Fiyat Kilitli")}</strong>
+        </div>
+        ${lock.usedAt ? `
+          <div>
+            <small>Kullanım Tarihi</small>
+            <strong>${formatDate(lock.usedAt)}</strong>
+          </div>
+        ` : ""}
+      </div>
+    `
+    : "";
+
+  const issueHtml = Number(request.issueCount || 0) > 0
+    ? `<div class="admin-offer-issue">⚠️ ${request.issueCount} sorun / ihlal bildirimi var</div>`
+    : "";
+
+  return `
+    <div class="admin-offer-progress">
+      <div class="admin-offer-progress-head">
+        <strong>Teklif Sürecinin Son Hali</strong>
+        <span>${offers.length} kurum teklifi</span>
+      </div>
+      ${lockHtml}
+      <div class="admin-offer-list">${offersHtml}</div>
+      ${issueHtml}
+    </div>
+  `;
+}
+
 async function loadQuoteRequests() {
   quoteRequestsList.innerHTML = "Teklif talepleri yükleniyor...";
 
@@ -673,12 +804,50 @@ async function loadQuoteRequests() {
       .orderBy("date", "desc")
       .get();
 
-    quoteRequestRecords = snapshot.docs.map(doc => ({
+    const baseRecords = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    quoteRequestCount.textContent = `${quoteRequestRecords.length} teklif talebi`;
+    quoteRequestRecords = await Promise.all(
+      baseRecords.map(async request => {
+        const quoteRef = db.collection("quoteRequests").doc(request.id);
+
+        try {
+          const [offersSnapshot, lockSnapshot, issuesSnapshot] = await Promise.all([
+            quoteRef.collection("offers").get(),
+            quoteRef.collection("locks").doc("main").get(),
+            quoteRef.collection("offerIssues").get()
+          ]);
+
+          const enriched = {
+            ...request,
+            liveOffers: offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+            liveLock: lockSnapshot.exists ? lockSnapshot.data() : null,
+            issueCount: issuesSnapshot.size
+          };
+
+          enriched.currentState = getAdminQuoteLiveState(enriched);
+          return enriched;
+        } catch (detailError) {
+          console.error("Teklif süreç detayı yüklenemedi:", request.id, detailError);
+
+          const enriched = {
+            ...request,
+            liveOffers: [],
+            liveLock: null,
+            issueCount: 0,
+            liveDetailError: true
+          };
+
+          enriched.currentState = getAdminQuoteLiveState(enriched);
+          return enriched;
+        }
+      })
+    );
+
+    quoteRequestCount.textContent =
+      `${quoteRequestRecords.length} teklif talebi · güncel süreç bilgileriyle`;
     renderQuoteRequests();
 
   } catch (error) {
@@ -703,7 +872,7 @@ function renderQuoteRequests() {
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
     return (!query || haystack.includes(query)) &&
-      (!status || item.status === status);
+      (!status || (item.currentState || getAdminQuoteLiveState(item)) === status);
   });
 
   if (!data.length) {
@@ -872,11 +1041,8 @@ function renderQuoteRequests() {
       `
       : "";
 
-    const statusLabels = {
-      new: "Yeni",
-      sent: "İletildi",
-      done: "Sonuçlandı"
-    };
+    const liveState = request.currentState || getAdminQuoteLiveState(request);
+    const [liveStateLabel, liveStateClass] = getAdminQuoteStateMeta(liveState);
 
     const card = document.createElement("div");
     card.className = "quote-request-card";
@@ -905,8 +1071,8 @@ function renderQuoteRequests() {
           <h3>${escapeHtml(request.name || "-")}</h3>
           <div class="quote-badges">
             <span>${escapeHtml(request.service || "-")}</span>
-            <span class="quote-status status-${escapeHtml(request.status || "new")}">
-              ${statusLabels[request.status] || "Yeni"}
+            <span class="quote-status ${liveStateClass}">
+              ${liveStateLabel}
             </span>
           </div>
         </div>
