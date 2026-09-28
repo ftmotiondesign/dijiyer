@@ -3,6 +3,7 @@
   const messagesMap=new Map();
   const unreadMessageMap=new Map();
   const messageWatchers=new Map();
+  const openConversationQuoteIds=new Set();
   let communicationRefreshBusy=false;
   let activeMessageQuoteId=null;
   const institutionMessageTitleBase=document.title;
@@ -38,7 +39,7 @@
       <section class="firm-communication-box" data-firm-communication="${offerSafe(quote.id)}">
         <div class="firm-com-status-row">${viewedHtml}${revisionHtml}${messageBadge}</div>
         ${timeline}
-        <details class="firm-conversation" data-firm-conversation="${offerSafe(quote.id)}">
+        <details class="firm-conversation" data-firm-conversation="${offerSafe(quote.id)}" ${openConversationQuoteIds.has(String(quote.id))?"open":""}>
           <summary>
             💬 Müşteri ile mesajlaş
             <span>${unreadMessages ? '<b class="firm-unread-count">'+unreadMessages+'</b>' : (messages.length?"("+messages.length+")":"")}</span>
@@ -309,12 +310,15 @@
 
     institutionQuotesList.querySelectorAll("[data-firm-conversation]").forEach(details=>{
       details.ontoggle=()=>{
+        const quoteId=String(details.dataset.firmConversation||"");
+
         if(details.open){
-          const quoteId=details.dataset.firmConversation;
+          openConversationQuoteIds.add(quoteId);
           markInstitutionConversationRead(quoteId);
           hideInstitutionMessageAlert();
-          renderQuotes();
           scrollFirmConversationToLatest(quoteId,"smooth");
+        }else{
+          openConversationQuoteIds.delete(quoteId);
         }
       };
     });
@@ -407,8 +411,10 @@
       );
 
       if(details){
+        openConversationQuoteIds.add(String(activeMessageQuoteId));
         details.open=true;
         markInstitutionConversationRead(activeMessageQuoteId);
+        scrollFirmConversationToLatest(activeMessageQuoteId,"smooth");
       }
       card?.scrollIntoView({behavior:"smooth",block:"center"});
     });
