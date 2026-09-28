@@ -864,3 +864,101 @@ button{
   background:#fff1f2;
   color:#be123c;
 }
+
+/* Yönetim paneli - teklif sürecinin canlı son hali */
+.quote-badges .status-offered{background:#eff6ff;color:#1d4ed8}
+.quote-badges .status-locked{background:#fff7ed;color:#c2410c}
+.quote-badges .status-used{background:#ecfdf5;color:#15803d}
+.quote-badges .status-expired{background:#fef2f2;color:#b91c1c}
+
+.admin-offer-progress{
+  margin-top:15px;
+  border:1px solid #dbe5f0;
+  border-radius:13px;
+  padding:14px;
+  background:#f8fbff;
+}
+.admin-offer-progress-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:11px;
+}
+.admin-offer-progress-head > span{
+  font-size:12px;
+  font-weight:700;
+  color:#475569;
+  background:#fff;
+  border:1px solid #dbe5f0;
+  padding:5px 8px;
+  border-radius:999px;
+}
+.admin-offer-list{display:grid;gap:8px}
+.admin-offer-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:10px;
+  padding:10px 11px;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+}
+.admin-offer-row.selected{
+  border-color:#93c5fd;
+  box-shadow:0 0 0 2px rgba(59,130,246,.08);
+}
+.admin-offer-main{min-width:0;display:grid;gap:3px}
+.admin-offer-main small{color:#64748b;overflow-wrap:anywhere}
+.admin-offer-price{font-size:15px;font-weight:800;white-space:nowrap}
+.admin-offer-state{
+  font-size:11px;
+  font-weight:800;
+  color:#475569;
+  background:#f1f5f9;
+  border-radius:999px;
+  padding:5px 8px;
+  white-space:nowrap;
+}
+.admin-offer-empty{color:#64748b;font-size:13px;padding:10px 0 3px}
+.admin-lock-summary{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  margin-bottom:11px;
+}
+.admin-lock-summary > div{
+  background:#fff7ed;
+  border:1px solid #fed7aa;
+  border-radius:9px;
+  padding:9px 10px;
+}
+.admin-lock-summary small{display:block;color:#9a3412;font-size:10px;margin-bottom:4px}
+.admin-lock-summary strong{display:block;color:#7c2d12;font-size:12px;overflow-wrap:anywhere}
+.admin-offer-issue{
+  margin-top:10px;
+  padding:9px 11px;
+  border-radius:9px;
+  background:#fef2f2;
+  color:#b91c1c;
+  font-size:12px;
+  font-weight:800;
+}
+.admin-offer-error{
+  margin-top:13px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#fff7ed;
+  color:#9a3412;
+  font-size:12px;
+  font-weight:700;
+}
+@media(max-width:850px){
+  .admin-lock-summary{grid-template-columns:1fr 1fr}
+  .admin-offer-row{grid-template-columns:1fr auto}
+  .admin-offer-state{grid-column:1 / -1;justify-self:start}
+}
+@media(max-width:520px){
+  .admin-lock-summary{grid-template-columns:1fr}
+}
