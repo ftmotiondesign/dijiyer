@@ -215,3 +215,21 @@ quoteAccess/{phoneHash}/codes/{trackingCode}
 Bu yapıda özel link yalnızca takip kodunu taşır. Kullanıcı ayrıca talep formunda kullandığı telefon numarasını girer; tarayıcı telefonun SHA-256 özetini üretir ve ancak iki bilgi birlikte doğruysa erişim belgesinin yolu bulunur. Koleksiyon listeleme kapalı tutulmalıdır.
 
 Tam uygulanabilir sürüm için sohbet içinde üretilen `firestore_garantili_teklif_takip.rules` dosyasını kullanın.
+
+
+## 7) Teklif Takip Pro: mesajlaşma, revizyon ve görüntülenme
+
+Yeni müşteri/firma iletişim yolları:
+
+```text
+quoteRequests/{quoteId}/engagement/{institutionId}
+quoteRequests/{quoteId}/conversations/{institutionId}/messages/{messageId}
+```
+
+- `engagement`: teklif görüntülendi, revizyon istendi ve revizyon yanıtlandı durumlarını tutar.
+- `messages`: müşteri ile teklif veren kurumun teklif bazlı mesajlarını tutar.
+- Müşteri teklifleri karşılaştırabilir, mesaj gönderebilir, revizyon isteyebilir ve süreç zaman çizgisini görebilir.
+- Kurum paneli teklifin görüntülenme bilgisini, revizyon bekleme durumunu ve mesajları gösterir.
+- Kurum revizyon talebinden sonra teklifi güncellediğinde müşteriye otomatik revizyon yanıtı oluşturulur.
+
+Güncel tam Rules dosyası: `firestore_teklif_takip_pro.rules` sürümüdür.
