@@ -228,3 +228,12 @@ button{cursor:pointer}
   .gallery{grid-template-columns:repeat(2,1fr)}
   .institution-card{grid-template-columns:115px 1fr}
 }
+
+#institutionAddBtn{
+  white-space: nowrap;
+  padding: 0 14px;
+  min-width: 140px;
+}
+
+  
+}
