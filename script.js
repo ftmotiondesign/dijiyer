@@ -530,7 +530,7 @@ function renderList() {
       ${inst.vip ? '<div class="vip">VIP</div>' : ''}
       <div class="card-body">
         <h3>${inst.name}</h3>
-        <div class="rating">⭐ ${inst.rating} <span>(${inst.reviewCount} değerlendirme)</span></div>
+        <div class="rating" id="detailRating">⭐ ${inst.rating} <span>(${inst.reviewCount} değerlendirme)</span></div>
         <div class="meta">📍 ${inst.location}<br>${inst.address}</div>
         <div class="card-actions">
           <span class="chip">🚗 ${inst.classes}</span>
@@ -574,14 +574,19 @@ function renderDetail() {
     return;
   }
 
-  const savedReviews = JSON.parse(localStorage.getItem(`reviews_${inst.id}`) || '[]');
-  const userReviewHtml = savedReviews.slice(-2).reverse().map(r => `
-    <div class="review-card">
-      <strong>Kullanıcı</strong><span class="verified">✓ Doğrulanmış kullanıcı</span><br>
-      <span>${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
-      <div style="margin-top:5px;color:#58677c">${escapeHtml(r.text)}</div>
-    </div>
-  `).join('');
+  const savedReviews = inst.source === 'firestore'
+    ? []
+    : JSON.parse(localStorage.getItem(`reviews_${inst.id}`) || '[]');
+
+  const userReviewHtml = inst.source === 'firestore'
+    ? '<div class="review-card" id="reviewsLoading">Yorumlar yükleniyor...</div>'
+    : savedReviews.slice(-2).reverse().map(r => `
+        <div class="review-card">
+          <strong>Kullanıcı</strong><br>
+          <span>${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+          <div style="margin-top:5px;color:#58677c">${escapeHtml(r.text)}</div>
+        </div>
+      `).join('');
 
   panel.innerHTML = `
     <div class="detail-top">
@@ -635,9 +640,10 @@ function renderDetail() {
 
     <div class="reviews">
       <div class="review-summary">
-        <div><strong>Yorumlar</strong> · ${inst.rating} / 5</div>
+        <div id="reviewSummaryText"><strong>Yorumlar</strong> · ${inst.rating} / 5</div>
         <button class="btn btn-light" id="reviewBtn2">Yorum Yap</button>
       </div>
+      <div id="reviewsContent">
       ${userReviewHtml || `
         <div class="review-card">
           <strong>Demo Kullanıcı</strong><span class="verified">✓ Doğrulanmış kullanıcı</span><br>
@@ -645,18 +651,25 @@ function renderDetail() {
           <div style="margin-top:5px;color:#58677c">Konumu kolay bulduk, süreç hızlı ilerledi.</div>
         </div>
       `}
+      </div>
     </div>
   `;
+
+  if (inst.source === 'firestore') {
+    loadInstitutionReviews(inst);
+  }
 
   document.getElementById('quoteBtn').onclick = () => openModal('quoteModal');
   document.getElementById('reviewBtn').onclick = () => openModal('reviewModal');
   document.getElementById('reviewBtn2').onclick = () => openModal('reviewModal');
 
   document.getElementById('routeBtn').onclick = () => {
+    trackInstitutionEvent(inst, 'route_click');
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${inst.lat},${inst.lng}`, '_blank');
   };
 
   document.getElementById('whatsappBtn').onclick = () => {
+    trackInstitutionEvent(inst, 'whatsapp_click');
     const msg = encodeURIComponent(`Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
@@ -669,8 +682,99 @@ function renderDetail() {
   };
 }
 
+
+function localDayKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+async function trackInstitutionEvent(inst, type, deduplicate = false) {
+  if (!inst || inst.source !== 'firestore') return;
+
+  if (deduplicate && type === 'profile_view') {
+    const key = `dijiyer_view_${inst.id}`;
+    const last = Number(localStorage.getItem(key) || 0);
+    const now = Date.now();
+
+    if (now - last < 30 * 60 * 1000) return;
+    localStorage.setItem(key, String(now));
+  }
+
+  try {
+    await db.collection('institutionAnalytics').add({
+      institutionId: String(inst.id),
+      type,
+      day: localDayKey(),
+      date: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn('İstatistik kaydı oluşturulamadı:', error);
+  }
+}
+
+async function loadInstitutionReviews(inst) {
+  const reviewsContent = document.getElementById('reviewsContent');
+  const summaryText = document.getElementById('reviewSummaryText');
+  const detailRating = document.getElementById('detailRating');
+
+  if (!reviewsContent || !summaryText || !detailRating) return;
+
+  try {
+    const snapshot = await db.collection('institutionReviews')
+      .where('institutionId', '==', String(inst.id))
+      .get();
+
+    const reviews = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(item => item.status === 'published')
+      .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    const count = reviews.length;
+    const average = count
+      ? reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / count
+      : 0;
+
+    inst.rating = count ? Number(average.toFixed(1)) : 0;
+    inst.reviewCount = count;
+
+    detailRating.innerHTML =
+      `⭐ ${count ? average.toFixed(1) : '0.0'} <span>(${count} değerlendirme)</span>`;
+
+    summaryText.innerHTML =
+      `<strong>Yorumlar</strong> · ${count ? average.toFixed(1) : '0.0'} / 5`;
+
+    reviewsContent.innerHTML = reviews.length
+      ? reviews.slice(0, 8).map(r => `
+          <div class="review-card">
+            <strong>Dijiyer Kullanıcısı</strong><br>
+            <span>${'★'.repeat(Number(r.rating || 0))}${'☆'.repeat(5 - Number(r.rating || 0))}</span>
+            <div style="margin-top:5px;color:#58677c">${escapeHtml(r.text || '')}</div>
+          </div>
+        `).join('')
+      : `
+          <div class="review-card">
+            <strong>Henüz yorum yok</strong>
+            <div style="margin-top:5px;color:#58677c">Bu kurum için ilk yorumu siz yapabilirsiniz.</div>
+          </div>
+        `;
+  } catch (error) {
+    console.error('Yorumlar yüklenemedi:', error);
+    reviewsContent.innerHTML =
+      '<div class="review-card">Yorumlar şu anda yüklenemedi.</div>';
+  }
+}
+
 function selectInstitution(id) {
   selectedId = id;
+  const selectedInstitution =
+    institutions.find(i => String(i.id) === String(id));
+
+  if (selectedInstitution) {
+    trackInstitutionEvent(selectedInstitution, 'profile_view', true);
+  }
+
   renderList();
   renderDetail();
   const marker = markers.get(String(id));
@@ -745,22 +849,48 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   }
 });
 
-document.getElementById('reviewForm').addEventListener('submit', e => {
+document.getElementById('reviewForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const rating = Number(document.getElementById('ratingValue').value);
   const text = e.target.querySelector('textarea').value.trim();
-  if (!rating) return showToast('Lütfen 1-5 yıldız arası puan verin.');
+  const inst = institutions.find(i => String(i.id) === String(selectedId));
 
-  const key = `reviews_${selectedId}`;
-  const reviews = JSON.parse(localStorage.getItem(key) || '[]');
-  reviews.push({rating, text, date: new Date().toISOString()});
-  localStorage.setItem(key, JSON.stringify(reviews));
+  if (!rating) {
+    showToast('Lütfen 1-5 yıldız arası puan verin.');
+    return;
+  }
 
-  closeModal('reviewModal');
-  showToast('Yorumunuz kaydedildi.');
-  e.target.reset();
-  setStars(0);
-  renderDetail();
+  if (!text) {
+    showToast('Lütfen yorumunuzu yazın.');
+    return;
+  }
+
+  try {
+    if (inst && inst.source === 'firestore') {
+      await db.collection('institutionReviews').add({
+        institutionId: String(inst.id),
+        rating,
+        text,
+        status: 'published',
+        date: new Date().toISOString()
+      });
+    } else {
+      const key = `reviews_${selectedId}`;
+      const reviews = JSON.parse(localStorage.getItem(key) || '[]');
+      reviews.push({ rating, text, date: new Date().toISOString() });
+      localStorage.setItem(key, JSON.stringify(reviews));
+    }
+
+    closeModal('reviewModal');
+    showToast('Yorumunuz ve puanınız kaydedildi.');
+    e.target.reset();
+    setStars(0);
+    renderDetail();
+  } catch (error) {
+    console.error('Yorum kaydedilemedi:', error);
+    showToast('Yorum kaydedilemedi. Lütfen tekrar deneyin.');
+  }
 });
 
 document.querySelectorAll('#starsInput [data-star]').forEach(btn => {
@@ -1565,6 +1695,7 @@ async function loadApprovedInstitutions() {
 
       institutions.push({
         id: doc.id,
+        source: 'firestore',
         name: data.name || 'Kurum',
         short: data.short || data.name || 'Kurum',
         category: data.category || data.subCategory || 'diger',
