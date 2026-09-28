@@ -317,3 +317,93 @@ button{cursor:pointer}
 .hidden{
   display:none !important;
 }
+
+
+/* Ana kategori -> alt kategori akordeon filtresi */
+.sidebar-categories{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.category-group{
+  border-bottom:1px solid #eef2f7;
+  padding:2px 0;
+}
+
+.category-group:last-child{
+  border-bottom:0;
+}
+
+.category-main-row{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.filter-section .category-main-label{
+  flex:1;
+  min-width:0;
+  padding:9px 5px;
+}
+
+.category-icon{
+  width:22px;
+  text-align:center;
+  flex:0 0 22px;
+}
+
+.category-name{
+  min-width:0;
+  line-height:1.25;
+}
+
+.category-toggle{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:var(--muted);
+  font-size:19px;
+  transition:.18s ease;
+}
+
+.category-toggle:hover{
+  background:#f1f5fa;
+  color:var(--blue);
+}
+
+.category-toggle.open{
+  transform:rotate(180deg);
+  color:var(--blue);
+}
+
+.subcategory-list{
+  margin:0 0 7px 31px;
+  padding:4px 0 4px 10px;
+  border-left:2px solid #e6eef9;
+}
+
+.filter-section .subcategory-label{
+  padding:6px 5px;
+  font-size:12.5px;
+  color:#4f6075;
+  border-radius:7px;
+}
+
+.filter-section .subcategory-label:hover{
+  background:#f6f9fd;
+  color:var(--text);
+}
+
+.subcategory-label input{
+  flex:0 0 auto;
+}
+
+.category-filter-section{
+  max-height:calc(100vh - 300px);
+  overflow-y:auto;
+}
