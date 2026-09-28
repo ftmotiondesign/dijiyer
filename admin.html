@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=15">
+  <link rel="stylesheet" href="admin.css?v=16">
 </head>
 
 <body>
@@ -69,21 +69,133 @@
       <div class="dashboard-title">
         <div>
           <h2>Yönetim Paneli</h2>
-          <p>Kurum başvurularını ve yayındaki kurumları yönetin.</p>
+          <p>Teklif akışını, kurumları, performansı ve sorun bildirimlerini tek ekrandan yönetin.</p>
         </div>
 
         <button id="logoutBtn">Çıkış Yap</button>
       </div>
 
       <div class="admin-tabs">
-        <button class="admin-tab active" id="applicationsTabBtn">Kurum Başvuruları</button>
+        <button class="admin-tab active" id="overviewTabBtn">Genel Bakış</button>
+        <button class="admin-tab" id="applicationsTabBtn">Kurum Başvuruları</button>
         <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
         <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
         <button class="admin-tab" id="offerReportTabBtn">Teklif Veren Kurumlar</button>
+        <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri</button>
         <button class="admin-tab" id="accountsTabBtn">Kurum Hesapları</button>
       </div>
 
-      <section id="applicationsSection">
+      <section id="overviewSection">
+        <div class="section-title overview-title-row">
+          <div>
+            <h3>Genel Bakış</h3>
+            <p>Dijiyer'de şu anda neler oluyor? Önemli rakamlar ve işlem bekleyen konular.</p>
+          </div>
+          <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
+        </div>
+
+        <div class="overview-kpi-grid">
+          <article class="overview-kpi">
+            <span>Yayındaki Kurum</span>
+            <strong id="overviewInstitutionCount">0</strong>
+            <small>Aktif kurum toplamı</small>
+          </article>
+          <article class="overview-kpi">
+            <span>Bekleyen Başvuru</span>
+            <strong id="overviewPendingApplications">0</strong>
+            <small>İncelenmesi gereken kurumlar</small>
+          </article>
+          <article class="overview-kpi">
+            <span>Teklif Talebi</span>
+            <strong id="overviewQuoteCount">0</strong>
+            <small>Tüm müşteri talepleri</small>
+          </article>
+          <article class="overview-kpi warning">
+            <span>Henüz Teklif Yok</span>
+            <strong id="overviewNoOfferCount">0</strong>
+            <small>Cevap bekleyen talepler</small>
+          </article>
+          <article class="overview-kpi">
+            <span>Toplam Teklif</span>
+            <strong id="overviewOfferCount">0</strong>
+            <small>Kurumların verdiği fiyatlar</small>
+          </article>
+          <article class="overview-kpi success">
+            <span>Seçilen / Kilitlenen</span>
+            <strong id="overviewLockedCount">0</strong>
+            <small>Müşteri tarafından seçilenler</small>
+          </article>
+          <article class="overview-kpi success">
+            <span>Kullanılan</span>
+            <strong id="overviewUsedCount">0</strong>
+            <small>İşletmede doğrulanan teklifler</small>
+          </article>
+          <article class="overview-kpi danger">
+            <span>Açık Sorun</span>
+            <strong id="overviewIssueCount">0</strong>
+            <small>İncelenmesi gereken bildirimler</small>
+          </article>
+        </div>
+
+        <div class="overview-two-column">
+          <section class="overview-panel">
+            <div class="overview-panel-head">
+              <div>
+                <h4>İşlem Gerektirenler</h4>
+                <p>Önce bakılması gereken kayıtlar</p>
+              </div>
+              <span id="overviewAttentionCount" class="overview-count-badge">0</span>
+            </div>
+            <div id="overviewAttentionList" class="overview-attention-list"></div>
+          </section>
+
+          <section class="overview-panel">
+            <div class="overview-panel-head">
+              <div>
+                <h4>Son Hareketler</h4>
+                <p>En yeni teklif talepleri ve durumları</p>
+              </div>
+            </div>
+            <div id="overviewRecentActivity" class="overview-recent-list"></div>
+          </section>
+        </div>
+
+        <div class="overview-two-column">
+          <section class="overview-panel">
+            <div class="overview-panel-head">
+              <div>
+                <h4>Sektör Özeti</h4>
+                <p>Talep ve teklif yoğunluğu</p>
+              </div>
+            </div>
+            <div class="overview-table-wrap">
+              <table class="overview-table">
+                <thead>
+                  <tr>
+                    <th>Sektör</th>
+                    <th>Talep</th>
+                    <th>Teklif</th>
+                    <th>Karşılanma</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewCategoryTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="overview-panel">
+            <div class="overview-panel-head">
+              <div>
+                <h4>Şehir Özeti</h4>
+                <p>Talep yoğunluğuna göre ilk şehirler</p>
+              </div>
+            </div>
+            <div id="overviewCityList" class="overview-city-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="applicationsSection" hidden>
         <div class="section-title">
           <h3>Kurum Başvuruları</h3>
           <p id="applicationCount">Başvurular yükleniyor...</p>
@@ -163,6 +275,26 @@
         <div class="toolbar-result" id="institutionFilterResult"></div>
 
         <div id="institutionsList"></div>
+      </section>
+
+      <section id="issuesSection" hidden>
+        <div class="section-title issue-title-row">
+          <div>
+            <h3>Sorun / İhlal Bildirimleri</h3>
+            <p id="issueCount">Bildirimler yükleniyor...</p>
+          </div>
+        </div>
+
+        <div class="issue-toolbar">
+          <input type="search" id="issueSearch" placeholder="Teklif no, müşteri, kurum veya açıklama ara...">
+          <select id="issueStatusFilter">
+            <option value="">Tüm durumlar</option>
+            <option value="new">Açık</option>
+            <option value="resolved">Çözüldü</option>
+          </select>
+        </div>
+
+        <div id="issuesList"></div>
       </section>
 
       <section id="accountsSection" hidden>
@@ -468,7 +600,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=20"></script>
+  <script src="admin.js?v=21"></script>
 
 </body>
 </html>
