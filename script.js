@@ -722,6 +722,72 @@ const quoteServices = {
     'Servis / Yemek Bilgisi',
     'Diğer Yurt Hizmeti'
   ],
+  egitim: [
+    'Kurs Kayıt ve Ücret Bilgisi',
+    'Özel Ders',
+    'Sınava Hazırlık',
+    'Deneme Kulübü',
+    'Diğer Eğitim Hizmeti'
+  ],
+  emlak: [
+    'Satılık Konut',
+    'Kiralık Konut',
+    'Arsa / Tarla',
+    'İşyeri',
+    'Değerleme / Danışmanlık'
+  ],
+  oto: [
+    'Bakım / Onarım',
+    'Kaporta / Boya',
+    'Oto Elektrik',
+    'Lastik / Jant',
+    'Yedek Parça',
+    'Diğer Oto Hizmeti'
+  ],
+  restoran: [
+    'Menü / Fiyat Bilgisi',
+    'Toplu Yemek',
+    'Paket Servis',
+    'Rezervasyon',
+    'Diğer'
+  ],
+  guzellik: [
+    'Kuaför',
+    'Cilt Bakımı',
+    'Güzellik Salonu',
+    'Manikür / Pedikür',
+    'Randevu / Fiyat Bilgisi'
+  ],
+  saglik: [
+    'Muayene / Randevu',
+    'Diş Kliniği',
+    'Fizik Tedavi',
+    'Diyetisyen',
+    'Diğer Sağlık Hizmeti'
+  ],
+  dugun: [
+    'Düğün Salonu',
+    'Fotoğraf / Video',
+    'Organizasyon',
+    'Gelinlik / Damatlık',
+    'Müzik / Eğlence',
+    'Diğer'
+  ],
+  evteknik: [
+    'Elektrikçi',
+    'Su Tesisatı',
+    'Beyaz Eşya Servisi',
+    'Klima Servisi',
+    'Tadilat / Boya',
+    'Diğer Teknik Servis'
+  ],
+  turizm: [
+    'Otel / Konaklama',
+    'Pansiyon',
+    'Tur / Gezi',
+    'Araç Transferi',
+    'Diğer Turizm Hizmeti'
+  ],
   esnaf: [
     'Fiyat Teklifi',
     'Ürün / Hizmet Bilgisi',
