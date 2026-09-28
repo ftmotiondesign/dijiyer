@@ -792,15 +792,156 @@ function closeModal(id) {
 }
 document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.dataset.close));
 
+function normalizeQuoteTrackingPhone(raw) {
+  let digits = String(raw || '').replace(/\D/g, '');
+  if (digits.startsWith('90') && digits.length === 12) digits = digits.slice(2);
+  if (digits.startsWith('0') && digits.length === 11) digits = digits.slice(1);
+  return digits;
+}
+
+async function hashQuoteTrackingPhone(phone) {
+  const hashBuffer = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(phone)
+  );
+
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function makeQuoteTrackingCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+
+  const body = Array.from(bytes)
+    .map(byte => alphabet[byte % alphabet.length])
+    .join('');
+
+  return `DJY-T-${body.slice(0,4)}-${body.slice(4,8)}-${body.slice(8,12)}`;
+}
+
+function getQuoteTrackingUrl(trackingCode) {
+  const url = new URL('teklif.html', window.location.href);
+  url.searchParams.set('kod', trackingCode);
+  return url.toString();
+}
+
+function getMatchingInstitutionCount(request) {
+  try {
+    return institutions.filter(inst => {
+      const [, subCategory] = resolveTaxonomy(inst);
+      const sameCategory = String(subCategory || inst.category || '') === String(request.category || '');
+      const sameCity =
+        String(inst.city || '').toLocaleLowerCase('tr-TR') ===
+        String(request.city || '').toLocaleLowerCase('tr-TR');
+
+      return sameCategory && sameCity && inst.offer !== false;
+    }).length;
+  } catch (error) {
+    console.warn('Eşleşen kurum sayısı hesaplanamadı:', error);
+    return 0;
+  }
+}
+
+async function createQuoteTrackingAccess(quoteId, request) {
+  const normalizedPhone = normalizeQuoteTrackingPhone(request.phone);
+
+  if (normalizedPhone.length < 10) {
+    throw new Error('Telefon numarasını kontrol edin.');
+  }
+
+  const phoneHash = await hashQuoteTrackingPhone(normalizedPhone);
+  const trackingCode = makeQuoteTrackingCode();
+  const trackingUrl = getQuoteTrackingUrl(trackingCode);
+
+  await db.collection('quoteAccess')
+    .doc(phoneHash)
+    .collection('codes')
+    .doc(trackingCode)
+    .set({
+      quoteId,
+      trackingCode,
+      phoneHash,
+      service: request.service,
+      city: request.city,
+      district: request.district,
+      date: request.date,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    });
+
+  return {
+    trackingCode,
+    trackingUrl,
+    normalizedPhone
+  };
+}
+
+function showQuoteTrackingSuccess(tracking, matchedCount) {
+  document.getElementById('quoteSuccessCode').textContent = tracking.trackingCode;
+  document.getElementById('quoteSuccessLink').value = tracking.trackingUrl;
+
+  document.getElementById('quoteSuccessCount').textContent =
+    matchedCount > 0
+      ? `Talebiniz ${matchedCount} uygun kuruma ulaştı. Gelen fiyatları bu bağlantıdan takip edebilirsiniz.`
+      : 'Talebiniz alındı. Uygun kurumlar teklif verdikçe bu bağlantıda görünecek.';
+
+  document.getElementById('quoteOpenTrackingBtn').onclick = () => {
+    window.location.href = tracking.trackingUrl;
+  };
+
+  document.getElementById('quoteCopyTrackingBtn').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(tracking.trackingUrl);
+      showToast('Teklif takip linki kopyalandı.');
+    } catch (error) {
+      console.error(error);
+      document.getElementById('quoteSuccessLink').select();
+      document.execCommand('copy');
+      showToast('Teklif takip linki kopyalandı.');
+    }
+  };
+
+  document.getElementById('quoteWhatsappTrackingBtn').onclick = () => {
+    let whatsappPhone = tracking.normalizedPhone;
+
+    if (whatsappPhone.length === 10) {
+      whatsappPhone = '90' + whatsappPhone;
+    }
+
+    const message = encodeURIComponent(
+      `Dijiyer teklif takip bilgilerim\n\nTakip Kodu: ${tracking.trackingCode}\nTeklif Linki: ${tracking.trackingUrl}\n\nLinki açarken talepte kullandığım telefon numarasını gireceğim.`
+    );
+
+    window.open(
+      `https://wa.me/${whatsappPhone}?text=${message}`,
+      '_blank',
+      'noopener'
+    );
+  };
+
+  openModal('quoteSuccessModal');
+}
+
 document.getElementById('quoteForm').addEventListener('submit', async e => {
   e.preventDefault();
 
   const searchText = document.getElementById('quoteSearch').value.trim();
   const selectedCategory = document.getElementById('quoteCategory').value;
   const selectedSubCategory = document.getElementById('quoteService').value;
+  const normalizedPhone = normalizeQuoteTrackingPhone(
+    document.getElementById('quotePhone').value
+  );
 
   if (!searchText && !(selectedCategory && selectedSubCategory)) {
     showToast('Ne aradığınızı yazın veya ana kategori ve alt kategori seçin.');
+    return;
+  }
+
+  if (normalizedPhone.length < 10) {
+    showToast('Tekliflerinizi takip edebilmek için geçerli bir telefon numarası girin.');
     return;
   }
 
@@ -829,9 +970,24 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
 
   try {
     const quoteRef = await db.collection('quoteRequests').add(request);
+    let tracking = null;
+
+    try {
+      tracking = await createQuoteTrackingAccess(quoteRef.id, request);
+    } catch (trackingError) {
+      console.error('Teklif takip kodu oluşturulamadı:', trackingError);
+    }
+
+    const localRequest = tracking
+      ? {
+          ...request,
+          trackingCode: tracking.trackingCode,
+          trackingUrl: tracking.trackingUrl
+        }
+      : request;
 
     if (typeof window.rememberCustomerQuote === 'function') {
-      window.rememberCustomerQuote(quoteRef.id, request);
+      window.rememberCustomerQuote(quoteRef.id, localRequest);
     } else {
       const key = 'dijiyerCustomerQuoteIds';
       const saved = JSON.parse(localStorage.getItem(key) || '[]');
@@ -840,12 +996,15 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
 
       const dataKey = 'dijiyerCustomerQuoteData';
       const dataMap = JSON.parse(localStorage.getItem(dataKey) || '{}');
-      dataMap[quoteRef.id] = request;
+      dataMap[quoteRef.id] = localRequest;
       localStorage.setItem(dataKey, JSON.stringify(dataMap));
     }
 
+    const matchedCount = getMatchingInstitutionCount(request);
+
     closeModal('quoteModal');
     e.target.reset();
+
     document.getElementById('quoteService').innerHTML =
       '<option value="">Önce ana kategori seçin</option>';
     document.getElementById('quoteService').disabled = true;
@@ -853,7 +1012,13 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
       '<option value="">Önce şehir seçin</option>';
     document.getElementById('quoteDistrict').disabled = true;
 
-    showToast('Teklif talebiniz alındı. Uygun kurumlarla eşleştirilecek.');
+    if (tracking) {
+      showQuoteTrackingSuccess(tracking, matchedCount);
+    } else {
+      showToast(
+        'Talebiniz alındı. Takip linki henüz oluşturulamadı; Firestore takip kurallarını yayınlayın.'
+      );
+    }
   } catch (error) {
     console.error('Teklif talebi kaydedilemedi:', error);
     showToast('Teklif gönderilemedi. Lütfen tekrar deneyin.');
