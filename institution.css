@@ -2251,3 +2251,10 @@ body[data-panel-current="stats"] .persistent-performance{
     padding:10px;
   }
 }
+
+
+/* Bildirim kartları yalnızca gerçekten yeni olay olduğunda görünür */
+.live-quote-alert.hidden,
+.live-message-alert.hidden{
+  display:none !important;
+}
