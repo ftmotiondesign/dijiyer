@@ -3,9 +3,15 @@
   const engagementMap=new Map();
   const markedViewed=new Set();
   const engagementFetchedAt=new Map();
+  const customerMessageRows=new Map();
+  const customerUnreadMap=new Map();
+  const customerMessageWatchers=new Map();
   let activeConversation=null;
   let conversationUnsub=null;
   let enhancing=false;
+  let watchedQuoteId=null;
+  let customerAudioUnlocked=false;
+  const customerMessageTitleBase=document.title;
 
   const originalOfferHtml=offerHtml;
   offerHtml=function(bundle,offer){
@@ -16,6 +22,7 @@
     const viewed=engagement.viewedAt
       ? `<span class="djy-viewed-badge">✓ Görüntülendi</span>`
       : "";
+    const unreadMessages=customerUnreadMap.get(institutionId)||0;
     const revision=engagement.revisionRequestedAt && !engagement.revisionRespondedAt
       ? `<span class="djy-revision-badge">↻ Revizyon bekleniyor</span>`
       : engagement.revisionRespondedAt
@@ -27,7 +34,10 @@
         <button type="button" class="djy-tool-btn ${selected?"active":""}" data-djy-compare="${safe(institutionId)}">
           ${selected?"✓ Karşılaştırmada":"+ Karşılaştır"}
         </button>
-        <button type="button" class="djy-tool-btn" data-djy-message="${safe(institutionId)}">💬 Mesajlaş</button>
+        <button type="button" class="djy-tool-btn ${unreadMessages?"has-unread":""}" data-djy-message="${safe(institutionId)}">
+          💬 Mesajlaş
+          ${unreadMessages?'<span class="djy-message-badge">'+unreadMessages+'</span>':""}
+        </button>
         <button type="button" class="djy-tool-btn" data-djy-revision="${safe(institutionId)}">↻ Revizyon İste</button>
         <button type="button" class="djy-tool-btn" data-djy-timeline="${safe(institutionId)}">◷ Süreç</button>
         <div class="djy-offer-meta-flags">${viewed}${revision}</div>
@@ -103,6 +113,8 @@
 
       bindTools(bundle);
       ensureConversationModal();
+      ensureCustomerMessageAlert();
+      ensureCustomerMessageWatchers(bundle);
 
       const nowMs=Date.now();
       const missing=bundle.offers.filter(o=>{
@@ -209,6 +221,204 @@
     await Promise.all(tasks);
   }
 
+  function customerSeenKey(quoteId,institutionId){
+    return "dijiyerCustomerMessageSeen_"+String(quoteId)+"_"+String(institutionId);
+  }
+
+  function getCustomerSeenAt(quoteId,institutionId){
+    return localStorage.getItem(customerSeenKey(quoteId,institutionId))||"";
+  }
+
+  function setCustomerSeenAt(quoteId,institutionId,date){
+    if(date) localStorage.setItem(customerSeenKey(quoteId,institutionId),date);
+  }
+
+  function latestInstitutionMessage(rows){
+    return [...rows]
+      .filter(msg=>msg.sender==="institution")
+      .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))[0]||null;
+  }
+
+  function customerUnreadMessages(quoteId,institutionId,rows){
+    const seenAt=getCustomerSeenAt(quoteId,institutionId);
+    return rows.filter(msg =>
+      msg.sender==="institution" &&
+      (!seenAt || String(msg.date||"")>seenAt)
+    );
+  }
+
+  function updateCustomerMessageTitle(){
+    const total=[...customerUnreadMap.values()]
+      .reduce((sum,value)=>sum+Number(value||0),0);
+
+    document.title=total>0
+      ? "("+total+") Yeni Mesaj · "+customerMessageTitleBase
+      : customerMessageTitleBase;
+  }
+
+  function markCustomerConversationRead(quoteId,institutionId){
+    const rows=customerMessageRows.get(String(institutionId))||[];
+    const latest=latestInstitutionMessage(rows);
+    if(latest?.date) setCustomerSeenAt(quoteId,institutionId,latest.date);
+    customerUnreadMap.set(String(institutionId),0);
+    updateCustomerMessageTitle();
+  }
+
+  function playCustomerMessageSound(){
+    if(!customerAudioUnlocked)return;
+    try{
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)return;
+      const ctx=new AudioContextClass();
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      const now=ctx.currentTime;
+      osc.frequency.value=980;
+      gain.gain.setValueAtTime(.0001,now);
+      gain.gain.exponentialRampToValueAtTime(.12,now+.02);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+.18);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(now);osc.stop(now+.2);
+      setTimeout(()=>ctx.close().catch(()=>{}),350);
+    }catch(_){}
+  }
+
+  function ensureCustomerMessageAlert(){
+    if(document.getElementById("customerMessageAlert"))return;
+
+    document.body.insertAdjacentHTML("beforeend",`
+      <div class="customer-message-alert hidden" id="customerMessageAlert">
+        <div class="customer-message-alert-icon">💬</div>
+        <div class="customer-message-alert-copy">
+          <strong>Yeni mesaj geldi</strong>
+          <span id="customerMessageAlertText">Bir kurum size mesaj gönderdi.</span>
+        </div>
+        <button type="button" id="customerMessageAlertOpen">Mesajı Gör</button>
+        <button type="button" class="customer-message-alert-close" id="customerMessageAlertClose">×</button>
+      </div>
+    `);
+
+    document.getElementById("customerMessageAlertClose").onclick=()=>{
+      document.getElementById("customerMessageAlert")?.classList.add("hidden");
+    };
+  }
+
+  function showCustomerMessageAlert(institutionId,msg){
+    ensureCustomerMessageAlert();
+    const alert=document.getElementById("customerMessageAlert");
+    const text=document.getElementById("customerMessageAlertText");
+    const offer=liveOffers.find(o =>
+      String(o.institutionId||o.id||"")===String(institutionId)
+    );
+
+    if(text){
+      const name=offer?.institutionName||"Kurum";
+      const preview=String(msg?.text||"").trim();
+      text.textContent=name+(preview?" · "+preview.slice(0,90):" size mesaj gönderdi.");
+    }
+
+    alert.classList.remove("hidden");
+    document.getElementById("customerMessageAlertOpen").onclick=()=>{
+      alert.classList.add("hidden");
+      openConversation(
+        {access:currentAccess,offers:liveOffers,lock:liveLock},
+        String(institutionId),
+        "message"
+      );
+    };
+    playCustomerMessageSound();
+  }
+
+  function clearCustomerMessageWatchers(){
+    customerMessageWatchers.forEach(unsubscribe=>{
+      try{unsubscribe();}catch(_){}
+    });
+    customerMessageWatchers.clear();
+    customerMessageRows.clear();
+    customerUnreadMap.clear();
+    updateCustomerMessageTitle();
+  }
+
+  function ensureCustomerMessageWatchers(bundle){
+    const quoteId=String(bundle.access.quoteId||"");
+    if(!quoteId)return;
+
+    if(watchedQuoteId!==quoteId){
+      clearCustomerMessageWatchers();
+      watchedQuoteId=quoteId;
+    }
+
+    const activeIds=new Set(
+      bundle.offers.map(o=>String(o.institutionId||o.id||"")).filter(Boolean)
+    );
+
+    customerMessageWatchers.forEach((unsubscribe,institutionId)=>{
+      if(activeIds.has(institutionId))return;
+      try{unsubscribe();}catch(_){}
+      customerMessageWatchers.delete(institutionId);
+      customerMessageRows.delete(institutionId);
+      customerUnreadMap.delete(institutionId);
+    });
+
+    bundle.offers.forEach(offer=>{
+      const institutionId=String(offer.institutionId||offer.id||"");
+      if(!institutionId||customerMessageWatchers.has(institutionId))return;
+
+      let initial=true;
+      const ref=db.collection("quoteRequests").doc(quoteId)
+        .collection("conversations").doc(institutionId)
+        .collection("messages").orderBy("date","asc");
+
+      const unsubscribe=ref.onSnapshot(snapshot=>{
+        const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+        customerMessageRows.set(institutionId,rows);
+
+        const modalOpen=
+          activeConversation &&
+          activeConversation.quoteId===quoteId &&
+          activeConversation.institutionId===institutionId &&
+          !document.getElementById("djyConversationModal")?.classList.contains("hidden");
+
+        if(modalOpen){
+          const latest=latestInstitutionMessage(rows);
+          if(latest?.date)setCustomerSeenAt(quoteId,institutionId,latest.date);
+          customerUnreadMap.set(institutionId,0);
+        }else{
+          customerUnreadMap.set(
+            institutionId,
+            customerUnreadMessages(quoteId,institutionId,rows).length
+          );
+        }
+
+        updateCustomerMessageTitle();
+
+        if(!initial){
+          const added=snapshot.docChanges()
+            .filter(change=>change.type==="added")
+            .map(change=>({id:change.doc.id,...change.doc.data()}))
+            .filter(msg=>msg.sender==="institution");
+
+          if(added.length&&!modalOpen){
+            const newest=added.sort(
+              (a,b)=>String(b.date||"").localeCompare(String(a.date||""))
+            )[0];
+            showCustomerMessageAlert(institutionId,newest);
+          }
+        }
+
+        initial=false;
+        renderLiveTracking();
+      },error=>{
+        console.warn("Müşteri mesaj bildirimi dinlenemedi:",institutionId,error);
+      });
+
+      customerMessageWatchers.set(institutionId,unsubscribe);
+    });
+  }
+
+  document.addEventListener("pointerdown",()=>{customerAudioUnlocked=true;},{once:true});
+  document.addEventListener("keydown",()=>{customerAudioUnlocked=true;},{once:true});
+
   function ensureConversationModal(){
     if(document.getElementById("djyConversationModal"))return;
     document.body.insertAdjacentHTML("beforeend",`
@@ -251,7 +461,10 @@
     document.getElementById("djyMessageText").value=
       mode==="revision"?"Teklifinizi revize etmenizi rica ediyorum. ":"";
     document.getElementById("djyConversationModal").classList.remove("hidden");
+    markCustomerConversationRead(bundle.access.quoteId,String(institutionId));
+    document.getElementById("customerMessageAlert")?.classList.add("hidden");
     listenConversation();
+    renderLiveTracking();
   }
 
   function closeConversation(){
@@ -271,6 +484,8 @@
       .onSnapshot(snapshot=>{
         const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
         box.innerHTML=rows.length?rows.map(messageHtml).join(""):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
+        customerMessageRows.set(activeConversation.institutionId,rows);
+        markCustomerConversationRead(activeConversation.quoteId,activeConversation.institutionId);
         box.scrollTop=box.scrollHeight;
       },error=>{
         console.error(error);
