@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=4">
+  <link rel="stylesheet" href="admin.css?v=8">
 </head>
 
 <body>
@@ -67,28 +67,108 @@
     <section id="dashboardSection" hidden>
 
       <div class="dashboard-title">
-
         <div>
-          <h2>Kurum Başvuruları</h2>
-          <p id="applicationCount">
-            Başvurular yükleniyor...
-          </p>
+          <h2>Yönetim Paneli</h2>
+          <p>Kurum başvurularını ve yayındaki kurumları yönetin.</p>
         </div>
 
-        <button id="logoutBtn">
-          Çıkış Yap
-        </button>
-
+        <button id="logoutBtn">Çıkış Yap</button>
       </div>
 
-
-      <div id="applicationsList">
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="applicationsTabBtn">Kurum Başvuruları</button>
+        <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
       </div>
+
+      <section id="applicationsSection">
+        <div class="section-title">
+          <h3>Kurum Başvuruları</h3>
+          <p id="applicationCount">Başvurular yükleniyor...</p>
+        </div>
+
+        <div id="applicationsList"></div>
+      </section>
+
+      <section id="institutionsSection" hidden>
+        <div class="section-title">
+          <h3>Yayındaki Kurumlar</h3>
+          <p id="institutionCount">Kurumlar yükleniyor...</p>
+        </div>
+
+        <div id="institutionsList"></div>
+      </section>
 
     </section>
 
   </div>
 
+
+  <div class="admin-modal hidden" id="institutionEditModal">
+    <div class="admin-modal-card">
+      <button class="modal-close" id="closeInstitutionEditModal">×</button>
+      <h2>Kurum Düzenle</h2>
+
+      <form id="institutionEditForm">
+        <input type="hidden" id="editInstitutionId">
+
+        <label>Kurum Adı
+          <input type="text" id="editName" required>
+        </label>
+
+        <label>Kategori
+          <select id="editCategory" required>
+            <option value="surucu">Sürücü Kursu</option>
+            <option value="kres">Kreş & Anaokulu</option>
+            <option value="yurt">Öğrenci Yurdu</option>
+            <option value="esnaf">Yerel Esnaf</option>
+            <option value="diger">Diğer</option>
+          </select>
+        </label>
+
+        <div class="form-grid">
+          <label>Şehir
+            <input type="text" id="editCity">
+          </label>
+
+          <label>İlçe
+            <input type="text" id="editDistrict">
+          </label>
+        </div>
+
+        <label>Adres
+          <textarea id="editAddress" rows="3"></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label>Telefon / WhatsApp
+            <input type="text" id="editPhone">
+          </label>
+
+          <label>Web / Instagram
+            <input type="text" id="editWebsite">
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label>Enlem (lat)
+            <input type="number" step="any" id="editLat">
+          </label>
+
+          <label>Boylam (lng)
+            <input type="number" step="any" id="editLng">
+          </label>
+        </div>
+
+        <div class="check-grid">
+          <label><input type="checkbox" id="editVip"> VIP kurum</label>
+          <label><input type="checkbox" id="editVideo"> Videolu</label>
+          <label><input type="checkbox" id="editOffer"> Teklif veriyor</label>
+        </div>
+
+        <button type="submit" class="save-btn">Değişiklikleri Kaydet</button>
+      </form>
+    </div>
+  </div>
 
   <!-- FIREBASE -->
 
@@ -99,7 +179,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=7"></script>
+  <script src="admin.js?v=8"></script>
 
 </body>
 </html>
