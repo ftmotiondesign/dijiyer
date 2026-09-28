@@ -1321,3 +1321,40 @@ button{cursor:pointer}
 .firm-message-actions button{border:0;border-radius:9px;padding:9px 11px;font-weight:900;font-size:11px}
 .firm-message-actions .secondary-action{background:#eef2f7;color:#475569}.firm-message-actions .primary-action{background:#1677ff;color:#fff}
 @media(max-width:640px){.firm-message-actions{flex-direction:column}.firm-message-actions button{width:100%}.firm-progress{grid-template-columns:1fr 1fr}}
+
+
+/* Satıcı <-> müşteri mesaj bildirimleri */
+.live-message-alert{
+  border-color:#bfdbfe;
+  background:linear-gradient(135deg,#eff6ff,#ffffff);
+}
+.message-tab-count{
+  margin-left:4px;
+  background:#eef2f7;
+  color:#64748b;
+}
+.message-tab-count.has-unread{
+  background:#dc2626;
+  color:#fff;
+  animation:djyMessagePulse 1.5s infinite;
+}
+.firm-com-badge.message.unread{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+.firm-unread-count{
+  display:inline-grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  margin-left:5px;
+  border-radius:999px;
+  background:#dc2626;
+  color:#fff;
+  font-size:10px;
+}
+@keyframes djyMessagePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.18)}
+  50%{box-shadow:0 0 0 5px rgba(220,38,38,0)}
+}
