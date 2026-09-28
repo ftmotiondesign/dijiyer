@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=16" />
+  <link rel="stylesheet" href="style.css?v=17" />
   <link rel="stylesheet" href="offers.css?v=2" />
 </head>
 <body>
@@ -146,6 +146,42 @@
     <div><strong>%0 Satış Komisyonu</strong><span>Satıştan komisyon kesilmez</span></div>
   </section>
 
+  <section class="home-section how-it-works">
+    <div class="home-section-heading">
+      <span>3 ADIMDA DİJİYER</span>
+      <h2>Tek tek işletme aramadan teklif al</h2>
+      <p>İhtiyacını oluştur, uygun işletmeler fiyat versin, sen karşılaştırıp karar ver.</p>
+    </div>
+
+    <div class="how-grid">
+      <article class="how-card">
+        <div class="how-number">1</div>
+        <div class="how-icon">✍️</div>
+        <h3>İhtiyacını yaz</h3>
+        <p>Aradığın hizmeti, konumu ve varsa özel isteğini belirt.</p>
+      </article>
+
+      <article class="how-card">
+        <div class="how-number">2</div>
+        <div class="how-icon">💬</div>
+        <h3>Teklifleri karşılaştır</h3>
+        <p>Uygun işletmelerin fiyatlarını ve teklif detaylarını tek yerde gör.</p>
+      </article>
+
+      <article class="how-card">
+        <div class="how-number">3</div>
+        <div class="how-icon">🔒</div>
+        <h3>Uygun olanı seç</h3>
+        <p>Teklifi seç, fiyatı kilitle ve geçerlilik süresi boyunca güvenle kullan.</p>
+      </article>
+    </div>
+
+    <div class="how-action">
+      <button type="button" class="section-primary-btn" id="howQuoteBtn">Hemen Ücretsiz Teklif Al</button>
+      <button type="button" class="section-link-btn" id="exploreScrollBtn">Önce kurumları incele ↓</button>
+    </div>
+  </section>
+
   <section class="mobile-discovery" aria-label="Mobil kategori seçimi">
     <div class="mobile-discovery-head">
       <div>
@@ -161,6 +197,19 @@
     <div class="mobile-quick-filters">
       <button type="button" id="mobileVideoOnlyBtn">🎥 Sadece Videolu</button>
       <button type="button" id="mobileOfferOnlyBtn">🏷️ Teklif Verenler</button>
+    </div>
+  </section>
+
+  <section class="explore-intro" id="exploreSection">
+    <div>
+      <span class="explore-kicker">KURUMLARI KEŞFET</span>
+      <h2>Yakınındaki işletmeleri bul ve karşılaştır</h2>
+      <p>Konum, kategori, video ve teklif durumuna göre filtrele. Haritadan veya listeden işletmeleri incele.</p>
+    </div>
+    <div class="explore-badges">
+      <span>📍 Konuma göre</span>
+      <span>🏷️ Teklif verenler</span>
+      <span>🎥 Videolu kurumlar</span>
     </div>
   </section>
 
@@ -226,6 +275,110 @@
       </div>
     </section>
   </main>
+
+  <section class="home-section trust-section">
+    <div class="trust-copy">
+      <span class="trust-kicker">GÜVENLİ TEKLİF SİSTEMİ</span>
+      <h2>“Bu fiyat değişti” sürprizi olmasın.</h2>
+      <p>
+        Dijiyer'de seçilen teklifin fiyatı ve şartları kayıt altında tutulur.
+        Teklifin geçerlilik süresi bellidir ve işletmede teklif koduyla doğrulanabilir.
+      </p>
+
+      <button type="button" class="section-primary-btn" id="trustQuoteBtn">
+        Fiyat Garantili Teklif Al
+      </button>
+    </div>
+
+    <div class="trust-grid">
+      <article>
+        <span class="trust-icon">🔒</span>
+        <div>
+          <strong>Fiyat Kilidi</strong>
+          <p>Seçtiğin teklifin fiyatı kayıt altına alınır.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">⏱️</span>
+        <div>
+          <strong>Geçerlilik Süresi</strong>
+          <p>İşletme teklifin ne zamana kadar geçerli olduğunu belirtir.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">▦</span>
+        <div>
+          <strong>Teklif Kodu / QR</strong>
+          <p>İşletmede teklif hızlıca doğrulanabilir.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">✓</span>
+        <div>
+          <strong>Tek Kullanım Takibi</strong>
+          <p>Kullanılan teklif sistemde durum değiştirerek takip edilir.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="business-cta-section">
+    <div class="business-cta-copy">
+      <span>İŞLETMELER İÇİN</span>
+      <h2>Yeni müşteriler seni arasın, sen teklifini ver.</h2>
+      <p>
+        İşletmeni Dijiyer'e ücretsiz ekle. Bölgen ve sektörünle eşleşen talepleri gör,
+        teklif ver ve kurum panelinden süreci takip et.
+      </p>
+
+      <div class="business-benefits">
+        <span>✓ Üyelik ücretsiz</span>
+        <span>✓ Teklif vermek ücretsiz</span>
+        <span>✓ Aylık zorunlu ücret yok</span>
+        <span>✓ Kazandığın işten %0 komisyon</span>
+      </div>
+
+      <div class="business-actions">
+        <button type="button" class="business-primary-btn" id="businessAddBtn">İşletmeni Ücretsiz Ekle</button>
+        <button type="button" class="business-secondary-btn" id="businessPanelBtn">Kurum Paneline Gir</button>
+      </div>
+    </div>
+
+    <div class="business-cta-card">
+      <span class="business-card-label">İŞLETME MALİYETİ</span>
+      <strong>0 TL</strong>
+      <p>Başlangıçta kayıt ücreti, teklif verme ücreti veya satış komisyonu yok.</p>
+      <div class="business-card-list">
+        <div><b>Ücretsiz</b><span>Kurum profili</span></div>
+        <div><b>Ücretsiz</b><span>Teklif verme</span></div>
+        <div><b>%0</b><span>İş / satış komisyonu</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="home-footer">
+    <div class="home-footer-brand">
+      <div class="brand-pin">D</div>
+      <div>
+        <strong>Dijiyer</strong>
+        <span>Bul • Teklif Al • Ulaş</span>
+      </div>
+    </div>
+
+    <div class="home-footer-copy">
+      <strong>Yerel işletmeler ve müşteriler tek yerde.</strong>
+      <span>Ücretsiz teklif al, ücretsiz teklif ver, komisyonsuz ilerle.</span>
+    </div>
+
+    <div class="home-footer-actions">
+      <button type="button" id="footerQuoteBtn">Teklif Al</button>
+      <button type="button" id="footerInstitutionBtn">İşletme Ekle</button>
+      <a href="#exploreSection">Kurumları İncele</a>
+    </div>
+  </footer>
 
   <div class="modal hidden" id="quoteModal">
     <div class="modal-card">
@@ -552,7 +705,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=32"></script>
+<script src="script.js?v=33"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
