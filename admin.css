@@ -962,3 +962,178 @@ button{
 @media(max-width:520px){
   .admin-lock-summary{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   Yönetim Paneli - Teklif Veren Kurumlar Raporu
+   ========================================================= */
+
+.admin-tabs{
+  flex-wrap:wrap;
+}
+
+.offer-report-summary{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.offer-report-summary article{
+  padding:15px;
+  border:1px solid #e1e7ef;
+  border-radius:13px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(15,23,42,.035);
+}
+
+.offer-report-summary span,
+.offer-report-summary small{
+  display:block;
+  color:#64748b;
+}
+
+.offer-report-summary span{
+  font-size:11px;
+  font-weight:700;
+}
+
+.offer-report-summary strong{
+  display:block;
+  margin:7px 0 4px;
+  color:#172033;
+  font-size:24px;
+}
+
+.offer-report-summary small{
+  font-size:10px;
+  line-height:1.35;
+}
+
+.offer-report-toolbar{
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) 260px;
+  gap:10px;
+  margin-bottom:13px;
+}
+
+.offer-report-toolbar input,
+.offer-report-toolbar select{
+  height:43px;
+  padding:0 11px;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  background:#fff;
+  outline:none;
+}
+
+.offer-report-toolbar input:focus,
+.offer-report-toolbar select:focus{
+  border-color:#8fbdff;
+  box-shadow:0 0 0 3px rgba(22,119,255,.08);
+}
+
+.offer-report-table-wrap{
+  overflow-x:auto;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(0,0,0,.04);
+}
+
+.offer-report-table{
+  width:100%;
+  min-width:960px;
+  border-collapse:collapse;
+}
+
+.offer-report-table th,
+.offer-report-table td{
+  padding:13px 12px;
+  border-bottom:1px solid #edf1f5;
+  text-align:left;
+  vertical-align:middle;
+  font-size:12px;
+}
+
+.offer-report-table th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#f7f9fc;
+  color:#526176;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.offer-report-table tbody tr:last-child td{
+  border-bottom:0;
+}
+
+.offer-report-table tbody tr:hover{
+  background:#f9fbfe;
+}
+
+.report-institution{
+  display:grid;
+  gap:3px;
+}
+
+.report-institution strong{
+  color:#172033;
+  font-size:13px;
+}
+
+.report-institution small{
+  color:#8a96a8;
+  font-size:9px;
+}
+
+.report-badge{
+  min-width:30px;
+  height:26px;
+  display:inline-grid;
+  place-items:center;
+  padding:0 7px;
+  border-radius:999px;
+  font-weight:800;
+}
+
+.report-badge.locked{
+  background:#eef5ff;
+  color:#1268da;
+}
+
+.report-badge.used{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.offer-report-empty{
+  padding:28px !important;
+  text-align:center !important;
+  color:#64748b;
+}
+
+@media(max-width:1050px){
+  .offer-report-summary{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:700px){
+  .offer-report-summary{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .offer-report-toolbar{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:460px){
+  .offer-report-summary{
+    grid-template-columns:1fr;
+  }
+}
