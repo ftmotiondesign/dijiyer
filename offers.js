@@ -192,7 +192,7 @@
           expiresAt:offer.expiresAt,
           expiresAtTs:offer.expiresAtTs || null,
           status:"locked",
-          lockedAt:new Date().toISOString(),
+          lockedAt:new Date().toISOString(),\n          lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
           lockedPrice:Number(offer.price),
           lockedScope:offer.scope || ""
         });
