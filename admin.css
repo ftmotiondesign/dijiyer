@@ -2841,3 +2841,343 @@ button{
     grid-column:auto;
   }
 }
+
+
+/* ===== KURUM REKLAM YÖNETİMİ ===== */
+.institution-mini-stats.ad-focused{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+.institution-mini-stats button.ad-active{
+  border-color:#bbf7d0;
+  background:#f0fdf4;
+}
+.institution-mini-stats button.ad-active strong{color:#15803d}
+.institution-mini-stats button.ad-expiring{
+  border-color:#fde68a;
+  background:#fffbeb;
+}
+.institution-mini-stats button.ad-expiring strong{color:#b45309}
+.institution-mini-stats button.ad-payment{
+  border-color:#fed7aa;
+  background:#fff7ed;
+}
+.institution-mini-stats button.ad-payment strong{color:#c2410c}
+
+.institution-ad-note{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin:-2px 0 10px;
+  padding:9px 11px;
+  border:1px solid #dbeafe;
+  border-radius:9px;
+  background:#f8fbff;
+}
+.institution-ad-note strong{
+  flex:0 0 auto;
+  color:#1d4ed8;
+  font-size:10px;
+}
+.institution-ad-note span{
+  color:#64748b;
+  font-size:9px;
+  line-height:1.45;
+}
+
+.manage-badges .badge-ad{
+  border:1px solid transparent;
+}
+.manage-badges .badge-ad-active{
+  background:#ecfdf5;
+  color:#15803d;
+  border-color:#bbf7d0;
+}
+.manage-badges .badge-ad-expiring{
+  background:#fffbeb;
+  color:#b45309;
+  border-color:#fde68a;
+}
+.manage-badges .badge-ad-paused{
+  background:#f1f5f9;
+  color:#64748b;
+  border-color:#e2e8f0;
+}
+.manage-badges .badge-ad-expired,
+.manage-badges .badge-ad-none{
+  background:#fff;
+  color:#94a3b8;
+  border-color:#e2e8f0;
+}
+
+.institution-ad-manager{
+  margin-top:11px;
+  padding:11px;
+  border:1px solid #dbeafe;
+  border-radius:11px;
+  background:#fbfdff;
+}
+.ad-manager-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.ad-manager-head>div{
+  display:grid;
+  gap:2px;
+}
+.ad-manager-head>div>span{
+  color:#2563eb;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.ad-manager-head strong{
+  color:#172033;
+  font-size:12px;
+}
+.ad-manager-head small{
+  color:#64748b;
+  font-size:9px;
+}
+.ad-payment-chip{
+  display:inline-flex;
+  padding:5px 7px;
+  border-radius:999px;
+  background:#fff7ed;
+  color:#c2410c;
+  font-size:8px;
+  font-weight:900;
+}
+.ad-payment-chip.paid{
+  background:#ecfdf5;
+  color:#15803d;
+}
+.ad-payment-chip.partial{
+  background:#fffbeb;
+  color:#b45309;
+}
+
+.ad-recommendation{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #bfdbfe;
+  border-radius:10px;
+  background:#eff6ff;
+}
+.ad-recommendation>span{
+  color:#2563eb;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.ad-recommendation>strong{
+  display:block;
+  margin-top:3px;
+  color:#172033;
+  font-size:13px;
+}
+.ad-recommendation>p{
+  margin:5px 0;
+  color:#475569;
+  font-size:9px;
+  line-height:1.45;
+}
+.ad-recommendation ul{
+  margin:6px 0 0 17px;
+  padding:0;
+  color:#334155;
+  font-size:9px;
+  line-height:1.55;
+}
+.ad-recommendation-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+.ad-recommendation-actions button{
+  border:1px solid #93c5fd;
+  border-radius:8px;
+  background:#fff;
+  color:#1d4ed8;
+  padding:6px 8px;
+  font-size:9px;
+  font-weight:850;
+}
+.ad-recommendation-actions .ad-pick-recommended{
+  background:#2563eb;
+  color:#fff;
+  border-color:#2563eb;
+}
+.ad-recommendation-actions .ad-whatsapp-recommend{
+  border-color:#bbf7d0;
+  color:#15803d;
+}
+
+.ad-package-catalog{
+  margin-top:9px;
+}
+.ad-package-catalog>summary,
+.ad-history>summary{
+  cursor:pointer;
+  color:#475569;
+  font-size:9px;
+  font-weight:850;
+}
+.ad-package-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:7px;
+}
+.ad-package-grid article{
+  padding:8px;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  background:#fff;
+}
+.ad-package-grid article.recommended{
+  border-color:#93c5fd;
+  background:#f8fbff;
+}
+.ad-package-grid article>span{
+  color:#94a3b8;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.ad-package-grid article>strong{
+  display:block;
+  margin:2px 0 3px;
+  color:#172033;
+  font-size:9px;
+}
+.ad-package-grid article>p,
+.ad-package-grid article>small{
+  margin:0;
+  color:#64748b;
+  font-size:8px;
+  line-height:1.4;
+}
+
+.institution-ad-form{
+  margin-top:10px;
+}
+.ad-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+.ad-form-grid label{
+  display:grid;
+  gap:4px;
+  color:#475569;
+  font-size:8px;
+  font-weight:850;
+}
+.ad-form-grid label.wide{
+  grid-column:1/-1;
+}
+.ad-form-grid input,
+.ad-form-grid select,
+.ad-form-grid textarea{
+  width:100%;
+  min-height:34px;
+  padding:7px 8px;
+  border:1px solid #d8e1ec;
+  border-radius:8px;
+  background:#fff;
+  color:#334155;
+  font-size:9px;
+  outline:none;
+}
+.ad-form-grid textarea{
+  resize:vertical;
+}
+.ad-form-actions{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:8px;
+}
+.ad-form-actions button{
+  flex:0 0 auto;
+  border:0;
+  border-radius:8px;
+  background:#172033;
+  color:#fff;
+  padding:8px 10px;
+  font-size:9px;
+  font-weight:900;
+}
+.ad-form-actions span{
+  color:#64748b;
+  font-size:8px;
+  line-height:1.4;
+}
+.ad-history{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px solid #e2e8f0;
+}
+.ad-history>div{
+  display:grid;
+  gap:5px;
+  margin-top:7px;
+}
+.ad-history-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  padding:6px 0;
+  border-bottom:1px solid #edf2f7;
+}
+.ad-history-row:last-child{border-bottom:0}
+.ad-history-row>div{
+  display:grid;
+  gap:2px;
+}
+.ad-history-row strong{
+  color:#334155;
+  font-size:8px;
+}
+.ad-history-row span,
+.ad-history-row small,
+.ad-history-empty{
+  color:#94a3b8;
+  font-size:7.5px;
+  line-height:1.35;
+}
+.ad-history-row small{white-space:nowrap}
+
+@media(max-width:1150px){
+  .institution-mini-stats.ad-focused{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .institution-mini-stats.ad-focused{
+    grid-template-columns:1fr 1fr;
+  }
+  .institution-ad-note{
+    flex-direction:column;
+    gap:3px;
+  }
+}
+@media(max-width:430px){
+  .ad-form-grid,
+  .ad-package-grid{
+    grid-template-columns:1fr;
+  }
+  .ad-form-grid label.wide{
+    grid-column:auto;
+  }
+  .ad-form-actions{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .ad-form-actions button{
+    width:100%;
+  }
+}
