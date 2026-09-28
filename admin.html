@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=20">
+  <link rel="stylesheet" href="admin.css?v=21">
   <link rel="stylesheet" href="admin-advanced.css?v=4">
 </head>
 
@@ -279,19 +279,30 @@
           <p id="institutionCount">Kurumlar yükleniyor...</p>
         </div>
 
-        <div class="institution-mini-stats">
+        <div class="institution-mini-stats ad-focused">
           <button type="button" data-institution-stat-filter="">
             <span>Toplam</span><strong id="institutionStatTotal">0</strong>
           </button>
-          <button type="button" data-institution-stat-filter="offer">
-            <span>Teklif Açık</span><strong id="institutionStatOffer">0</strong>
+          <button type="button" class="ad-active" data-institution-stat-filter="ad_active">
+            <span>Reklam Veren</span><strong id="institutionStatAdActive">0</strong>
+          </button>
+          <button type="button" data-institution-stat-filter="ad_none">
+            <span>Reklam Vermeyen</span><strong id="institutionStatAdNone">0</strong>
+          </button>
+          <button type="button" class="ad-expiring" data-institution-stat-filter="ad_expiring">
+            <span>7 Günde Biten</span><strong id="institutionStatAdExpiring">0</strong>
+          </button>
+          <button type="button" class="ad-payment" data-institution-stat-filter="ad_payment">
+            <span>Ödeme Bekleyen</span><strong id="institutionStatAdPayment">0</strong>
           </button>
           <button type="button" data-institution-stat-filter="vip">
             <span>VIP</span><strong id="institutionStatVip">0</strong>
           </button>
-          <button type="button" data-institution-stat-filter="video">
-            <span>Videolu</span><strong id="institutionStatVideo">0</strong>
-          </button>
+        </div>
+
+        <div class="institution-ad-note">
+          <strong>Reklam yönetimi</strong>
+          <span>Kurumların reklam durumunu, paketini, süresini ve ödeme bilgisini buradan takip edebilirsiniz. Reklam paketleri teklif sıralamasını değiştirmez.</span>
         </div>
 
         <div class="institution-toolbar">
@@ -346,12 +357,18 @@
             <option value="video">Sadece videolu</option>
             <option value="offer">Teklif alımı açık</option>
             <option value="offer_off">Teklif alımı kapalı</option>
+            <option value="ad_active">Reklam verenler</option>
+            <option value="ad_none">Reklam vermeyenler</option>
+            <option value="ad_expiring">Reklamı 7 günde bitecekler</option>
+            <option value="ad_payment">Reklam ödemesi bekleyenler</option>
+            <option value="ad_paused">Reklamı duraklatılanlar</option>
           </select>
 
           <select id="institutionSort">
             <option value="name">Ada göre A-Z</option>
             <option value="city">Şehre göre</option>
             <option value="newest">En yeni</option>
+            <option value="ad_expiry">Reklam süresi önce dolacak</option>
           </select>
 
           <button type="button" id="clearInstitutionFilters">Filtreleri Temizle</button>
@@ -373,6 +390,8 @@
             <option value="vip_off">VIP kaldır</option>
             <option value="video_on">Videolu işaretle</option>
             <option value="video_off">Video işaretini kaldır</option>
+            <option value="ad_pause">Reklamı duraklat</option>
+            <option value="ad_off">Reklamı kapat</option>
             <option value="announcement">Seçilenlere duyuru gönder</option>
           </select>
           <button type="button" id="bulkInstitutionApply">Uygula</button>
@@ -941,7 +960,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=26"></script>
+  <script src="admin.js?v=27"></script>
   <script src="admin-advanced.js?v=6"></script>
 
 </body>
