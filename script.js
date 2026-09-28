@@ -2375,6 +2375,29 @@ document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
   document.getElementById('institutionAddBtn')?.click();
 });
 
+['howQuoteBtn', 'trustQuoteBtn', 'footerQuoteBtn'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => {
+    openModal('quoteModal');
+  });
+});
+
+['businessAddBtn', 'footerInstitutionBtn'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => {
+    document.getElementById('institutionAddBtn')?.click();
+  });
+});
+
+document.getElementById('businessPanelBtn')?.addEventListener('click', () => {
+  document.getElementById('institutionLoginBtn')?.click();
+});
+
+document.getElementById('exploreScrollBtn')?.addEventListener('click', () => {
+  document.getElementById('exploreSection')?.scrollIntoView({
+    behavior:'smooth',
+    block:'start'
+  });
+});
+
 loadMainLocationProvinces();
 loadProvinces();
 loadQuoteProvinces();
