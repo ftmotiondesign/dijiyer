@@ -441,20 +441,61 @@
       </section>
 
       <section id="supportSection" hidden>
-        <div class="section-title">
-          <h3>Kurum Destek Merkezi</h3>
-          <p id="supportAdminCount">Destek talepleri yükleniyor...</p>
+        <div class="section-title support-section-title">
+          <div>
+            <h3>Kurum Destek Merkezi</h3>
+            <p id="supportAdminCount">Destek talepleri yükleniyor...</p>
+          </div>
+          <button type="button" class="support-refresh-btn" id="supportAdminRefresh">Yenile</button>
         </div>
-        <div class="advanced-toolbar">
-          <input type="search" id="supportAdminSearch" placeholder="Kurum, konu veya mesaj ara...">
+
+        <div class="support-admin-kpis" aria-label="Destek durumu özeti">
+          <button type="button" data-support-kpi="new">
+            <span>Yeni</span>
+            <strong id="supportKpiNew">0</strong>
+            <small>Henüz ele alınmadı</small>
+          </button>
+          <button type="button" data-support-kpi="reviewing">
+            <span>İnceleniyor</span>
+            <strong id="supportKpiReviewing">0</strong>
+            <small>İşlem devam ediyor</small>
+          </button>
+          <button type="button" data-support-kpi="answered">
+            <span>Cevaplandı</span>
+            <strong id="supportKpiAnswered">0</strong>
+            <small>Kurum yanıt aldı</small>
+          </button>
+          <button type="button" class="danger" data-support-kpi="overdue">
+            <span>Geciken</span>
+            <strong id="supportKpiOverdue">0</strong>
+            <small>SLA süresi aşıldı</small>
+          </button>
+        </div>
+
+        <div class="advanced-toolbar support-toolbar">
+          <input type="search" id="supportAdminSearch" placeholder="Kurum, destek no, teklif no veya mesaj ara...">
+
           <select id="supportAdminStatus">
             <option value="">Tüm durumlar</option>
             <option value="new">Yeni</option>
             <option value="reviewing">İnceleniyor</option>
             <option value="answered">Cevaplandı</option>
             <option value="resolved">Çözüldü</option>
+            <option value="overdue">Geciken</option>
+          </select>
+
+          <select id="supportAdminCategory">
+            <option value="">Tüm konular</option>
+          </select>
+
+          <select id="supportAdminSort">
+            <option value="newest">En yeni</option>
+            <option value="oldest">En eski</option>
+            <option value="priority">Önce geciken</option>
           </select>
         </div>
+
+        <div class="support-filter-summary" id="supportFilterSummary"></div>
         <div id="supportAdminList" class="support-admin-list"></div>
       </section>
 
