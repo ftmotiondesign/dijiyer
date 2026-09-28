@@ -2507,7 +2507,7 @@ document.getElementById('mobileQuoteActionBtn')?.addEventListener('click', event
 document.getElementById('mobileInstitutionActionBtn')?.addEventListener('click', event => {
   event.preventDefault();
   event.stopPropagation();
-  openModal('institutionAccessModal');
+  setInstitutionActionsMenu(true);
 });
 
 document.getElementById('heroQuoteBtn')?.addEventListener('click', () => {
