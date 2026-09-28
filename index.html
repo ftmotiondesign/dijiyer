@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=14" />
+  <link rel="stylesheet" href="style.css?v=15" />
 </head>
 <body>
   <header class="topbar">
@@ -58,9 +58,43 @@
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" id="addInstitutionBtn">Toplu Teklif Al</button>
-    <button class="btn btn-light" id="institutionAddBtn">+ Kurum Ekle</button>
-    <button class="btn btn-light" id="institutionLoginBtn">🏢 Kurum Girişi</button>
+    <button class="btn btn-primary quote-main-btn" id="addInstitutionBtn">Toplu Teklif Al</button>
+
+    <div class="institution-actions" id="institutionActions">
+      <button
+        type="button"
+        class="institution-actions-btn"
+        id="institutionActionsBtn"
+        aria-expanded="false"
+      >
+        <span class="institution-actions-icon">🏢</span>
+        <span>Kurum İşlemleri</span>
+        <span class="institution-actions-arrow">⌄</span>
+      </button>
+
+      <div class="institution-actions-menu hidden" id="institutionActionsMenu">
+        <div class="institution-actions-head">
+          <strong>Kurum İşlemleri</strong>
+          <small>İşletmeni ekle veya paneline giriş yap</small>
+        </div>
+
+        <button type="button" class="institution-menu-item" id="institutionAddBtn">
+          <span class="institution-menu-icon add">＋</span>
+          <span class="institution-menu-copy">
+            <strong>Kurum Ekle</strong>
+            <small>Dijiyer'e yeni işletme ekle</small>
+          </span>
+        </button>
+
+        <button type="button" class="institution-menu-item" id="institutionLoginBtn">
+          <span class="institution-menu-icon panel">🏢</span>
+          <span class="institution-menu-copy">
+            <strong id="institutionLoginBtnLabel">Kurum Paneli</strong>
+            <small>Teklifleri ve kurum bilgilerini yönet</small>
+          </span>
+        </button>
+      </div>
+    </div>
   </header>
 
   <main class="app-layout">
@@ -402,6 +436,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=26"></script>
+<script src="script.js?v=28"></script>
 </body>
 </html>
