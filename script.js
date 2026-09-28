@@ -152,11 +152,21 @@ function resolveTaxonomy(record) {
     ['diger', (record && record.category) || 'diger'];
 }
 
+function getSortedMainCategories() {
+  return Object.entries(categoryTaxonomy).sort(([,a],[,b]) =>
+    String(a.label || '').localeCompare(
+      String(b.label || ''),
+      'tr',
+      { sensitivity:'base' }
+    )
+  );
+}
+
 function populateMainCategorySelect(selectId, placeholder) {
   const select = document.getElementById(selectId);
   if (!select) return;
   select.innerHTML = '<option value="">' + placeholder + '</option>' +
-    Object.entries(categoryTaxonomy)
+    getSortedMainCategories()
       .map(([key,item]) => '<option value="' + key + '">' + item.label + '</option>')
       .join('');
 }
@@ -195,7 +205,7 @@ function renderSidebarCategories() {
   const root = document.getElementById('sidebarCategories');
   if (!root) return;
 
-  root.innerHTML = Object.entries(categoryTaxonomy).map(([mainKey,item]) => {
+  root.innerHTML = getSortedMainCategories().map(([mainKey,item]) => {
     const subs = Object.entries(item.subs || {});
     return `
       <div class="category-group" data-category-group="${mainKey}">
@@ -356,7 +366,7 @@ function renderMobileCategories() {
 
   const activeMain = getSelectedMainCategory();
 
-  root.innerHTML = Object.entries(categoryTaxonomy).map(([key, item]) => `
+  root.innerHTML = getSortedMainCategories().map(([key, item]) => `
     <button
       type="button"
       class="mobile-category-btn ${activeMain === key ? 'active' : ''}"
