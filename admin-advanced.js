@@ -13,6 +13,7 @@
 
   const selectedInstitutionIds = new Set();
   let announcementSelectedIds = [];
+  let supportTicketRecords = [];
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -129,9 +130,9 @@
     $(id)?.addEventListener("click", hideAdvancedSections);
   });
 
-  $("supportTabBtn")?.addEventListener("click", () => {
+  $("supportTabBtn")?.addEventListener("click", async () => {
     showAdvancedSection("supportSection","supportTabBtn");
-    renderSupportCenter();
+    await loadSupportCenter();
   });
 
   $("announcementsTabBtn")?.addEventListener("click", () => {
@@ -371,105 +372,187 @@
   });
 
   function getAllSupportTickets() {
-    return institutionRecords.flatMap(inst =>
-      (Array.isArray(inst.supportTickets) ? inst.supportTickets : []).map(ticket => ({
-        ...ticket,
-        institutionId:inst.id,
-        institutionName:inst.name || "Kurum"
-      }))
-    ).sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+    return [...supportTicketRecords].sort(
+      (a,b) => new Date(b.updatedAt || b.date || 0) - new Date(a.updatedAt || a.date || 0)
+    );
+  }
+
+  async function loadSupportCenter() {
+    const root = $("supportAdminList");
+    if (!root) return;
+
+    root.innerHTML = '<div class="advanced-empty">Destek talepleri yükleniyor...</div>';
+
+    try {
+      const snapshot = await db.collection("supportTickets").get();
+
+      supportTicketRecords = snapshot.docs.map(doc => ({
+        id:doc.id,
+        ...doc.data()
+      }));
+
+      renderSupportCenter();
+      refreshAdminNotifications();
+
+    } catch (error) {
+      console.error("Destek talepleri yüklenemedi:", error);
+      root.innerHTML =
+        '<div class="advanced-empty">Destek talepleri yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+    }
+  }
+
+  function supportStatusMeta(status) {
+    const normalized = status === "in_progress" ? "reviewing" : (status || "new");
+    const map = {
+      new:["Yeni","new"],
+      reviewing:["İnceleniyor","reviewing"],
+      answered:["Cevaplandı","answered"],
+      resolved:["Çözüldü","resolved"]
+    };
+    return map[normalized] || map.new;
   }
 
   function renderSupportCenter() {
     const root = $("supportAdminList");
     if (!root) return;
+
     const query = normalize($("supportAdminSearch")?.value);
     const status = $("supportAdminStatus")?.value || "";
+
     const tickets = getAllSupportTickets().filter(item => {
+      const normalizedStatus =
+        item.status === "in_progress" ? "reviewing" : (item.status || "new");
+
       const haystack = normalize([
-        item.institutionName,item.subject,item.message,item.adminReply
+        item.institutionName,
+        item.email,
+        item.category,
+        item.subject,
+        item.message,
+        item.adminReply
       ].filter(Boolean).join(" "));
+
       return (!query || haystack.includes(query)) &&
-        (!status || String(item.status || "new") === status);
+        (!status || normalizedStatus === status);
     });
 
     const all = getAllSupportTickets();
     const open = all.filter(x => (x.status || "new") !== "resolved").length;
-    $("supportAdminCount").textContent =
-      all.length + " talep · " + open + " açık · " + (all.length-open) + " çözüldü";
 
-    root.innerHTML = tickets.length ? tickets.map(ticket => `
-      <article class="support-admin-card">
-        <div class="support-admin-head">
-          <div>
-            <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
-            <p>${escapeHtml(ticket.institutionName || "Kurum")} · ${formatDateLocal(ticket.date)}</p>
+    if ($("supportAdminCount")) {
+      $("supportAdminCount").textContent =
+        all.length + " talep · " + open + " açık · " + (all.length-open) + " çözüldü";
+    }
+
+    if ($("adminSupportTabCount")) {
+      $("adminSupportTabCount").textContent = open;
+    }
+
+    root.innerHTML = tickets.length ? tickets.map(ticket => {
+      const [statusText,statusClass] = supportStatusMeta(ticket.status);
+      const normalizedStatus =
+        ticket.status === "in_progress" ? "reviewing" : (ticket.status || "new");
+
+      return `
+        <article class="support-admin-card">
+          <div class="support-admin-head">
+            <div>
+              <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
+              <p>
+                ${escapeHtml(ticket.institutionName || "Kurum")} ·
+                ${escapeHtml(ticket.email || "-")} ·
+                ${formatDateLocal(ticket.date)}
+              </p>
+            </div>
+            <span class="support-state state-${escapeHtml(statusClass)}">
+              ${statusText}
+            </span>
           </div>
-          <span class="support-state state-${escapeHtml(ticket.status || "new")}">
-            ${ticket.status === "resolved" ? "Çözüldü" : ticket.status === "in_progress" ? "İşlemde" : "Yeni"}
-          </span>
-        </div>
-        <div class="support-admin-message">${escapeHtml(ticket.message || "")}</div>
-        <div class="support-admin-controls">
-          <select data-support-status="${escapeHtml(ticket.id)}" data-institution-id="${escapeHtml(ticket.institutionId)}">
-            <option value="new" ${(ticket.status||"new")==="new"?"selected":""}>Yeni</option>
-            <option value="in_progress" ${ticket.status==="in_progress"?"selected":""}>İşlemde</option>
-            <option value="resolved" ${ticket.status==="resolved"?"selected":""}>Çözüldü</option>
-          </select>
-          <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma yanıt yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
-          <button
-            type="button"
-            data-support-save="${escapeHtml(ticket.id)}"
-            data-institution-id="${escapeHtml(ticket.institutionId)}"
-          >Kaydet</button>
-        </div>
-      </article>
-    `).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
+
+          <div class="support-admin-message">
+            <strong>${escapeHtml(ticket.category || "Destek")}</strong><br>
+            ${escapeHtml(ticket.message || "")}
+          </div>
+
+          <div class="support-admin-controls">
+            <select data-support-status="${escapeHtml(ticket.id)}">
+              <option value="new" ${normalizedStatus==="new"?"selected":""}>Yeni</option>
+              <option value="reviewing" ${normalizedStatus==="reviewing"?"selected":""}>İnceleniyor</option>
+              <option value="answered" ${normalizedStatus==="answered"?"selected":""}>Cevaplandı</option>
+              <option value="resolved" ${normalizedStatus==="resolved"?"selected":""}>Çözüldü</option>
+            </select>
+
+            <textarea
+              data-support-reply="${escapeHtml(ticket.id)}"
+              placeholder="Kuruma yanıt yazın..."
+            >${escapeHtml(ticket.adminReply || "")}</textarea>
+
+            <button
+              type="button"
+              data-support-save="${escapeHtml(ticket.id)}"
+            >Yanıtı Kaydet</button>
+          </div>
+
+          ${ticket.adminReplyAt ? `
+            <div class="advanced-message">
+              Son yanıt: ${formatDateLocal(ticket.adminReplyAt)}
+            </div>
+          ` : ""}
+        </article>
+      `;
+    }).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
 
     root.querySelectorAll("[data-support-save]").forEach(button => {
       button.addEventListener("click", () =>
-        saveSupportTicketAdmin(
-          button.dataset.institutionId,
-          button.dataset.supportSave
-        )
+        saveSupportTicketAdmin(button.dataset.supportSave)
       );
     });
   }
 
-  async function saveSupportTicketAdmin(institutionId, ticketId) {
-    const inst = institutionRecords.find(item => String(item.id) === String(institutionId));
-    if (!inst) return;
+  async function saveSupportTicketAdmin(ticketId) {
+    const record = supportTicketRecords.find(
+      item => String(item.id) === String(ticketId)
+    );
+    if (!record) return;
 
     const status = document.querySelector(
-      `[data-support-status="${CSS.escape(ticketId)}"][data-institution-id="${CSS.escape(institutionId)}"]`
+      `[data-support-status="${CSS.escape(ticketId)}"]`
     )?.value || "new";
+
     const reply = document.querySelector(
       `[data-support-reply="${CSS.escape(ticketId)}"]`
     )?.value.trim() || "";
 
-    const tickets = (Array.isArray(inst.supportTickets) ? inst.supportTickets : []).map(ticket =>
-      String(ticket.id) === String(ticketId)
-        ? {
-            ...ticket,
-            status,
-            adminReply:reply,
-            updatedAt:new Date().toISOString()
-          }
-        : ticket
-    );
+    const now = new Date().toISOString();
 
-    await db.collection("institutions").doc(institutionId).update({
-      supportTickets:tickets,
-      updatedAt:new Date().toISOString()
-    });
-    inst.supportTickets = tickets;
-    addAudit("Destek talebi güncellendi", (inst.name || "Kurum") + " · " + ticketId + " · " + status);
-    renderSupportCenter();
-    refreshAdminNotifications();
+    try {
+      const changes = {
+        status,
+        adminReply:reply,
+        adminReplyAt:reply ? now : "",
+        updatedAt:now
+      };
+
+      await db.collection("supportTickets").doc(ticketId).update(changes);
+      Object.assign(record, changes);
+
+      addAudit(
+        "Destek talebi güncellendi",
+        (record.institutionName || "Kurum") + " · " + ticketId + " · " + status
+      );
+
+      renderSupportCenter();
+      refreshAdminNotifications();
+
+    } catch (error) {
+      console.error("Destek talebi güncellenemedi:", error);
+      alert("Destek talebi güncellenemedi. Firestore yetkisini kontrol edin.");
+    }
   }
 
   $("supportAdminSearch")?.addEventListener("input", renderSupportCenter);
   $("supportAdminStatus")?.addEventListener("change", renderSupportCenter);
+
 
   function getAnnouncementTargets() {
     const type = $("announcementTargetType")?.value || "all";
@@ -846,7 +929,7 @@
     decorateExistingInstitutionCards();
     populateAnnouncementTargets();
     renderAnnouncementHistory();
-    renderSupportCenter();
+    loadSupportCenter();
     refreshAdminNotifications();
     renderAudit();
   }, 1200);
