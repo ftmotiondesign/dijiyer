@@ -7,10 +7,12 @@ const firebaseConfig = {
   appId: "1:847787778815:web:57058aa8dcc4143ec5a2ca"
 };
 
-firebase.initializeApp(firebaseConfig);
+const adminApp =
+  firebase.apps.find(app => app.name === "adminPanel") ||
+  firebase.initializeApp(firebaseConfig, "adminPanel");
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth = adminApp.auth();
+const db = adminApp.firestore();
 
 const loginSection = document.getElementById("loginSection");
 const dashboardSection = document.getElementById("dashboardSection");
@@ -77,7 +79,6 @@ auth.onAuthStateChanged(async (user) => {
     await loadInstitutionAccounts();
   } else {
     if (user && user.uid !== ADMIN_UID) {
-      await auth.signOut();
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
     }
 
