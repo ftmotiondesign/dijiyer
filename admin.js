@@ -94,7 +94,15 @@ const overviewRefreshBtn = document.getElementById("overviewRefreshBtn");
 
 const issueSearch = document.getElementById("issueSearch");
 const issueStatusFilter = document.getElementById("issueStatusFilter");
+const issueDecisionFilter = document.getElementById("issueDecisionFilter");
 const issueCount = document.getElementById("issueCount");
+const issueTabCount = document.getElementById("issueTabCount");
+const issueKpiTotal = document.getElementById("issueKpiTotal");
+const issueKpiNew = document.getElementById("issueKpiNew");
+const issueKpiReviewing = document.getElementById("issueKpiReviewing");
+const issueKpiBusiness = document.getElementById("issueKpiBusiness");
+const issueKpiCustomer = document.getElementById("issueKpiCustomer");
+const issueKpiResolved = document.getElementById("issueKpiResolved");
 const issuesList = document.getElementById("issuesList");
 
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
@@ -1858,6 +1866,7 @@ function renderQuoteRequests() {
 
     const card = document.createElement("div");
     card.className = "quote-request-card";
+    card.dataset.quoteId = request.id;
 
     const institutionButtons = matching.length
       ? matching.map(inst => {
@@ -2168,7 +2177,7 @@ function refreshAdminOverview() {
 
   const allIssues = getOverviewAllIssues();
   const openIssues = allIssues.filter(issue =>
-    String(issue.status || "new") !== "resolved"
+    !["resolved","archived"].includes(String(issue.status || "new"))
   );
 
   setOverviewText(overviewInstitutionCount, institutionRecords.length);
@@ -2412,36 +2421,113 @@ overviewRefreshBtn?.addEventListener("click", async () => {
 });
 
 /* =========================================================
-   SORUN / İHLAL MERKEZİ
+   SORUN ÇÖZÜM MERKEZİ
    ========================================================= */
+
+function getIssueStatusMeta(status) {
+  const map = {
+    new: ["Yeni","new"],
+    reviewing: ["İnceleniyor","reviewing"],
+    waiting_business: ["Firma Yanıtı Bekleniyor","waiting"],
+    waiting_customer: ["Müşteri Yanıtı Bekleniyor","waiting"],
+    resolved: ["Çözüldü","resolved"],
+    archived: ["Arşiv","archived"]
+  };
+  return map[String(status || "new")] || ["Yeni","new"];
+}
+
+function getIssueDecisionMeta(decision) {
+  const map = {
+    mutual_resolution: "Taraflar uzlaştı",
+    offer_honored: "Kilitli teklif uygulandı",
+    customer_claim_supported: "Müşteri bildirimi kayıtlarla desteklendi",
+    business_response_supported: "Firma açıklaması kayıtlarla desteklendi",
+    insufficient_evidence: "Yeterli kanıt yok",
+    customer_withdrew: "Müşteri bildirimini geri çekti"
+  };
+  return map[String(decision || "")] || "Karar verilmedi";
+}
+
+function getIssueInstitution(request) {
+  const institutionId = request?.liveLock?.institutionId;
+  return institutionRecords.find(item =>
+    String(item.id) === String(institutionId || "")
+  ) || null;
+}
+
+function adminMoney(value) {
+  return new Intl.NumberFormat("tr-TR").format(Number(value || 0)) + " TL";
+}
+
+function adminWhatsappDigits(raw) {
+  let digits = String(raw || "").replace(/\D/g,"");
+  if (digits.startsWith("0")) digits = "90" + digits.slice(1);
+  if (digits.length === 10) digits = "90" + digits;
+  return digits;
+}
+
+function issueHistoryHtml(item) {
+  const history = Array.isArray(item.statusHistory) ? [...item.statusHistory] : [];
+  if (!history.length) {
+    return '<div class="issue-history-empty">Henüz yönetici işlem geçmişi yok.</div>';
+  }
+
+  return history
+    .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))
+    .slice(0,8)
+    .map(entry => {
+      const [label] = getIssueStatusMeta(entry.status);
+      const decision = entry.decision ? " · " + getIssueDecisionMeta(entry.decision) : "";
+      return `
+        <div class="issue-history-row">
+          <span></span>
+          <div>
+            <strong>${escapeHtml(label + decision)}</strong>
+            <small>${formatDate(entry.date)}</small>
+            ${entry.summary ? `<p>${escapeHtml(entry.summary)}</p>` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+}
 
 function getFilteredIssues() {
   const query = String(issueSearch?.value || "")
     .trim()
     .toLocaleLowerCase("tr-TR");
   const status = issueStatusFilter?.value || "";
+  const decision = issueDecisionFilter?.value || "";
 
   return getOverviewAllIssues()
     .filter(item => {
       const request = item.request || {};
       const lock = request.liveLock || {};
+      const institution = getIssueInstitution(request);
       const itemStatus = String(item.status || "new");
+      const itemDecision = String(item.decision || "");
 
       const haystack = [
         item.offerCode,
         item.reason,
+        item.customerFollowup,
+        item.businessResponse,
+        item.adminNote,
+        item.outcomeSummary,
+        getIssueDecisionMeta(itemDecision),
         request.name,
         request.phone,
         request.service,
         request.city,
         request.district,
-        lock.institutionName
+        lock.institutionName,
+        institution?.phone
       ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
       return (!query || haystack.includes(query)) &&
-        (!status || itemStatus === status);
+        (!status || itemStatus === status) &&
+        (!decision || itemDecision === decision);
     })
-    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    .sort((a, b) => new Date(b.updatedAt || b.date || 0) - new Date(a.updatedAt || a.date || 0));
 }
 
 function renderIssueCenter() {
@@ -2449,12 +2535,34 @@ function renderIssueCenter() {
 
   const all = getOverviewAllIssues();
   const filtered = getFilteredIssues();
-  const open = all.filter(item => String(item.status || "new") !== "resolved").length;
+  const counts = {
+    new:0,
+    reviewing:0,
+    waiting_business:0,
+    waiting_customer:0,
+    resolved:0,
+    archived:0
+  };
+
+  all.forEach(item => {
+    const key = String(item.status || "new");
+    if (Object.prototype.hasOwnProperty.call(counts,key)) counts[key] += 1;
+  });
+
+  const open = counts.new + counts.reviewing + counts.waiting_business + counts.waiting_customer;
 
   if (issueCount) {
     issueCount.textContent =
-      `${all.length} bildirim · ${open} açık · ${all.length - open} çözüldü`;
+      `${all.length} bildirim · ${open} açık · ${counts.resolved} çözüldü · ${counts.archived} arşiv`;
   }
+
+  setOverviewText(issueKpiTotal, all.length);
+  setOverviewText(issueKpiNew, counts.new);
+  setOverviewText(issueKpiReviewing, counts.reviewing);
+  setOverviewText(issueKpiBusiness, counts.waiting_business);
+  setOverviewText(issueKpiCustomer, counts.waiting_customer);
+  setOverviewText(issueKpiResolved, counts.resolved);
+  if (issueTabCount) issueTabCount.textContent = open;
 
   if (!filtered.length) {
     issuesList.innerHTML =
@@ -2465,133 +2573,281 @@ function renderIssueCenter() {
   issuesList.innerHTML = filtered.map(item => {
     const request = item.request || {};
     const lock = request.liveLock || {};
-    const resolved = String(item.status || "new") === "resolved";
+    const institution = getIssueInstitution(request);
+    const status = String(item.status || "new");
+    const [statusLabel,statusClass] = getIssueStatusMeta(status);
+    const decisionLabel = getIssueDecisionMeta(item.decision);
+    const customerPhone = request.phone || "";
+    const institutionPhone = institution?.phone || "";
+    const customerWa = adminWhatsappDigits(customerPhone);
+    const institutionWa = adminWhatsappDigits(institutionPhone);
 
     return `
-      <article class="issue-card ${resolved ? "is-resolved" : "is-open"}">
-        <div class="issue-card-top">
+      <article class="issue-case-card state-${escapeHtml(statusClass)}">
+        <div class="issue-case-head">
           <div>
+            <div class="issue-case-kicker">SORUN DOSYASI · ${escapeHtml(item.id || "-")}</div>
             <h4>${escapeHtml(request.service || "Teklif Sorunu")}</h4>
-            <div class="issue-code">Teklif No: ${escapeHtml(item.offerCode || lock.offerCode || "-")}</div>
+            <div class="issue-code">Teklif No: <b>${escapeHtml(item.offerCode || lock.offerCode || "-")}</b></div>
           </div>
-          <span class="issue-status ${resolved ? "resolved" : "open"}">
-            ${resolved ? "Çözüldü" : "Açık"}
-          </span>
-        </div>
-
-        <div class="issue-reason">${escapeHtml(item.reason || "Açıklama yok")}</div>
-
-        <div class="issue-meta-grid">
-          <div>
-            <small>Müşteri</small>
-            <strong>${escapeHtml(request.name || "-")}</strong>
-          </div>
-          <div>
-            <small>Kurum</small>
-            <strong>${escapeHtml(lock.institutionName || "-")}</strong>
-          </div>
-          <div>
-            <small>Konum</small>
-            <strong>${escapeHtml([request.city, request.district].filter(Boolean).join(" / ") || "-")}</strong>
-          </div>
-          <div>
-            <small>Bildirim Tarihi</small>
-            <strong>${formatDate(item.date)}</strong>
+          <div class="issue-case-statuses">
+            <span class="issue-status ${escapeHtml(statusClass)}">${escapeHtml(statusLabel)}</span>
+            ${item.decision ? `<span class="issue-decision-badge">${escapeHtml(decisionLabel)}</span>` : ""}
           </div>
         </div>
 
-        <div class="issue-actions">
-          <button
-            type="button"
-            class="resolve"
-            data-issue-action="toggle"
-            data-quote-id="${request.id}"
-            data-issue-id="${item.id}"
-            data-next-status="${resolved ? "new" : "resolved"}"
-          >
-            ${resolved ? "Tekrar Aç" : "✓ Çözüldü Olarak İşaretle"}
-          </button>
-          <button type="button" data-issue-action="quotes">Teklif Talebini Gör</button>
-          <button
-            type="button"
-            class="delete"
-            data-issue-action="delete"
-            data-quote-id="${request.id}"
-            data-issue-id="${item.id}"
-          >
-            Sil
-          </button>
+        <div class="issue-claim-block">
+          <span>Müşterinin ilk bildirimi</span>
+          <strong>${escapeHtml(item.reason || "Açıklama yok")}</strong>
+          <small>Bildirim tarihi: ${formatDate(item.date)}</small>
         </div>
+
+        <div class="issue-evidence-title">
+          <strong>🔒 Kilitlenen teklif kaydı</strong>
+          <span>Bu alan mevcut kilit kaydından okunur; değerlendirmede esas alınır.</span>
+        </div>
+
+        <div class="issue-evidence-grid">
+          <div><small>Firma</small><strong>${escapeHtml(lock.institutionName || institution?.name || "-")}</strong></div>
+          <div><small>Kilitli Fiyat</small><strong>${lock.price !== undefined ? adminMoney(lock.price) : "-"}</strong></div>
+          <div><small>KDV</small><strong>${escapeHtml(lock.vatStatus || "-")}</strong></div>
+          <div><small>Son Geçerlilik</small><strong>${formatDate(lock.expiresAt)}</strong></div>
+          <div class="wide"><small>Teklif Kapsamı</small><strong>${escapeHtml(lock.scope || "Kapsam bilgisi yok")}</strong></div>
+          <div class="wide"><small>Özel Şart</small><strong>${escapeHtml(lock.conditions || "Özel şart belirtilmemiş")}</strong></div>
+        </div>
+
+        <div class="issue-parties-grid">
+          <section>
+            <div class="issue-party-head">
+              <div>
+                <span>MÜŞTERİ</span>
+                <strong>${escapeHtml(request.name || "-")}</strong>
+                <small>${escapeHtml(customerPhone || "Telefon yok")}</small>
+              </div>
+              ${customerWa ? `<button type="button" class="issue-contact-btn" data-issue-whatsapp="${customerWa}" data-party-name="${escapeHtml(request.name || "Müşteri")}">WhatsApp</button>` : ""}
+            </div>
+            <label>Ek müşteri açıklaması <small>(yönetici tarafından kaydedilir)</small>
+              <textarea data-issue-customer-followup="${escapeHtml(item.id)}" rows="3" maxlength="1000" placeholder="Müşteriden alınan ek açıklamayı yazın...">${escapeHtml(item.customerFollowup || "")}</textarea>
+            </label>
+          </section>
+
+          <section>
+            <div class="issue-party-head">
+              <div>
+                <span>FİRMA</span>
+                <strong>${escapeHtml(lock.institutionName || institution?.name || "-")}</strong>
+                <small>${escapeHtml(institutionPhone || "Telefon yok")}</small>
+              </div>
+              ${institutionWa ? `<button type="button" class="issue-contact-btn business" data-issue-whatsapp="${institutionWa}" data-party-name="${escapeHtml(lock.institutionName || institution?.name || "Firma")}">WhatsApp</button>` : ""}
+            </div>
+            <label>Firma açıklaması <small>(yönetici tarafından kaydedilir)</small>
+              <textarea data-issue-business-response="${escapeHtml(item.id)}" rows="3" maxlength="1000" placeholder="Firmanın açıklamasını olduğu gibi kaydedin...">${escapeHtml(item.businessResponse || "")}</textarea>
+            </label>
+          </section>
+        </div>
+
+        <div class="issue-admin-review">
+          <div class="issue-admin-review-title">
+            <strong>Yönetici değerlendirmesi</strong>
+            <span>Karar vermeden önce iki tarafın beyanını ve kilitli teklif şartlarını karşılaştırın.</span>
+          </div>
+
+          <div class="issue-review-grid">
+            <label>Durum
+              <select data-issue-status="${escapeHtml(item.id)}">
+                <option value="new" ${status==="new"?"selected":""}>Yeni</option>
+                <option value="reviewing" ${status==="reviewing"?"selected":""}>İnceleniyor</option>
+                <option value="waiting_business" ${status==="waiting_business"?"selected":""}>Firma yanıtı bekleniyor</option>
+                <option value="waiting_customer" ${status==="waiting_customer"?"selected":""}>Müşteri yanıtı bekleniyor</option>
+                <option value="resolved" ${status==="resolved"?"selected":""}>Çözüldü</option>
+                <option value="archived" ${status==="archived"?"selected":""}>Arşiv</option>
+              </select>
+            </label>
+
+            <label>Karar
+              <select data-issue-decision="${escapeHtml(item.id)}">
+                <option value="">Karar verilmedi</option>
+                <option value="mutual_resolution" ${item.decision==="mutual_resolution"?"selected":""}>Taraflar uzlaştı</option>
+                <option value="offer_honored" ${item.decision==="offer_honored"?"selected":""}>Kilitli teklif uygulandı</option>
+                <option value="customer_claim_supported" ${item.decision==="customer_claim_supported"?"selected":""}>Müşteri bildirimi kayıtlarla desteklendi</option>
+                <option value="business_response_supported" ${item.decision==="business_response_supported"?"selected":""}>Firma açıklaması kayıtlarla desteklendi</option>
+                <option value="insufficient_evidence" ${item.decision==="insufficient_evidence"?"selected":""}>Yeterli kanıt yok</option>
+                <option value="customer_withdrew" ${item.decision==="customer_withdrew"?"selected":""}>Müşteri bildirimini geri çekti</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Yönetici notu
+            <textarea data-issue-admin-note="${escapeHtml(item.id)}" rows="3" maxlength="1500" placeholder="Kayıtlar, görüşmeler ve değerlendirmenin kısa özeti...">${escapeHtml(item.adminNote || "")}</textarea>
+          </label>
+
+          <label>Sonuç özeti <small>(dosya kapatılırken net ve tarafsız yazın)</small>
+            <textarea data-issue-outcome="${escapeHtml(item.id)}" rows="2" maxlength="1000" placeholder="Örn. Kilitli teklif şartları firma tarafından kabul edildi ve işlem tamamlandı.">${escapeHtml(item.outcomeSummary || "")}</textarea>
+          </label>
+
+          <div class="issue-case-actions">
+            <button type="button" class="primary" data-issue-action="save" data-quote-id="${request.id}" data-issue-id="${item.id}">Kaydet</button>
+            <button type="button" data-issue-action="quotes" data-quote-id="${request.id}">Talep Detayını Gör</button>
+            ${status === "archived"
+              ? `<button type="button" data-issue-action="reopen" data-quote-id="${request.id}" data-issue-id="${item.id}">Arşivden Çıkar</button>`
+              : `<button type="button" class="archive" data-issue-action="archive" data-quote-id="${request.id}" data-issue-id="${item.id}">Arşivle</button>`
+            }
+          </div>
+        </div>
+
+        <details class="issue-history">
+          <summary>İşlem geçmişi</summary>
+          <div class="issue-history-list">${issueHistoryHtml(item)}</div>
+        </details>
       </article>
     `;
   }).join("");
 
+  issuesList.querySelectorAll("[data-issue-whatsapp]").forEach(button => {
+    button.addEventListener("click", () => {
+      const digits = button.dataset.issueWhatsapp;
+      if (!digits) return;
+      const name = button.dataset.partyName || "";
+      const text = encodeURIComponent(
+        "Merhaba " + name + ", Dijiyer üzerinden iletilen bir teklif sorun bildirimi hakkında tarafsız inceleme yapıyoruz. Görüşünüzü almak istiyoruz."
+      );
+      window.open("https://wa.me/" + digits + "?text=" + text, "_blank", "noopener");
+    });
+  });
+
   issuesList.querySelectorAll("[data-issue-action]").forEach(button => {
     button.addEventListener("click", async () => {
       const action = button.dataset.issueAction;
+      const quoteId = button.dataset.quoteId;
+      const issueId = button.dataset.issueId;
 
       if (action === "quotes") {
         quotesTabBtn.click();
+        requestAnimationFrame(() => {
+          const card = document.querySelector(
+            '#quoteRequestsList .quote-request-card[data-quote-id="' +
+            CSS.escape(String(quoteId || "")) + '"]'
+          );
+          card?.scrollIntoView({behavior:"smooth",block:"center"});
+          card?.classList.add("admin-focus-flash");
+          setTimeout(()=>card?.classList.remove("admin-focus-flash"),1800);
+        });
         return;
       }
 
-      if (action === "toggle") {
-        await updateOfferIssueStatus(
-          button.dataset.quoteId,
-          button.dataset.issueId,
-          button.dataset.nextStatus
-        );
+      if (action === "save") {
+        await saveOfferIssueCase(quoteId,issueId,button);
         return;
       }
 
-      if (action === "delete") {
-        await deleteOfferIssue(
-          button.dataset.quoteId,
-          button.dataset.issueId
-        );
+      if (action === "archive") {
+        const ok = confirm("Bu dosya silinmeyecek; yalnızca arşive taşınacak. Devam edilsin mi?");
+        if (ok) await quickOfferIssueStatus(quoteId,issueId,"archived","Dosya arşive taşındı.");
+        return;
+      }
+
+      if (action === "reopen") {
+        await quickOfferIssueStatus(quoteId,issueId,"reviewing","Dosya yeniden incelemeye alındı.");
       }
     });
   });
 }
 
-async function updateOfferIssueStatus(quoteId, issueId, status) {
+async function saveOfferIssueCase(quoteId, issueId, button) {
+  const status = document.querySelector(
+    `[data-issue-status="${CSS.escape(String(issueId))}"]`
+  )?.value || "new";
+  const decision = document.querySelector(
+    `[data-issue-decision="${CSS.escape(String(issueId))}"]`
+  )?.value || "";
+  const customerFollowup = document.querySelector(
+    `[data-issue-customer-followup="${CSS.escape(String(issueId))}"]`
+  )?.value.trim() || "";
+  const businessResponse = document.querySelector(
+    `[data-issue-business-response="${CSS.escape(String(issueId))}"]`
+  )?.value.trim() || "";
+  const adminNote = document.querySelector(
+    `[data-issue-admin-note="${CSS.escape(String(issueId))}"]`
+  )?.value.trim() || "";
+  const outcomeSummary = document.querySelector(
+    `[data-issue-outcome="${CSS.escape(String(issueId))}"]`
+  )?.value.trim() || "";
+
+  if (status === "resolved" && !decision) {
+    alert("Dosyayı çözüldü olarak kapatmadan önce bir karar seçin.");
+    return;
+  }
+
+  if (status === "resolved" && !outcomeSummary) {
+    alert("Dosyayı çözüldü olarak kapatmadan önce sonuç özetini yazın.");
+    return;
+  }
+
+  const oldText = button?.textContent || "Kaydet";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Kaydediliyor...";
+  }
+
   try {
-    await db
-      .collection("quoteRequests")
-      .doc(quoteId)
-      .collection("offerIssues")
-      .doc(issueId)
-      .update({
+    const now = new Date().toISOString();
+    const ref = db.collection("quoteRequests").doc(quoteId)
+      .collection("offerIssues").doc(issueId);
+
+    await ref.update({
+      status,
+      decision,
+      customerFollowup,
+      businessResponse,
+      adminNote,
+      outcomeSummary,
+      updatedAt:now,
+      resolvedAt: status === "resolved" ? now : null,
+      archivedAt: status === "archived" ? now : null,
+      statusHistory: firebase.firestore.FieldValue.arrayUnion({
         status,
-        updatedAt: new Date().toISOString(),
-        resolvedAt: status === "resolved" ? new Date().toISOString() : null
+        decision,
+        summary: outcomeSummary || adminNote || "",
+        date:now
+      })
+    });
+
+    await loadQuoteRequests();
+  } catch (error) {
+    console.error("Sorun dosyası kaydedilemedi:", error);
+    alert("Sorun dosyası kaydedilemedi.");
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = oldText;
+    }
+  }
+}
+
+async function quickOfferIssueStatus(quoteId, issueId, status, summary) {
+  try {
+    const now = new Date().toISOString();
+    await db.collection("quoteRequests").doc(quoteId)
+      .collection("offerIssues").doc(issueId).update({
+        status,
+        updatedAt:now,
+        resolvedAt: status === "resolved" ? now : null,
+        archivedAt: status === "archived" ? now : null,
+        statusHistory: firebase.firestore.FieldValue.arrayUnion({
+          status,
+          decision:"",
+          summary:summary || "",
+          date:now
+        })
       });
 
     await loadQuoteRequests();
   } catch (error) {
-    console.error("Sorun bildirimi güncellenemedi:", error);
-    alert("Sorun bildirimi güncellenemedi.");
-  }
-}
-
-async function deleteOfferIssue(quoteId, issueId) {
-  const ok = confirm("Bu sorun bildirimini kalıcı olarak silmek istiyor musunuz?");
-  if (!ok) return;
-
-  try {
-    await db
-      .collection("quoteRequests")
-      .doc(quoteId)
-      .collection("offerIssues")
-      .doc(issueId)
-      .delete();
-
-    await loadQuoteRequests();
-  } catch (error) {
-    console.error("Sorun bildirimi silinemedi:", error);
-    alert("Sorun bildirimi silinemedi.");
+    console.error("Sorun durumu güncellenemedi:", error);
+    alert("Sorun durumu güncellenemedi.");
   }
 }
 
 issueSearch?.addEventListener("input", renderIssueCenter);
 issueStatusFilter?.addEventListener("change", renderIssueCenter);
+issueDecisionFilter?.addEventListener("change", renderIssueCenter);
