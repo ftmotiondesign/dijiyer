@@ -421,6 +421,80 @@ function initInstitutionMap() {
   setTimeout(() => institutionMapInstance.invalidateSize(), 100);
 }
 
+async function findInstitutionOnMap() {
+  initInstitutionMap();
+
+  const name = document.getElementById('institutionName').value.trim();
+  const city = document.getElementById('institutionCity').value;
+  const district = document.getElementById('institutionDistrict').value;
+
+  if (!name) {
+    showToast('Önce kurum adını yazın.');
+    return;
+  }
+
+  const button = document.getElementById('findInstitutionBtn');
+  const oldText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Aranıyor...';
+
+  const query = [name, district, city, 'Türkiye']
+    .filter(Boolean)
+    .join(', ');
+
+  try {
+    const response = await fetch(
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&countrycodes=tr&accept-language=tr&q=' +
+      encodeURIComponent(query)
+    );
+
+    if (!response.ok) throw new Error('Arama başarısız');
+
+    const result = await response.json();
+
+    if (!result.length) {
+      showToast('Kurum bulunamadı. Konumu haritadan elle işaretleyebilirsiniz.');
+      return;
+    }
+
+    const place = result[0];
+    const lat = Number(place.lat);
+    const lng = Number(place.lon);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      showToast('Kurum konumu alınamadı.');
+      return;
+    }
+
+    document.getElementById('institutionLat').value = lat.toFixed(6);
+    document.getElementById('institutionLng').value = lng.toFixed(6);
+
+    if (!document.getElementById('institutionAddress').value.trim()) {
+      document.getElementById('institutionAddress').value = place.display_name || '';
+    }
+
+    institutionMapInstance.setView([lat, lng], 17);
+
+    if (institutionLocationMarker) {
+      institutionLocationMarker.setLatLng([lat, lng]);
+    } else {
+      institutionLocationMarker = L.marker([lat, lng]).addTo(institutionMapInstance);
+    }
+
+    institutionLocationMarker
+      .bindPopup('<strong>' + escapeHtml(name) + '</strong><br>Konum bulundu. Yanlışsa haritadan başka noktaya tıklayın.')
+      .openPopup();
+
+    showToast('Kurum bulundu ve haritada işaretlendi.');
+  } catch (error) {
+    console.error('Kurum arama hatası:', error);
+    showToast('Kurum aranamadı. Konumu haritadan elle işaretleyebilirsiniz.');
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+}
+
 async function centerInstitutionMapFromAddress() {
   initInstitutionMap();
 
@@ -552,6 +626,8 @@ document
         '<option value="">İlçeler yüklenemedi</option>';
     }
   });
+
+document.getElementById('findInstitutionBtn').addEventListener('click', findInstitutionOnMap);
 
 document.getElementById('institutionDistrict').addEventListener('change', () => {
   centerInstitutionMapFromAddress();
