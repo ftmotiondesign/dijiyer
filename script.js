@@ -440,25 +440,25 @@ async function findInstitutionOnMap() {
   const district = document.getElementById('institutionDistrict').value;
   const address = document.getElementById('institutionAddress').value.trim();
 
-  if (!name) {
-    showToast('Önce kurum adını yazın.');
+  if (!city || !district) {
+    showToast('Önce şehir ve ilçeyi seçin.');
     return;
   }
 
-  if (!city || !district) {
-    showToast('Daha doğru arama için önce şehir ve ilçeyi seçin.');
+  if (!address) {
+    showToast('Önce açık adresi yazın.');
     return;
   }
 
   const button = document.getElementById('findInstitutionBtn');
   const oldText = button.textContent;
   button.disabled = true;
-  button.textContent = 'Aranıyor...';
+  button.textContent = 'Adres aranıyor...';
 
   const queries = [
-    [name, address, district, city, 'Türkiye'].filter(Boolean).join(', '),
-    [name, district, city, 'Türkiye'].filter(Boolean).join(', '),
-    [name, city, 'Türkiye'].filter(Boolean).join(', ')
+    [address, district, city, 'Türkiye'].join(', '),
+    [address, city, 'Türkiye'].join(', '),
+    [name, address, district, city, 'Türkiye'].filter(Boolean).join(', ')
   ];
 
   try {
@@ -480,7 +480,7 @@ async function findInstitutionOnMap() {
     }
 
     if (!place) {
-      showToast('Ücretsiz haritada bulunamadı. Google Maps bağlantısını kullanın.');
+      showToast('Adres bulunamadı. Google Maps bağlantısını kullanın veya haritada elle işaretleyin.');
       return;
     }
 
@@ -488,16 +488,12 @@ async function findInstitutionOnMap() {
     const lng = Number(place.lon);
 
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      showToast('Kurum konumu alınamadı.');
+      showToast('Adres konumu alınamadı.');
       return;
     }
 
     document.getElementById('institutionLat').value = lat.toFixed(6);
     document.getElementById('institutionLng').value = lng.toFixed(6);
-
-    if (!document.getElementById('institutionAddress').value.trim()) {
-      document.getElementById('institutionAddress').value = place.display_name || '';
-    }
 
     institutionMapInstance.setView([lat, lng], 17);
 
@@ -508,13 +504,13 @@ async function findInstitutionOnMap() {
     }
 
     institutionLocationMarker
-      .bindPopup('<strong>' + escapeHtml(name) + '</strong><br>Konum bulundu. Yanlışsa haritadan başka noktaya tıklayın.')
+      .bindPopup('<strong>' + escapeHtml(name || 'Kurum') + '</strong><br>Adres haritada bulundu. Yanlışsa haritadan doğru noktaya tıklayın.')
       .openPopup();
 
-    showToast('Kurum bulundu ve haritada işaretlendi.');
+    showToast('Adres haritada bulundu.');
   } catch (error) {
-    console.error('Kurum arama hatası:', error);
-    showToast('Ücretsiz arama başarısız oldu. Google Maps bağlantısını kullanabilirsiniz.');
+    console.error('Adres arama hatası:', error);
+    showToast('Adres aranamadı. Google Maps bağlantısını kullanabilirsiniz.');
   } finally {
     button.disabled = false;
     button.textContent = oldText;
