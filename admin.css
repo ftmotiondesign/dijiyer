@@ -1859,3 +1859,152 @@ button{
     flex-direction:column;
   }
 }
+
+
+/* =========================================================
+   YÖNETİM PANELİ - KURUM DESTEK TALEPLERİ
+   ========================================================= */
+.admin-tab-count{
+  display:inline-block;
+  min-width:20px;
+  margin-left:4px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#fff1f2;
+  color:#be123c;
+  font-size:10px;
+  text-align:center;
+}
+.admin-tab.active .admin-tab-count{
+  background:rgba(255,255,255,.2);
+  color:#fff;
+}
+.support-admin-toolbar{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) 200px;
+  gap:10px;
+  margin-bottom:14px;
+}
+.support-admin-toolbar input,
+.support-admin-toolbar select{
+  height:44px;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  background:#fff;
+  padding:0 12px;
+}
+.admin-support-list{
+  display:grid;
+  gap:14px;
+}
+.admin-support-card{
+  background:#fff;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+  padding:17px;
+  box-shadow:0 5px 18px rgba(0,0,0,.04);
+}
+.admin-support-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+}
+.admin-support-institution{
+  color:#1677ff;
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:4px;
+}
+.admin-support-head h4{
+  margin:0 0 7px;
+  font-size:17px;
+}
+.admin-support-meta{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  color:#64748b;
+  font-size:11px;
+}
+.admin-support-status{
+  flex-shrink:0;
+  padding:6px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+.admin-support-status.status-new{background:#fff7ed;color:#c2410c}
+.admin-support-status.status-reviewing{background:#eff6ff;color:#1d4ed8}
+.admin-support-status.status-answered{background:#ecfdf5;color:#15803d}
+.admin-support-status.status-resolved{background:#f1f5f9;color:#475569}
+.admin-support-message{
+  margin:13px 0;
+  padding:12px;
+  border-radius:10px;
+  background:#f8fafc;
+  color:#334155;
+  line-height:1.55;
+  white-space:pre-wrap;
+}
+.admin-support-reply-block{
+  border-top:1px solid #e5e7eb;
+  padding-top:12px;
+}
+.admin-support-reply-block label{
+  display:grid;
+  gap:6px;
+  font-weight:700;
+  font-size:12px;
+  color:#475569;
+}
+.admin-support-reply-block textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  padding:10px 12px;
+  resize:vertical;
+  font:inherit;
+  font-weight:400;
+}
+.admin-support-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:9px;
+}
+.admin-support-actions select{
+  height:39px;
+  border:1px solid #d9e0ea;
+  border-radius:9px;
+  background:#fff;
+  padding:0 9px;
+}
+.admin-support-save{
+  border:0;
+  border-radius:9px;
+  background:#1677ff;
+  color:#fff;
+  padding:0 14px;
+  font-weight:800;
+}
+.admin-support-last-reply{
+  margin-top:8px;
+  color:#64748b;
+  font-size:11px;
+}
+@media(max-width:700px){
+  .support-admin-toolbar{
+    grid-template-columns:1fr;
+  }
+  .admin-support-head,
+  .admin-support-actions{
+    flex-direction:column;
+  }
+  .admin-support-actions select,
+  .admin-support-save{
+    width:100%;
+    min-height:40px;
+  }
+}
