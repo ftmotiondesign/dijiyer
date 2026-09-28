@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
   <link rel="stylesheet" href="institution.css?v=8">
+  <link rel="stylesheet" href="institution-announcements.css?v=1">
   <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
@@ -38,6 +39,16 @@
       </div>
     </section>
 
+    <div class="institution-announcement-alert hidden" id="institutionAnnouncementAlert">
+      <div class="announcement-alert-icon">📣</div>
+      <div>
+        <strong id="institutionAnnouncementAlertTitle">Yeni yönetim duyurusu</strong>
+        <span id="institutionAnnouncementAlertText"></span>
+      </div>
+      <button type="button" id="openInstitutionAnnouncements">Duyuruyu Gör</button>
+      <button type="button" id="closeInstitutionAnnouncementAlert" class="announcement-alert-close">×</button>
+    </div>
+
     <div class="live-quote-alert hidden" id="liveQuoteAlert">
       <div class="live-quote-alert-icon">🔔</div>
       <div class="live-quote-alert-copy">
@@ -58,6 +69,9 @@
       <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
       <button class="panel-tab" data-panel-tab="support">
         🛟 Destek <span class="tab-count support-tab-count" id="supportTabCount">0</span>
+      </button>
+      <button class="panel-tab" data-panel-tab="announcements">
+        📣 Duyurular <span class="tab-count" id="announcementTabCount">0</span>
       </button>
       <button class="panel-tab" data-panel-tab="account">Hesap</button>
     </nav>
@@ -392,6 +406,24 @@
       </div>
     </section>
 
+    <section class="panel-view" data-panel-view="announcements">
+      <article class="panel-card announcement-panel-card">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow">YÖNETİM DUYURULARI</span>
+            <h2>Dijiyer'den Duyurular</h2>
+            <p>Sistem güncellemeleri ve kurumunuza özel bilgilendirmeler burada görünür.</p>
+          </div>
+          <button type="button" class="secondary-btn" id="markAllAnnouncementsRead">
+            Tümünü Okundu İşaretle
+          </button>
+        </div>
+        <div id="institutionAnnouncementsList" class="institution-announcement-list">
+          <div class="empty-state">Duyurular yükleniyor...</div>
+        </div>
+      </article>
+    </section>
+
     <section class="panel-view" data-panel-view="account">
       <div class="panel-grid">
         <article class="panel-card">
@@ -508,5 +540,6 @@
   <script src="institution.js?v=9"></script>
   <script src="institution-offers.js?v=3"></script>
   <script src="institution-communication.js?v=1"></script>
+  <script src="institution-announcements.js?v=1"></script>
 </body>
 </html>
