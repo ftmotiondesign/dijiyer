@@ -225,6 +225,7 @@ function sellerOfferFormHtml(quote,offer){
       <div class="offer-validity-preview full">
         <strong>⏱ Kabul şartı:</strong>
         Seçtiğiniz süre dolmadan müşteri fiyatı kilitlemelidir. Süre dolunca teklif otomatik olarak geçersiz olur.
+        ${offer?'<br><strong>🔔 Güncelleme:</strong> Teklifi değiştirdiğinizde müşteriye otomatik bildirim gider ve fiyat değişimi mesaj geçmişinde görünür.':""}
       </div>
       <button class="send-real-offer-btn full" type="submit">${offer ? "Teklifi Güncelle" : "Garantili Teklif Gönder"}</button>
     </form>
@@ -357,6 +358,13 @@ async function saveRealOffer(form){
       ? "Müşteri bu fiyatı kilitledi. Teklif artık değiştirilemez."
       : "Müşteri başka bir teklifi seçti.");
     return;
+  }
+
+  if(existing){
+    const ok=window.confirm(
+      "Teklifi güncellemek üzeresiniz. Yeni fiyat/şartlar müşteriye bildirilecek ve yeni geçerlilik süresi şimdi başlayacak. Devam edilsin mi?"
+    );
+    if(!ok)return;
   }
 
   const price=Number(form.elements.price.value);
