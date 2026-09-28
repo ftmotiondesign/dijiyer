@@ -495,6 +495,63 @@ async function findInstitutionOnMap() {
   }
 }
 
+function useGoogleMapsUrl() {
+  initInstitutionMap();
+
+  const url = document.getElementById('institutionGoogleMapsUrl').value.trim();
+
+  if (!url) {
+    showToast('Google Maps bağlantısını yapıştırın.');
+    return;
+  }
+
+  if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
+    showToast('Kısa paylaşım linki yerine tarayıcı adres çubuğundaki uzun Google Maps linkini yapıştırın.');
+    return;
+  }
+
+  const patterns = [
+    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+    /[?&](?:q|query|destination)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
+  ];
+
+  let lat = null;
+  let lng = null;
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      lat = Number(match[1]);
+      lng = Number(match[2]);
+      break;
+    }
+  }
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    showToast('Bu bağlantıdan koordinat okunamadı. Google Maps sayfasını açıp adres çubuğundaki uzun linki kopyalayın.');
+    return;
+  }
+
+  document.getElementById('institutionLat').value = lat.toFixed(6);
+  document.getElementById('institutionLng').value = lng.toFixed(6);
+
+  institutionMapInstance.setView([lat, lng], 17);
+
+  if (institutionLocationMarker) {
+    institutionLocationMarker.setLatLng([lat, lng]);
+  } else {
+    institutionLocationMarker = L.marker([lat, lng]).addTo(institutionMapInstance);
+  }
+
+  const name = document.getElementById('institutionName').value.trim() || 'Kurum';
+  institutionLocationMarker
+    .bindPopup('<strong>' + escapeHtml(name) + '</strong><br>Google Maps bağlantısından konum alındı.')
+    .openPopup();
+
+  showToast('Google Maps konumu haritaya aktarıldı.');
+}
+
 async function centerInstitutionMapFromAddress() {
   initInstitutionMap();
 
@@ -628,6 +685,7 @@ document
   });
 
 document.getElementById('findInstitutionBtn').addEventListener('click', findInstitutionOnMap);
+document.getElementById('useGoogleMapsUrlBtn').addEventListener('click', useGoogleMapsUrl);
 
 document.getElementById('institutionDistrict').addEventListener('change', () => {
   centerInstitutionMapFromAddress();
