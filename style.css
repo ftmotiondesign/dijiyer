@@ -190,7 +190,16 @@ button{cursor:pointer}
 
 .modal{position:fixed;inset:0;background:rgba(9,20,38,.5);z-index:2000;display:grid;place-items:center;padding:20px}
 .hidden{display:none}
-.modal-card{width:min(520px,96vw);background:#fff;border-radius:18px;padding:22px;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.25)}
+.modal-card{
+  width:min(520px,96vw);
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+  background:#fff;
+  border-radius:18px;
+  padding:22px;
+  position:relative;
+  box-shadow:0 25px 80px rgba(0,0,0,.25)
+}
 .modal-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:28px}
 .modal-card h2{margin-top:0}
 .modal-card form{display:grid;gap:11px}
