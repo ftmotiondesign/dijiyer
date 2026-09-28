@@ -589,15 +589,21 @@ document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => clo
 document.getElementById('quoteForm').addEventListener('submit', async e => {
   e.preventDefault();
 
+  const searchText = document.getElementById('quoteSearch').value.trim();
+  const selectedCategory = document.getElementById('quoteCategory').value;
+  const selectedSubCategory = document.getElementById('quoteService').value;
+
+  if (!searchText && !(selectedCategory && selectedSubCategory)) {
+    showToast('Ne aradığınızı yazın veya ana kategori ve alt kategori seçin.');
+    return;
+  }
+
   const submitBtn = e.target.querySelector('button[type="submit"]');
   const oldText = submitBtn.textContent;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Gönderiliyor...';
 
-  const searchText = document.getElementById('quoteSearch').value.trim();
-  const selectedCategory = document.getElementById('quoteCategory').value;
-  const selectedSubCategory = document.getElementById('quoteService').value;
-  const inferredCategory = inferQuoteCategory(searchText);
+  const inferredCategory = searchText ? inferQuoteCategory(searchText) : null;
   const mainCategory = selectedCategory || inferredCategory?.mainCategory || 'diger';
   const subCategory = selectedSubCategory || inferredCategory?.subCategory || 'diger';
 
