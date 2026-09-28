@@ -50,11 +50,25 @@ const offerReportCount = document.getElementById("offerReportCount");
 const offerReportInstitutionCount = document.getElementById("offerReportInstitutionCount");
 const offerReportTotalOffers = document.getElementById("offerReportTotalOffers");
 const offerReportAveragePrice = document.getElementById("offerReportAveragePrice");
+const offerReportTotalVolume = document.getElementById("offerReportTotalVolume");
+const offerReportActiveCount = document.getElementById("offerReportActiveCount");
 const offerReportLockedCount = document.getElementById("offerReportLockedCount");
 const offerReportUsedCount = document.getElementById("offerReportUsedCount");
+const offerReportSelectionRate = document.getElementById("offerReportSelectionRate");
 const offerReportSearch = document.getElementById("offerReportSearch");
+const offerReportPeriod = document.getElementById("offerReportPeriod");
+const offerReportCategory = document.getElementById("offerReportCategory");
+const offerReportCity = document.getElementById("offerReportCity");
 const offerReportSort = document.getElementById("offerReportSort");
+const offerReportExportBtn = document.getElementById("offerReportExportBtn");
 const offerReportTableBody = document.getElementById("offerReportTableBody");
+
+const offerReportDetailModal = document.getElementById("offerReportDetailModal");
+const closeOfferReportDetailModal = document.getElementById("closeOfferReportDetailModal");
+const offerReportDetailTitle = document.getElementById("offerReportDetailTitle");
+const offerReportDetailMeta = document.getElementById("offerReportDetailMeta");
+const offerReportDetailSummary = document.getElementById("offerReportDetailSummary");
+const offerReportDetailTableBody = document.getElementById("offerReportDetailTableBody");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
@@ -64,6 +78,7 @@ const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 let institutionRecords = [];
 let quoteRequestRecords = [];
 let institutionOfferReportRecords = [];
+let institutionOfferReportEvents = [];
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -354,6 +369,11 @@ async function loadInstitutions() {
     institutionCount.textContent = `${institutionRecords.length} yayındaki kurum`;
     populateInstitutionCityFilter();
     renderManagedInstitutions();
+
+    if (quoteRequestRecords.length) {
+      buildInstitutionOfferReport();
+      renderInstitutionOfferReport();
+    }
 
   } catch (error) {
     console.error("Kurumlar yüklenemedi:", error);
@@ -896,12 +916,131 @@ async function loadQuoteRequests() {
   }
 }
 
+const reportCategoryLabels = {
+  surucu:"Sürücü Kursu",
+  kres:"Kreş & Anaokulu",
+  yurt:"Öğrenci Yurdu",
+  egitim:"Eğitim & Kurslar",
+  dershane:"Dershane / Kurs Merkezi",
+  ozel_ders:"Özel Ders",
+  dil_kursu:"Dil Kursu",
+  etut:"Etüt Merkezi",
+  ozel_okul:"Özel Okul",
+  oto:"Oto Servis & Sanayi",
+  oto_servis:"Oto Servis / Tamir",
+  kaporta_boya:"Kaporta / Boya",
+  oto_elektrik:"Oto Elektrik",
+  lastik_jant:"Lastik / Jant",
+  oto_yikama:"Oto Yıkama / Kuaför",
+  ekspertiz:"Oto Ekspertiz",
+  galeri:"Oto Galeri",
+  rentacar:"Rent a Car",
+  yedek_parca:"Yedek Parça",
+  motosiklet:"Motosiklet Servisi",
+  restoran:"Restoran & Kafe",
+  kafe:"Kafe",
+  fastfood:"Fast Food",
+  pastane:"Pastane",
+  pizza:"Pizza",
+  doner:"Döner",
+  saglik:"Sağlık & Klinik",
+  klinik:"Sağlık Kliniği",
+  dis_klinigi:"Diş Kliniği",
+  psikolog:"Psikolog",
+  diyetisyen:"Diyetisyen",
+  fizyoterapi:"Fizyoterapi",
+  guzellik:"Güzellik Merkezi",
+  kuafor:"Kuaför",
+  berber:"Berber",
+  spor:"Pilates / Fitness",
+  mobilya:"Mobilya",
+  dekorasyon:"Dekorasyon",
+  insaat:"İnşaat / Tadilat",
+  elektrikci:"Elektrikçi",
+  tesisatci:"Tesisatçı",
+  teknik_servis:"Teknik Servis",
+  klima:"Klima Servisi",
+  cam_balkon:"Cam Balkon / PVC",
+  temizlik:"Temizlik Hizmetleri",
+  emlak:"Emlak",
+  emlak_ofisi:"Emlak Ofisi",
+  konut:"Konut",
+  arsa:"Arsa / Tarla",
+  ticari:"Ticari Gayrimenkul",
+  turizm:"Turizm & Konaklama",
+  otel:"Otel",
+  pansiyon:"Pansiyon",
+  apart:"Apart",
+  bungalov:"Bungalov",
+  seyahat:"Seyahat Acentesi / Tur",
+  dugun:"Düğün & Organizasyon",
+  dugun_salonu:"Düğün Salonu",
+  organizasyon:"Organizasyon Firması",
+  fotograf:"Fotoğrafçı",
+  medya:"Fotoğraf & Video",
+  video:"Video Çekimi",
+  drone:"Drone Çekimi",
+  reklam:"Reklam / Tasarım / Matbaa",
+  nakliyat:"Evden Eve Nakliyat",
+  kurye:"Kurye",
+  muhasebe:"Muhasebe / Mali Müşavir",
+  hukuk:"Avukat / Hukuk",
+  teknoloji:"Bilgisayar & Teknoloji",
+  bilgisayar:"Bilgisayar / Teknoloji",
+  veteriner:"Veteriner / Pet Hizmetleri",
+  tarim:"Tarım / Hayvancılık",
+  perakende:"Mağaza & Perakende",
+  esnaf:"Yerel Esnaf",
+  diger:"Diğer"
+};
+
+function getReportCategoryLabel(value) {
+  return reportCategoryLabels[value] || value || "-";
+}
+
+function getOfferEventDate(offer, request) {
+  return (
+    offer.updatedAt ||
+    offer.createdAt ||
+    offer.date ||
+    request.date ||
+    null
+  );
+}
+
+function getAdminOfferEventState(offer, request) {
+  const lock = request.liveLock || null;
+  const now = Date.now();
+
+  if (lock) {
+    const sameInstitution =
+      String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
+
+    if (sameInstitution) {
+      if (lock.status === "used") return "used";
+      if (lock.expiresAt && new Date(lock.expiresAt).getTime() <= now) return "expired";
+      return "locked";
+    }
+
+    return "lost";
+  }
+
+  if (offer.expiresAt && new Date(offer.expiresAt).getTime() <= now) {
+    return "expired";
+  }
+
+  return "active";
+}
+
 function buildInstitutionOfferReport() {
-  const byInstitution = new Map();
+  const institutionMap = new Map(
+    institutionRecords.map(item => [String(item.id), item])
+  );
+
+  institutionOfferReportEvents = [];
 
   quoteRequestRecords.forEach(request => {
     const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
-    const lock = request.liveLock || null;
 
     offers.forEach(offer => {
       const institutionId = String(
@@ -911,64 +1050,190 @@ function buildInstitutionOfferReport() {
         "unknown"
       );
 
-      if (!byInstitution.has(institutionId)) {
-        byInstitution.set(institutionId, {
-          institutionId,
-          institutionName: offer.institutionName || "Kurum",
-          offerCount: 0,
-          totalPrice: 0,
-          prices: [],
-          lockedCount: 0,
-          usedCount: 0,
-          latestOfferDate: null
-        });
-      }
-
-      const row = byInstitution.get(institutionId);
+      const institution = institutionMap.get(institutionId) || {};
+      const state = getAdminOfferEventState(offer, request);
       const price = Number(offer.price || 0);
-
-      row.offerCount += 1;
-      row.totalPrice += Number.isFinite(price) ? price : 0;
-
-      if (Number.isFinite(price) && price > 0) {
-        row.prices.push(price);
-      }
-
-      const offerDate =
-        offer.updatedAt ||
-        offer.createdAt ||
-        request.date ||
-        null;
-
-      if (
-        offerDate &&
-        (!row.latestOfferDate ||
-          new Date(offerDate).getTime() > new Date(row.latestOfferDate).getTime())
-      ) {
-        row.latestOfferDate = offerDate;
-      }
-
-      const isLocked =
+      const lock = request.liveLock || null;
+      const sameLock =
         lock &&
-        String(lock.institutionId || "") === String(offer.institutionId || "");
+        String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
 
-      if (isLocked) {
-        row.lockedCount += 1;
-
-        if (lock.status === "used") {
-          row.usedCount += 1;
-        }
-      }
+      institutionOfferReportEvents.push({
+        institutionId,
+        institutionName:
+          offer.institutionName ||
+          institution.name ||
+          "Kurum",
+        category:
+          institution.subCategory ||
+          institution.category ||
+          request.subCategory ||
+          request.category ||
+          "",
+        city:
+          institution.city ||
+          request.city ||
+          "",
+        district:
+          institution.district ||
+          request.district ||
+          "",
+        price: Number.isFinite(price) ? price : 0,
+        offerCode: offer.offerCode || "-",
+        vatStatus: offer.vatStatus || "-",
+        scope: offer.scope || "",
+        conditions: offer.conditions || "",
+        expiresAt: offer.expiresAt || null,
+        offerDate: getOfferEventDate(offer, request),
+        state,
+        requestId: request.id,
+        service: request.service || "Teklif Talebi",
+        customerName: request.name || "-",
+        customerPhone: request.phone || "-",
+        requestCity: request.city || "",
+        requestDistrict: request.district || "",
+        lockedPrice: sameLock
+          ? Number(lock.lockedPrice ?? lock.price ?? offer.price ?? 0)
+          : 0
+      });
     });
   });
 
-  institutionOfferReportRecords = [...byInstitution.values()]
-    .map(row => ({
+  populateOfferReportFilters();
+}
+
+function getOfferReportPeriodStart() {
+  const value = offerReportPeriod?.value || "all";
+  if (value === "all") return null;
+
+  const days = Number(value);
+  if (!Number.isFinite(days)) return null;
+
+  const start = new Date();
+  start.setHours(0,0,0,0);
+  start.setDate(start.getDate() - (days - 1));
+  return start.getTime();
+}
+
+function getOfferReportFilteredEvents() {
+  const periodStart = getOfferReportPeriodStart();
+  const category = offerReportCategory?.value || "";
+  const city = offerReportCity?.value || "";
+
+  return institutionOfferReportEvents.filter(event => {
+    if (periodStart) {
+      const time = new Date(event.offerDate || 0).getTime();
+      if (!time || time < periodStart) return false;
+    }
+
+    if (category && event.category !== category) return false;
+    if (city && event.city !== city) return false;
+
+    return true;
+  });
+}
+
+function aggregateInstitutionOfferEvents(events) {
+  const byInstitution = new Map();
+
+  events.forEach(event => {
+    if (!byInstitution.has(event.institutionId)) {
+      byInstitution.set(event.institutionId, {
+        institutionId: event.institutionId,
+        institutionName: event.institutionName,
+        category: event.category,
+        city: event.city,
+        district: event.district,
+        offerCount: 0,
+        totalPrice: 0,
+        prices: [],
+        activeCount: 0,
+        lockedCount: 0,
+        usedCount: 0,
+        lostCount: 0,
+        expiredCount: 0,
+        latestOfferDate: null,
+        events: []
+      });
+    }
+
+    const row = byInstitution.get(event.institutionId);
+
+    row.offerCount += 1;
+    row.totalPrice += event.price;
+    if (event.price > 0) row.prices.push(event.price);
+
+    if (event.state === "active") row.activeCount += 1;
+    if (event.state === "locked") row.lockedCount += 1;
+    if (event.state === "used") row.usedCount += 1;
+    if (event.state === "lost") row.lostCount += 1;
+    if (event.state === "expired") row.expiredCount += 1;
+
+    if (
+      event.offerDate &&
+      (!row.latestOfferDate ||
+        new Date(event.offerDate).getTime() > new Date(row.latestOfferDate).getTime())
+    ) {
+      row.latestOfferDate = event.offerDate;
+    }
+
+    row.events.push(event);
+  });
+
+  return [...byInstitution.values()].map(row => {
+    const selectedCount = row.lockedCount + row.usedCount;
+
+    return {
       ...row,
+      selectedCount,
       averagePrice: row.offerCount ? row.totalPrice / row.offerCount : 0,
       minPrice: row.prices.length ? Math.min(...row.prices) : 0,
-      maxPrice: row.prices.length ? Math.max(...row.prices) : 0
-    }));
+      maxPrice: row.prices.length ? Math.max(...row.prices) : 0,
+      selectionRate: row.offerCount ? (selectedCount / row.offerCount) * 100 : 0,
+      usageRate: row.offerCount ? (row.usedCount / row.offerCount) * 100 : 0
+    };
+  });
+}
+
+function populateOfferReportFilters() {
+  if (!offerReportCategory || !offerReportCity) return;
+
+  const selectedCategory = offerReportCategory.value;
+  const selectedCity = offerReportCity.value;
+
+  const categories = [...new Set(
+    institutionOfferReportEvents
+      .map(item => item.category)
+      .filter(Boolean)
+  )].sort((a,b) =>
+    getReportCategoryLabel(a).localeCompare(getReportCategoryLabel(b), "tr")
+  );
+
+  const cities = [...new Set(
+    institutionOfferReportEvents
+      .map(item => item.city)
+      .filter(Boolean)
+  )].sort((a,b) => a.localeCompare(b, "tr"));
+
+  offerReportCategory.innerHTML =
+    '<option value="">Tüm kategoriler</option>' +
+    categories.map(value =>
+      `<option value="${escapeHtml(value)}">${escapeHtml(getReportCategoryLabel(value))}</option>`
+    ).join("");
+
+  offerReportCity.innerHTML =
+    '<option value="">Tüm şehirler</option>' +
+    cities.map(value =>
+      `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
+    ).join("");
+
+  if (categories.includes(selectedCategory)) {
+    offerReportCategory.value = selectedCategory;
+  }
+
+  if (cities.includes(selectedCity)) {
+    offerReportCity.value = selectedCity;
+  }
 }
 
 function renderInstitutionOfferReport() {
@@ -979,22 +1244,33 @@ function renderInstitutionOfferReport() {
     .toLocaleLowerCase("tr-TR");
 
   const sort = offerReportSort?.value || "offers_desc";
+  const filteredEvents = getOfferReportFilteredEvents();
 
-  let rows = institutionOfferReportRecords.filter(row =>
-    !query ||
-    String(row.institutionName || "")
-      .toLocaleLowerCase("tr-TR")
-      .includes(query)
-  );
+  let rows = aggregateInstitutionOfferEvents(filteredEvents).filter(row => {
+    const haystack = [
+      row.institutionName,
+      getReportCategoryLabel(row.category),
+      row.city,
+      row.district
+    ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
+
+    return !query || haystack.includes(query);
+  });
+
+  institutionOfferReportRecords = rows;
 
   rows = [...rows];
 
   if (sort === "offers_desc") {
     rows.sort((a,b) => b.offerCount - a.offerCount);
   } else if (sort === "locked_desc") {
-    rows.sort((a,b) => b.lockedCount - a.lockedCount || b.offerCount - a.offerCount);
+    rows.sort((a,b) => b.selectedCount - a.selectedCount || b.offerCount - a.offerCount);
   } else if (sort === "used_desc") {
-    rows.sort((a,b) => b.usedCount - a.usedCount || b.lockedCount - a.lockedCount);
+    rows.sort((a,b) => b.usedCount - a.usedCount || b.selectedCount - a.selectedCount);
+  } else if (sort === "selection_desc") {
+    rows.sort((a,b) => b.selectionRate - a.selectionRate || b.offerCount - a.offerCount);
+  } else if (sort === "volume_desc") {
+    rows.sort((a,b) => b.totalPrice - a.totalPrice);
   } else if (sort === "average_asc") {
     rows.sort((a,b) => a.averagePrice - b.averagePrice);
   } else if (sort === "average_desc") {
@@ -1013,59 +1289,40 @@ function renderInstitutionOfferReport() {
     );
   }
 
-  const allOffers = institutionOfferReportRecords.reduce(
-    (sum,row) => sum + row.offerCount,
-    0
-  );
+  const allOffers = rows.reduce((sum,row) => sum + row.offerCount, 0);
+  const allVolume = rows.reduce((sum,row) => sum + row.totalPrice, 0);
+  const allActive = rows.reduce((sum,row) => sum + row.activeCount, 0);
+  const allLockedOnly = rows.reduce((sum,row) => sum + row.lockedCount, 0);
+  const allUsed = rows.reduce((sum,row) => sum + row.usedCount, 0);
+  const allSelected = allLockedOnly + allUsed;
+  const selectionRate = allOffers ? (allSelected / allOffers) * 100 : 0;
 
-  const allPriceTotal = institutionOfferReportRecords.reduce(
-    (sum,row) => sum + row.totalPrice,
-    0
-  );
-
-  const allLocked = institutionOfferReportRecords.reduce(
-    (sum,row) => sum + row.lockedCount,
-    0
-  );
-
-  const allUsed = institutionOfferReportRecords.reduce(
-    (sum,row) => sum + row.usedCount,
-    0
-  );
-
-  if (offerReportInstitutionCount) {
-    offerReportInstitutionCount.textContent =
-      institutionOfferReportRecords.length;
-  }
-
-  if (offerReportTotalOffers) {
-    offerReportTotalOffers.textContent = allOffers;
-  }
-
+  if (offerReportInstitutionCount) offerReportInstitutionCount.textContent = rows.length;
+  if (offerReportTotalOffers) offerReportTotalOffers.textContent = allOffers;
+  if (offerReportTotalVolume) offerReportTotalVolume.textContent = quoteMoney(allVolume);
   if (offerReportAveragePrice) {
-    offerReportAveragePrice.textContent =
-      quoteMoney(allOffers ? allPriceTotal / allOffers : 0);
+    offerReportAveragePrice.textContent = quoteMoney(allOffers ? allVolume / allOffers : 0);
   }
-
-  if (offerReportLockedCount) {
-    offerReportLockedCount.textContent = allLocked;
-  }
-
-  if (offerReportUsedCount) {
-    offerReportUsedCount.textContent = allUsed;
+  if (offerReportActiveCount) offerReportActiveCount.textContent = allActive;
+  if (offerReportLockedCount) offerReportLockedCount.textContent = allSelected;
+  if (offerReportUsedCount) offerReportUsedCount.textContent = allUsed;
+  if (offerReportSelectionRate) {
+    offerReportSelectionRate.textContent = "%" + selectionRate.toFixed(1).replace(".", ",");
   }
 
   if (offerReportCount) {
+    const periodLabel =
+      offerReportPeriod?.selectedOptions?.[0]?.textContent || "Tüm zamanlar";
     offerReportCount.textContent =
-      `${institutionOfferReportRecords.length} kurum · ${allOffers} toplam teklif`;
+      `${rows.length} kurum · ${allOffers} teklif · ${periodLabel}`;
   }
 
   if (!rows.length) {
     offerReportTableBody.innerHTML = `
       <tr>
-        <td colspan="8" class="offer-report-empty">
-          ${institutionOfferReportRecords.length
-            ? "Aramaya uygun kurum bulunamadı."
+        <td colspan="11" class="offer-report-empty">
+          ${institutionOfferReportEvents.length
+            ? "Seçili filtrelere uygun teklif veren kurum bulunamadı."
             : "Henüz fiyat teklifi veren kurum bulunmuyor."}
         </td>
       </tr>
@@ -1078,22 +1335,186 @@ function renderInstitutionOfferReport() {
       <td>
         <div class="report-institution">
           <strong>${escapeHtml(row.institutionName || "Kurum")}</strong>
-          <small>${escapeHtml(row.institutionId || "-")}</small>
+          <small>ID: ${escapeHtml(row.institutionId || "-")}</small>
+        </div>
+      </td>
+      <td>
+        <div class="report-location">
+          <strong>${escapeHtml(getReportCategoryLabel(row.category))}</strong>
+          <small>${escapeHtml([row.city,row.district].filter(Boolean).join(" / ") || "-")}</small>
         </div>
       </td>
       <td><strong>${row.offerCount}</strong></td>
+      <td><strong>${quoteMoney(row.totalPrice)}</strong></td>
       <td>${quoteMoney(row.averagePrice)}</td>
-      <td>${quoteMoney(row.minPrice)}</td>
-      <td>${quoteMoney(row.maxPrice)}</td>
-      <td><span class="report-badge locked">${row.lockedCount}</span></td>
+      <td><span class="report-badge active">${row.activeCount}</span></td>
+      <td><span class="report-badge locked">${row.selectedCount}</span></td>
       <td><span class="report-badge used">${row.usedCount}</span></td>
+      <td>
+        <div class="report-rate">
+          <strong>%${row.selectionRate.toFixed(1).replace(".", ",")}</strong>
+          <span><i style="width:${Math.min(100,row.selectionRate)}%"></i></span>
+        </div>
+      </td>
       <td>${row.latestOfferDate ? formatDate(row.latestOfferDate) : "-"}</td>
+      <td>
+        <button
+          type="button"
+          class="report-detail-btn"
+          data-report-detail="${escapeHtml(row.institutionId)}"
+        >Detay</button>
+      </td>
     </tr>
   `).join("");
+
+  offerReportTableBody
+    .querySelectorAll("[data-report-detail]")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        openInstitutionOfferReportDetail(button.dataset.reportDetail);
+      });
+    });
+}
+
+function offerEventStateLabel(state) {
+  const map = {
+    active:"Aktif",
+    locked:"Kilitli / Seçildi",
+    used:"Kullanıldı",
+    lost:"Başka Kurum Seçildi",
+    expired:"Süresi Doldu"
+  };
+  return map[state] || state || "-";
+}
+
+function openInstitutionOfferReportDetail(institutionId) {
+  const row = institutionOfferReportRecords.find(
+    item => String(item.institutionId) === String(institutionId)
+  );
+
+  if (!row || !offerReportDetailModal) return;
+
+  offerReportDetailTitle.textContent = row.institutionName || "Kurum";
+  offerReportDetailMeta.textContent =
+    [
+      getReportCategoryLabel(row.category),
+      [row.city,row.district].filter(Boolean).join(" / ")
+    ].filter(Boolean).join(" · ");
+
+  offerReportDetailSummary.innerHTML = `
+    <article><span>Toplam Teklif</span><strong>${row.offerCount}</strong></article>
+    <article><span>Teklif Hacmi</span><strong>${quoteMoney(row.totalPrice)}</strong></article>
+    <article><span>Ortalama</span><strong>${quoteMoney(row.averagePrice)}</strong></article>
+    <article><span>En Düşük</span><strong>${quoteMoney(row.minPrice)}</strong></article>
+    <article><span>En Yüksek</span><strong>${quoteMoney(row.maxPrice)}</strong></article>
+    <article><span>Aktif</span><strong>${row.activeCount}</strong></article>
+    <article><span>Seçilen</span><strong>${row.selectedCount}</strong></article>
+    <article><span>Kullanılan</span><strong>${row.usedCount}</strong></article>
+    <article><span>Kaybedilen</span><strong>${row.lostCount}</strong></article>
+    <article><span>Süresi Dolan</span><strong>${row.expiredCount}</strong></article>
+    <article><span>Seçilme Oranı</span><strong>%${row.selectionRate.toFixed(1).replace(".", ",")}</strong></article>
+    <article><span>Kullanım Oranı</span><strong>%${row.usageRate.toFixed(1).replace(".", ",")}</strong></article>
+  `;
+
+  const events = [...row.events].sort((a,b) =>
+    new Date(b.offerDate || 0).getTime() -
+    new Date(a.offerDate || 0).getTime()
+  );
+
+  offerReportDetailTableBody.innerHTML = events.map(event => `
+    <tr>
+      <td>${event.offerDate ? formatDate(event.offerDate) : "-"}</td>
+      <td>
+        <div class="offer-detail-service">
+          <strong>${escapeHtml(event.service || "Teklif Talebi")}</strong>
+          <small>${escapeHtml(event.customerName || "-")} · ${escapeHtml(event.customerPhone || "-")}</small>
+        </div>
+      </td>
+      <td>${escapeHtml([event.requestCity,event.requestDistrict].filter(Boolean).join(" / ") || "-")}</td>
+      <td><strong>${quoteMoney(event.price)}</strong></td>
+      <td>${escapeHtml(event.offerCode || "-")}</td>
+      <td>
+        <span class="offer-event-state state-${escapeHtml(event.state)}">
+          ${escapeHtml(offerEventStateLabel(event.state))}
+        </span>
+      </td>
+    </tr>
+  `).join("");
+
+  offerReportDetailModal.classList.remove("hidden");
+}
+
+function closeInstitutionOfferReportDetailModalFn() {
+  offerReportDetailModal?.classList.add("hidden");
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  return '"' + text.replace(/"/g,'""') + '"';
+}
+
+function exportInstitutionOfferReportCsv() {
+  if (!institutionOfferReportRecords.length) {
+    alert("Dışa aktarılacak rapor bulunamadı.");
+    return;
+  }
+
+  const headers = [
+    "Kurum","Kategori","Şehir","İlçe","Toplam Teklif",
+    "Teklif Hacmi","Ortalama Teklif","En Düşük","En Yüksek",
+    "Aktif","Seçilen","Kullanılan","Kaybedilen","Süresi Dolan",
+    "Seçilme Oranı","Kullanım Oranı","Son Teklif"
+  ];
+
+  const rows = institutionOfferReportRecords.map(row => [
+    row.institutionName,
+    getReportCategoryLabel(row.category),
+    row.city,
+    row.district,
+    row.offerCount,
+    row.totalPrice,
+    Math.round(row.averagePrice),
+    row.minPrice,
+    row.maxPrice,
+    row.activeCount,
+    row.selectedCount,
+    row.usedCount,
+    row.lostCount,
+    row.expiredCount,
+    row.selectionRate.toFixed(1),
+    row.usageRate.toFixed(1),
+    row.latestOfferDate ? formatDate(row.latestOfferDate) : "-"
+  ]);
+
+  const csv =
+    "\uFEFF" +
+    [headers,...rows]
+      .map(row => row.map(csvCell).join(";"))
+      .join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "dijiyer-teklif-veren-kurumlar.csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
 
 offerReportSearch?.addEventListener("input", renderInstitutionOfferReport);
+offerReportPeriod?.addEventListener("change", renderInstitutionOfferReport);
+offerReportCategory?.addEventListener("change", renderInstitutionOfferReport);
+offerReportCity?.addEventListener("change", renderInstitutionOfferReport);
 offerReportSort?.addEventListener("change", renderInstitutionOfferReport);
+offerReportExportBtn?.addEventListener("click", exportInstitutionOfferReportCsv);
+closeOfferReportDetailModal?.addEventListener("click", closeInstitutionOfferReportDetailModalFn);
+offerReportDetailModal?.addEventListener("click", event => {
+  if (event.target === offerReportDetailModal) {
+    closeInstitutionOfferReportDetailModalFn();
+  }
+});
 
 function renderQuoteRequests() {
   const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
