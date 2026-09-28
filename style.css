@@ -2525,3 +2525,117 @@ button{cursor:pointer}
     z-index:6000;
   }
 }
+
+
+.mobile-institution-sheet{
+  display:none;
+}
+
+@media(max-width:820px){
+  .mobile-institution-sheet:not(.hidden){
+    position:fixed;
+    inset:0;
+    z-index:6500;
+    display:block;
+  }
+
+  .mobile-sheet-backdrop{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+    background:rgba(15,29,50,.46);
+  }
+
+  .mobile-sheet-card{
+    position:absolute;
+    left:10px;
+    right:10px;
+    bottom:10px;
+    padding:10px 12px 14px;
+    border-radius:20px;
+    background:#fff;
+    box-shadow:0 24px 60px rgba(7,24,47,.28);
+  }
+
+  .mobile-sheet-handle{
+    width:42px;
+    height:4px;
+    margin:1px auto 11px;
+    border-radius:999px;
+    background:#d5dde7;
+  }
+
+  .mobile-sheet-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:4px 4px 10px;
+  }
+
+  .mobile-sheet-head strong{
+    display:block;
+    font-size:17px;
+    color:#14213a;
+  }
+
+  .mobile-sheet-head span{
+    display:block;
+    margin-top:3px;
+    color:#748197;
+    font-size:11px;
+  }
+
+  .mobile-sheet-close{
+    width:34px;
+    height:34px;
+    border:0;
+    border-radius:10px;
+    background:#f1f5f9;
+    color:#4b5d73;
+    font-size:22px;
+  }
+
+  .mobile-sheet-option{
+    width:100%;
+    min-height:68px;
+    display:grid;
+    grid-template-columns:46px minmax(0,1fr);
+    align-items:center;
+    gap:11px;
+    margin-top:8px;
+    padding:10px 12px;
+    border:1px solid #e0e7ef;
+    border-radius:14px;
+    background:#fff;
+    text-align:left;
+    color:#17243a;
+    touch-action:manipulation;
+  }
+
+  .mobile-sheet-option > span{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:#edf5ff;
+    color:#1677ff;
+    font-size:21px;
+    font-weight:850;
+  }
+
+  .mobile-sheet-option strong{
+    display:block;
+    font-size:14px;
+  }
+
+  .mobile-sheet-option small{
+    display:block;
+    margin-top:3px;
+    color:#748197;
+    font-size:11px;
+  }
+}
