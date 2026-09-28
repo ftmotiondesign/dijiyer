@@ -7,6 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=16">
+  <link rel="stylesheet" href="admin-advanced.css?v=1">
 </head>
 
 <body>
@@ -72,7 +73,21 @@
           <p>Teklif akışını, kurumları, performansı ve sorun bildirimlerini tek ekrandan yönetin.</p>
         </div>
 
-        <button id="logoutBtn">Çıkış Yap</button>
+        <div class="admin-title-actions">
+          <div class="admin-notification-wrap">
+            <button type="button" id="adminNotificationBtn" class="admin-notification-btn">
+              🔔 Bildirimler <span id="adminNotificationBadge">0</span>
+            </button>
+            <div id="adminNotificationPanel" class="admin-notification-panel hidden">
+              <div class="admin-notification-head">
+                <strong>Bildirim Merkezi</strong>
+                <button type="button" id="adminNotificationRefresh">Yenile</button>
+              </div>
+              <div id="adminNotificationList"></div>
+            </div>
+          </div>
+          <button id="logoutBtn">Çıkış Yap</button>
+        </div>
       </div>
 
       <div class="admin-tabs">
@@ -82,6 +97,9 @@
         <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
         <button class="admin-tab" id="offerReportTabBtn">Teklif Veren Kurumlar</button>
         <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri</button>
+        <button class="admin-tab" id="supportTabBtn">Destek Merkezi</button>
+        <button class="admin-tab" id="announcementsTabBtn">Duyurular</button>
+        <button class="admin-tab" id="systemTabBtn">Sistem</button>
         <button class="admin-tab" id="accountsTabBtn">Kurum Hesapları</button>
       </div>
 
@@ -274,6 +292,25 @@
 
         <div class="toolbar-result" id="institutionFilterResult"></div>
 
+        <div class="bulk-institution-toolbar" id="bulkInstitutionToolbar">
+          <label class="bulk-select-all">
+            <input type="checkbox" id="bulkSelectVisible">
+            <span>Görünenleri seç</span>
+          </label>
+          <strong id="bulkSelectedCount">0 kurum seçili</strong>
+          <select id="bulkInstitutionAction">
+            <option value="">Toplu işlem seç...</option>
+            <option value="offer_on">Teklif alımını aç</option>
+            <option value="offer_off">Teklif alımını kapat</option>
+            <option value="vip_on">VIP yap</option>
+            <option value="vip_off">VIP kaldır</option>
+            <option value="video_on">Videolu işaretle</option>
+            <option value="video_off">Video işaretini kaldır</option>
+            <option value="announcement">Seçilenlere duyuru gönder</option>
+          </select>
+          <button type="button" id="bulkInstitutionApply">Uygula</button>
+        </div>
+
         <div id="institutionsList"></div>
       </section>
 
@@ -304,6 +341,131 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+      <section id="supportSection" hidden>
+        <div class="section-title">
+          <h3>Kurum Destek Merkezi</h3>
+          <p id="supportAdminCount">Destek talepleri yükleniyor...</p>
+        </div>
+        <div class="advanced-toolbar">
+          <input type="search" id="supportAdminSearch" placeholder="Kurum, konu veya mesaj ara...">
+          <select id="supportAdminStatus">
+            <option value="">Tüm durumlar</option>
+            <option value="new">Yeni</option>
+            <option value="in_progress">İşlemde</option>
+            <option value="resolved">Çözüldü</option>
+          </select>
+        </div>
+        <div id="supportAdminList" class="support-admin-list"></div>
+      </section>
+
+      <section id="announcementsSection" hidden>
+        <div class="section-title">
+          <h3>Kurum Duyuruları</h3>
+          <p>Belirli şehir, kategori veya seçili kurumlara yönetim duyurusu gönderin.</p>
+        </div>
+        <div class="announcement-admin-grid">
+          <form id="announcementAdminForm" class="advanced-card">
+            <h4>Yeni Duyuru</h4>
+            <label>Başlık
+              <input id="announcementTitle" required maxlength="100">
+            </label>
+            <label>Mesaj
+              <textarea id="announcementMessage" rows="5" required maxlength="1000"></textarea>
+            </label>
+            <div class="advanced-form-grid">
+              <label>Öncelik
+                <select id="announcementPriority">
+                  <option value="normal">Normal</option>
+                  <option value="important">Önemli</option>
+                  <option value="urgent">Acil</option>
+                </select>
+              </label>
+              <label>Hedef
+                <select id="announcementTargetType">
+                  <option value="all">Tüm kurumlar</option>
+                  <option value="category">Kategori</option>
+                  <option value="city">Şehir</option>
+                  <option value="selected">Seçili kurumlar</option>
+                </select>
+              </label>
+            </div>
+            <label id="announcementTargetValueWrap" class="hidden">Hedef değeri
+              <select id="announcementTargetValue"></select>
+            </label>
+            <div class="announcement-target-info" id="announcementTargetInfo">Tüm kurumlara gönderilecek.</div>
+            <button type="submit" class="advanced-primary-btn">Duyuruyu Gönder</button>
+            <p id="announcementAdminMessage" class="advanced-message"></p>
+          </form>
+          <section class="advanced-card">
+            <h4>Son Duyurular</h4>
+            <div id="announcementHistory"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="systemSection" hidden>
+        <div class="section-title">
+          <h3>Sistem Kontrolü ve Yönetim Araçları</h3>
+          <p>Eksik kayıtları, bağlantı sorunlarını ve yönetim ayarlarını tek yerden kontrol edin.</p>
+        </div>
+
+        <div class="system-kpi-grid">
+          <article><span>Kritik Sorun</span><strong id="systemCriticalCount">0</strong></article>
+          <article><span>Uyarı</span><strong id="systemWarningCount">0</strong></article>
+          <article><span>Sağlıklı Kurum</span><strong id="systemHealthyCount">0</strong></article>
+          <article><span>Toplam Kontrol</span><strong id="systemCheckCount">0</strong></article>
+        </div>
+
+        <div class="system-tools-grid">
+          <section class="advanced-card">
+            <div class="advanced-card-head">
+              <div>
+                <h4>Sistem Kontrolü</h4>
+                <p>Eksik ve tutarsız kayıtlar</p>
+              </div>
+              <button type="button" id="runSystemChecks">Yeniden Tara</button>
+            </div>
+            <div id="systemCheckList"></div>
+          </section>
+
+          <section class="advanced-card">
+            <h4>Yönetim Ayarları</h4>
+            <form id="adminSettingsForm">
+              <label>Profil sağlık uyarı eşiği (%)
+                <input id="settingProfileHealthMin" type="number" min="0" max="100" value="70">
+              </label>
+              <label>Pasif kurum uyarısı (gün)
+                <input id="settingInactiveDays" type="number" min="1" max="365" value="30">
+              </label>
+              <label>Destek gecikme uyarısı (gün)
+                <input id="settingSupportSlaDays" type="number" min="1" max="30" value="2">
+              </label>
+              <label>Varsayılan teklif raporu dönemi
+                <select id="settingDefaultReportPeriod">
+                  <option value="all">Tüm zamanlar</option>
+                  <option value="7">Son 7 gün</option>
+                  <option value="30">Son 30 gün</option>
+                  <option value="90">Son 90 gün</option>
+                </select>
+              </label>
+              <button type="submit" class="advanced-primary-btn">Ayarları Kaydet</button>
+              <p id="adminSettingsMessage" class="advanced-message"></p>
+            </form>
+          </section>
+        </div>
+
+        <section class="advanced-card audit-card">
+          <div class="advanced-card-head">
+            <div>
+              <h4>İşlem Geçmişi</h4>
+              <p>Yönetim panelindeki önemli işlemler</p>
+            </div>
+            <button type="button" id="clearAdminAudit">Geçmişi Temizle</button>
+          </div>
+          <div id="adminAuditList"></div>
+        </section>
       </section>
 
       <section id="quotesSection" hidden>
@@ -601,6 +763,7 @@
 
 
   <script src="admin.js?v=21"></script>
+  <script src="admin-advanced.js?v=1"></script>
 
 </body>
 </html>
