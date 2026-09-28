@@ -52,15 +52,7 @@ loadMatchedQuotes = async function(){
   recentQuotes.innerHTML = '<div class="empty-state">Teklifler yükleniyor...</div>';
 
   try{
-    const snapshot = await db.collection("quoteRequests")
-      .where("category","==",currentInstitution.category)
-      .where("city","==",currentInstitution.city)
-      .get();
-
-    quoteRecords = snapshot.docs
-      .map(doc=>({id:doc.id,...doc.data()}))
-      .filter(quoteMatchesInstitutionArea)
-      .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    quoteRecords = await fetchInstitutionMatchedQuotes();
 
     await loadQuoteResponses();
 
