@@ -20,6 +20,10 @@ let currentInstitution = null;
 let quoteRecords = [];
 let responseMap = new Map();
 
+let liveQuoteUnsubscribe = null;
+let liveQuoteWatcherReady = false;
+let panelAudioUnlocked = false;
+
 const panelError = document.getElementById("panelError");
 const institutionQuotesList = document.getElementById("institutionQuotesList");
 const recentQuotes = document.getElementById("recentQuotes");
@@ -166,6 +170,157 @@ function showPanelError(message) {
   panelError.textContent = message;
 }
 
+function calculateProfileCompletion(institution) {
+  const checks = [
+    { ok: Boolean(String(institution.name || "").trim()), label: "kurum adı" },
+    { ok: Boolean(String(institution.phone || "").trim()), label: "telefon" },
+    { ok: Boolean(String(institution.website || "").trim()), label: "web / Instagram" },
+    { ok: Boolean(String(institution.address || "").trim()), label: "adres" },
+    { ok: Boolean(String(institution.city || "").trim()) && Boolean(String(institution.district || "").trim()), label: "şehir / ilçe" },
+    { ok: Boolean(String(institution.category || institution.subCategory || "").trim()), label: "kategori" }
+  ];
+
+  const completed = checks.filter(item => item.ok).length;
+  const percent = Math.round((completed / checks.length) * 100);
+  const missing = checks.filter(item => !item.ok).map(item => item.label);
+
+  return { percent, missing };
+}
+
+function updateProfileCompletion() {
+  if (!currentInstitution) return;
+
+  const result = calculateProfileCompletion(currentInstitution);
+  const percentEl = document.getElementById("profileCompletionPercent");
+  const barEl = document.getElementById("profileCompletionBar");
+  const textEl = document.getElementById("profileCompletionText");
+
+  if (percentEl) percentEl.textContent = "%" + result.percent;
+  if (barEl) barEl.style.width = result.percent + "%";
+
+  if (textEl) {
+    textEl.textContent = result.missing.length
+      ? "Eksik: " + result.missing.join(", ")
+      : "Profiliniz tamamlandı. Müşterilere daha güçlü bir görünüm sunuyorsunuz.";
+  }
+}
+
+function updateQuoteShortcutCounts(counts = {}) {
+  const map = {
+    shortcutCountAll: counts.all ?? quoteRecords.length,
+    shortcutCountNew: counts.new ?? 0,
+    shortcutCountOffered: counts.offered ?? 0,
+    shortcutCountLocked: counts.locked ?? 0,
+    shortcutCountUsed: counts.used ?? 0,
+    shortcutCountExpired: counts.expired ?? 0
+  };
+
+  Object.entries(map).forEach(([id,value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+  });
+}
+
+function syncQuoteShortcutActive() {
+  document.querySelectorAll("[data-quote-shortcut]").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.quoteShortcut === quotePanelFilter.value);
+  });
+}
+
+function showLiveQuoteAlert(quote) {
+  const alert = document.getElementById("liveQuoteAlert");
+  const text = document.getElementById("liveQuoteAlertText");
+  if (!alert) return;
+
+  if (text) {
+    const service = quote?.service || "Yeni teklif";
+    const place = [quote?.city, quote?.district].filter(Boolean).join(" / ");
+    text.textContent = service + (place ? " · " + place : "");
+  }
+
+  alert.classList.remove("hidden");
+  playNewQuoteSound();
+}
+
+function hideLiveQuoteAlert() {
+  document.getElementById("liveQuoteAlert")?.classList.add("hidden");
+}
+
+function playNewQuoteSound() {
+  if (!panelAudioUnlocked) return;
+
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+
+    [0, 0.18].forEach((offset,index) => {
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = index === 0 ? 880 : 1175;
+
+      gain.gain.setValueAtTime(0.0001, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + offset + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.14);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start(now + offset);
+      oscillator.stop(now + offset + 0.16);
+    });
+
+    setTimeout(() => ctx.close().catch(() => {}), 700);
+  } catch (_) {}
+}
+
+function startLiveQuoteWatcher() {
+  if (!currentInstitution || !currentInstitution.category || !currentInstitution.city) return;
+
+  if (liveQuoteUnsubscribe) {
+    liveQuoteUnsubscribe();
+    liveQuoteUnsubscribe = null;
+  }
+
+  liveQuoteWatcherReady = false;
+
+  liveQuoteUnsubscribe = db.collection("quoteRequests")
+    .where("category", "==", currentInstitution.category)
+    .where("city", "==", currentInstitution.city)
+    .onSnapshot(async snapshot => {
+      if (!liveQuoteWatcherReady) {
+        liveQuoteWatcherReady = true;
+        return;
+      }
+
+      const added = snapshot.docChanges()
+        .filter(change => change.type === "added")
+        .map(change => ({ id: change.doc.id, ...change.doc.data() }));
+
+      if (!added.length) return;
+
+      const newest = added
+        .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+
+      showLiveQuoteAlert(newest);
+      await loadMatchedQuotes();
+    }, error => {
+      console.error("Canlı teklif takibi başlatılamadı:", error);
+    });
+}
+
+document.addEventListener("pointerdown", () => {
+  panelAudioUnlocked = true;
+}, { once:true });
+
+document.addEventListener("keydown", () => {
+  panelAudioUnlocked = true;
+}, { once:true });
+
 function setPanelTab(name) {
   document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.panelTab === name);
@@ -195,6 +350,25 @@ document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
   renderQuotes();
 });
 document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
+document.getElementById("completeProfileBtn")?.addEventListener("click", () => setPanelTab("profile"));
+
+document.getElementById("liveQuoteAlertBtn")?.addEventListener("click", () => {
+  hideLiveQuoteAlert();
+  quotePanelFilter.value = "new";
+  setPanelTab("quotes");
+  syncQuoteShortcutActive();
+  renderQuotes();
+});
+
+document.getElementById("liveQuoteAlertClose")?.addEventListener("click", hideLiveQuoteAlert);
+
+document.querySelectorAll("[data-quote-shortcut]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    quotePanelFilter.value = btn.dataset.quoteShortcut;
+    syncQuoteShortcutActive();
+    renderQuotes();
+  });
+});
 
 function renderInstitutionHeader() {
   const institution = currentInstitution;
@@ -235,6 +409,7 @@ function renderInstitutionHeader() {
   document.getElementById("profileOffer").checked = institution.offer !== false;
 
   updateOfferUi();
+  updateProfileCompletion();
 }
 
 function updateOfferUi() {
@@ -316,6 +491,16 @@ function renderSummary() {
   document.getElementById("lockedQuoteCount").textContent = lockedCount;
   document.getElementById("latestQuoteTime").textContent =
     quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
+
+  updateQuoteShortcutCounts({
+    all: quoteRecords.length,
+    new: newCount,
+    offered: offeredCount,
+    locked: lockedCount,
+    used: 0,
+    expired: 0
+  });
+  syncQuoteShortcutActive();
 
   const priorityText = document.getElementById("workPriorityText");
   const focusCard = document.getElementById("workFocusCard");
@@ -464,7 +649,10 @@ async function saveQuoteResponse(quoteId, status) {
   }
 }
 
-quotePanelFilter.addEventListener("change", renderQuotes);
+quotePanelFilter.addEventListener("change", () => {
+  syncQuoteShortcutActive();
+  renderQuotes();
+});
 
 document.getElementById("institutionProfileForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -796,6 +984,8 @@ auth.onAuthStateChanged(async user => {
       loadInstitutionStats()
     ]);
 
+    startLiveQuoteWatcher();
+
   } catch (error) {
     console.error(error);
     showPanelError("Kurum paneli yüklenemedi.");
@@ -803,6 +993,11 @@ auth.onAuthStateChanged(async user => {
 });
 
 document.getElementById("institutionLogoutBtn").addEventListener("click", async () => {
+  if (liveQuoteUnsubscribe) {
+    liveQuoteUnsubscribe();
+    liveQuoteUnsubscribe = null;
+  }
+
   await auth.signOut();
   window.location.replace("index.html");
 });
