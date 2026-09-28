@@ -184,3 +184,93 @@ button,input{font:inherit}.hidden{display:none!important}
 
   .request-detail-note{grid-column:auto}
 }
+
+
+/* Müşteri <-> satıcı mesaj bildirimleri */
+.djy-tool-btn.has-unread{
+  position:relative;
+  border-color:#fecaca!important;
+  background:#fff1f2!important;
+  color:#b91c1c!important;
+}
+.djy-message-badge{
+  display:inline-grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  margin-left:4px;
+  border-radius:999px;
+  background:#dc2626;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+}
+.customer-message-alert{
+  position:fixed;
+  left:50%;
+  top:82px;
+  transform:translateX(-50%);
+  z-index:1000;
+  width:min(680px,calc(100% - 28px));
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  align-items:center;
+  gap:11px;
+  padding:13px 14px;
+  border:1px solid #bfdbfe;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 18px 50px rgba(15,35,80,.18);
+}
+.customer-message-alert.hidden{display:none}
+.customer-message-alert-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:#eff6ff;
+  font-size:19px;
+}
+.customer-message-alert-copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.customer-message-alert-copy strong{color:#172033}
+.customer-message-alert-copy span{
+  color:#64748b;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.customer-message-alert button{
+  border:0;
+  border-radius:9px;
+  padding:9px 11px;
+  font-weight:900;
+}
+#customerMessageAlertOpen{
+  background:#1677ff;
+  color:#fff;
+}
+.customer-message-alert-close{
+  background:#eef2f7;
+  color:#475569;
+}
+@media(max-width:620px){
+  .customer-message-alert{
+    top:12px;
+    grid-template-columns:auto 1fr auto;
+  }
+  #customerMessageAlertOpen{
+    grid-column:2 / 3;
+    justify-self:start;
+  }
+  .customer-message-alert-close{
+    grid-column:3;
+    grid-row:1;
+  }
+}
