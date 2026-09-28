@@ -3299,3 +3299,82 @@ body[data-panel-current="stats"] .persistent-performance{
     font-size:9px;
   }
 }
+
+
+/* =========================================================
+   ÖNCELİKLİ KURUM BİLGİLERİ
+   ========================================================= */
+.firm-profile-primary{
+  padding:20px;
+  border:1px solid #c9dcf7;
+  background:linear-gradient(180deg,#f8fbff 0%,#ffffff 100%);
+  box-shadow:0 8px 22px rgba(22,119,255,.06);
+}
+
+.firm-profile-primary-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.firm-profile-primary-head h3{
+  font-size:19px;
+}
+
+.firm-profile-required-badge{
+  flex:0 0 auto;
+  min-height:28px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 9px;
+  border-radius:999px;
+  background:#eaf3ff;
+  color:#1766c2;
+  font-size:9.5px;
+  font-weight:850;
+}
+
+.firm-profile-main-name{
+  font-size:14px !important;
+}
+
+.firm-profile-main-name input{
+  min-height:48px;
+  font-size:16px;
+  font-weight:750;
+}
+
+.firm-profile-identity-grid{
+  margin:0;
+}
+
+.firm-profile-identity-grid > div{
+  border:1px solid #e1e9f3;
+  background:#fff;
+}
+
+.firm-profile-identity-grid strong{
+  color:#22344d;
+  font-size:13px;
+}
+
+@media(max-width:760px){
+  .firm-profile-primary{
+    padding:14px;
+  }
+
+  .firm-profile-primary-head h3{
+    font-size:17px;
+  }
+
+  .firm-profile-required-badge{
+    min-height:26px;
+    font-size:9px;
+  }
+
+  .firm-profile-main-name input{
+    min-height:46px;
+    font-size:15px;
+  }
+}
