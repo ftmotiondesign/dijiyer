@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=13" />
 </head>
 <body>
   <header class="topbar">
@@ -32,17 +32,27 @@
 
   <main class="app-layout">
     <aside class="sidebar">
-      <div class="panel-title">☰ Filtreler</div>
+      <div class="panel-title"><span class="filter-menu-icon" aria-hidden="true">☰</span><span>Filtreler</span></div>
 
       <section class="filter-section category-filter-section">
         <h3>Ana Kategori</h3>
         <div id="sidebarCategories" class="sidebar-categories"></div>
       </section>
 
-      <section class="filter-section">
+      <section class="filter-section other-filter-section">
         <h3>Diğer Seçenekler</h3>
-        <label><input type="checkbox" id="videoOnly"> 🎥 Sadece Videolu</label>
-        <label><input type="checkbox" id="offerOnly"> 🏷️ Teklif Verenler</label>
+
+        <label class="option-card">
+          <input type="checkbox" id="videoOnly">
+          <span class="option-icon option-icon-video" aria-hidden="true">🎥</span>
+          <span class="option-name">Sadece Videolu</span>
+        </label>
+
+        <label class="option-card">
+          <input type="checkbox" id="offerOnly">
+          <span class="option-icon option-icon-offer" aria-hidden="true">🏷️</span>
+          <span class="option-name">Teklif Verenler</span>
+        </label>
       </section>
 
       <div class="sidebar-note">
@@ -359,6 +369,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=24""""></script>
+<script src="script.js?v=25""""></script>
 </body>
 </html>
