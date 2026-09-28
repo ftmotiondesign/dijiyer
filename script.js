@@ -1438,6 +1438,7 @@ institutionLoginForm.addEventListener('submit', async e => {
   let credential;
 
   try {
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     credential = await auth.signInWithEmailAndPassword(email, password);
   } catch (error) {
     console.error('Kurum Firebase Auth girişi başarısız:', error);
