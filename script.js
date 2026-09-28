@@ -10,7 +10,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-const auth = firebase.auth();
+
+const institutionSessionApp =
+  firebase.apps.find(app => app.name === 'institutionSession') ||
+  firebase.initializeApp(firebaseConfig, 'institutionSession');
+
+const institutionAuth = institutionSessionApp.auth();
+const institutionDb = institutionSessionApp.firestore();
 
 const institutionRegistrationApp =
   firebase.apps.find(app => app.name === 'institutionRegistration') ||
@@ -1445,13 +1451,13 @@ institutionLoginForm.addEventListener('submit', async e => {
   let credential;
 
   try {
-    await auth.setPersistence(
+    await institutionAuth.setPersistence(
       rememberMe
         ? firebase.auth.Auth.Persistence.LOCAL
         : firebase.auth.Auth.Persistence.SESSION
     );
 
-    credential = await auth.signInWithEmailAndPassword(email, password);
+    credential = await institutionAuth.signInWithEmailAndPassword(email, password);
   } catch (error) {
     console.error('Kurum Firebase Auth girişi başarısız:', error);
 
@@ -1470,10 +1476,10 @@ institutionLoginForm.addEventListener('submit', async e => {
   }
 
   try {
-    const accountDoc = await db.collection('institutionUsers').doc(credential.user.uid).get();
+    const accountDoc = await institutionDb.collection('institutionUsers').doc(credential.user.uid).get();
 
     if (!accountDoc.exists) {
-      await auth.signOut();
+      await institutionAuth.signOut();
       institutionLoginMessage.textContent =
         'Giriş başarılı ancak bu kullanıcıya bağlı kurum hesabı bulunamadı.';
       return;
@@ -1482,7 +1488,7 @@ institutionLoginForm.addEventListener('submit', async e => {
     const account = accountDoc.data();
 
     if (account.status !== 'approved') {
-      await auth.signOut();
+      await institutionAuth.signOut();
       institutionLoginMessage.textContent =
         account.status === 'rejected'
           ? 'Kurum hesabı başvurunuz onaylanmadı.'
@@ -1490,10 +1496,10 @@ institutionLoginForm.addEventListener('submit', async e => {
       return;
     }
 
-    window.location.href = 'institution.html';
+    window.location.replace('institution.html?session=institution');
   } catch (error) {
     console.error('Kurum hesabı Firestore kontrolü başarısız:', error);
-    await auth.signOut();
+    await institutionAuth.signOut();
 
     institutionLoginMessage.textContent =
       error.code === 'permission-denied'
@@ -1514,7 +1520,7 @@ document.getElementById('institutionForgotPasswordBtn').addEventListener('click'
   institutionLoginMessage.textContent = 'Şifre yenileme bağlantısı gönderiliyor...';
 
   try {
-    await auth.sendPasswordResetEmail(email);
+    await institutionAuth.sendPasswordResetEmail(email);
     institutionLoginMessage.textContent =
       'Şifre yenileme bağlantısı e-posta adresinize gönderildi.';
   } catch (error) {
