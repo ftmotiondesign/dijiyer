@@ -673,13 +673,31 @@ function renderQuoteRequests() {
   quoteRequestsList.innerHTML = "";
 
   data.forEach(request => {
-    const matching = institutionRecords.filter(inst => {
-      const sameCategory = inst.category === request.category;
-      const sameCity = (inst.city || "") === (request.city || "");
-      const sameDistrict = (inst.district || "") === (request.district || "");
+    const normalizeText = (value) =>
+      String(value || "").trim().toLocaleLowerCase("tr-TR");
 
-      return sameCategory && sameCity && (sameDistrict || !request.district);
-    });
+    const requestCategory = normalizeText(request.category);
+    const requestCity = normalizeText(request.city);
+    const requestDistrict = normalizeText(request.district);
+
+    const categoryMatches = institutionRecords.filter(inst =>
+      normalizeText(inst.category) === requestCategory &&
+      inst.offer !== false
+    );
+
+    const exactDistrictMatches = categoryMatches.filter(inst =>
+      normalizeText(inst.city) === requestCity &&
+      normalizeText(inst.district) === requestDistrict
+    );
+
+    const sameCityMatches = categoryMatches.filter(inst =>
+      normalizeText(inst.city) === requestCity
+    );
+
+    // Önce aynı ilçe; yoksa aynı şehirdeki aynı kategorideki kurumları göster.
+    const matching = exactDistrictMatches.length
+      ? exactDistrictMatches
+      : sameCityMatches;
 
     const statusLabels = {
       new: "Yeni",
@@ -731,6 +749,13 @@ function renderQuoteRequests() {
 
       <div class="matching-institutions">
         <strong>Uygun kurumlar (${matching.length})</strong>
+        <div class="match-scope">
+          ${exactDistrictMatches.length
+            ? 'Aynı ilçe + aynı kategori'
+            : sameCityMatches.length
+              ? 'Aynı şehir + aynı kategori'
+              : 'Eşleşme bulunamadı'}
+        </div>
         <div class="matching-buttons">${institutionButtons}</div>
       </div>
 
