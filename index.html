@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=19" />
+  <link rel="stylesheet" href="style.css?v=20" />
   <link rel="stylesheet" href="offers.css?v=2" />
 </head>
 <body>
@@ -418,79 +418,9 @@
     </div>
   </footer>
 
-
-  <nav class="mobile-primary-actions" id="mobilePrimaryActions" aria-label="Hızlı işlemler">
-    <button
-      type="button"
-      class="mobile-primary-action mobile-quote-action"
-      id="mobileQuoteActionBtn"
-      onclick="document.getElementById('quoteModal').classList.remove('hidden')"
-    >
-      <span class="mobile-action-icon">🏷️</span>
-      <span>Teklif Al</span>
-    </button>
-    <button
-      type="button"
-      class="mobile-primary-action mobile-institution-action"
-      id="mobileInstitutionActionBtn"
-      onclick="document.getElementById('mobileInstitutionMenu').classList.remove('hidden')"
-    >
-      <span class="mobile-action-icon">🏢</span>
-      <span>Kurum</span>
-    </button>
-  </nav>
-
-  <div class="mobile-institution-sheet hidden" id="mobileInstitutionMenu">
-    <button
-      type="button"
-      class="mobile-sheet-backdrop"
-      aria-label="Kapat"
-      onclick="document.getElementById('mobileInstitutionMenu').classList.add('hidden')"
-    ></button>
-
-    <div class="mobile-sheet-card">
-      <div class="mobile-sheet-handle"></div>
-      <div class="mobile-sheet-head">
-        <div>
-          <strong>Kurum İşlemleri</strong>
-          <span>Ne yapmak istiyorsunuz?</span>
-        </div>
-        <button
-          type="button"
-          class="mobile-sheet-close"
-          onclick="document.getElementById('mobileInstitutionMenu').classList.add('hidden')"
-        >×</button>
-      </div>
-
-      <button
-        type="button"
-        class="mobile-sheet-option"
-        onclick="document.getElementById('mobileInstitutionMenu').classList.add('hidden'); document.getElementById('institutionAddBtn').click();"
-      >
-        <span>＋</span>
-        <div>
-          <strong>Kurum Ekle</strong>
-          <small>İşletmeni Dijiyer'e ücretsiz ekle</small>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        class="mobile-sheet-option"
-        onclick="document.getElementById('mobileInstitutionMenu').classList.add('hidden'); document.getElementById('institutionLoginBtn').click();"
-      >
-        <span>🏢</span>
-        <div>
-          <strong>Kurum Paneli</strong>
-          <small>Teklifleri ve kurum bilgilerini yönet</small>
-        </div>
-      </button>
-    </div>
-  </div>
-
-  <div class="modal hidden" id="quoteModal">
+<div class="modal hidden" id="quoteModal">
     <div class="modal-card">
-      <button class="modal-close" data-close="quoteModal">×</button>
+      <button type="button" class="modal-close" data-close="quoteModal" onclick="document.getElementById('quoteModal').classList.add('hidden'); return false;">×</button>
       <h2>Toplu Teklif Talebi</h2>
       <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
 
@@ -565,7 +495,7 @@
 
   <div class="modal hidden" id="quoteSuccessModal">
     <div class="modal-card quote-success-card">
-      <button class="modal-close" data-close="quoteSuccessModal">×</button>
+      <button type="button" class="modal-close" data-close="quoteSuccessModal" onclick="document.getElementById('quoteSuccessModal').classList.add('hidden'); return false;">×</button>
 
       <div class="quote-success-check">✓</div>
       <h2>Teklif Talebiniz Gönderildi</h2>
@@ -594,7 +524,7 @@
 
   <div class="modal hidden" id="myOffersModal">
     <div class="modal-card my-offers-card">
-      <button class="modal-close" data-close="myOffersModal">×</button>
+      <button type="button" class="modal-close" data-close="myOffersModal" onclick="document.getElementById('myOffersModal').classList.add('hidden'); return false;">×</button>
       <h2>Tekliflerim</h2>
       <p>Gönderdiğiniz talepleri, gelen teklifleri ve geçerlilik sürelerini buradan takip edebilirsiniz.</p>
 
@@ -613,7 +543,7 @@
 
   <div class="modal hidden" id="institutionModal">
   <div class="modal-card">
-    <button class="modal-close" data-close="institutionModal">×</button>
+    <button type="button" class="modal-close" data-close="institutionModal" onclick="document.getElementById('institutionModal').classList.add('hidden'); return false;">×</button>
 
     <h2>Kurum Ekle</h2>
     <p>İşletmenizi Dijiyer'e eklemek için bilgileri doldurun.</p>
@@ -734,7 +664,7 @@
 
   <div class="modal hidden" id="institutionAccessModal">
     <div class="modal-card institution-access-card">
-      <button class="modal-close" data-close="institutionAccessModal">×</button>
+      <button type="button" class="modal-close" data-close="institutionAccessModal" onclick="document.getElementById('institutionAccessModal').classList.add('hidden'); return false;">×</button>
 
       <h2>Kurum Girişi</h2>
       <p>Teklifleri görmek ve kurum panelini kullanmak için giriş yapın.</p>
@@ -790,7 +720,7 @@
 
   <div class="modal hidden" id="reviewModal">
     <div class="modal-card">
-      <button class="modal-close" data-close="reviewModal">×</button>
+      <button type="button" class="modal-close" data-close="reviewModal" onclick="document.getElementById('reviewModal').classList.add('hidden'); return false;">×</button>
       <h2>Yorum Yap / Puan Ver</h2>
       <form id="reviewForm">
         <div class="stars-input" id="starsInput">
@@ -816,7 +746,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=36"></script>
+<script src="script.js?v=37"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
