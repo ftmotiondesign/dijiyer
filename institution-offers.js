@@ -408,7 +408,7 @@ async function markOfferUsed(quoteId,code){
     if(lock.expiresAt && new Date(lock.expiresAt).getTime()<=Date.now()) throw new Error("Teklifin süresi dolmuş.");
     if(lock.status==="used") throw new Error("Teklif daha önce kullanılmış.");
 
-    await lockRef.update({status:"used",usedAt:new Date().toISOString()});
+    await lockRef.update({status:"used",usedAt:new Date().toISOString(),usedAtTs:firebase.firestore.FieldValue.serverTimestamp()});
     institutionLockMap.set(quoteId,{...lock,status:"used",usedAt:new Date().toISOString()});
     await verifyOfferByCode(code);
     renderQuotes(); renderSummary();
