@@ -393,6 +393,15 @@ function renderManagedInstitutions() {
       surucu: "Sürücü Kursu",
       kres: "Kreş & Anaokulu",
       yurt: "Öğrenci Yurdu",
+      egitim: "Eğitim & Kurslar",
+      emlak: "Emlak & Gayrimenkul",
+      oto: "Oto Servis & Sanayi",
+      restoran: "Restoran & Kafe",
+      guzellik: "Güzellik & Bakım",
+      saglik: "Sağlık & Klinik",
+      dugun: "Düğün & Organizasyon",
+      evteknik: "Ev & Teknik Servis",
+      turizm: "Turizm & Konaklama",
       esnaf: "Yerel Esnaf",
       diger: "Diğer"
     };
@@ -688,6 +697,15 @@ function renderQuoteRequests() {
       if (["surucu", "surucu kursu", "surucu kurslari", "ehliyet"].includes(raw)) return "surucu";
       if (["kres", "kres anaokulu", "kres & anaokulu", "anaokulu"].includes(raw)) return "kres";
       if (["yurt", "ogrenci yurdu", "ogrenci yurtlari"].includes(raw)) return "yurt";
+      if (["egitim", "egitim & kurslar", "kurs", "kurslar"].includes(raw)) return "egitim";
+      if (["emlak", "emlak & gayrimenkul", "gayrimenkul"].includes(raw)) return "emlak";
+      if (["oto", "oto servis", "oto servis & sanayi", "sanayi"].includes(raw)) return "oto";
+      if (["restoran", "restoran & kafe", "kafe"].includes(raw)) return "restoran";
+      if (["guzellik", "guzellik & bakim", "bakim"].includes(raw)) return "guzellik";
+      if (["saglik", "saglik & klinik", "klinik"].includes(raw)) return "saglik";
+      if (["dugun", "dugun & organizasyon", "organizasyon"].includes(raw)) return "dugun";
+      if (["evteknik", "ev & teknik servis", "teknik servis"].includes(raw)) return "evteknik";
+      if (["turizm", "turizm & konaklama", "konaklama"].includes(raw)) return "turizm";
       if (["esnaf", "yerel esnaf"].includes(raw)) return "esnaf";
       if (["diger"].includes(raw)) return "diger";
       return raw;
@@ -725,6 +743,15 @@ function renderQuoteRequests() {
       surucu: "Sürücü Kursu",
       kres: "Kreş & Anaokulu",
       yurt: "Öğrenci Yurdu",
+      egitim: "Eğitim & Kurslar",
+      emlak: "Emlak & Gayrimenkul",
+      oto: "Oto Servis & Sanayi",
+      restoran: "Restoran & Kafe",
+      guzellik: "Güzellik & Bakım",
+      saglik: "Sağlık & Klinik",
+      dugun: "Düğün & Organizasyon",
+      evteknik: "Ev & Teknik Servis",
+      turizm: "Turizm & Konaklama",
       esnaf: "Yerel Esnaf",
       diger: "Diğer"
     };
