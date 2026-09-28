@@ -676,13 +676,31 @@ function renderQuoteRequests() {
     const normalizeText = (value) =>
       String(value || "").trim().toLocaleLowerCase("tr-TR");
 
-    const requestCategory = normalizeText(request.category);
+    const normalizeCategory = (value) => {
+      const raw = normalizeText(value)
+        .replace(/ı/g, "i")
+        .replace(/ş/g, "s")
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ö/g, "o")
+        .replace(/ç/g, "c");
+
+      if (["surucu", "surucu kursu", "surucu kurslari", "ehliyet"].includes(raw)) return "surucu";
+      if (["kres", "kres anaokulu", "kres & anaokulu", "anaokulu"].includes(raw)) return "kres";
+      if (["yurt", "ogrenci yurdu", "ogrenci yurtlari"].includes(raw)) return "yurt";
+      if (["esnaf", "yerel esnaf"].includes(raw)) return "esnaf";
+      if (["diger"].includes(raw)) return "diger";
+      return raw;
+    };
+
+    const requestCategory = normalizeCategory(request.category);
     const requestCity = normalizeText(request.city);
     const requestDistrict = normalizeText(request.district);
 
-    const categoryMatches = institutionRecords.filter(inst =>
-      normalizeText(inst.category) === requestCategory &&
-      inst.offer !== false
+    const activeInstitutions = institutionRecords.filter(inst => inst.offer !== false);
+
+    const categoryMatches = activeInstitutions.filter(inst =>
+      normalizeCategory(inst.category) === requestCategory
     );
 
     const exactDistrictMatches = categoryMatches.filter(inst =>
@@ -698,6 +716,10 @@ function renderQuoteRequests() {
     const matching = exactDistrictMatches.length
       ? exactDistrictMatches
       : sameCityMatches;
+
+    const cityInstitutionCount = activeInstitutions.filter(inst =>
+      normalizeText(inst.city) === requestCity
+    ).length;
 
     const statusLabels = {
       new: "Yeni",
@@ -754,7 +776,7 @@ function renderQuoteRequests() {
             ? 'Aynı ilçe + aynı kategori'
             : sameCityMatches.length
               ? 'Aynı şehir + aynı kategori'
-              : 'Eşleşme bulunamadı'}
+              : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu kategoride toplam ${categoryMatches.length} kurum var`}
         </div>
         <div class="matching-buttons">${institutionButtons}</div>
       </div>
