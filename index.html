@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=15" />
+  <link rel="stylesheet" href="style.css?v=16" />
   <link rel="stylesheet" href="offers.css?v=2" />
 </head>
 <body>
@@ -99,6 +99,70 @@
       </div>
     </div>
   </header>
+
+  <section class="home-hero">
+    <div class="home-hero-inner">
+      <div class="home-hero-copy">
+        <span class="home-hero-kicker">DİJİYER · YEREL TEKLİF PLATFORMU</span>
+        <h1>İhtiyacını yaz.<br>Yakınındaki işletmeler teklif versin.</h1>
+        <p>
+          Kurumları tek tek aramak yerine ihtiyacını oluştur, uygun işletmelerden
+          fiyat al, karşılaştır ve teklifini güvenle takip et.
+        </p>
+
+        <div class="home-hero-actions">
+          <button type="button" class="hero-primary-btn" id="heroQuoteBtn">
+            Ücretsiz Teklif Al
+          </button>
+          <button type="button" class="hero-secondary-btn" id="heroInstitutionBtn">
+            İşletmeni Ücretsiz Ekle
+          </button>
+        </div>
+
+        <div class="home-hero-note">
+          Kredi kartı gerekmez · Üyelik zorunlu değil · Gizli ücret yok
+        </div>
+      </div>
+
+      <div class="home-hero-free-card">
+        <div class="free-zero">0 TL</div>
+        <strong>Dijiyer'de temel işlemler ücretsiz</strong>
+        <p>Müşteri ve işletmeler için başlangıç maliyeti yok.</p>
+
+        <div class="free-mini-grid">
+          <span>✓ Üye olmak</span>
+          <span>✓ Teklif almak</span>
+          <span>✓ Teklif vermek</span>
+          <span>✓ Satıştan komisyon yok</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="free-benefit-strip" aria-label="Ücretsiz özellikler">
+    <div><strong>Üyelik Ücretsiz</strong><span>Kayıt için ücret yok</span></div>
+    <div><strong>Teklif Almak Ücretsiz</strong><span>Müşteriden ücret alınmaz</span></div>
+    <div><strong>Teklif Vermek Ücretsiz</strong><span>İşletmeler ücretsiz teklif verir</span></div>
+    <div><strong>%0 Satış Komisyonu</strong><span>Satıştan komisyon kesilmez</span></div>
+  </section>
+
+  <section class="mobile-discovery" aria-label="Mobil kategori seçimi">
+    <div class="mobile-discovery-head">
+      <div>
+        <strong>Ne arıyorsunuz?</strong>
+        <span>Kategori seçerek hızlıca bulun</span>
+      </div>
+      <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
+    </div>
+
+    <div class="mobile-category-scroll" id="mobileCategories"></div>
+    <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
+
+    <div class="mobile-quick-filters">
+      <button type="button" id="mobileVideoOnlyBtn">🎥 Sadece Videolu</button>
+      <button type="button" id="mobileOfferOnlyBtn">🏷️ Teklif Verenler</button>
+    </div>
+  </section>
 
   <main class="app-layout">
     <aside class="sidebar">
@@ -488,7 +552,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=31"></script>
+<script src="script.js?v=32"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
