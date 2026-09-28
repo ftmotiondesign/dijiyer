@@ -530,3 +530,188 @@ button{
     flex-wrap:wrap;
   }
 }
+
+
+/* Teklif talepleri */
+.quote-toolbar{
+  display:grid;
+  grid-template-columns:1fr 190px;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.quote-toolbar input,
+.quote-toolbar select{
+  height:44px;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  background:#fff;
+  padding:0 12px;
+}
+
+#quoteRequestsList{
+  display:grid;
+  gap:15px;
+}
+
+.quote-request-card{
+  background:#fff;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+  padding:18px;
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.quote-request-top{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+}
+
+.quote-request-top h3{
+  margin:0 0 8px;
+  font-size:20px;
+}
+
+.quote-date{
+  color:#64748b;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.quote-badges{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.quote-badges span{
+  padding:5px 9px;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:bold;
+  background:#edf5ff;
+  color:#1677ff;
+}
+
+.quote-badges .status-new{
+  background:#fff7ed;
+  color:#c2410c;
+}
+
+.quote-badges .status-sent{
+  background:#eef5ff;
+  color:#1d4ed8;
+}
+
+.quote-badges .status-done{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.quote-info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
+}
+
+.quote-info-grid > div{
+  background:#f8fafc;
+  border-radius:10px;
+  padding:10px 12px;
+}
+
+.quote-info-grid .wide{
+  grid-column:1 / -1;
+}
+
+.quote-info-grid small{
+  display:block;
+  color:#64748b;
+  margin-bottom:4px;
+}
+
+.quote-info-grid strong{
+  color:#334155;
+  font-size:14px;
+}
+
+.matching-institutions{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #e5e7eb;
+}
+
+.matching-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:9px;
+}
+
+.matched-institution-btn,
+.match-chip{
+  border:1px solid #bbf7d0;
+  background:#ecfdf5;
+  color:#15803d;
+  border-radius:9px;
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.no-match{
+  display:inline-block;
+  color:#64748b;
+  font-size:13px;
+  margin-top:8px;
+}
+
+.quote-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+
+.quote-actions button,
+.customer-whatsapp{
+  border:0;
+  border-radius:9px;
+  padding:9px 12px;
+  font-size:12px;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.customer-whatsapp{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.quote-status-btn{
+  background:#eef5ff;
+  color:#1d4ed8;
+}
+
+.quote-delete-btn{
+  background:#f3f4f6;
+  color:#475569;
+}
+
+@media(max-width:700px){
+  .quote-toolbar,
+  .quote-info-grid{
+    grid-template-columns:1fr;
+  }
+
+  .quote-info-grid .wide{
+    grid-column:auto;
+  }
+
+  .quote-request-top{
+    flex-direction:column;
+  }
+}
