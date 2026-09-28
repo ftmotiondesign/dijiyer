@@ -466,8 +466,6 @@ document.querySelectorAll('.categoryFilter, .subCategoryFilter').forEach(input =
 document.getElementById('videoOnly')?.addEventListener('change', syncMobileQuickFilterState);
 document.getElementById('offerOnly')?.addEventListener('change', syncMobileQuickFilterState);
 
-renderMobileCategories();
-
 const institutions = [
   {
     id: 1,
@@ -533,6 +531,9 @@ let currentRating = 0;
 
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
+
+// Konum değişkenleri hazır olduktan sonra mobil filtreleri oluştur.
+renderMobileCategories();
 
 let institutionMapInstance = null;
 let institutionLocationMarker = null;
