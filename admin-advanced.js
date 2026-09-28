@@ -371,136 +371,82 @@
     }
   });
 
-  function getAllSupportTickets() {
-    return [...supportTicketRecords].sort(
-      (a,b) => new Date(b.updatedAt || b.date || 0) - new Date(a.updatedAt || a.date || 0)
-    );
-  }
-
-  async function loadSupportCenter() {
-    const root = $("supportAdminList");
-    if (!root) return;
-
-    root.innerHTML = '<div class="advanced-empty">Destek talepleri yükleniyor...</div>';
-
+  async function loadSupportAdminRecords() {
     try {
       const snapshot = await db.collection("supportTickets").get();
-
-      supportTicketRecords = snapshot.docs.map(doc => ({
-        id:doc.id,
-        ...doc.data()
-      }));
-
-      renderSupportCenter();
-      refreshAdminNotifications();
-
+      supportAdminRecords = snapshot.docs
+        .map(doc => ({ id:doc.id, ...doc.data() }))
+        .sort((a,b) =>
+          new Date(b.updatedAt || b.date || 0) -
+          new Date(a.updatedAt || a.date || 0)
+        );
     } catch (error) {
       console.error("Destek talepleri yüklenemedi:", error);
-      root.innerHTML =
-        '<div class="advanced-empty">Destek talepleri yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+      supportAdminRecords = [];
     }
+    return supportAdminRecords;
   }
 
-  function supportStatusMeta(status) {
-    const normalized = status === "in_progress" ? "reviewing" : (status || "new");
-    const map = {
-      new:["Yeni","new"],
-      reviewing:["İnceleniyor","reviewing"],
-      answered:["Cevaplandı","answered"],
-      resolved:["Çözüldü","resolved"]
-    };
-    return map[normalized] || map.new;
-  }
-
-  function renderSupportCenter() {
+  async function renderSupportCenter() {
     const root = $("supportAdminList");
     if (!root) return;
+
+    await loadSupportAdminRecords();
 
     const query = normalize($("supportAdminSearch")?.value);
     const status = $("supportAdminStatus")?.value || "";
-
-    const tickets = getAllSupportTickets().filter(item => {
-      const normalizedStatus =
-        item.status === "in_progress" ? "reviewing" : (item.status || "new");
-
+    const tickets = supportAdminRecords.filter(item => {
       const haystack = normalize([
-        item.institutionName,
-        item.email,
-        item.category,
-        item.subject,
-        item.message,
-        item.adminReply
+        item.institutionName,item.subject,item.message,item.adminReply,item.email
       ].filter(Boolean).join(" "));
-
       return (!query || haystack.includes(query)) &&
-        (!status || normalizedStatus === status);
+        (!status || String(item.status || "new") === status);
     });
 
-    const all = getAllSupportTickets();
-    const open = all.filter(x => (x.status || "new") !== "resolved").length;
+    const open = supportAdminRecords.filter(
+      x => String(x.status || "new") !== "resolved"
+    ).length;
 
-    if ($("supportAdminCount")) {
-      $("supportAdminCount").textContent =
-        all.length + " talep · " + open + " açık · " + (all.length-open) + " çözüldü";
-    }
+    $("supportAdminCount").textContent =
+      supportAdminRecords.length + " talep · " + open + " açık · " +
+      (supportAdminRecords.length-open) + " çözüldü";
 
-    if ($("adminSupportTabCount")) {
-      $("adminSupportTabCount").textContent = open;
-    }
-
-    root.innerHTML = tickets.length ? tickets.map(ticket => {
-      const [statusText,statusClass] = supportStatusMeta(ticket.status);
-      const normalizedStatus =
-        ticket.status === "in_progress" ? "reviewing" : (ticket.status || "new");
-
-      return `
-        <article class="support-admin-card">
-          <div class="support-admin-head">
-            <div>
-              <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
-              <p>
-                ${escapeHtml(ticket.institutionName || "Kurum")} ·
-                ${escapeHtml(ticket.email || "-")} ·
-                ${formatDateLocal(ticket.date)}
-              </p>
-            </div>
-            <span class="support-state state-${escapeHtml(statusClass)}">
-              ${statusText}
-            </span>
+    root.innerHTML = tickets.length ? tickets.map(ticket => `
+      <article class="support-admin-card">
+        <div class="support-admin-head">
+          <div>
+            <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
+            <p>${escapeHtml(ticket.institutionName || "Kurum")} · ${formatDateLocal(ticket.date)}</p>
           </div>
-
-          <div class="support-admin-message">
-            <strong>${escapeHtml(ticket.category || "Destek")}</strong><br>
-            ${escapeHtml(ticket.message || "")}
+          <span class="support-state state-${escapeHtml(ticket.status || "new")}">
+            ${ticket.status === "resolved"
+              ? "Çözüldü"
+              : ticket.status === "answered"
+                ? "Cevaplandı"
+                : ticket.status === "reviewing"
+                  ? "İnceleniyor"
+                  : "Yeni"}
+          </span>
+        </div>
+        <div class="support-admin-message">${escapeHtml(ticket.message || "")}</div>
+        ${ticket.adminReply ? `
+          <div class="support-admin-existing-reply">
+            <strong>Son yanıt</strong>
+            <p>${escapeHtml(ticket.adminReply)}</p>
           </div>
-
-          <div class="support-admin-controls">
-            <select data-support-status="${escapeHtml(ticket.id)}">
-              <option value="new" ${normalizedStatus==="new"?"selected":""}>Yeni</option>
-              <option value="reviewing" ${normalizedStatus==="reviewing"?"selected":""}>İnceleniyor</option>
-              <option value="answered" ${normalizedStatus==="answered"?"selected":""}>Cevaplandı</option>
-              <option value="resolved" ${normalizedStatus==="resolved"?"selected":""}>Çözüldü</option>
-            </select>
-
-            <textarea
-              data-support-reply="${escapeHtml(ticket.id)}"
-              placeholder="Kuruma yanıt yazın..."
-            >${escapeHtml(ticket.adminReply || "")}</textarea>
-
-            <button
-              type="button"
-              data-support-save="${escapeHtml(ticket.id)}"
-            >Yanıtı Kaydet</button>
-          </div>
-
-          ${ticket.adminReplyAt ? `
-            <div class="advanced-message">
-              Son yanıt: ${formatDateLocal(ticket.adminReplyAt)}
-            </div>
-          ` : ""}
-        </article>
-      `;
-    }).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
+        ` : ""}
+        <div class="support-admin-controls">
+          <select data-support-status="${escapeHtml(ticket.id)}">
+            <option value="new" ${(ticket.status||"new")==="new"?"selected":""}>Yeni</option>
+            <option value="reviewing" ${ticket.status==="reviewing"?"selected":""}>İnceleniyor</option>
+            <option value="answered" ${ticket.status==="answered"?"selected":""}>Cevaplandı</option>
+            <option value="resolved" ${ticket.status==="resolved"?"selected":""}>Çözüldü</option>
+          </select>
+          <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma yanıt yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
+          <button type="button" data-support-save="${escapeHtml(ticket.id)}">Kaydet</button>
+        </div>
+      </article>
+    `).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
 
     root.querySelectorAll("[data-support-save]").forEach(button => {
       button.addEventListener("click", () =>
@@ -510,10 +456,10 @@
   }
 
   async function saveSupportTicketAdmin(ticketId) {
-    const record = supportTicketRecords.find(
+    const ticket = supportAdminRecords.find(
       item => String(item.id) === String(ticketId)
     );
-    if (!record) return;
+    if (!ticket) return;
 
     const status = document.querySelector(
       `[data-support-status="${CSS.escape(ticketId)}"]`
@@ -525,34 +471,24 @@
 
     const now = new Date().toISOString();
 
-    try {
-      const changes = {
-        status,
-        adminReply:reply,
-        adminReplyAt:reply ? now : "",
-        updatedAt:now
-      };
+    await db.collection("supportTickets").doc(ticketId).update({
+      status,
+      adminReply:reply,
+      adminReplyAt: reply ? now : (ticket.adminReplyAt || ""),
+      updatedAt:now
+    });
 
-      await db.collection("supportTickets").doc(ticketId).update(changes);
-      Object.assign(record, changes);
+    addAudit(
+      "Destek talebi güncellendi",
+      (ticket.institutionName || "Kurum") + " · " + ticketId + " · " + status
+    );
 
-      addAudit(
-        "Destek talebi güncellendi",
-        (record.institutionName || "Kurum") + " · " + ticketId + " · " + status
-      );
-
-      renderSupportCenter();
-      refreshAdminNotifications();
-
-    } catch (error) {
-      console.error("Destek talebi güncellenemedi:", error);
-      alert("Destek talebi güncellenemedi. Firestore yetkisini kontrol edin.");
-    }
+    await renderSupportCenter();
+    await refreshAdminNotifications();
   }
 
   $("supportAdminSearch")?.addEventListener("input", renderSupportCenter);
   $("supportAdminStatus")?.addEventListener("change", renderSupportCenter);
-
 
   function getAnnouncementTargets() {
     const type = $("announcementTargetType")?.value || "all";
@@ -837,8 +773,10 @@
     const issueTotal = quoteRequestRecords.reduce(
       (sum,x)=>sum + Number(x.issueCount || 0),0
     );
-    const support = getAllSupportTickets();
-    const openSupport = support.filter(x => (x.status || "new") !== "resolved");
+
+    const openSupport = supportAdminRecords.filter(
+      x => String(x.status || "new") !== "resolved"
+    );
     const overdueMs = Number(adminSettings.supportSlaDays || 2) * 86400000;
     const overdue = openSupport.filter(x =>
       x.date && Date.now() - new Date(x.date).getTime() > overdueMs
@@ -853,12 +791,17 @@
     return items;
   }
 
-  function refreshAdminNotifications() {
+  async function refreshAdminNotifications() {
+    try {
+      await loadSupportAdminRecords();
+    } catch (_) {}
+
     const root = $("adminNotificationList");
     const items = notificationItems();
     $("adminNotificationBadge").textContent = items.length;
     $("adminNotificationBadge").classList.toggle("empty", !items.length);
     if (!root) return;
+
     root.innerHTML = items.length ? items.map((item,index) => `
       <button type="button" class="admin-notification-item ${item.urgent?"urgent":""}" data-notification-index="${index}">
         ${escapeHtml(item.title)}
