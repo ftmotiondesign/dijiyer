@@ -2269,7 +2269,7 @@ button{
 .quote-activity-privacy{display:grid;gap:3px;margin:13px 0;padding:11px 12px;border:1px solid #dbeafe;border-radius:11px;background:#f8fbff}
 .quote-activity-privacy strong{color:#1d4ed8;font-size:11px}
 .quote-activity-privacy span{color:#64748b;font-size:10px;line-height:1.5}
-.quote-activity-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.quote-activity-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:12px}
 .quote-activity-summary article{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
 .quote-activity-summary span{display:block;color:#64748b;font-size:9px;font-weight:900;margin-bottom:5px}
 .quote-activity-summary strong{display:block;color:#172033;font-size:17px}
