@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=11">
+  <link rel="stylesheet" href="admin.css?v=12">
 </head>
 
 <body>
@@ -79,6 +79,7 @@
         <button class="admin-tab active" id="applicationsTabBtn">Kurum Başvuruları</button>
         <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
         <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
+        <button class="admin-tab" id="accountsTabBtn">Kurum Hesapları</button>
       </div>
 
       <section id="applicationsSection">
@@ -161,6 +162,15 @@
         <div class="toolbar-result" id="institutionFilterResult"></div>
 
         <div id="institutionsList"></div>
+      </section>
+
+      <section id="accountsSection" hidden>
+        <div class="section-title">
+          <h3>Kurum Hesapları</h3>
+          <p id="accountCount">Hesaplar yükleniyor...</p>
+        </div>
+
+        <div id="accountsList"></div>
       </section>
 
       <section id="quotesSection" hidden>
@@ -291,7 +301,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=15"></script>
+  <script src="admin.js?v=16"></script>
 
 </body>
 </html>
