@@ -132,17 +132,20 @@
 
   $("supportTabBtn")?.addEventListener("click", async () => {
     showAdvancedSection("supportSection","supportTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("supportTabBtn");
     await loadSupportCenter();
   });
 
   $("announcementsTabBtn")?.addEventListener("click", () => {
     showAdvancedSection("announcementsSection","announcementsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("announcementsTabBtn");
     populateAnnouncementTargets();
     renderAnnouncementHistory();
   });
 
   $("systemTabBtn")?.addEventListener("click", () => {
     showAdvancedSection("systemSection","systemTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("systemTabBtn");
     renderSystemChecks();
     fillSettingsForm();
     renderAudit();
@@ -419,6 +422,8 @@
     if ($("adminSupportTabCount")) {
       $("adminSupportTabCount").textContent = open;
     }
+    const quickSupportCount = $("quickSupportCount");
+    if (quickSupportCount) quickSupportCount.textContent = open;
 
     root.innerHTML = tickets.length ? tickets.map(ticket => `
       <article class="support-admin-card">
