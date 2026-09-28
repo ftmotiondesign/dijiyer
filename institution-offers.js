@@ -116,6 +116,16 @@ renderSummary = function(){
   document.getElementById("latestQuoteTime").textContent =
     quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
 
+  updateQuoteShortcutCounts({
+    all: quoteRecords.length,
+    new: newCount,
+    offered: offeredCount,
+    locked: lockedCount,
+    used: usedCount,
+    expired: states.filter(state => state === "expired").length
+  });
+  syncQuoteShortcutActive();
+
   const priorityText = document.getElementById("workPriorityText");
   const focusCard = document.getElementById("workFocusCard");
 
@@ -471,4 +481,7 @@ if(verifyInput){
     if(e.key==="Enter"){e.preventDefault();verifyOfferByCode();}
   });
 }
-quotePanelFilter.addEventListener("change",()=>renderQuotes());
+quotePanelFilter.addEventListener("change",()=>{
+  syncQuoteShortcutActive();
+  renderQuotes();
+});
