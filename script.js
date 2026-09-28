@@ -322,5 +322,28 @@ document.getElementById('sortSelect').addEventListener('change', renderList);
 document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
 document.getElementById('institutionAddBtn').onclick = () => openModal('institutionModal');
 
+document.getElementById('institutionForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const application = {
+    name: document.getElementById('institutionName').value,
+    category: document.getElementById('institutionCategory').value,
+    city: document.getElementById('institutionCity').value,
+    district: document.getElementById('institutionDistrict').value,
+    address: document.getElementById('institutionAddress').value,
+    phone: document.getElementById('institutionPhone').value,
+    website: document.getElementById('institutionWebsite').value,
+    date: new Date().toISOString()
+  };
+
+  const applications = JSON.parse(localStorage.getItem('institutionApplications') || '[]');
+  applications.push(application);
+  localStorage.setItem('institutionApplications', JSON.stringify(applications));
+
+  closeModal('institutionModal');
+  e.target.reset();
+  showToast('Kurum başvurunuz alındı.');
+});
+
 renderList();
 renderDetail();
