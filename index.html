@@ -108,7 +108,87 @@
         <button class="btn btn-primary full" type="submit">Uygun Kurumlara Teklif Gönder</button>
       </form>
     </div>
+  </div> 
+  <div class="modal hidden" id="institutionModal">
+  <div class="modal-card">
+    <button class="modal-close" data-close="institutionModal">×</button>
+
+    <h2>Kurum Ekle</h2>
+    <p>İşletmenizi Dijiyer'e eklemek için bilgileri doldurun.</p>
+
+    <form id="institutionForm">
+
+      <label>Kurum / İşletme Adı
+        <input
+          type="text"
+          id="institutionName"
+          placeholder="Örn. Ayyıldız Sürücü Kursu"
+          required
+        />
+      </label>
+
+      <label>Kategori
+        <select id="institutionCategory" required>
+          <option value="">Kategori seçin</option>
+          <option value="surucu">Sürücü Kursu</option>
+          <option value="kres">Kreş & Anaokulu</option>
+          <option value="yurt">Öğrenci Yurdu</option>
+          <option value="esnaf">Yerel Esnaf</option>
+          <option value="diger">Diğer</option>
+        </select>
+      </label>
+
+      <label>Şehir
+        <input
+          type="text"
+          id="institutionCity"
+          value="Çanakkale"
+          required
+        />
+      </label>
+
+      <label>İlçe
+        <input
+          type="text"
+          id="institutionDistrict"
+          placeholder="Örn. Merkez"
+          required
+        />
+      </label>
+
+      <label>Adres
+        <textarea
+          id="institutionAddress"
+          rows="3"
+          placeholder="Açık adres"
+          required
+        ></textarea>
+      </label>
+
+      <label>Telefon / WhatsApp
+        <input
+          type="tel"
+          id="institutionPhone"
+          placeholder="05xx xxx xx xx"
+          required
+        />
+      </label>
+
+      <label>Instagram veya Web Sitesi
+        <input
+          type="text"
+          id="institutionWebsite"
+          placeholder="İsteğe bağlı"
+        />
+      </label>
+
+      <button class="btn btn-primary full" type="submit">
+        Kurum Başvurusu Gönder
+      </button>
+
+    </form>
   </div>
+</div>
 
   <div class="modal hidden" id="reviewModal">
     <div class="modal-card">
