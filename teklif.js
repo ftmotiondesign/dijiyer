@@ -73,6 +73,47 @@ function stateLabel(s){
   return {offered:"Fiyat Garantili",locked:"Fiyat Kilitli",used:"Kullanıldı",expired:"Süresi Doldu",closed:"Başka teklif seçildi"}[s]||s;
 }
 
+function getLocalRequestDetail(access){
+  try{
+    const map=JSON.parse(localStorage.getItem("dijiyerCustomerQuoteData")||"{}");
+    const rows=Object.entries(map);
+    for(const [quoteId,data] of rows){
+      if(
+        quoteId===access.quoteId ||
+        (data && access.trackingCode && data.trackingCode===access.trackingCode)
+      ){
+        return data||{};
+      }
+    }
+  }catch(error){
+    console.warn("Yerel talep detayı okunamadı:",error);
+  }
+  return {};
+}
+
+function requestDetailHtml(access){
+  const local=getLocalRequestDetail(access);
+  const mainLabel=access.mainCategoryLabel||local.mainCategoryLabel||local.mainCategory||"";
+  const subLabel=access.subCategoryLabel||local.subCategoryLabel||local.service||access.service||"";
+  const note=access.note||local.note||"Not eklenmemiş.";
+  const service=access.service||local.service||"Teklif Talebi";
+  const city=access.city||local.city||"";
+  const district=access.district||local.district||"";
+  const date=access.date||local.date||"";
+
+  return `
+    <details class="request-detail-box">
+      <summary>📋 Talep Detayını Gör</summary>
+      <div class="request-detail-grid">
+        <div><span>Hizmet</span><strong>${safe(service)}</strong></div>
+        <div><span>Kategori</span><strong>${safe([mainLabel,subLabel].filter(Boolean).join(" / ")||service)}</strong></div>
+        <div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>
+        <div><span>Talep Tarihi</span><strong>${fmtDate(date)}</strong></div>
+        <div class="request-detail-note"><span>Talep Notu</span><strong>${safe(note)}</strong></div>
+      </div>
+    </details>`;
+}
+
 async function verifyAccess(code,phone){
   const phoneNormalized=normalizePhone(phone);
   if(phoneNormalized.length<10)throw new Error("Telefon numarasını kontrol edin.");
