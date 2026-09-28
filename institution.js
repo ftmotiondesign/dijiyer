@@ -403,6 +403,7 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     }
 
     if (btn.dataset.panelTab === "support" && currentAccount) {
+      populateSupportQuoteReferences();
       await loadSupportTickets();
     }
   });
@@ -413,6 +414,7 @@ document.getElementById("goProfileBtn").addEventListener("click", () => setPanel
 document.getElementById("goVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
 document.getElementById("goSupportBtn")?.addEventListener("click", async () => {
   setPanelTab("support");
+  populateSupportQuoteReferences();
   if (currentAccount) await loadSupportTickets();
 });
 document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
@@ -785,6 +787,195 @@ document.getElementById("sendPasswordResetBtn").addEventListener("click", async 
 
 
 
+function supportNeedsQuoteReference(category) {
+  return category === "Teklif Sorunu" || category === "Fiyat Kilidi";
+}
+
+function getSupportQuoteState(quote) {
+  try {
+    if (typeof sellerOfferState === "function") {
+      return sellerOfferState(quote);
+    }
+  } catch (_) {}
+
+  try {
+    return getQuoteViewStatus(quote);
+  } catch (_) {
+    return "new";
+  }
+}
+
+function getSupportQuoteStateLabel(state) {
+  const map = {
+    new:"Yeni talep",
+    offered:"Teklif verildi",
+    interested:"Teklif verildi",
+    locked:"Fiyat kilitlendi",
+    used:"Kullanıldı",
+    expired:"Süresi doldu",
+    closed:"Başka teklif seçildi",
+    not_interested:"İlgilenmiyorum"
+  };
+  return map[state] || state || "-";
+}
+
+function getSupportOfferData(quoteId) {
+  let offer = null;
+  let lock = null;
+
+  try {
+    if (typeof institutionOfferMap !== "undefined") {
+      offer = institutionOfferMap.get(quoteId) || null;
+    }
+  } catch (_) {}
+
+  try {
+    if (typeof institutionLockMap !== "undefined") {
+      lock = institutionLockMap.get(quoteId) || null;
+    }
+  } catch (_) {}
+
+  return { offer, lock };
+}
+
+function getSupportReferencePayload(quoteId) {
+  const quote = quoteRecords.find(item => String(item.id) === String(quoteId));
+  if (!quote) return null;
+
+  const state = getSupportQuoteState(quote);
+  const { offer, lock } = getSupportOfferData(quote.id);
+
+  const institutionOwnsLock =
+    lock &&
+    currentAccount &&
+    String(lock.institutionId || "") === String(currentAccount.institutionId || "");
+
+  const selectedOffer = institutionOwnsLock ? lock : offer;
+
+  return {
+    relatedRequestId: quote.id,
+    relatedService: quote.service || "Teklif Talebi",
+    relatedLocation: [quote.city, quote.district].filter(Boolean).join(" / "),
+    relatedRequestDate: quote.date || "",
+    relatedOfferCode: selectedOffer?.offerCode || offer?.offerCode || "",
+    relatedOfferPrice: Number(selectedOffer?.price ?? offer?.price ?? 0) || 0,
+    relatedOfferStatus: state,
+    relatedOfferStatusLabel: getSupportQuoteStateLabel(state)
+  };
+}
+
+function renderSupportReferencePreview() {
+  const select = document.getElementById("supportReferenceSelect");
+  const preview = document.getElementById("supportReferencePreview");
+  if (!select || !preview) return;
+
+  const payload = getSupportReferencePayload(select.value);
+
+  if (!payload) {
+    preview.classList.add("hidden");
+    preview.innerHTML = "";
+    return;
+  }
+
+  preview.innerHTML = `
+    <div>
+      <span>Hizmet</span>
+      <strong>${escapeHtml(payload.relatedService)}</strong>
+    </div>
+    <div>
+      <span>Konum</span>
+      <strong>${escapeHtml(payload.relatedLocation || "-")}</strong>
+    </div>
+    <div>
+      <span>Durum</span>
+      <strong>${escapeHtml(payload.relatedOfferStatusLabel)}</strong>
+    </div>
+    <div>
+      <span>Teklif No</span>
+      <strong>${escapeHtml(payload.relatedOfferCode || "Henüz teklif no yok")}</strong>
+    </div>
+    <div>
+      <span>Fiyat</span>
+      <strong>${payload.relatedOfferPrice
+        ? new Intl.NumberFormat("tr-TR").format(payload.relatedOfferPrice) + " TL"
+        : "-"}</strong>
+    </div>
+  `;
+  preview.classList.remove("hidden");
+}
+
+function populateSupportQuoteReferences() {
+  const category = document.getElementById("supportCategory");
+  const wrap = document.getElementById("supportReferenceWrap");
+  const select = document.getElementById("supportReferenceSelect");
+  const preview = document.getElementById("supportReferencePreview");
+
+  if (!category || !wrap || !select) return;
+
+  const needsReference = supportNeedsQuoteReference(category.value);
+
+  wrap.classList.toggle("hidden", !needsReference);
+  select.required = needsReference;
+
+  if (!needsReference) {
+    select.value = "";
+    preview?.classList.add("hidden");
+    if (preview) preview.innerHTML = "";
+    return;
+  }
+
+  const currentValue = select.value;
+
+  const rows = [...quoteRecords]
+    .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  select.innerHTML =
+    '<option value="">Talep veya teklif seçin</option>' +
+    rows.map(quote => {
+      const state = getSupportQuoteState(quote);
+      const { offer, lock } = getSupportOfferData(quote.id);
+      const ownLock =
+        lock &&
+        currentAccount &&
+        String(lock.institutionId || "") === String(currentAccount.institutionId || "");
+      const code = (ownLock ? lock?.offerCode : offer?.offerCode) || "";
+      const location = [quote.city, quote.district].filter(Boolean).join(" / ");
+      const date = quote.date ? new Date(quote.date).toLocaleDateString("tr-TR") : "-";
+
+      const parts = [
+        quote.service || "Teklif Talebi",
+        location,
+        date,
+        getSupportQuoteStateLabel(state),
+        code ? "No: " + code : ""
+      ].filter(Boolean);
+
+      return '<option value="' + escapeHtml(quote.id) + '">' +
+        escapeHtml(parts.join(" · ")) +
+        '</option>';
+    }).join("");
+
+  if (rows.some(item => String(item.id) === String(currentValue))) {
+    select.value = currentValue;
+  }
+
+  if (!rows.length) {
+    select.innerHTML =
+      '<option value="">Bağlanabilecek talep/teklif bulunamadı</option>';
+  }
+
+  renderSupportReferencePreview();
+}
+
+document.getElementById("supportCategory")?.addEventListener("change", () => {
+  populateSupportQuoteReferences();
+});
+
+document.getElementById("supportReferenceSelect")?.addEventListener(
+  "change",
+  renderSupportReferencePreview
+);
+
 function getSupportStatusMeta(status) {
   const map = {
     new: ["Yeni", "new"],
@@ -839,6 +1030,23 @@ async function loadSupportTickets() {
             <span class="support-status support-status-${statusClass}">${statusText}</span>
           </div>
 
+          ${ticket.relatedRequestId ? `
+            <div class="support-linked-reference">
+              <div>
+                <span>BAĞLI TALEP / TEKLİF</span>
+                <strong>${escapeHtml(ticket.relatedService || "Teklif Talebi")}</strong>
+              </div>
+              <div class="support-linked-reference-grid">
+                <span>Talep No: <b>${escapeHtml(String(ticket.relatedRequestId).slice(0,10).toUpperCase())}</b></span>
+                <span>Teklif No: <b>${escapeHtml(ticket.relatedOfferCode || "-")}</b></span>
+                <span>Durum: <b>${escapeHtml(ticket.relatedOfferStatusLabel || getSupportQuoteStateLabel(ticket.relatedOfferStatus))}</b></span>
+                ${ticket.relatedOfferPrice
+                  ? `<span>Fiyat: <b>${new Intl.NumberFormat("tr-TR").format(Number(ticket.relatedOfferPrice))} TL</b></span>`
+                  : ""}
+              </div>
+            </div>
+          ` : ""}
+
           <p class="support-ticket-message">${escapeHtml(ticket.message || "")}</p>
 
           ${ticket.adminReply ? `
@@ -876,6 +1084,8 @@ document.getElementById("supportTicketForm")?.addEventListener("submit", async e
   const category = document.getElementById("supportCategory").value;
   const subject = document.getElementById("supportSubject").value.trim();
   const message = document.getElementById("supportMessage").value.trim();
+  const referenceSelect = document.getElementById("supportReferenceSelect");
+  const referenceId = referenceSelect?.value || "";
   const feedback = document.getElementById("supportFormMessage");
   const submit = document.getElementById("supportSubmitBtn");
 
@@ -883,6 +1093,16 @@ document.getElementById("supportTicketForm")?.addEventListener("submit", async e
     feedback.textContent = "Lütfen tüm alanları doldurun.";
     return;
   }
+
+  if (supportNeedsQuoteReference(category) && !referenceId) {
+    feedback.textContent = "Lütfen sorun yaşadığınız talep veya teklifi seçin.";
+    referenceSelect?.focus();
+    return;
+  }
+
+  const relatedReference = referenceId
+    ? getSupportReferencePayload(referenceId)
+    : null;
 
   submit.disabled = true;
   submit.textContent = "Gönderiliyor...";
@@ -899,6 +1119,7 @@ document.getElementById("supportTicketForm")?.addEventListener("submit", async e
       category,
       subject,
       message,
+      ...(relatedReference || {}),
       status: "new",
       date: now,
       updatedAt: now,
@@ -907,7 +1128,10 @@ document.getElementById("supportTicketForm")?.addEventListener("submit", async e
     });
 
     event.target.reset();
-    feedback.textContent = "Destek talebiniz oluşturuldu.";
+    populateSupportQuoteReferences();
+    feedback.textContent = relatedReference
+      ? "Destek talebiniz ilgili teklif kaydıyla birlikte oluşturuldu."
+      : "Destek talebiniz oluşturuldu.";
     await loadSupportTickets();
 
   } catch (error) {
@@ -1191,6 +1415,7 @@ auth.onAuthStateChanged(async user => {
       loadSupportTickets()
     ]);
 
+    populateSupportQuoteReferences();
     startLiveQuoteWatcher();
 
   } catch (error) {
