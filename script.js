@@ -1021,6 +1021,15 @@ function closeModal(id) {
 }
 document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.dataset.close));
 
+// data-close delegated handler
+document.addEventListener('click', event => {
+  const closeButton = event.target.closest('[data-close]');
+  if (!closeButton) return;
+  event.preventDefault();
+  event.stopPropagation();
+  closeModal(closeButton.dataset.close);
+});
+
 function normalizeQuoteTrackingPhone(raw) {
   let digits = String(raw || '').replace(/\D/g, '');
   if (digits.startsWith('90') && digits.length === 12) digits = digits.slice(2);
