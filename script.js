@@ -328,11 +328,46 @@ function closeModal(id) {
 }
 document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.dataset.close));
 
-document.getElementById('quoteForm').addEventListener('submit', e => {
+document.getElementById('quoteForm').addEventListener('submit', async e => {
   e.preventDefault();
-  closeModal('quoteModal');
-  showToast('Teklif talebiniz demo olarak kaydedildi.');
-  e.target.reset();
+
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const oldText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Gönderiliyor...';
+
+  const request = {
+    category: document.getElementById('quoteCategory').value,
+    service: document.getElementById('quoteService').value,
+    city: document.getElementById('quoteCity').value,
+    district: document.getElementById('quoteDistrict').value,
+    name: document.getElementById('quoteName').value.trim(),
+    phone: document.getElementById('quotePhone').value.trim(),
+    note: document.getElementById('quoteNote').value.trim(),
+    status: 'new',
+    date: new Date().toISOString()
+  };
+
+  try {
+    await db.collection('quoteRequests').add(request);
+
+    closeModal('quoteModal');
+    e.target.reset();
+    document.getElementById('quoteService').innerHTML =
+      '<option value="">Önce kategori seçin</option>';
+    document.getElementById('quoteService').disabled = true;
+    document.getElementById('quoteDistrict').innerHTML =
+      '<option value="">Önce şehir seçin</option>';
+    document.getElementById('quoteDistrict').disabled = true;
+
+    showToast('Teklif talebiniz alındı. Uygun kurumlarla eşleştirilecek.');
+  } catch (error) {
+    console.error('Teklif talebi kaydedilemedi:', error);
+    showToast('Teklif gönderilemedi. Lütfen tekrar deneyin.');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+  }
 });
 
 document.getElementById('reviewForm').addEventListener('submit', e => {
@@ -664,6 +699,124 @@ async function centerInstitutionMapFromAddress() {
     console.warn('Konum merkezlenemedi:', error);
   }
 }
+
+const quoteServices = {
+  surucu: [
+    'B Sınıfı Ehliyet',
+    'A1 / A2 Motosiklet Ehliyeti',
+    'C / D Sınıfı Ehliyet',
+    'Otomatik Vites Eğitimi',
+    'Diğer Sürücü Kursu Hizmeti'
+  ],
+  kres: [
+    'Kayıt ve Ücret Bilgisi',
+    'Erken Kayıt',
+    'Tam Gün Program',
+    'Yarım Gün Program',
+    'Diğer Kreş / Anaokulu Hizmeti'
+  ],
+  yurt: [
+    'Konaklama ve Ücret Bilgisi',
+    'Yeni Kayıt',
+    'Oda Seçenekleri',
+    'Servis / Yemek Bilgisi',
+    'Diğer Yurt Hizmeti'
+  ],
+  esnaf: [
+    'Fiyat Teklifi',
+    'Ürün / Hizmet Bilgisi',
+    'Randevu',
+    'Diğer'
+  ],
+  diger: [
+    'Fiyat Teklifi',
+    'Bilgi Talebi',
+    'Diğer'
+  ]
+};
+
+document.getElementById('quoteCategory').addEventListener('change', function () {
+  const serviceSelect = document.getElementById('quoteService');
+  const services = quoteServices[this.value] || [];
+
+  serviceSelect.innerHTML = services.length
+    ? '<option value="">Hizmet seçin</option>' +
+      services.map(service => `<option value="${service}">${service}</option>`).join('')
+    : '<option value="">Önce kategori seçin</option>';
+
+  serviceSelect.disabled = services.length === 0;
+});
+
+async function loadQuoteProvinces() {
+  const citySelect = document.getElementById('quoteCity');
+  const districtSelect = document.getElementById('quoteDistrict');
+
+  citySelect.innerHTML = '<option value="">Şehirler yükleniyor...</option>';
+
+  try {
+    const response = await fetch(
+      'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=81'
+    );
+
+    if (!response.ok) throw new Error('Şehir verisi alınamadı');
+
+    const result = await response.json();
+
+    citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+
+    result.data.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city.name;
+      option.textContent = city.name;
+      option.dataset.id = city.id;
+      citySelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Teklif şehirleri yüklenemedi:', error);
+    citySelect.innerHTML = '<option value="">Şehirler yüklenemedi</option>';
+  }
+
+  districtSelect.innerHTML = '<option value="">Önce şehir seçin</option>';
+  districtSelect.disabled = true;
+}
+
+document.getElementById('quoteCity').addEventListener('change', async function () {
+  const selectedOption = this.options[this.selectedIndex];
+  const provinceId = selectedOption.dataset.id;
+  const districtSelect = document.getElementById('quoteDistrict');
+
+  if (!provinceId) {
+    districtSelect.innerHTML = '<option value="">Önce şehir seçin</option>';
+    districtSelect.disabled = true;
+    return;
+  }
+
+  districtSelect.disabled = true;
+  districtSelect.innerHTML = '<option value="">İlçeler yükleniyor...</option>';
+
+  try {
+    const response = await fetch(
+      `https://api.turkiyeapi.dev/v2/provinces/${provinceId}/districts?fields=id,name&limit=100`
+    );
+
+    if (!response.ok) throw new Error('İlçe verisi alınamadı');
+
+    const result = await response.json();
+    districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+
+    result.data.forEach(district => {
+      const option = document.createElement('option');
+      option.value = district.name;
+      option.textContent = district.name;
+      districtSelect.appendChild(option);
+    });
+
+    districtSelect.disabled = false;
+  } catch (error) {
+    console.error('Teklif ilçeleri yüklenemedi:', error);
+    districtSelect.innerHTML = '<option value="">İlçeler yüklenemedi</option>';
+  }
+});
 
 async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
