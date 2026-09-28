@@ -17,6 +17,10 @@ const submitBtn=document.getElementById("trackingSubmitBtn");
 const message=document.getElementById("trackingMessage");
 const results=document.getElementById("trackingResults");
 let currentAccess=null;
+let stopOffersListener=null;
+let stopLockListener=null;
+let liveOffers=[];
+let liveLock=null;
 
 function safe(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -85,6 +89,63 @@ async function loadBundle(access){
   };
 }
 
+function stopLiveTracking(){
+  if(typeof stopOffersListener==="function") stopOffersListener();
+  if(typeof stopLockListener==="function") stopLockListener();
+  stopOffersListener=null;
+  stopLockListener=null;
+}
+
+function renderLiveTracking(){
+  if(!currentAccess)return;
+  render({
+    access:currentAccess,
+    offers:liveOffers,
+    lock:liveLock
+  });
+}
+
+function startLiveTracking(access){
+  stopLiveTracking();
+
+  const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
+
+  stopOffersListener=quoteRef.collection("offers").onSnapshot(
+    snapshot=>{
+      liveOffers=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+      renderLiveTracking();
+    },
+    error=>{
+      console.error("Teklifler canlı izlenemedi:",error);
+      toast("Teklifler güncellenemedi.");
+    }
+  );
+
+  stopLockListener=quoteRef.collection("locks").doc("main").onSnapshot(
+    snapshot=>{
+      liveLock=snapshot.exists?snapshot.data():null;
+      renderLiveTracking();
+    },
+    error=>{
+      console.error("Fiyat kilidi canlı izlenemedi:",error);
+    }
+  );
+}
+
+async function refreshTracking(){
+  if(!currentAccess)return;
+  try{
+    const bundle=await loadBundle(currentAccess);
+    liveOffers=bundle.offers;
+    liveLock=bundle.lock;
+    renderLiveTracking();
+    toast("Teklifler güncellendi.");
+  }catch(error){
+    console.error(error);
+    toast("Teklifler yenilenemedi.");
+  }
+}
+
 function lockedHtml(bundle){
   const lock=bundle.lock;
   const state=lockState(lock);
@@ -135,6 +196,7 @@ function render(bundle){
         <span class="status">${safe(access.trackingCode)}</span>
       </div>
       <div class="tracking-actions">
+        <button class="secondary" id="refreshTrackingBtn">↻ Teklifleri Yenile</button>
         <button class="secondary" id="copyTrackingCodeBtn">Takip Kodunu Kopyala</button>
         <a class="secondary" href="index.html">Yeni Talep Oluştur</a>
       </div>
@@ -142,6 +204,9 @@ function render(bundle){
 
     ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
+
+  const refreshBtn=document.getElementById("refreshTrackingBtn");
+  if(refreshBtn)refreshBtn.onclick=refreshTracking;
 
   const copyBtn=document.getElementById("copyTrackingCodeBtn");
   if(copyBtn)copyBtn.onclick=async()=>{await navigator.clipboard.writeText(access.trackingCode);toast("Takip kodu kopyalandı.");};
@@ -189,7 +254,7 @@ async function lockOffer(quoteId,institutionId,button){
     });
 
     toast("Fiyat kilitlendi.");
-    render(await loadBundle(currentAccess));
+    await refreshTracking();
   }catch(error){
     console.error(error);toast(error.message||"Teklif kilitlenemedi.");
   }finally{
@@ -240,7 +305,13 @@ form.addEventListener("submit",async e=>{
     currentAccess=await verifyAccess(code,phone);
     sessionStorage.setItem("dijiyerTrackingCode",code);
     sessionStorage.setItem("dijiyerTrackingPhone",normalizePhone(phone));
-    render(await loadBundle(currentAccess));
+
+    const initialBundle=await loadBundle(currentAccess);
+    liveOffers=initialBundle.offers;
+    liveLock=initialBundle.lock;
+    renderLiveTracking();
+    startLiveTracking(currentAccess);
+
     document.getElementById("trackingLoginCard").classList.add("hidden");
   }catch(error){
     console.error(error);
