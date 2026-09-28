@@ -1567,3 +1567,105 @@ button{cursor:pointer}
     max-width:84%;
   }
 }
+
+
+/* WhatsApp koyu sohbet - final */
+.institution-chat-shell{
+  background:#0b141a!important;
+}
+.institution-chat-header{
+  background:#202c33!important;
+  color:#f1f4f5!important;
+  border-bottom:1px solid #2a3942!important;
+}
+.institution-chat-title strong{color:#f1f4f5!important}
+.institution-chat-title span{color:#aebac1!important}
+.institution-chat-back{color:#d9fdd3!important}
+.institution-chat-avatar{
+  background:#2a3942!important;
+  color:#d9fdd3!important;
+}
+.institution-chat-messages{
+  background-color:#0b141a!important;
+  background-image:
+    radial-gradient(circle at 12px 12px,rgba(255,255,255,.035) 1px,transparent 1.5px),
+    radial-gradient(circle at 31px 27px,rgba(255,255,255,.025) 1px,transparent 1.5px)!important;
+  background-size:44px 44px,52px 52px!important;
+  padding:14px 12px!important;
+  gap:5px!important;
+}
+.firm-message-row{
+  display:flex!important;
+  width:100%!important;
+}
+.firm-message-row.mine{justify-content:flex-end!important}
+.firm-message-row.theirs{justify-content:flex-start!important}
+.institution-chat-messages .firm-message{
+  display:block!important;
+  width:auto!important;
+  max-width:min(78%,520px)!important;
+  padding:7px 9px 5px!important;
+  border:0!important;
+  border-radius:8px!important;
+  box-shadow:0 1px 1px rgba(0,0,0,.35)!important;
+  color:#e9edef!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+}
+.institution-chat-messages .firm-message.mine{
+  align-self:auto!important;
+  background:#005c4b!important;
+  border-bottom-right-radius:2px!important;
+}
+.institution-chat-messages .firm-message.customer{
+  align-self:auto!important;
+  background:#202c33!important;
+  border-bottom-left-radius:2px!important;
+}
+.firm-message-text{
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+}
+.firm-message-meta{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  min-width:42px;
+  margin-top:2px!important;
+  color:#aebac1!important;
+  font-size:10px!important;
+  line-height:1!important;
+}
+.firm-message-check{
+  color:#53bdeb!important;
+  font-size:11px!important;
+  letter-spacing:-2px;
+  margin-right:2px;
+}
+.institution-chat-compose{
+  background:#202c33!important;
+  border-top:1px solid #2a3942!important;
+  padding:8px 10px!important;
+}
+.institution-chat-compose textarea{
+  background:#2a3942!important;
+  color:#e9edef!important;
+  border:0!important;
+  border-radius:22px!important;
+  padding:11px 14px!important;
+}
+.institution-chat-compose textarea::placeholder{color:#8696a0!important}
+.institution-chat-send{
+  background:#00a884!important;
+  color:#fff!important;
+}
+.institution-chat-messages .firm-message.revision_request,
+.institution-chat-messages .firm-message.revision_response{
+  outline:0!important;
+}
+@media(max-width:640px){
+  .institution-chat-messages .firm-message{
+    max-width:84%!important;
+  }
+}
