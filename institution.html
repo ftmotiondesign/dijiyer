@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=15">
+  <link rel="stylesheet" href="institution.css?v=16">
   <link rel="stylesheet" href="institution-announcements.css?v=1">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -72,7 +72,111 @@
       <button type="button" class="live-quote-alert-close" id="liveMessageAlertClose" aria-label="Kapat">×</button>
     </div>
 
-    <nav class="panel-tabs primary-panel-tabs">
+    <div class="institution-dashboard-layout">
+      <aside class="institution-side-nav" aria-label="Kurum paneli menüsü">
+        <div class="side-nav-head">
+          <span>HIZLI ERİŞİM</span>
+          <strong>Kurum Paneli</strong>
+        </div>
+
+        <div class="side-nav-group">
+          <span class="side-nav-group-title">İŞİM</span>
+
+          <button type="button" class="side-nav-item active" data-panel-tab="summary">
+            <span class="side-nav-icon">⌂</span>
+            <span class="side-nav-copy">
+              <strong>Özet</strong>
+              <small>Bugünkü durum</small>
+            </span>
+          </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="quotes">
+            <span class="side-nav-icon">🔔</span>
+            <span class="side-nav-copy">
+              <strong>Teklifler</strong>
+              <small>Gelen talepler ve mesajlar</small>
+            </span>
+            <span class="side-nav-badge" data-mirror-count="quoteTabCount">0</span>
+          </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="verify">
+            <span class="side-nav-icon">✓</span>
+            <span class="side-nav-copy">
+              <strong>Teklif Doğrula</strong>
+              <small>Müşteri teklif kodu</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="side-nav-group">
+          <span class="side-nav-group-title">KURUMUM</span>
+
+          <button type="button" class="side-nav-item" data-panel-tab="profile">
+            <span class="side-nav-icon">✎</span>
+            <span class="side-nav-copy">
+              <strong>Kurum Bilgileri</strong>
+              <small>Profil ve iletişim</small>
+            </span>
+          </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="stats">
+            <span class="side-nav-icon">▥</span>
+            <span class="side-nav-copy">
+              <strong>İstatistikler</strong>
+              <small>Performans ve ziyaretler</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="side-nav-group">
+          <span class="side-nav-group-title">YARDIM & HESAP</span>
+
+          <button type="button" class="side-nav-item" data-panel-tab="announcements">
+            <span class="side-nav-icon">📣</span>
+            <span class="side-nav-copy">
+              <strong>Duyurular</strong>
+              <small>Dijiyer bildirimleri</small>
+            </span>
+            <span class="side-nav-badge" data-mirror-count="announcementTabCount">0</span>
+          </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="support">
+            <span class="side-nav-icon">?</span>
+            <span class="side-nav-copy">
+              <strong>Destek</strong>
+              <small>Yardım talebi oluştur</small>
+            </span>
+            <span class="side-nav-badge" data-mirror-count="supportTabCount">0</span>
+          </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="account">
+            <span class="side-nav-icon">⚙</span>
+            <span class="side-nav-copy">
+              <strong>Hesap</strong>
+              <small>E-posta ve şifre</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="side-nav-footer">
+          <span>Teklif Alımı</span>
+          <strong id="sideOfferStatus">Durum yükleniyor...</strong>
+        </div>
+      </aside>
+
+      <div class="institution-dashboard-main">
+        <div class="panel-current-heading">
+          <div>
+            <span id="panelCurrentEyebrow">İŞİM</span>
+            <h2 id="panelCurrentTitle">Özet</h2>
+            <p id="panelCurrentDescription">Bugünkü teklif ve kurum durumunu tek ekranda görün.</p>
+          </div>
+          <button type="button" class="panel-heading-action" id="panelHeadingQuickAction">
+            Yeni Teklifleri Gör
+          </button>
+        </div>
+
+        <nav class="panel-tabs primary-panel-tabs legacy-panel-tabs">
       <button class="panel-tab active" data-panel-tab="summary">📌 Özet</button>
       <button class="panel-tab" data-panel-tab="quotes">
         🔔 Teklifler <span class="tab-count" id="quoteTabCount">0</span>
@@ -545,13 +649,53 @@
       </div>
     </section>
 
+      </div>
+    </div>
+
     <section id="panelError" class="panel-error" hidden></section>
   </main>
+
+  <div class="institution-mobile-menu hidden" id="institutionMobileMenu">
+    <div class="institution-mobile-menu-card">
+      <div class="mobile-menu-head">
+        <div>
+          <strong>Diğer Bölümler</strong>
+          <small>Kurum panelinde hızlı erişim</small>
+        </div>
+        <button type="button" id="closeInstitutionMobileMenu">×</button>
+      </div>
+
+      <div class="mobile-menu-grid">
+        <button type="button" data-panel-tab="profile">✎ <span>Kurum Bilgileri</span></button>
+        <button type="button" data-panel-tab="stats">▥ <span>İstatistikler</span></button>
+        <button type="button" data-panel-tab="announcements">📣 <span>Duyurular</span></button>
+        <button type="button" data-panel-tab="support">? <span>Destek</span></button>
+        <button type="button" data-panel-tab="account">⚙ <span>Hesap</span></button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="institution-mobile-bottom-nav" aria-label="Mobil kurum menüsü">
+    <button type="button" class="active" data-panel-tab="summary">
+      <span>⌂</span><strong>Özet</strong>
+    </button>
+    <button type="button" data-panel-tab="quotes">
+      <span class="mobile-nav-icon-wrap">🔔<i data-mirror-count="quoteTabCount">0</i></span>
+      <strong>Teklifler</strong>
+    </button>
+    <button type="button" data-panel-tab="verify">
+      <span>✓</span><strong>Doğrula</strong>
+    </button>
+    <button type="button" id="openInstitutionMobileMenu">
+      <span>☰</span><strong>Menü</strong>
+    </button>
+  </nav>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="institution.js?v=10"></script>
+  <script src="institution-layout.js?v=1"></script>
   <script src="institution-offers.js?v=9"></script>
   <script src="institution-communication.js?v=10"></script>
   <script src="institution-announcements.js?v=2"></script>
