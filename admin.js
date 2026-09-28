@@ -721,6 +721,69 @@ function renderQuoteRequests() {
       normalizeText(inst.city) === requestCity
     ).length;
 
+    const categoryLabels = {
+      surucu: "Sürücü Kursu",
+      kres: "Kreş & Anaokulu",
+      yurt: "Öğrenci Yurdu",
+      esnaf: "Yerel Esnaf",
+      diger: "Diğer"
+    };
+
+    const sameCityAll = institutionRecords.filter(inst =>
+      normalizeText(inst.city) === requestCity
+    );
+
+    const sameCategoryAll = institutionRecords.filter(inst =>
+      normalizeCategory(inst.category) === requestCategory
+    );
+
+    const diagnosticMap = new Map();
+
+    [...sameCityAll, ...sameCategoryAll].forEach(inst => {
+      if (diagnosticMap.has(inst.id)) return;
+
+      const sameCity = normalizeText(inst.city) === requestCity;
+      const sameCategory = normalizeCategory(inst.category) === requestCategory;
+      let reason = "";
+
+      if (sameCity && sameCategory && inst.offer === false) {
+        reason = "Teklif alımı kapalı";
+      } else if (sameCity && !sameCategory) {
+        reason = "Kategori farklı: " +
+          (categoryLabels[normalizeCategory(inst.category)] || inst.category || "Belirsiz");
+      } else if (!sameCity && sameCategory) {
+        reason = "Şehir farklı: " +
+          ([inst.city, inst.district].filter(Boolean).join(" / ") || "Belirsiz");
+      } else {
+        reason = "Bilgiler eşleşmiyor";
+      }
+
+      diagnosticMap.set(inst.id, { ...inst, diagnosticReason: reason });
+    });
+
+    const diagnosticInstitutions = [...diagnosticMap.values()].slice(0, 8);
+
+    const diagnosticHtml = !matching.length && diagnosticInstitutions.length
+      ? `
+        <div class="match-diagnostics">
+          <div class="diagnostic-title">Neden eşleşmedi?</div>
+          ${diagnosticInstitutions.map(inst => `
+            <div class="diagnostic-row">
+              <div>
+                <strong>${escapeHtml(inst.name || "Kurum")}</strong>
+                <span>${escapeHtml(inst.diagnosticReason)}</span>
+              </div>
+              <button
+                type="button"
+                class="diagnostic-edit-btn"
+                data-institution-id="${inst.id}"
+              >Düzenle</button>
+            </div>
+          `).join("")}
+        </div>
+      `
+      : "";
+
     const statusLabels = {
       new: "Yeni",
       sent: "İletildi",
@@ -779,6 +842,7 @@ function renderQuoteRequests() {
               : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu kategoride toplam ${categoryMatches.length} kurum var`}
         </div>
         <div class="matching-buttons">${institutionButtons}</div>
+        ${diagnosticHtml}
       </div>
 
       <div class="quote-actions">
@@ -792,6 +856,25 @@ function renderQuoteRequests() {
         <button class="quote-delete-btn">Sil</button>
       </div>
     `;
+
+    card.querySelectorAll(".diagnostic-edit-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        const institution = institutionRecords.find(
+          item => String(item.id) === String(button.dataset.institutionId)
+        );
+
+        if (!institution) return;
+
+        applicationsSection.hidden = true;
+        quotesSection.hidden = true;
+        institutionsSection.hidden = false;
+        applicationsTabBtn.classList.remove("active");
+        quotesTabBtn.classList.remove("active");
+        institutionsTabBtn.classList.add("active");
+
+        openInstitutionEdit(institution.id, institution);
+      });
+    });
 
     card.querySelectorAll(".matched-institution-btn").forEach(button => {
       button.addEventListener("click", () => {
