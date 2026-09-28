@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=1">
+  <link rel="stylesheet" href="institution.css?v=2">
 </head>
 <body>
   <header class="panel-header">
-    <a class="panel-brand" href="index.html">Dijiyer</a>
+    <a class="panel-brand" href="index.html">
+      <span class="brand-mark">D</span>
+      <span>Dijiyer</span>
+    </a>
+
     <div class="panel-actions">
       <a href="index.html">Ana Sayfa</a>
       <button id="institutionLogoutBtn">Çıkış Yap</button>
@@ -18,28 +22,160 @@
   <main class="panel-shell">
     <section class="welcome-card">
       <div>
-        <div class="eyebrow">KURUM PANELİ</div>
+        <div class="eyebrow">KURUM YÖNETİM PANELİ</div>
         <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
         <p id="panelInstitutionLocation"></p>
       </div>
-      <span class="approved-badge">✓ Onaylı Hesap</span>
+
+      <div class="welcome-badges">
+        <span class="approved-badge">✓ Onaylı Hesap</span>
+        <span class="offer-badge" id="panelOfferBadge">Teklif durumu yükleniyor</span>
+      </div>
     </section>
 
-    <section class="panel-grid">
-      <article class="panel-card">
-        <h2>Kurum Bilgileri</h2>
-        <div class="info-row"><span>E-posta</span><strong id="panelEmail">-</strong></div>
-        <div class="info-row"><span>Telefon</span><strong id="panelPhone">-</strong></div>
-        <div class="info-row"><span>Adres</span><strong id="panelAddress">-</strong></div>
-      </article>
+    <nav class="panel-tabs">
+      <button class="panel-tab active" data-panel-tab="summary">Özet</button>
+      <button class="panel-tab" data-panel-tab="quotes">
+        Teklifler <span class="tab-count" id="quoteTabCount">0</span>
+      </button>
+      <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
+      <button class="panel-tab" data-panel-tab="account">Hesap</button>
+    </nav>
 
+    <section class="panel-view active" data-panel-view="summary">
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Yeni Teklif</span>
+          <strong id="newQuoteCount">0</strong>
+          <small>Henüz işlem yapmadığınız talepler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Toplam Uygun Talep</span>
+          <strong id="totalQuoteCount">0</strong>
+          <small>Kategori ve şehrinizle eşleşen talepler</small>
+        </article>
+
+        <article class="stat-card">
+          <span>Teklif Alımı</span>
+          <strong id="offerStatusText">-</strong>
+          <small>Kurumunuzun teklif kabul durumu</small>
+        </article>
+      </div>
+
+      <div class="panel-grid">
+        <article class="panel-card">
+          <div class="card-head">
+            <h2>Son Teklifler</h2>
+            <button class="text-btn" id="goQuotesBtn">Tümünü Gör</button>
+          </div>
+          <div id="recentQuotes" class="quote-list"></div>
+        </article>
+
+        <article class="panel-card">
+          <h2>Hızlı İşlemler</h2>
+          <div class="quick-grid">
+            <button class="quick-card" id="goProfileBtn">
+              <strong>✏️ Bilgileri Düzenle</strong>
+              <span>Telefon, adres, web sitesi</span>
+            </button>
+
+            <button class="quick-card" id="toggleOfferBtn">
+              <strong id="toggleOfferTitle">🏷️ Teklif Alımını Değiştir</strong>
+              <span id="toggleOfferHelp">Durum yükleniyor...</span>
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel-view" data-panel-view="quotes">
       <article class="panel-card">
-        <h2>Teklifler</h2>
-        <div class="empty-box">
-          <strong>Teklif ekranı hazır olmak üzere.</strong>
-          <p>Bir sonraki adımda sadece kurumunuza uygun teklifleri burada göstereceğiz.</p>
+        <div class="card-head quote-head">
+          <div>
+            <h2>Uygun Teklif Talepleri</h2>
+            <p>Kurumunuzun kategorisi ve şehriyle eşleşen talepler gösterilir.</p>
+          </div>
+          <select id="quotePanelFilter">
+            <option value="">Tümü</option>
+            <option value="new">Yeni</option>
+            <option value="interested">İlgileniyorum</option>
+            <option value="not_interested">İlgilenmiyorum</option>
+          </select>
         </div>
+
+        <div id="institutionQuotesList" class="quote-list"></div>
       </article>
+    </section>
+
+    <section class="panel-view" data-panel-view="profile">
+      <article class="panel-card profile-card">
+        <div class="card-head">
+          <div>
+            <h2>Kurum Bilgileri</h2>
+            <p>Buradaki bilgiler Dijiyer'deki kurum profilinizde kullanılır.</p>
+          </div>
+        </div>
+
+        <form id="institutionProfileForm" class="profile-form">
+          <label>Kurum Adı
+            <input id="profileName" type="text" required>
+          </label>
+
+          <div class="form-grid">
+            <label>Telefon / WhatsApp
+              <input id="profilePhone" type="text">
+            </label>
+
+            <label>Web / Instagram
+              <input id="profileWebsite" type="text">
+            </label>
+          </div>
+
+          <label>Adres
+            <textarea id="profileAddress" rows="3"></textarea>
+          </label>
+
+          <div class="readonly-grid">
+            <div>
+              <span>Şehir / İlçe</span>
+              <strong id="profileLocation">-</strong>
+            </div>
+            <div>
+              <span>Kategori</span>
+              <strong id="profileCategory">-</strong>
+            </div>
+          </div>
+
+          <label class="switch-row">
+            <span>
+              <strong>Teklif alımını açık tut</strong>
+              <small>Kapalı olduğunda yeni taleplerde eşleşmezsiniz.</small>
+            </span>
+            <input id="profileOffer" type="checkbox">
+          </label>
+
+          <button class="primary-btn" type="submit">Değişiklikleri Kaydet</button>
+          <p class="form-message" id="profileMessage"></p>
+        </form>
+      </article>
+    </section>
+
+    <section class="panel-view" data-panel-view="account">
+      <div class="panel-grid">
+        <article class="panel-card">
+          <h2>Hesap Bilgileri</h2>
+          <div class="info-row"><span>E-posta</span><strong id="panelEmail">-</strong></div>
+          <div class="info-row"><span>Hesap Durumu</span><strong>Onaylı</strong></div>
+        </article>
+
+        <article class="panel-card">
+          <h2>Şifre İşlemleri</h2>
+          <p class="muted">Şifrenizi değiştirmek için e-posta adresinize yenileme bağlantısı gönderebilirsiniz.</p>
+          <button class="secondary-btn" id="sendPasswordResetBtn">Şifre Yenileme Bağlantısı Gönder</button>
+          <p class="form-message" id="accountMessage"></p>
+        </article>
+      </div>
     </section>
 
     <section id="panelError" class="panel-error" hidden></section>
@@ -48,6 +184,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=1"></script>
+  <script src="institution.js?v=2"></script>
 </body>
 </html>
