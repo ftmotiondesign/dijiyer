@@ -48,6 +48,14 @@ function toast(text){
   setTimeout(()=>el.classList.remove("show"),2400);
 }
 function normalizeCode(v){return String(v||"").trim().toUpperCase();}
+
+function currentTrackingUrl(access){
+  const url=new URL("teklif.html",location.href);
+  url.search="";
+  url.searchParams.set("v","5");
+  url.searchParams.set("kod",access.trackingCode);
+  return url.toString();
+}
 function lockState(lock){
   if(!lock)return null;
   if(lock.status==="used")return "used";
@@ -198,6 +206,8 @@ function render(bundle){
       </div>
       <div class="tracking-actions">
         <button class="secondary" id="refreshTrackingBtn">↻ Teklifleri Yenile</button>
+        <button class="secondary" id="copyTrackingLinkBtn">🔗 Talep Linkini Kopyala</button>
+        <button class="secondary" id="shareTrackingWhatsappBtn">WhatsApp'tan Paylaş</button>
         <button class="secondary" id="copyTrackingCodeBtn">Takip Kodunu Kopyala</button>
         <a class="secondary" href="index.html">Yeni Talep Oluştur</a>
       </div>
@@ -208,6 +218,27 @@ function render(bundle){
 
   const refreshBtn=document.getElementById("refreshTrackingBtn");
   if(refreshBtn)refreshBtn.onclick=refreshTracking;
+
+  const copyLinkBtn=document.getElementById("copyTrackingLinkBtn");
+  if(copyLinkBtn)copyLinkBtn.onclick=async()=>{
+    const url=currentTrackingUrl(access);
+    try{
+      await navigator.clipboard.writeText(url);
+      toast("Bu talebin linki kopyalandı.");
+    }catch(error){
+      console.error(error);
+      toast("Link kopyalanamadı.");
+    }
+  };
+
+  const shareWhatsappBtn=document.getElementById("shareTrackingWhatsappBtn");
+  if(shareWhatsappBtn)shareWhatsappBtn.onclick=()=>{
+    const url=currentTrackingUrl(access);
+    const message=encodeURIComponent(
+      "Dijiyer teklif talebim\n\nTakip Kodu: "+access.trackingCode+"\n"+url
+    );
+    window.open("https://wa.me/?text="+message,"_blank","noopener");
+  };
 
   const copyBtn=document.getElementById("copyTrackingCodeBtn");
   if(copyBtn)copyBtn.onclick=async()=>{await navigator.clipboard.writeText(access.trackingCode);toast("Takip kodu kopyalandı.");};
