@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rota Rehberi - Demo</title>
+  <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-pin">●</div>
+      <div>
+        <div class="brand-title">Rota Rehberi</div>
+        <div class="brand-sub">Eğitim ve Hizmet Noktaları</div>
+      </div>
+    </div>
+
+    <div class="searchbar">
+      <span>⌕</span>
+      <input id="searchInput" type="search" placeholder="Sürücü kursu, kreş, yurt veya hizmet ara..." />
+    </div>
+
+    <button class="location-btn" id="locationBtn">📍 Çanakkale, Merkez ▾</button>
+    <button class="btn btn-primary" id="addInstitutionBtn">+ Kurum Ekle</button>
+    <button class="btn btn-light">👤 Giriş</button>
+  </header>
+
+  <main class="app-layout">
+    <aside class="sidebar">
+      <div class="panel-title">☰ Filtreler</div>
+
+      <section class="filter-section">
+        <h3>Kategori</h3>
+        <label><input type="checkbox" class="categoryFilter" value="surucu" checked> 🚗 Sürücü Kursları <span>12</span></label>
+        <label><input type="checkbox" class="categoryFilter" value="kres"> 🧸 Kreş & Anaokulu <span>8</span></label>
+        <label><input type="checkbox" class="categoryFilter" value="yurt"> 🏢 Öğrenci Yurtları <span>6</span></label>
+        <label><input type="checkbox" class="categoryFilter" value="esnaf"> 🏪 Yerel Esnaf <span>20</span></label>
+      </section>
+
+      <section class="filter-section">
+        <h3>Diğer Seçenekler</h3>
+        <label><input type="checkbox" id="videoOnly"> 🎥 Sadece Videolu</label>
+        <label><input type="checkbox" id="offerOnly"> 🏷️ Teklif Verenler</label>
+      </section>
+
+      <div class="sidebar-note">
+        <strong>V1 Demo</strong>
+        <p>Bu sürüm GitHub Pages üzerinde ücretsiz çalışacak statik prototiptir.</p>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <div class="map-card">
+        <div class="map-tabs">
+          <button class="active">Harita</button>
+          <button disabled>Uydu</button>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <div class="content-grid">
+        <section class="list-panel">
+          <div class="section-head">
+            <div>
+              <h2>Kurum Listesi</h2>
+              <small id="resultCount">3 sonuç</small>
+            </div>
+            <select id="sortSelect">
+              <option value="recommended">Önerilen</option>
+              <option value="rating">Puana göre</option>
+              <option value="distance">Mesafeye göre</option>
+            </select>
+          </div>
+          <div id="institutionList" class="institution-list"></div>
+        </section>
+
+        <section class="detail-panel" id="detailPanel">
+          <!-- JS ile doldurulur -->
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="quoteModal">
+    <div class="modal-card">
+      <button class="modal-close" data-close="quoteModal">×</button>
+      <h2>Hızlı Teklif Talebi</h2>
+      <p>Tek talebinizi birden fazla uygun kuruma gönderebilirsiniz.</p>
+      <form id="quoteForm">
+        <label>Aradığınız hizmet
+          <select required>
+            <option value="">Seçiniz</option>
+            <option>B Sınıfı Ehliyet</option>
+            <option>A1 / A2 Motosiklet Ehliyeti</option>
+            <option>Kreş / Anaokulu</option>
+            <option>Öğrenci Yurdu</option>
+            <option>Diğer</option>
+          </select>
+        </label>
+        <label>Ad Soyad<input required type="text" /></label>
+        <label>Telefon<input required type="tel" placeholder="05xx xxx xx xx" /></label>
+        <label>Not<textarea rows="3" placeholder="Örn. otomatik vites, hafta sonu ders..."></textarea></label>
+        <button class="btn btn-primary full" type="submit">Uygun Kurumlara Teklif Gönder</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="reviewModal">
+    <div class="modal-card">
+      <button class="modal-close" data-close="reviewModal">×</button>
+      <h2>Yorum Yap / Puan Ver</h2>
+      <form id="reviewForm">
+        <div class="stars-input" id="starsInput">
+          <button type="button" data-star="1">☆</button>
+          <button type="button" data-star="2">☆</button>
+          <button type="button" data-star="3">☆</button>
+          <button type="button" data-star="4">☆</button>
+          <button type="button" data-star="5">☆</button>
+        </div>
+        <input type="hidden" id="ratingValue" value="0">
+        <label>Yorum<textarea required rows="4" placeholder="Deneyiminizi kısaca paylaşın..."></textarea></label>
+        <button class="btn btn-primary full" type="submit">Yorumu Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
