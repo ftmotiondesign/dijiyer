@@ -1,0 +1,65 @@
+/* Garantili Teklif Sistemi */
+.my-offers-btn{position:relative;white-space:nowrap}
+.my-offers-count{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#eaf2ff;color:#1769ff;display:inline-grid;place-items:center;font-size:11px;font-weight:900}
+.my-offers-card{width:min(760px,94vw);max-height:88vh;overflow:auto}
+.offer-center-note{padding:22px;border:1px dashed #cbd5e1;border-radius:14px;text-align:center;color:#68758a;background:#f8fafc}
+.customer-request-card{border:1px solid #e3e9f1;border-radius:16px;padding:16px;margin:14px 0;background:#fff}
+.customer-request-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.customer-request-head h3{margin:0 0 4px;font-size:17px}
+.customer-request-head small{color:#64748b}
+.customer-offers-grid{display:grid;gap:11px}
+.customer-offer-card{border:1px solid #e3e9f1;border-radius:14px;padding:14px;background:#fff}
+.customer-offer-card.locked{border-color:#86efac;background:linear-gradient(180deg,#f0fdf4,#fff)}
+.customer-offer-card.closed{opacity:.72;background:#f8fafc}
+.customer-offer-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.customer-offer-name{font-weight:900;color:#172033}
+.customer-offer-price{font-size:24px;font-weight:900;color:#15803d;margin:8px 0 3px}
+.offer-mini{font-size:12px;color:#64748b;line-height:1.45}
+.offer-scope{margin-top:9px;padding:10px 11px;border-radius:10px;background:#f8fafc;font-size:13px;line-height:1.45}
+.offer-status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.offer-status-pill.offered{background:#eff6ff;color:#1d4ed8}
+.offer-status-pill.locked,.offer-status-pill.used{background:#ecfdf5;color:#15803d}
+.offer-status-pill.expired{background:#fff1f2;color:#be123c}
+.offer-status-pill.closed{background:#f1f5f9;color:#64748b}
+.customer-offer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.customer-offer-actions button{border:0;border-radius:9px;padding:10px 12px;font-weight:800}
+.offer-lock-btn{background:#1769ff;color:#fff}
+.offer-report-btn{background:#fff1f2;color:#be123c;border:1px solid #fecdd3!important}
+.lock-ticket{text-align:center;padding:16px;border-radius:14px;background:#ecfdf5;margin-top:12px}
+.lock-ticket .ticket-code{font-weight:900;color:#166534;letter-spacing:.04em}
+.lock-ticket .ticket-price{font-size:30px;font-weight:900;color:#15803d;margin:6px 0}
+.lock-ticket .offer-qr-box{width:196px;min-height:196px;display:grid;place-items:center;margin:12px auto;background:#fff;padding:8px;border-radius:10px}.lock-ticket .offer-qr-box img,.lock-ticket .offer-qr-box canvas{display:block;max-width:180px;height:auto}
+.lock-ticket .countdown-line{font-size:12px;color:#475569;font-weight:700}
+.offer-trust-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.offer-trust-item{padding:9px;border-radius:10px;background:#f8fafc;text-align:center;font-size:11px;font-weight:800;color:#475569}
+.offer-form{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px;padding:13px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0}
+.offer-form .full{grid-column:1/-1}
+.offer-form label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#475569}
+.offer-form input,.offer-form select,.offer-form textarea,.verify-offer-form input{width:100%;border:1px solid #d8e0ea;border-radius:9px;background:#fff;padding:10px 11px;outline:none}
+.offer-form textarea{min-height:74px;resize:vertical}
+.offer-form button{border:0;border-radius:9px;padding:11px 13px;font-weight:900}
+.send-real-offer-btn{background:#1769ff;color:#fff}
+.offer-summary-box{margin-top:12px;border:1px solid #dbeafe;background:#f8fbff;border-radius:12px;padding:12px}
+.offer-summary-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.offer-summary-price{font-size:23px;font-weight:900;color:#15803d}
+.offer-summary-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.offer-summary-actions button{border:1px solid #d8e0ea;background:#fff;border-radius:8px;padding:8px 10px;font-weight:800}
+.offer-lock-notice{margin-top:11px;padding:11px;border-radius:10px;background:#ecfdf5;color:#166534;font-size:12px;font-weight:800}
+.verify-offer-form{display:flex;gap:8px}
+.verify-offer-form button{border:0;border-radius:9px;padding:10px 14px;background:#1769ff;color:#fff;font-weight:900}
+.verify-result-card{margin-top:15px;border:1px solid #e2e8f0;border-radius:14px;padding:16px}
+.verify-result-card.valid{border-color:#86efac;background:#f0fdf4}
+.verify-result-card.invalid{border-color:#fecdd3;background:#fff1f2}
+.verify-result-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:12px}
+.verify-data{display:grid;gap:0}
+.verify-data div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid rgba(148,163,184,.22);font-size:13px}
+.verify-data span{color:#64748b}.verify-data strong{text-align:right}
+.mark-used-btn{width:100%;margin-top:12px;border:0;border-radius:9px;padding:11px;background:#15803d;color:#fff;font-weight:900}
+@media(max-width:900px){.offer-trust-strip{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .my-offers-btn{padding:9px 10px!important}
+  .customer-request-head,.customer-offer-head,.offer-summary-top{flex-direction:column}
+  .offer-form{grid-template-columns:1fr}.offer-form .full{grid-column:auto}
+  .verify-offer-form{flex-direction:column}
+  .offer-trust-strip{grid-template-columns:1fr}
+}
