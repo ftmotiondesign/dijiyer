@@ -48,6 +48,10 @@ const institutionStatTotal = document.getElementById("institutionStatTotal");
 const institutionStatOffer = document.getElementById("institutionStatOffer");
 const institutionStatVip = document.getElementById("institutionStatVip");
 const institutionStatVideo = document.getElementById("institutionStatVideo");
+const institutionStatAdActive = document.getElementById("institutionStatAdActive");
+const institutionStatAdNone = document.getElementById("institutionStatAdNone");
+const institutionStatAdExpiring = document.getElementById("institutionStatAdExpiring");
+const institutionStatAdPayment = document.getElementById("institutionStatAdPayment");
 
 const quoteRequestsList = document.getElementById("quoteRequestsList");
 const quoteRequestCount = document.getElementById("quoteRequestCount");
@@ -632,6 +636,17 @@ function getFilteredManagedInstitutions() {
     if (feature === "video") matchesFeature = Boolean(item.video);
     if (feature === "offer") matchesFeature = item.offer !== false;
     if (feature === "offer_off") matchesFeature = item.offer === false;
+    if (feature === "ad_active") matchesFeature = getInstitutionAdState(item).advertiser;
+    if (feature === "ad_none") matchesFeature = !getInstitutionAdState(item).advertiser;
+    if (feature === "ad_expiring") {
+      const adState=getInstitutionAdState(item);
+      matchesFeature=adState.active && adState.daysLeft!==null && adState.daysLeft<=7;
+    }
+    if (feature === "ad_payment") {
+      const adState=getInstitutionAdState(item);
+      matchesFeature=adState.advertiser && String(item.adPaymentStatus||"unpaid")!=="paid";
+    }
+    if (feature === "ad_paused") matchesFeature = getInstitutionAdState(item).status==="paused";
 
     return matchesQuery && matchesCategory && matchesCity && matchesFeature;
   });
@@ -648,12 +663,178 @@ function getFilteredManagedInstitutions() {
     data.sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
+  } else if (sort === "ad_expiry") {
+    data.sort((a,b) => {
+      const aState=getInstitutionAdState(a);
+      const bState=getInstitutionAdState(b);
+      const aTime=aState.advertiser && a.adEndAt ? new Date(a.adEndAt).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime=bState.advertiser && b.adEndAt ? new Date(b.adEndAt).getTime() : Number.MAX_SAFE_INTEGER;
+      return aTime-bTime;
+    });
   }
 
   return data;
 }
 
+const ADMIN_AD_PACKAGES = {
+  starter:{
+    name:"Başlangıç Görünürlüğü",
+    short:"İlk kez reklam verecek veya görünürlüğünü artırmak isteyen kurumlar.",
+    benefits:[
+      "Sponsorlu kurum rozeti",
+      "Kategori / şehir vitrin alanı için uygun paket",
+      "Kampanya çağrısı (CTA) kullanımı"
+    ]
+  },
+  regional:{
+    name:"Bölgesel Vitrin",
+    short:"Şehir ve ilçe bazında müşteri arayan yerel işletmeler.",
+    benefits:[
+      "Şehir / ilçe odaklı vitrin",
+      "Kategori sponsor alanı için uygun paket",
+      "Dönemsel kampanya duyurusu"
+    ]
+  },
+  video:{
+    name:"Video Tanıtım",
+    short:"Görsel anlatımın güçlü olduğu sektörlerde dikkat çekmek için.",
+    benefits:[
+      "Video odaklı vitrin tanıtımı",
+      "Reels / Story kullanımına uygun içerik",
+      "Kurum kartında video vurgusu"
+    ]
+  },
+  premium:{
+    name:"Premium Marka",
+    short:"Daha güçlü ve sürekli marka görünürlüğü isteyen kurumlar.",
+    benefits:[
+      "Bölgesel vitrin + video görünürlüğü",
+      "Banner / kampanya alanı için uygun paket",
+      "Dönemsel marka görünürlüğü"
+    ]
+  }
+};
+
+function adminDateInputValue(value){
+  if(!value)return "";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return String(value).slice(0,10);
+  return date.toISOString().slice(0,10);
+}
+
+function adminAddDays(dateValue,days){
+  const date=dateValue ? new Date(dateValue) : new Date();
+  if(Number.isNaN(date.getTime()))return "";
+  date.setDate(date.getDate()+Number(days||0));
+  return date.toISOString().slice(0,10);
+}
+
+function getInstitutionAdState(inst){
+  const raw=String(inst.adStatus||"none");
+  const endValue=inst.adEndAt || "";
+  const end=endValue ? new Date(String(endValue).length<=10 ? endValue+"T23:59:59" : endValue) : null;
+  const expired=Boolean(end && !Number.isNaN(end.getTime()) && end.getTime()<Date.now());
+  const advertiser=["active","paused"].includes(raw) && !expired;
+  const active=raw==="active" && !expired;
+
+  let daysLeft=null;
+  if(end && !Number.isNaN(end.getTime()) && !expired){
+    daysLeft=Math.ceil((end.getTime()-Date.now())/86400000);
+  }
+
+  let status="none";
+  let label="Reklam Vermiyor";
+  let className="none";
+
+  if(expired){
+    status="expired";
+    label="Reklam Süresi Doldu";
+    className="expired";
+  }else if(raw==="paused"){
+    status="paused";
+    label="Reklam Duraklatıldı";
+    className="paused";
+  }else if(raw==="active"){
+    status="active";
+    label=daysLeft!==null && daysLeft<=7
+      ? "Reklam Aktif · "+daysLeft+" gün kaldı"
+      : "Reklam Veren";
+    className=daysLeft!==null && daysLeft<=7 ? "expiring" : "active";
+  }
+
+  return {status,label,className,advertiser,active,expired,daysLeft};
+}
+
+function getInstitutionAdPackage(inst){
+  return ADMIN_AD_PACKAGES[inst.adPackage] || null;
+}
+
+function getRecommendedAdPackage(inst){
+  const category=String(inst.subCategory||inst.category||"");
+  const visualCategories=new Set(["restoran","guzellik","dugun","emlak","turizm","kres","mobilya","oto","medya","perakende"]);
+  const localLeadCategories=new Set(["surucu","oto","guzellik","saglik","evteknik","insaat","temizlik","emlak","kres","yurt","turizm","nakliyat"]);
+
+  const missingProfile=[
+    !String(inst.phone||"").trim(),
+    !String(inst.address||"").trim(),
+    !String(inst.website||"").trim(),
+    !(Number.isFinite(Number(inst.lat)) && Number.isFinite(Number(inst.lng)))
+  ].filter(Boolean).length;
+
+  let packageId="starter";
+  let reason="İlk reklam için sade bir görünürlük paketiyle başlamak daha uygun görünüyor.";
+
+  if(visualCategories.has(category) && !inst.video){
+    packageId="video";
+    reason="Bu sektörde görsel anlatım önemli ve kurumda henüz video özelliği görünmüyor.";
+  }else if(localLeadCategories.has(category)){
+    packageId="regional";
+    reason="Bu kurumun müşterileri çoğunlukla şehir / ilçe bazında arama yaptığı için bölgesel görünürlük daha anlamlı olabilir.";
+  }else if(inst.vip && inst.video){
+    packageId="premium";
+    reason="Kurumun VIP ve video altyapısı hazır; daha kapsamlı marka görünürlüğü paketi değerlendirilebilir.";
+  }else if(missingProfile>=2){
+    packageId="starter";
+    reason="Profilde eksik alanlar var; önce temel görünürlüğü güçlendiren paket daha uygun.";
+  }
+
+  return {packageId,package:ADMIN_AD_PACKAGES[packageId],reason};
+}
+
+function adminAdPackageOptions(selected){
+  return '<option value="">Paket seçin...</option>' +
+    Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg]) =>
+      '<option value="'+id+'" '+(selected===id?"selected":"")+'>'+escapeHtml(pkg.name)+'</option>'
+    ).join("");
+}
+
+function adminAdPaymentLabel(value){
+  const map={unpaid:"Ödeme Bekliyor",partial:"Kısmi Ödendi",paid:"Ödendi"};
+  return map[String(value||"unpaid")] || "Ödeme Bekliyor";
+}
+
+function adminAdHistoryHtml(inst){
+  const rows=Array.isArray(inst.adHistory) ? [...inst.adHistory].slice(-5).reverse() : [];
+  if(!rows.length)return '<div class="ad-history-empty">Henüz reklam işlem geçmişi yok.</div>';
+
+  return rows.map(item=>{
+    const pkg=ADMIN_AD_PACKAGES[item.packageId];
+    const label=item.status==="active"
+      ? "Aktif"
+      : item.status==="paused"
+        ? "Duraklatıldı"
+        : "Kapatıldı";
+    return '<div class="ad-history-row">'+
+      '<div><strong>'+escapeHtml(label+(pkg?" · "+pkg.name:""))+'</strong>'+
+      '<span>'+escapeHtml(item.note||"")+'</span></div>'+
+      '<small>'+formatDate(item.date)+'</small>'+
+    '</div>';
+  }).join("");
+}
+
 function refreshInstitutionMiniStats() {
+  const adStates=institutionRecords.map(item=>({item,state:getInstitutionAdState(item)}));
+
   if (institutionStatTotal) institutionStatTotal.textContent = institutionRecords.length;
   if (institutionStatOffer) institutionStatOffer.textContent =
     institutionRecords.filter(item => item.offer !== false).length;
@@ -661,6 +842,15 @@ function refreshInstitutionMiniStats() {
     institutionRecords.filter(item => Boolean(item.vip)).length;
   if (institutionStatVideo) institutionStatVideo.textContent =
     institutionRecords.filter(item => Boolean(item.video)).length;
+
+  if (institutionStatAdActive) institutionStatAdActive.textContent =
+    adStates.filter(row=>row.state.advertiser).length;
+  if (institutionStatAdNone) institutionStatAdNone.textContent =
+    adStates.filter(row=>!row.state.advertiser).length;
+  if (institutionStatAdExpiring) institutionStatAdExpiring.textContent =
+    adStates.filter(row=>row.state.active && row.state.daysLeft!==null && row.state.daysLeft<=7).length;
+  if (institutionStatAdPayment) institutionStatAdPayment.textContent =
+    adStates.filter(row=>row.state.advertiser && String(row.item.adPaymentStatus||"unpaid")!=="paid").length;
 }
 
 function renderManagedInstitutions() {
@@ -720,6 +910,11 @@ function renderManagedInstitutions() {
     const phoneDigits = String(data.phone || "").replace(/\D/g, "");
     const whatsappDigits =
       phoneDigits.startsWith("0") ? "90" + phoneDigits.slice(1) : phoneDigits;
+    const adState = getInstitutionAdState(data);
+    const currentAdPackage = getInstitutionAdPackage(data);
+    const adRecommendation = getRecommendedAdPackage(data);
+    const adStartValue = adminDateInputValue(data.adStartAt) || adminDateInputValue(new Date());
+    const adEndValue = adminDateInputValue(data.adEndAt) || adminAddDays(new Date(),30);
 
     card.innerHTML = `
       <div class="manage-main institution-compact-head">
@@ -736,6 +931,10 @@ function renderManagedInstitutions() {
             ${data.offer !== false ? '<span class="badge-offer">Teklif Açık</span>' : '<span class="badge-offer-off">Teklif Kapalı</span>'}
             ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
             ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
+            <span class="badge-ad badge-ad-${adState.className}">
+              ${escapeHtml(adState.label)}
+              ${currentAdPackage ? " · "+escapeHtml(currentAdPackage.name) : ""}
+            </span>
           </div>
         </div>
 
@@ -785,6 +984,96 @@ function renderManagedInstitutions() {
           ${data.website ? '<button class="website-manage-btn">Web / Instagram</button>' : ''}
           <button class="delete-institution-btn">🗑 Kurumu Sil</button>
         </div>
+
+        <section class="institution-ad-manager">
+          <div class="ad-manager-head">
+            <div>
+              <span>REKLAM YÖNETİMİ</span>
+              <strong>${escapeHtml(adState.label)}</strong>
+              <small>${currentAdPackage ? escapeHtml(currentAdPackage.name) : "Aktif paket yok"}</small>
+            </div>
+            <span class="ad-payment-chip ${String(data.adPaymentStatus||"unpaid")}">
+              ${adState.advertiser ? escapeHtml(adminAdPaymentLabel(data.adPaymentStatus)) : "Reklam kaydı yok"}
+            </span>
+          </div>
+
+          <div class="ad-recommendation">
+            <span>ÖNERİLEN PAKET</span>
+            <strong>${escapeHtml(adRecommendation.package.name)}</strong>
+            <p>${escapeHtml(adRecommendation.reason)}</p>
+            <ul>
+              ${adRecommendation.package.benefits.map(item=>`<li>${escapeHtml(item)}</li>`).join("")}
+            </ul>
+            <div class="ad-recommendation-actions">
+              <button type="button" class="ad-pick-recommended" data-package="${adRecommendation.packageId}">Bu Paketi Seç</button>
+              ${whatsappDigits ? '<button type="button" class="ad-whatsapp-recommend">WhatsApp ile Öner</button>' : ''}
+            </div>
+          </div>
+
+          <details class="ad-package-catalog">
+            <summary>Tüm reklam paketlerini gör</summary>
+            <div class="ad-package-grid">
+              ${Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg])=>`
+                <article class="${id===adRecommendation.packageId?"recommended":""}">
+                  <span>${id===adRecommendation.packageId?"Önerilen":"Paket"}</span>
+                  <strong>${escapeHtml(pkg.name)}</strong>
+                  <p>${escapeHtml(pkg.short)}</p>
+                  <small>${escapeHtml(pkg.benefits.join(" · "))}</small>
+                </article>
+              `).join("")}
+            </div>
+          </details>
+
+          <form class="institution-ad-form" data-institution-id="${escapeHtml(data.id)}">
+            <div class="ad-form-grid">
+              <label>Reklam Durumu
+                <select name="adStatus">
+                  <option value="none" ${String(data.adStatus||"none")==="none"?"selected":""}>Reklam Vermiyor</option>
+                  <option value="active" ${data.adStatus==="active"?"selected":""}>Aktif Reklam</option>
+                  <option value="paused" ${data.adStatus==="paused"?"selected":""}>Duraklatıldı</option>
+                </select>
+              </label>
+
+              <label>Paket
+                <select name="adPackage">${adminAdPackageOptions(data.adPackage||"")}</select>
+              </label>
+
+              <label>Başlangıç
+                <input type="date" name="adStartAt" value="${escapeHtml(adStartValue)}">
+              </label>
+
+              <label>Bitiş
+                <input type="date" name="adEndAt" value="${escapeHtml(adEndValue)}">
+              </label>
+
+              <label>Satış Tutarı
+                <input type="number" name="adPrice" min="0" step="1" value="${Number(data.adPrice||0)||""}" placeholder="Örn. 2500">
+              </label>
+
+              <label>Ödeme
+                <select name="adPaymentStatus">
+                  <option value="unpaid" ${String(data.adPaymentStatus||"unpaid")==="unpaid"?"selected":""}>Ödeme Bekliyor</option>
+                  <option value="partial" ${data.adPaymentStatus==="partial"?"selected":""}>Kısmi Ödendi</option>
+                  <option value="paid" ${data.adPaymentStatus==="paid"?"selected":""}>Ödendi</option>
+                </select>
+              </label>
+
+              <label class="wide">Not
+                <textarea name="adNote" rows="2" maxlength="500" placeholder="Kampanya, ödeme veya reklamla ilgili kısa not...">${escapeHtml(data.adNote||"")}</textarea>
+              </label>
+            </div>
+
+            <div class="ad-form-actions">
+              <button type="submit">Reklam Bilgilerini Kaydet</button>
+              <span>Reklam paketleri keşif / vitrin alanları içindir; müşteriye gelen tekliflerin tarafsız sıralamasını değiştirmez.</span>
+            </div>
+          </form>
+
+          <details class="ad-history">
+            <summary>Reklam işlem geçmişi</summary>
+            <div>${adminAdHistoryHtml(data)}</div>
+          </details>
+        </section>
 
         <div class="institution-health-slot"></div>
       </div>
@@ -864,6 +1153,101 @@ function renderManagedInstitutions() {
         window.open(url, "_blank");
       });
     }
+
+    const adForm = card.querySelector(".institution-ad-form");
+    const adPackageSelect = adForm?.elements.adPackage;
+    const adStatusSelect = adForm?.elements.adStatus;
+
+    card.querySelector(".ad-pick-recommended")?.addEventListener("click", () => {
+      if(adPackageSelect) adPackageSelect.value = adRecommendation.packageId;
+      if(adStatusSelect) adStatusSelect.value = "active";
+      adForm?.scrollIntoView({behavior:"smooth",block:"center"});
+    });
+
+    card.querySelector(".ad-whatsapp-recommend")?.addEventListener("click", () => {
+      if(!whatsappDigits)return;
+      const pkg=adRecommendation.package;
+      const message=[
+        "Merhaba "+(data.name||""),
+        "",
+        "Dijiyer'deki kurum profilinizi inceledik.",
+        "Size "+pkg.name+" paketinin uygun olabileceğini düşünüyoruz.",
+        "",
+        "Neden: "+adRecommendation.reason,
+        "Paket içeriği: "+pkg.benefits.join(", "),
+        "",
+        "İsterseniz detayları ve reklam süresini birlikte planlayabiliriz."
+      ].join("\n");
+      window.open("https://wa.me/"+whatsappDigits+"?text="+encodeURIComponent(message),"_blank");
+    });
+
+    adForm?.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      const status=adForm.elements.adStatus.value;
+      const packageId=adForm.elements.adPackage.value;
+      const startAt=adForm.elements.adStartAt.value;
+      const endAt=adForm.elements.adEndAt.value;
+      const adPrice=Number(adForm.elements.adPrice.value||0);
+      const paymentStatus=adForm.elements.adPaymentStatus.value;
+      const note=String(adForm.elements.adNote.value||"").trim();
+
+      if(status!=="none" && !packageId){
+        alert("Aktif veya duraklatılmış reklam için bir paket seçin.");
+        return;
+      }
+      if(status==="active" && !endAt){
+        alert("Aktif reklam için bitiş tarihi girin.");
+        return;
+      }
+      if(startAt && endAt && new Date(endAt).getTime()<new Date(startAt).getTime()){
+        alert("Reklam bitiş tarihi başlangıç tarihinden önce olamaz.");
+        return;
+      }
+
+      const button=adForm.querySelector('button[type="submit"]');
+      const oldText=button.textContent;
+      button.disabled=true;
+      button.textContent="Kaydediliyor...";
+
+      try{
+        const now=new Date().toISOString();
+        const record=institutionRecords.find(item=>String(item.id)===String(data.id));
+        const oldHistory=Array.isArray(record?.adHistory) ? record.adHistory : [];
+        const historyEntry={
+          status,
+          packageId:status==="none" ? "" : packageId,
+          price:adPrice,
+          paymentStatus,
+          startAt:status==="none" ? "" : startAt,
+          endAt:status==="none" ? "" : endAt,
+          note,
+          date:now
+        };
+        const updates={
+          adStatus:status,
+          adPackage:status==="none" ? "" : packageId,
+          adStartAt:status==="none" ? "" : startAt,
+          adEndAt:status==="none" ? "" : endAt,
+          adPrice:status==="none" ? 0 : adPrice,
+          adPaymentStatus:status==="none" ? "unpaid" : paymentStatus,
+          adNote:note,
+          adUpdatedAt:now,
+          adHistory:[...oldHistory,historyEntry].slice(-20),
+          updatedAt:now
+        };
+
+        await db.collection("institutions").doc(data.id).update(updates);
+        if(record)Object.assign(record,updates);
+        renderManagedInstitutions();
+      }catch(error){
+        console.error("Reklam bilgileri kaydedilemedi:",error);
+        alert("Reklam bilgileri kaydedilemedi.");
+      }finally{
+        button.disabled=false;
+        button.textContent=oldText;
+      }
+    });
 
     if (typeof window.decorateAdminInstitutionCard === "function") {
       window.decorateAdminInstitutionCard(card, data);
