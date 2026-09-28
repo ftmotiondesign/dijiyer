@@ -137,6 +137,23 @@
         🔎 Kurumu Haritada Bul
       </button>
 
+      <label>Google Maps Bağlantısı
+        <input
+          type="text"
+          id="institutionGoogleMapsUrl"
+          placeholder="Google Maps'teki uzun bağlantıyı yapıştırın"
+        />
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-light full"
+        id="useGoogleMapsUrlBtn"
+        style="margin-top:-4px;margin-bottom:10px;"
+      >
+        📍 Konumu Google Maps Bağlantısından Al
+      </button>
+
       <label>Kategori
         <select id="institutionCategory" required>
           <option value="">Kategori seçin</option>
@@ -235,6 +252,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=9"></script>
 </body>
 </html>
