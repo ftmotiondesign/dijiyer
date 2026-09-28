@@ -1432,13 +1432,19 @@ institutionLoginForm.addEventListener('submit', async e => {
 
   const email = document.getElementById('institutionLoginEmail').value.trim();
   const password = document.getElementById('institutionLoginPassword').value;
+  const rememberMe = document.getElementById('institutionRememberMe').checked;
 
   institutionLoginMessage.textContent = 'Giriş yapılıyor...';
 
   let credential;
 
   try {
-    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.setPersistence(
+      rememberMe
+        ? firebase.auth.Auth.Persistence.LOCAL
+        : firebase.auth.Auth.Persistence.SESSION
+    );
+
     credential = await auth.signInWithEmailAndPassword(email, password);
   } catch (error) {
     console.error('Kurum Firebase Auth girişi başarısız:', error);
