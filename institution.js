@@ -1053,6 +1053,7 @@ async function loadSupportTickets() {
   try {
     const snapshot = await db.collection("supportTickets")
       .where("institutionId", "==", currentAccount.institutionId)
+      .where("userId", "==", currentUser.uid)
       .get();
 
     supportTicketRecords = snapshot.docs
