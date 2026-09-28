@@ -3273,3 +3273,29 @@ body[data-panel-current="stats"] .persistent-performance{
     padding:0 8px;
   }
 }
+
+
+.firm-logo-size-note{
+  position:absolute;
+  left:102px;
+  bottom:9px;
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.94);
+  color:#64748b;
+  box-shadow:0 3px 10px rgba(15,23,42,.08);
+  font-size:9.5px;
+  font-weight:750;
+}
+
+@media(max-width:760px){
+  .firm-logo-size-note{
+    left:87px;
+    bottom:6px;
+    min-height:22px;
+    font-size:9px;
+  }
+}
