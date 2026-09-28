@@ -433,12 +433,47 @@ async function verifyOfferByCode(rawCode){
   result.innerHTML='<div class="empty-state">Teklif doğrulanıyor...</div>';
 
   try{
+    let lookup=null;
+
     const lookupSnap=await db.collection("offerLookup").doc(code).get();
-    if(!lookupSnap.exists){
-      result.innerHTML='<div class="verify-result-card invalid"><div class="verify-result-title">⛔ Teklif bulunamadı</div></div>';
+
+    if(lookupSnap.exists){
+      lookup=lookupSnap.data();
+    }else{
+      // Eski tekliflerde offerLookup kaydı bulunmayabilir.
+      // Kurumun panelde yüklü kendi teklifleri içinde kodu arayıp doğrulamaya devam et.
+      const legacyEntry=[...institutionOfferMap.entries()].find(([,offer]) =>
+        String(offer?.offerCode || "").trim().toUpperCase() === code
+      );
+
+      if(legacyEntry){
+        const [quoteId,offer]=legacyEntry;
+
+        lookup={
+          quoteId,
+          institutionId:offer.institutionId || currentAccount.institutionId,
+          offerCode:offer.offerCode || code
+        };
+
+        // Sonraki doğrulamalarda direkt bulunabilmesi için indeksi arka planda tamamla.
+        try{
+          await db.collection("offerLookup").doc(code).set({
+            quoteId,
+            institutionId:lookup.institutionId,
+            offerCode:lookup.offerCode,
+            updatedAt:new Date().toISOString()
+          },{merge:true});
+        }catch(backfillError){
+          console.warn("Eski teklif için offerLookup tamamlanamadı:",backfillError);
+        }
+      }
+    }
+
+    if(!lookup){
+      result.innerHTML='<div class="verify-result-card invalid"><div class="verify-result-title">⛔ Teklif bulunamadı</div><div class="muted" style="text-align:center">Kodun doğru yazıldığını ve teklifin bu kuruma ait olduğunu kontrol edin.</div></div>';
       return;
     }
-    const lookup=lookupSnap.data();
+
     if(lookup.institutionId!==currentAccount.institutionId){
       result.innerHTML='<div class="verify-result-card invalid"><div class="verify-result-title">⛔ Bu teklif başka bir kuruma ait</div></div>';
       return;
