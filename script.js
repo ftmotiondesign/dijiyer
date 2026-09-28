@@ -18,12 +18,111 @@ const institutionRegistrationApp =
 
 const institutionRegistrationAuth = institutionRegistrationApp.auth();
 const institutionRegistrationDb = institutionRegistrationApp.firestore();
+
+const categoryTaxonomy = {
+  egitim: { label:'Eğitim', subs:{
+    kres:'Kreş & Anaokulu', dershane:'Dershane / Kurs Merkezi', surucu:'Sürücü Kursu',
+    ozel_ders:'Özel Ders', dil_kursu:'Dil Kursu', etut:'Etüt Merkezi',
+    ozel_okul:'Özel Okul', yurt:'Öğrenci Yurdu'
+  }},
+  otomotiv: { label:'Otomotiv', subs:{
+    oto_servis:'Oto Servis / Tamir', kaporta_boya:'Kaporta / Boya', oto_elektrik:'Oto Elektrik',
+    lastik_jant:'Lastik / Jant', oto_yikama:'Oto Yıkama / Kuaför', ekspertiz:'Oto Ekspertiz',
+    galeri:'Oto Galeri', rentacar:'Rent a Car', yedek_parca:'Yedek Parça', motosiklet:'Motosiklet Servisi'
+  }},
+  yemeicme: { label:'Yeme & İçme', subs:{
+    restoran:'Restoran', kafe:'Kafe', fastfood:'Fast Food', pastane:'Pastane', pizza:'Pizza',
+    doner:'Döner', pide_lahmacun:'Pide / Lahmacun', catering:'Catering', ev_yemekleri:'Ev Yemekleri'
+  }},
+  saglikguzellik: { label:'Sağlık & Güzellik', subs:{
+    dis_klinigi:'Diş Kliniği', klinik:'Sağlık Kliniği', psikolog:'Psikolog', diyetisyen:'Diyetisyen',
+    fizyoterapi:'Fizyoterapi', guzellik:'Güzellik Merkezi', kuafor:'Kuaför', berber:'Berber',
+    spor:'Pilates / Fitness'
+  }},
+  evyapi: { label:'Ev & Yapı', subs:{
+    mobilya:'Mobilya', dekorasyon:'Dekorasyon', insaat:'İnşaat / Tadilat', elektrikci:'Elektrikçi',
+    tesisatci:'Tesisatçı', teknik_servis:'Beyaz Eşya / Teknik Servis', klima:'Klima Servisi',
+    cam_balkon:'Cam Balkon / PVC', temizlik:'Temizlik Hizmetleri'
+  }},
+  emlak: { label:'Emlak', subs:{
+    emlak_ofisi:'Emlak Ofisi', konut:'Konut', arsa:'Arsa / Tarla',
+    ticari:'Ticari Gayrimenkul', gunluk_kiralik:'Günlük Kiralık'
+  }},
+  turizm: { label:'Turizm & Konaklama', subs:{
+    otel:'Otel', pansiyon:'Pansiyon', apart:'Apart', bungalov:'Bungalov',
+    seyahat:'Seyahat Acentesi / Tur', kamp:'Kamp / Karavan'
+  }},
+  organizasyonmedya: { label:'Organizasyon & Medya', subs:{
+    dugun_salonu:'Düğün Salonu', organizasyon:'Organizasyon Firması', fotograf:'Fotoğrafçı',
+    video:'Video Çekimi', drone:'Drone Çekimi', gelinlik:'Gelinlik', cicekci:'Çiçekçi',
+    reklam:'Reklam / Tasarım / Matbaa'
+  }},
+  tasimacilik: { label:'Taşımacılık & Teslimat', subs:{
+    nakliyat:'Evden Eve Nakliyat', kurye:'Kurye', sehirici:'Şehir İçi Taşımacılık', depolama:'Depolama'
+  }},
+  profesyonel: { label:'Profesyonel Hizmetler', subs:{
+    hukuk:'Avukat / Hukuk', muhasebe:'Muhasebe / Mali Müşavir', web:'Web Tasarım',
+    sosyal_medya:'Sosyal Medya / Ajans', bilgisayar:'Bilgisayar / Teknoloji', danismanlik:'Danışmanlık',
+    veteriner:'Veteriner / Pet Hizmetleri', tarim:'Tarım / Hayvancılık'
+  }},
+  alisveris: { label:'Alışveriş & Yerel Esnaf', subs:{
+    giyim:'Giyim', ayakkabi:'Ayakkabı', market:'Market', elektronik:'Elektronik / Telefon',
+    kirtasiye:'Kırtasiye', petshop:'Pet Shop', zuccaciye:'Züccaciye', esnaf:'Diğer Yerel Esnaf'
+  }},
+  diger: { label:'Diğer', subs:{ diger:'Diğer Hizmet' }}
+};
+
+const legacyCategoryToTaxonomy = {
+  kres:['egitim','kres'], surucu:['egitim','surucu'], yurt:['egitim','yurt'], egitim:['egitim','dershane'],
+  oto:['otomotiv','oto_servis'], restoran:['yemeicme','restoran'], guzellik:['saglikguzellik','guzellik'],
+  saglik:['saglikguzellik','klinik'], spor:['saglikguzellik','spor'], mobilya:['evyapi','mobilya'],
+  insaat:['evyapi','insaat'], evteknik:['evyapi','teknik_servis'], temizlik:['evyapi','temizlik'],
+  emlak:['emlak','emlak_ofisi'], turizm:['turizm','otel'], dugun:['organizasyonmedya','organizasyon'],
+  medya:['organizasyonmedya','video'], reklam:['organizasyonmedya','reklam'], nakliyat:['tasimacilik','nakliyat'],
+  kurye:['tasimacilik','kurye'], hukuk:['profesyonel','hukuk'], muhasebe:['profesyonel','muhasebe'],
+  teknoloji:['profesyonel','bilgisayar'], veteriner:['profesyonel','veteriner'], tarim:['profesyonel','tarim'],
+  perakende:['alisveris','esnaf'], esnaf:['alisveris','esnaf'], diger:['diger','diger']
+};
+
+function resolveTaxonomy(record) {
+  if (record && record.mainCategory) {
+    return [record.mainCategory, record.subCategory || record.category || ''];
+  }
+  return legacyCategoryToTaxonomy[(record && record.category) || ''] ||
+    ['diger', (record && record.category) || 'diger'];
+}
+
+function populateMainCategorySelect(selectId, placeholder) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  select.innerHTML = '<option value="">' + placeholder + '</option>' +
+    Object.entries(categoryTaxonomy)
+      .map(([key,item]) => '<option value="' + key + '">' + item.label + '</option>')
+      .join('');
+}
+
+function fillSubCategorySelect(mainCategory, selectId, placeholder) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const rows = Object.entries(categoryTaxonomy[mainCategory]?.subs || {});
+  select.innerHTML = rows.length
+    ? '<option value="">' + placeholder + '</option>' +
+      rows.map(([key,label]) => '<option value="' + key + '">' + label + '</option>').join('')
+    : '<option value="">Önce ana kategori seçin</option>';
+  select.disabled = rows.length === 0;
+}
+
+populateMainCategorySelect('quoteCategory','Ana kategori seçin');
+populateMainCategorySelect('institutionCategory','Ana kategori seçin');
+
 const institutions = [
   {
     id: 1,
     name: "Özel Ayyıldız Sürücü Kursu",
     short: "Ayyıldız SK",
     category: "surucu",
+    mainCategory: "egitim",
+    subCategory: "surucu",
     rating: 4.8,
     reviewCount: 128,
     location: "Çanakkale, Merkez",
@@ -41,6 +140,8 @@ const institutions = [
     name: "Troya Sürücü Kursu",
     short: "Troya SK",
     category: "surucu",
+    mainCategory: "egitim",
+    subCategory: "surucu",
     rating: 4.6,
     reviewCount: 96,
     location: "Çanakkale, Merkez",
@@ -58,6 +159,8 @@ const institutions = [
     name: "18 Mart Sürücü Kursu",
     short: "18 Mart SK",
     category: "surucu",
+    mainCategory: "egitim",
+    subCategory: "surucu",
     rating: 4.5,
     reviewCount: 64,
     location: "Çanakkale, Merkez",
@@ -164,7 +267,8 @@ function getFilteredInstitutions() {
   const offerOnly = document.getElementById('offerOnly').checked;
 
   let data = institutions.filter(inst => {
-    const matchesCategory = checkedCategories.length === 0 || checkedCategories.includes(inst.category);
+    const [mainCategory] = resolveTaxonomy(inst);
+    const matchesCategory = checkedCategories.length === 0 || checkedCategories.includes(mainCategory);
     const matchesQuery = !query || `${inst.name} ${inst.location} ${inst.address} ${inst.classes}`.toLowerCase().includes(query);
     const matchesVideo = !videoOnly || inst.video;
     const matchesOffer = !offerOnly || inst.offer;
@@ -346,11 +450,16 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
 
   const searchText = document.getElementById('quoteSearch').value.trim();
   const selectedCategory = document.getElementById('quoteCategory').value;
+  const selectedSubCategory = document.getElementById('quoteService').value;
   const inferredCategory = inferQuoteCategory(searchText);
+  const mainCategory = selectedCategory || inferredCategory?.mainCategory || 'diger';
+  const subCategory = selectedSubCategory || inferredCategory?.subCategory || 'diger';
 
   const request = {
-    category: selectedCategory || inferredCategory || 'diger',
-    service: document.getElementById('quoteService').value || searchText,
+    mainCategory,
+    subCategory,
+    category: subCategory,
+    service: categoryTaxonomy[mainCategory]?.subs?.[subCategory] || searchText,
     city: document.getElementById('quoteCity').value,
     district: document.getElementById('quoteDistrict').value,
     name: document.getElementById('quoteName').value.trim(),
@@ -366,7 +475,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     closeModal('quoteModal');
     e.target.reset();
     document.getElementById('quoteService').innerHTML =
-      '<option value="">Kategori seçmeden de devam edebilirsiniz</option>';
+      '<option value="">Önce ana kategori seçin</option>';
     document.getElementById('quoteService').disabled = true;
     document.getElementById('quoteDistrict').innerHTML =
       '<option value="">Önce şehir seçin</option>';
@@ -445,7 +554,9 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
 
   const application = {
     name: document.getElementById('institutionName').value,
-    category: document.getElementById('institutionCategory').value,
+    mainCategory: document.getElementById('institutionCategory').value,
+    subCategory: document.getElementById('institutionSubCategory').value,
+    category: document.getElementById('institutionSubCategory').value,
     city: document.getElementById('institutionCity').value,
     district: document.getElementById('institutionDistrict').value,
     address: document.getElementById('institutionAddress').value,
@@ -464,6 +575,9 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
 
     document.getElementById('institutionLat').value = '';
     document.getElementById('institutionLng').value = '';
+    document.getElementById('institutionSubCategory').innerHTML =
+      '<option value="">Önce ana kategori seçin</option>';
+    document.getElementById('institutionSubCategory').disabled = true;
 
     if (institutionLocationMarker && institutionMapInstance) {
       institutionMapInstance.removeLayer(institutionLocationMarker);
@@ -712,130 +826,116 @@ async function centerInstitutionMapFromAddress() {
   }
 }
 
-const quoteServices = {
-  surucu: ['B Sınıfı Ehliyet','A1 / A2 Motosiklet Ehliyeti','C / D Sınıfı Ehliyet','Otomatik Vites Eğitimi','Diğer Sürücü Kursu Hizmeti'],
-  kres: ['Kayıt ve Ücret Bilgisi','Erken Kayıt','Tam Gün Program','Yarım Gün Program','Diğer Kreş / Anaokulu Hizmeti'],
-  yurt: ['Konaklama ve Ücret Bilgisi','Yeni Kayıt','Oda Seçenekleri','Servis / Yemek Bilgisi','Diğer Yurt Hizmeti'],
-  egitim: ['Kurs Kayıt ve Ücret Bilgisi','Özel Ders','Sınava Hazırlık','Deneme Kulübü','Diğer Eğitim Hizmeti'],
-  emlak: ['Satılık Konut','Kiralık Konut','Arsa / Tarla','İşyeri','Değerleme / Danışmanlık'],
-  oto: ['Bakım / Onarım','Kaporta / Boya','Oto Elektrik','Lastik / Jant','Yedek Parça','Diğer Oto Hizmeti'],
-  restoran: ['Menü / Fiyat Bilgisi','Toplu Yemek','Paket Servis','Rezervasyon','Diğer'],
-  guzellik: ['Kuaför','Cilt Bakımı','Güzellik Salonu','Manikür / Pedikür','Randevu / Fiyat Bilgisi'],
-  saglik: ['Muayene / Randevu','Diş Kliniği','Fizik Tedavi','Diyetisyen','Diğer Sağlık Hizmeti'],
-  dugun: ['Düğün Salonu','Fotoğraf / Video','Organizasyon','Gelinlik / Damatlık','Müzik / Eğlence','Diğer'],
-  evteknik: ['Elektrikçi','Su Tesisatı','Beyaz Eşya Servisi','Klima Servisi','Diğer Teknik Servis'],
-  turizm: ['Otel / Konaklama','Pansiyon','Tur / Gezi','Araç Transferi','Diğer Turizm Hizmeti'],
-  nakliyat: ['Evden Eve Nakliyat','Parça Eşya Taşıma','Ofis Taşıma','Şehirler Arası Nakliyat','Depolama'],
-  temizlik: ['Ev Temizliği','Ofis Temizliği','İnşaat Sonrası Temizlik','Koltuk / Halı Temizliği','Diğer Temizlik Hizmeti'],
-  mobilya: ['Mobilya Üretimi','Mobilya Montajı','Mutfak / Dolap','Dekorasyon','Mobilya Tamiri'],
-  teknoloji: ['Bilgisayar Tamiri','Telefon / Tablet Servisi','Yazılım / Kurulum','Ağ / İnternet','Teknoloji Danışmanlığı'],
-  veteriner: ['Veteriner Muayenesi','Aşı','Pet Kuaför','Pet Oteli','Mama / Pet Ürünleri'],
-  spor: ['Spor Salonu Üyeliği','Personal Trainer','Pilates','Yoga','Yüzme / Spor Kursu'],
-  medya: ['Fotoğraf Çekimi','Video Çekimi','Drone Çekimi','Tanıtım Videosu','Kurgu / Montaj'],
-  reklam: ['Matbaa / Baskı','Tabela','Grafik Tasarım','Sosyal Medya Tasarımı','Promosyon / Reklam Ürünleri'],
-  insaat: ['Ev Tadilatı','Boya / Badana','Alçı / Sıva','Seramik / Fayans','İnşaat Ustası'],
-  tarim: ['Tarım Ürünleri','Hayvancılık','Yem / Gübre','Tarım Makinesi','Veterinerlik Dışı Çiftlik Hizmeti'],
-  hukuk: ['Avukatlık','Hukuki Danışmanlık','Arabuluculuk','İcra / Alacak','Sözleşme Danışmanlığı'],
-  muhasebe: ['Mali Müşavirlik','Muhasebe Hizmeti','Şirket Kuruluşu','Vergi Danışmanlığı','Bordro / SGK'],
-  kurye: ['Moto Kurye','Aynı Gün Teslimat','Şehir İçi Teslimat','Evrak Teslimatı','Paket Teslimatı'],
-  perakende: ['Ürün Fiyatı','Stok Bilgisi','Sipariş','Mağazadan Teslim','Diğer Perakende Hizmeti'],
-  esnaf: ['Fiyat Teklifi','Ürün / Hizmet Bilgisi','Randevu','Diğer'],
-  diger: ['Fiyat Teklifi','Bilgi Talebi','Diğer']
-};
-
-function fillQuoteServices(category) {
-  const serviceSelect = document.getElementById('quoteService');
-  const services = quoteServices[category] || [];
-
-  serviceSelect.innerHTML = services.length
-    ? '<option value="">Hizmet seçin</option>' +
-      services.map(service => `<option value="${service}">${service}</option>`).join('')
-    : '<option value="">Kategori seçmeden de devam edebilirsiniz</option>';
-
-  serviceSelect.disabled = services.length === 0;
+function fillQuoteServices(mainCategory) {
+  fillSubCategorySelect(mainCategory,'quoteService','Alt kategori seçin');
 }
 
 function normalizeQuoteSearch(value) {
   return String(value || '')
-    .trim()
-    .toLocaleLowerCase('tr-TR')
-    .replace(/ı/g, 'i')
-    .replace(/ş/g, 's')
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c');
+    .trim().toLocaleLowerCase('tr-TR')
+    .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g')
+    .replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c');
 }
 
 function inferQuoteCategory(value) {
   const q = normalizeQuoteSearch(value);
-
   const rules = [
-    ['surucu', ['ehliyet','surucu','direksiyon','otomatik vites','motosiklet ehliyeti']],
-    ['kres', ['kres','anaokulu','gunduz bakim','cocuk bakim']],
-    ['yurt', ['yurt','ogrenci yurdu','barinma']],
-    ['egitim', ['dershane','kurs','ozel ders','lgs','tyt','ayt','deneme','egitim']],
-    ['emlak', ['emlak','kiralik','satilik','arsa','tarla','daire','konut','isyeri']],
-    ['nakliyat', ['nakliyat','evden eve','tasimacilik','esya tasima','ofis tasima','depolama']],
-    ['temizlik', ['temizlik','ev temizligi','ofis temizligi','koltuk temizligi','hali temizligi']],
-    ['mobilya', ['mobilya','dekorasyon','dolap','mutfak dolabi','mobilya montaj']],
-    ['teknoloji', ['bilgisayar','telefon tamiri','tablet','yazilim','format','internet kurulumu','teknoloji']],
-    ['veteriner', ['veteriner','pet','kedi','kopek','hayvan klinigi','pet kuafor']],
-    ['spor', ['spor salonu','fitness','personal trainer','pilates','yoga','yuzme']],
-    ['medya', ['fotograf','video cekimi','drone cekimi','tanitim videosu','kurgu','montaj']],
-    ['reklam', ['matbaa','baski','tabela','grafik tasarim','sosyal medya tasarim','reklam']],
-    ['insaat', ['insaat','tadilat','boya badana','alci','siva','seramik','fayans']],
-    ['tarim', ['tarim','hayvancilik','gubre','yem','ciftlik','tarim makinesi']],
-    ['hukuk', ['avukat','hukuk','arabulucu','icra','sozlesme']],
-    ['muhasebe', ['muhasebe','mali musavir','vergi','bordro','sgk']],
-    ['kurye', ['kurye','moto kurye','teslimat','evrak teslim','paket teslim']],
-    ['perakende', ['magaza','perakende','stok','magazadan teslim']],
-    ['oto', ['oto','araba tamir','servis','kaporta','boya','lastik','jant','yedek parca','oto elektrik']],
-    ['restoran', ['restoran','kafe','yemek','pizza','kahvalti','cafe']],
-    ['guzellik', ['kuafor','guzellik','cilt bakimi','manikur','pedikur']],
-    ['saglik', ['klinik','doktor','dis','diyetisyen','fizik tedavi','muayene','saglik']],
-    ['dugun', ['dugun','organizasyon','gelinlik','damatlik','dugun salonu']],
-    ['evteknik', ['elektrikci','tesisat','klima','beyaz esya','teknik servis']],
-    ['turizm', ['otel','pansiyon','konaklama','tur','gezi','transfer']],
-    ['esnaf', ['esnaf','dukkan']]
+    ['egitim','kres',['kres','anaokulu','gunduz bakim','cocuk bakim']],
+    ['egitim','surucu',['ehliyet','surucu kursu','direksiyon','otomatik vites','motosiklet ehliyeti']],
+    ['egitim','yurt',['ogrenci yurdu','yurt','barinma']],
+    ['egitim','dershane',['dershane','kurs merkezi','lgs','tyt','ayt','deneme']],
+    ['egitim','ozel_ders',['ozel ders']],
+    ['egitim','dil_kursu',['dil kursu','ingilizce kursu']],
+    ['otomotiv','kaporta_boya',['kaporta','oto boya']],
+    ['otomotiv','oto_elektrik',['oto elektrik']],
+    ['otomotiv','lastik_jant',['lastik','jant']],
+    ['otomotiv','oto_yikama',['oto yikama','oto kuafor']],
+    ['otomotiv','ekspertiz',['ekspertiz']],
+    ['otomotiv','galeri',['oto galeri']],
+    ['otomotiv','rentacar',['rent a car','arac kiralama']],
+    ['otomotiv','yedek_parca',['yedek parca']],
+    ['otomotiv','oto_servis',['oto servis','oto tamir','araba tamir','bakim onarim']],
+    ['yemeicme','pizza',['pizza']],
+    ['yemeicme','doner',['doner']],
+    ['yemeicme','pide_lahmacun',['pide','lahmacun']],
+    ['yemeicme','pastane',['pastane','pasta']],
+    ['yemeicme','kafe',['kafe','cafe','kahve']],
+    ['yemeicme','restoran',['restoran','yemek']],
+    ['saglikguzellik','dis_klinigi',['dis klinigi','disci']],
+    ['saglikguzellik','psikolog',['psikolog']],
+    ['saglikguzellik','diyetisyen',['diyetisyen']],
+    ['saglikguzellik','fizyoterapi',['fizyoterapi','fizik tedavi']],
+    ['saglikguzellik','guzellik',['guzellik merkezi','cilt bakimi']],
+    ['saglikguzellik','kuafor',['kuafor']],
+    ['saglikguzellik','berber',['berber']],
+    ['saglikguzellik','spor',['pilates','fitness','spor salonu','yoga']],
+    ['evyapi','mobilya',['mobilya','dolap']],
+    ['evyapi','insaat',['insaat','tadilat','boya badana','seramik','fayans']],
+    ['evyapi','elektrikci',['elektrikci']],
+    ['evyapi','tesisatci',['tesisatci','su tesisati']],
+    ['evyapi','teknik_servis',['beyaz esya','teknik servis']],
+    ['evyapi','klima',['klima']],
+    ['evyapi','temizlik',['temizlik']],
+    ['emlak','arsa',['arsa','tarla']],
+    ['emlak','konut',['kiralik daire','satilik daire','konut']],
+    ['emlak','emlak_ofisi',['emlak','gayrimenkul']],
+    ['turizm','otel',['otel','konaklama']],
+    ['turizm','pansiyon',['pansiyon']],
+    ['turizm','seyahat',['tur','gezi','seyahat acentesi']],
+    ['organizasyonmedya','dugun_salonu',['dugun salonu']],
+    ['organizasyonmedya','organizasyon',['organizasyon']],
+    ['organizasyonmedya','fotograf',['fotografci','fotograf cekimi']],
+    ['organizasyonmedya','drone',['drone']],
+    ['organizasyonmedya','video',['video cekimi','tanitim videosu']],
+    ['organizasyonmedya','reklam',['matbaa','baski','tabela','grafik tasarim','reklam']],
+    ['tasimacilik','nakliyat',['nakliyat','evden eve','esya tasima']],
+    ['tasimacilik','kurye',['kurye','teslimat']],
+    ['profesyonel','hukuk',['avukat','hukuk','arabulucu']],
+    ['profesyonel','muhasebe',['muhasebe','mali musavir','vergi']],
+    ['profesyonel','bilgisayar',['bilgisayar','telefon tamiri','yazilim','format']],
+    ['profesyonel','veteriner',['veteriner','pet','hayvan klinigi']],
+    ['profesyonel','tarim',['tarim','hayvancilik','gubre','yem']],
+    ['alisveris','market',['market']],
+    ['alisveris','elektronik',['elektronik','telefoncu']],
+    ['alisveris','kirtasiye',['kirtasiye']]
   ];
 
-  for (const [category, keywords] of rules) {
-    if (keywords.some(keyword => q.includes(keyword))) return category;
+  for (const [mainCategory,subCategory,keywords] of rules) {
+    if (keywords.some(keyword => q.includes(keyword))) return {mainCategory,subCategory};
   }
-
-  return '';
+  return null;
 }
 
 document.getElementById('quoteCategory').addEventListener('change', function () {
   fillQuoteServices(this.value);
 });
 
+document.getElementById('institutionCategory').addEventListener('change', function () {
+  fillSubCategorySelect(this.value,'institutionSubCategory','Alt kategori seçin');
+});
+
 document.getElementById('detectQuoteCategoryBtn').addEventListener('click', () => {
   const searchText = document.getElementById('quoteSearch').value.trim();
+  if (!searchText) return showToast('Önce ne aradığınızı yazın.');
 
-  if (!searchText) {
-    showToast('Önce ne aradığınızı yazın.');
-    return;
-  }
-
-  const category = inferQuoteCategory(searchText);
+  const inferred = inferQuoteCategory(searchText);
   const categorySelect = document.getElementById('quoteCategory');
+  const subSelect = document.getElementById('quoteService');
 
-  if (!category) {
-    categorySelect.value = 'diger';
+  if (!inferred) {
+    categorySelect.value='diger';
     fillQuoteServices('diger');
-    showToast('Kategori otomatik bulunamadı. Talebiniz yine de gönderilebilir.');
-    return;
+    subSelect.value='diger';
+    return showToast('Kategori otomatik bulunamadı. Diğer olarak devam edebilirsiniz.');
   }
 
-  categorySelect.value = category;
-  fillQuoteServices(category);
+  categorySelect.value=inferred.mainCategory;
+  fillQuoteServices(inferred.mainCategory);
+  subSelect.value=inferred.subCategory;
 
-  const selectedText =
-    categorySelect.options[categorySelect.selectedIndex]?.textContent || 'Kategori';
-
-  showToast(`Uygun kategori: ${selectedText}`);
+  const mainLabel=categoryTaxonomy[inferred.mainCategory]?.label || 'Kategori';
+  const subLabel=categoryTaxonomy[inferred.mainCategory]?.subs?.[inferred.subCategory] || '';
+  showToast('Uygun kategori: ' + mainLabel + (subLabel ? ' → ' + subLabel : ''));
 });
 
 async function loadQuoteProvinces() {
@@ -1037,7 +1137,9 @@ async function loadApprovedInstitutions() {
         id: doc.id,
         name: data.name || 'Kurum',
         short: data.short || data.name || 'Kurum',
-        category: data.category || 'diger',
+        category: data.category || data.subCategory || 'diger',
+        mainCategory: data.mainCategory || resolveTaxonomy(data)[0],
+        subCategory: data.subCategory || resolveTaxonomy(data)[1],
         rating: Number(data.rating || 0),
         reviewCount: Number(data.reviewCount || 0),
         location: data.location || [data.city, data.district].filter(Boolean).join(', '),
