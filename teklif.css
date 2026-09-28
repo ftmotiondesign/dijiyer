@@ -701,3 +701,146 @@ button,input{font:inherit}.hidden{display:none!important}
   .offer-fairness-toolbar{align-items:stretch;flex-direction:column}
   .offer-fairness-toolbar label{min-width:0}
 }
+
+
+/* Tarafsız teklif sorun bildirim penceresi */
+.offer-issue-modal{
+  position:fixed;
+  inset:0;
+  z-index:7000;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  background:rgba(15,23,42,.62);
+}
+.offer-issue-modal.hidden{display:none!important}
+.offer-issue-card{
+  position:relative;
+  width:min(560px,96vw);
+  max-height:90vh;
+  overflow:auto;
+  padding:22px;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 28px 80px rgba(15,23,42,.28);
+}
+.offer-issue-close{
+  position:absolute;
+  right:13px;
+  top:13px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:#f1f5f9;
+  color:#475569;
+  font-size:21px;
+}
+.offer-issue-icon{
+  width:50px;
+  height:50px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  background:#fff7ed;
+  color:#c2410c;
+  font-size:24px;
+}
+.offer-issue-card h2{
+  margin:12px 0 6px;
+  color:#172033;
+}
+.offer-issue-intro{
+  margin:0 0 14px;
+  color:#64748b;
+  font-size:12px;
+  line-height:1.55;
+}
+#offerIssueForm{
+  display:grid;
+  gap:8px;
+}
+.offer-issue-option{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:10px;
+  align-items:start;
+  padding:11px;
+  border:1px solid #e2e8f0;
+  border-radius:11px;
+  background:#fff;
+  cursor:pointer;
+}
+.offer-issue-option:has(input:checked){
+  border-color:#93c5fd;
+  background:#eff6ff;
+}
+.offer-issue-option input{margin-top:3px}
+.offer-issue-option span{
+  display:grid;
+  gap:2px;
+}
+.offer-issue-option strong{
+  color:#172033;
+  font-size:12px;
+}
+.offer-issue-option small{
+  color:#64748b;
+  font-size:10px;
+  line-height:1.4;
+}
+.offer-issue-detail{
+  display:grid;
+  gap:6px;
+  margin-top:4px;
+  color:#475569;
+  font-size:11px;
+  font-weight:900;
+}
+.offer-issue-detail span{font-weight:500}
+.offer-issue-detail textarea{
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:10px 11px;
+  resize:vertical;
+  outline:none;
+}
+.offer-issue-fairness{
+  display:grid;
+  gap:3px;
+  margin-top:4px;
+  padding:10px 11px;
+  border:1px solid #bbf7d0;
+  border-radius:10px;
+  background:#f0fdf4;
+}
+.offer-issue-fairness strong{
+  color:#166534;
+  font-size:11px;
+}
+.offer-issue-fairness span{
+  color:#3f6212;
+  font-size:10px;
+  line-height:1.45;
+}
+.offer-issue-submit{
+  margin-top:4px;
+  border:0;
+  border-radius:10px;
+  padding:12px 14px;
+  background:#172033;
+  color:#fff;
+  font-weight:900;
+}
+@media(max-width:560px){
+  .offer-issue-modal{
+    padding:0;
+    align-items:end;
+  }
+  .offer-issue-card{
+    width:100%;
+    max-height:92dvh;
+    border-radius:18px 18px 0 0;
+  }
+}
