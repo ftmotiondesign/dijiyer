@@ -111,3 +111,74 @@
 }
 .support-admin-existing-reply strong{display:block;font-size:10px;margin-bottom:4px}
 .support-admin-existing-reply p{margin:0;font-size:11px;line-height:1.45}
+
+
+.support-admin-reference{
+  margin:10px 0 12px;
+  padding:11px;
+  border:1px solid #cfe0f7;
+  border-left:4px solid #1677ff;
+  border-radius:10px;
+  background:#f8fbff;
+}
+
+.support-admin-reference-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.support-admin-reference-head > div{
+  display:grid;
+  gap:3px;
+}
+
+.support-admin-reference-head span{
+  color:#1677ff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+
+.support-admin-reference-head strong{
+  color:#172033;
+  font-size:12px;
+}
+
+.support-admin-reference-head button{
+  border:1px solid #a9c9f7;
+  border-radius:8px;
+  background:#fff;
+  color:#1268da;
+  padding:7px 9px;
+  font-size:10px;
+  font-weight:850;
+  white-space:nowrap;
+}
+
+.support-admin-reference-grid{
+  margin-top:8px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 13px;
+}
+
+.support-admin-reference-grid span{
+  color:#64748b;
+  font-size:10px;
+}
+
+.support-admin-reference-grid b{
+  color:#334155;
+}
+
+@media(max-width:600px){
+  .support-admin-reference-head{
+    flex-direction:column;
+  }
+
+  .support-admin-reference-head button{
+    width:100%;
+  }
+}
