@@ -778,3 +778,89 @@ button{
     align-items:flex-start;
   }
 }
+
+
+/* Kurum hesapları */
+#accountsList{
+  display:grid;
+  gap:14px;
+}
+
+.account-card{
+  background:#fff;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+  padding:18px;
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.account-card-main{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.account-card h3{
+  margin:0 0 5px;
+}
+
+.account-email,
+.account-meta{
+  color:#64748b;
+  font-size:13px;
+}
+
+.account-status{
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.account-status.status-pending{
+  background:#fff7ed;
+  color:#c2410c;
+}
+
+.account-status.status-approved{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.account-status.status-rejected{
+  background:#fff1f2;
+  color:#be123c;
+}
+
+.account-meta{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-top:13px;
+}
+
+.account-actions{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #e5e7eb;
+}
+
+.account-actions button{
+  border:0;
+  border-radius:9px;
+  padding:9px 12px;
+  font-weight:bold;
+}
+
+.approve-account-btn{
+  background:#dcfce7;
+  color:#15803d;
+}
+
+.reject-account-btn{
+  background:#fff1f2;
+  color:#be123c;
+}
