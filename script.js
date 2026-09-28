@@ -880,6 +880,10 @@ async function createQuoteTrackingAccess(quoteId, request) {
 }
 
 function showQuoteTrackingSuccess(tracking, matchedCount) {
+  sessionStorage.setItem('dijiyerTrackingCode', tracking.trackingCode);
+  sessionStorage.setItem('dijiyerTrackingPhone', tracking.normalizedPhone);
+  localStorage.setItem('dijiyerLastTrackingCode', tracking.trackingCode);
+
   document.getElementById('quoteSuccessCode').textContent = tracking.trackingCode;
   document.getElementById('quoteSuccessLink').value = tracking.trackingUrl;
 
