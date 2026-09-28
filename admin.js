@@ -25,10 +25,12 @@ const institutionCount = document.getElementById("institutionCount");
 const applicationsSection = document.getElementById("applicationsSection");
 const institutionsSection = document.getElementById("institutionsSection");
 const quotesSection = document.getElementById("quotesSection");
+const offerReportSection = document.getElementById("offerReportSection");
 const accountsSection = document.getElementById("accountsSection");
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
+const offerReportTabBtn = document.getElementById("offerReportTabBtn");
 const accountsTabBtn = document.getElementById("accountsTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
@@ -43,6 +45,17 @@ const quoteRequestsList = document.getElementById("quoteRequestsList");
 const quoteRequestCount = document.getElementById("quoteRequestCount");
 const quoteRequestSearch = document.getElementById("quoteRequestSearch");
 const quoteStatusFilter = document.getElementById("quoteStatusFilter");
+
+const offerReportCount = document.getElementById("offerReportCount");
+const offerReportInstitutionCount = document.getElementById("offerReportInstitutionCount");
+const offerReportTotalOffers = document.getElementById("offerReportTotalOffers");
+const offerReportAveragePrice = document.getElementById("offerReportAveragePrice");
+const offerReportLockedCount = document.getElementById("offerReportLockedCount");
+const offerReportUsedCount = document.getElementById("offerReportUsedCount");
+const offerReportSearch = document.getElementById("offerReportSearch");
+const offerReportSort = document.getElementById("offerReportSort");
+const offerReportTableBody = document.getElementById("offerReportTableBody");
+
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
 
@@ -50,6 +63,7 @@ const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 
 let institutionRecords = [];
 let quoteRequestRecords = [];
+let institutionOfferReportRecords = [];
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -272,10 +286,12 @@ applicationsTabBtn.addEventListener("click", () => {
   applicationsSection.hidden = false;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  offerReportSection.hidden = true;
   accountsSection.hidden = true;
   applicationsTabBtn.classList.add("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
+  offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
 });
 
@@ -283,10 +299,12 @@ institutionsTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = false;
   quotesSection.hidden = true;
+  offerReportSection.hidden = true;
   accountsSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
   quotesTabBtn.classList.remove("active");
+  offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   await loadInstitutions();
 });
@@ -295,12 +313,31 @@ quotesTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = false;
+  offerReportSection.hidden = true;
   accountsSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.add("active");
+  offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   await loadQuoteRequests();
+});
+
+offerReportTabBtn.addEventListener("click", async () => {
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  offerReportSection.hidden = false;
+  accountsSection.hidden = true;
+
+  applicationsTabBtn.classList.remove("active");
+  institutionsTabBtn.classList.remove("active");
+  quotesTabBtn.classList.remove("active");
+  offerReportTabBtn.classList.add("active");
+  accountsTabBtn.classList.remove("active");
+
+  await loadQuoteRequests();
+  renderInstitutionOfferReport();
 });
 
 async function loadInstitutions() {
@@ -849,6 +886,8 @@ async function loadQuoteRequests() {
     quoteRequestCount.textContent =
       `${quoteRequestRecords.length} teklif talebi · güncel süreç bilgileriyle`;
     renderQuoteRequests();
+    buildInstitutionOfferReport();
+    renderInstitutionOfferReport();
 
   } catch (error) {
     console.error("Teklif talepleri yüklenemedi:", error);
@@ -856,6 +895,205 @@ async function loadQuoteRequests() {
       "<p>Teklif talepleri yüklenemedi. Firestore kurallarını kontrol edin.</p>";
   }
 }
+
+function buildInstitutionOfferReport() {
+  const byInstitution = new Map();
+
+  quoteRequestRecords.forEach(request => {
+    const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
+    const lock = request.liveLock || null;
+
+    offers.forEach(offer => {
+      const institutionId = String(
+        offer.institutionId ||
+        offer.id ||
+        offer.institutionName ||
+        "unknown"
+      );
+
+      if (!byInstitution.has(institutionId)) {
+        byInstitution.set(institutionId, {
+          institutionId,
+          institutionName: offer.institutionName || "Kurum",
+          offerCount: 0,
+          totalPrice: 0,
+          prices: [],
+          lockedCount: 0,
+          usedCount: 0,
+          latestOfferDate: null
+        });
+      }
+
+      const row = byInstitution.get(institutionId);
+      const price = Number(offer.price || 0);
+
+      row.offerCount += 1;
+      row.totalPrice += Number.isFinite(price) ? price : 0;
+
+      if (Number.isFinite(price) && price > 0) {
+        row.prices.push(price);
+      }
+
+      const offerDate =
+        offer.updatedAt ||
+        offer.createdAt ||
+        request.date ||
+        null;
+
+      if (
+        offerDate &&
+        (!row.latestOfferDate ||
+          new Date(offerDate).getTime() > new Date(row.latestOfferDate).getTime())
+      ) {
+        row.latestOfferDate = offerDate;
+      }
+
+      const isLocked =
+        lock &&
+        String(lock.institutionId || "") === String(offer.institutionId || "");
+
+      if (isLocked) {
+        row.lockedCount += 1;
+
+        if (lock.status === "used") {
+          row.usedCount += 1;
+        }
+      }
+    });
+  });
+
+  institutionOfferReportRecords = [...byInstitution.values()]
+    .map(row => ({
+      ...row,
+      averagePrice: row.offerCount ? row.totalPrice / row.offerCount : 0,
+      minPrice: row.prices.length ? Math.min(...row.prices) : 0,
+      maxPrice: row.prices.length ? Math.max(...row.prices) : 0
+    }));
+}
+
+function renderInstitutionOfferReport() {
+  if (!offerReportTableBody) return;
+
+  const query = String(offerReportSearch?.value || "")
+    .trim()
+    .toLocaleLowerCase("tr-TR");
+
+  const sort = offerReportSort?.value || "offers_desc";
+
+  let rows = institutionOfferReportRecords.filter(row =>
+    !query ||
+    String(row.institutionName || "")
+      .toLocaleLowerCase("tr-TR")
+      .includes(query)
+  );
+
+  rows = [...rows];
+
+  if (sort === "offers_desc") {
+    rows.sort((a,b) => b.offerCount - a.offerCount);
+  } else if (sort === "locked_desc") {
+    rows.sort((a,b) => b.lockedCount - a.lockedCount || b.offerCount - a.offerCount);
+  } else if (sort === "used_desc") {
+    rows.sort((a,b) => b.usedCount - a.usedCount || b.lockedCount - a.lockedCount);
+  } else if (sort === "average_asc") {
+    rows.sort((a,b) => a.averagePrice - b.averagePrice);
+  } else if (sort === "average_desc") {
+    rows.sort((a,b) => b.averagePrice - a.averagePrice);
+  } else if (sort === "latest_desc") {
+    rows.sort((a,b) =>
+      new Date(b.latestOfferDate || 0).getTime() -
+      new Date(a.latestOfferDate || 0).getTime()
+    );
+  } else if (sort === "name_asc") {
+    rows.sort((a,b) =>
+      String(a.institutionName || "").localeCompare(
+        String(b.institutionName || ""),
+        "tr"
+      )
+    );
+  }
+
+  const allOffers = institutionOfferReportRecords.reduce(
+    (sum,row) => sum + row.offerCount,
+    0
+  );
+
+  const allPriceTotal = institutionOfferReportRecords.reduce(
+    (sum,row) => sum + row.totalPrice,
+    0
+  );
+
+  const allLocked = institutionOfferReportRecords.reduce(
+    (sum,row) => sum + row.lockedCount,
+    0
+  );
+
+  const allUsed = institutionOfferReportRecords.reduce(
+    (sum,row) => sum + row.usedCount,
+    0
+  );
+
+  if (offerReportInstitutionCount) {
+    offerReportInstitutionCount.textContent =
+      institutionOfferReportRecords.length;
+  }
+
+  if (offerReportTotalOffers) {
+    offerReportTotalOffers.textContent = allOffers;
+  }
+
+  if (offerReportAveragePrice) {
+    offerReportAveragePrice.textContent =
+      quoteMoney(allOffers ? allPriceTotal / allOffers : 0);
+  }
+
+  if (offerReportLockedCount) {
+    offerReportLockedCount.textContent = allLocked;
+  }
+
+  if (offerReportUsedCount) {
+    offerReportUsedCount.textContent = allUsed;
+  }
+
+  if (offerReportCount) {
+    offerReportCount.textContent =
+      `${institutionOfferReportRecords.length} kurum · ${allOffers} toplam teklif`;
+  }
+
+  if (!rows.length) {
+    offerReportTableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="offer-report-empty">
+          ${institutionOfferReportRecords.length
+            ? "Aramaya uygun kurum bulunamadı."
+            : "Henüz fiyat teklifi veren kurum bulunmuyor."}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  offerReportTableBody.innerHTML = rows.map(row => `
+    <tr>
+      <td>
+        <div class="report-institution">
+          <strong>${escapeHtml(row.institutionName || "Kurum")}</strong>
+          <small>${escapeHtml(row.institutionId || "-")}</small>
+        </div>
+      </td>
+      <td><strong>${row.offerCount}</strong></td>
+      <td>${quoteMoney(row.averagePrice)}</td>
+      <td>${quoteMoney(row.minPrice)}</td>
+      <td>${quoteMoney(row.maxPrice)}</td>
+      <td><span class="report-badge locked">${row.lockedCount}</span></td>
+      <td><span class="report-badge used">${row.usedCount}</span></td>
+      <td>${row.latestOfferDate ? formatDate(row.latestOfferDate) : "-"}</td>
+    </tr>
+  `).join("");
+}
+
+offerReportSearch?.addEventListener("input", renderInstitutionOfferReport);
+offerReportSort?.addEventListener("change", renderInstitutionOfferReport);
 
 function renderQuoteRequests() {
   const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
@@ -1209,11 +1447,13 @@ accountsTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  offerReportSection.hidden = true;
   accountsSection.hidden = false;
 
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
+  offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.add("active");
 
   await loadInstitutionAccounts();
