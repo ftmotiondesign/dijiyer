@@ -35,34 +35,19 @@
       <div class="panel-title">☰ Filtreler</div>
 
       <section class="filter-section">
-        <h3>Kategori</h3>
-        <label><input type="checkbox" class="categoryFilter" value="teknoloji"> 💻 Bilgisayar & Teknoloji</label>
-        <label><input type="checkbox" class="categoryFilter" value="dugun"> 💍 Düğün & Organizasyon</label>
-        <label><input type="checkbox" class="categoryFilter" value="egitim"> 📚 Eğitim & Kurslar</label>
-        <label><input type="checkbox" class="categoryFilter" value="emlak"> 🏠 Emlak & Gayrimenkul</label>
-        <label><input type="checkbox" class="categoryFilter" value="evteknik"> 🛠️ Ev & Teknik Servis</label>
-        <label><input type="checkbox" class="categoryFilter" value="medya"> 📸 Fotoğraf & Video</label>
-        <label><input type="checkbox" class="categoryFilter" value="guzellik"> 💇 Güzellik & Bakım</label>
-        <label><input type="checkbox" class="categoryFilter" value="hukuk"> ⚖️ Hukuk & Danışmanlık</label>
-        <label><input type="checkbox" class="categoryFilter" value="insaat"> 🏗️ İnşaat & Tadilat</label>
-        <label><input type="checkbox" class="categoryFilter" value="kres"> 🧸 Kreş & Anaokulu</label>
-        <label><input type="checkbox" class="categoryFilter" value="kurye"> 🛵 Kurye & Teslimat</label>
-        <label><input type="checkbox" class="categoryFilter" value="perakende"> 🛒 Mağaza & Perakende</label>
-        <label><input type="checkbox" class="categoryFilter" value="reklam"> 🖨️ Matbaa, Reklam & Tasarım</label>
-        <label><input type="checkbox" class="categoryFilter" value="mobilya"> 🛋️ Mobilya & Dekorasyon</label>
-        <label><input type="checkbox" class="categoryFilter" value="muhasebe"> 📊 Muhasebe & Mali Müşavirlik</label>
-        <label><input type="checkbox" class="categoryFilter" value="nakliyat"> 🚚 Nakliyat & Taşımacılık</label>
-        <label><input type="checkbox" class="categoryFilter" value="yurt"> 🏢 Öğrenci Yurdu</label>
-        <label><input type="checkbox" class="categoryFilter" value="oto"> 🔧 Oto Servis & Sanayi</label>
-        <label><input type="checkbox" class="categoryFilter" value="restoran"> 🍽️ Restoran & Kafe</label>
-        <label><input type="checkbox" class="categoryFilter" value="saglik"> 🩺 Sağlık & Klinik</label>
-        <label><input type="checkbox" class="categoryFilter" value="spor"> 🏋️ Spor & Fitness</label>
-        <label><input type="checkbox" class="categoryFilter" value="surucu"> 🚗 Sürücü Kursu</label>
-        <label><input type="checkbox" class="categoryFilter" value="tarim"> 🌾 Tarım & Hayvancılık</label>
-        <label><input type="checkbox" class="categoryFilter" value="temizlik"> 🧹 Temizlik Hizmetleri</label>
+        <h3>Ana Kategori</h3>
+        <label><input type="checkbox" class="categoryFilter" value="egitim"> 📚 Eğitim</label>
+        <label><input type="checkbox" class="categoryFilter" value="otomotiv"> 🚗 Otomotiv</label>
+        <label><input type="checkbox" class="categoryFilter" value="yemeicme"> 🍽️ Yeme & İçme</label>
+        <label><input type="checkbox" class="categoryFilter" value="saglikguzellik"> 🩺 Sağlık & Güzellik</label>
+        <label><input type="checkbox" class="categoryFilter" value="evyapi"> 🏠 Ev & Yapı</label>
+        <label><input type="checkbox" class="categoryFilter" value="emlak"> 🏢 Emlak</label>
         <label><input type="checkbox" class="categoryFilter" value="turizm"> 🏨 Turizm & Konaklama</label>
-        <label><input type="checkbox" class="categoryFilter" value="veteriner"> 🐾 Veteriner & Evcil Hayvan</label>
-        <label><input type="checkbox" class="categoryFilter" value="esnaf"> 🏪 Yerel Esnaf</label>
+        <label><input type="checkbox" class="categoryFilter" value="organizasyonmedya"> 📸 Organizasyon & Medya</label>
+        <label><input type="checkbox" class="categoryFilter" value="tasimacilik"> 🚚 Taşımacılık & Teslimat</label>
+        <label><input type="checkbox" class="categoryFilter" value="profesyonel"> 💼 Profesyonel Hizmetler</label>
+        <label><input type="checkbox" class="categoryFilter" value="alisveris"> 🛒 Alışveriş & Yerel Esnaf</label>
+        <label><input type="checkbox" class="categoryFilter" value="diger"> ➕ Diğer</label>
       </section>
 
       <section class="filter-section">
@@ -137,43 +122,18 @@
           İstersen kategori seçmeden devam edebilirsin. Dijiyer aradığın hizmete göre eşleştirme yapar.
         </p>
 
-        <label>Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+        <label>Ana Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
           <select id="quoteCategory">
-            <option value="">Kategori seçin</option>
-            <option value="teknoloji">Bilgisayar & Teknoloji</option>
-            <option value="dugun">Düğün & Organizasyon</option>
-            <option value="egitim">Eğitim & Kurslar</option>
-            <option value="emlak">Emlak & Gayrimenkul</option>
-            <option value="evteknik">Ev & Teknik Servis</option>
-            <option value="medya">Fotoğraf & Video</option>
-            <option value="guzellik">Güzellik & Bakım</option>
-            <option value="hukuk">Hukuk & Danışmanlık</option>
-            <option value="insaat">İnşaat & Tadilat</option>
-            <option value="kres">Kreş & Anaokulu</option>
-            <option value="kurye">Kurye & Teslimat</option>
-            <option value="perakende">Mağaza & Perakende</option>
-            <option value="reklam">Matbaa, Reklam & Tasarım</option>
-            <option value="mobilya">Mobilya & Dekorasyon</option>
-            <option value="muhasebe">Muhasebe & Mali Müşavirlik</option>
-            <option value="nakliyat">Nakliyat & Taşımacılık</option>
-            <option value="yurt">Öğrenci Yurdu</option>
-            <option value="oto">Oto Servis & Sanayi</option>
-            <option value="restoran">Restoran & Kafe</option>
-            <option value="saglik">Sağlık & Klinik</option>
-            <option value="spor">Spor & Fitness</option>
-            <option value="surucu">Sürücü Kursu</option>
-            <option value="tarim">Tarım & Hayvancılık</option>
-            <option value="temizlik">Temizlik Hizmetleri</option>
-            <option value="turizm">Turizm & Konaklama</option>
-            <option value="veteriner">Veteriner & Evcil Hayvan</option>
-            <option value="esnaf">Yerel Esnaf</option>
+            <option value="">Ana kategori seçin</option>
           </select>
         </label>
 
-        <label>Hizmet <small style="font-weight:normal;">(isteğe bağlı)</small>
+        <label>Alt Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
           <select id="quoteService" disabled>
-            <option value="">Önce kategori seçin</option>
+            <option value="">Önce ana kategori seçin</option>
           </select>
+        </label>
+
         </label>
 
         <div class="form-grid-2">
@@ -244,36 +204,15 @@
         📍 Konumu Google Maps Bağlantısından Al
       </button>
 
-      <label>Kategori
+      <label>Ana Kategori
         <select id="institutionCategory" required>
-          <option value="">Kategori seçin</option>
-          <option value="teknoloji">Bilgisayar & Teknoloji</option>
-          <option value="dugun">Düğün & Organizasyon</option>
-          <option value="egitim">Eğitim & Kurslar</option>
-          <option value="emlak">Emlak & Gayrimenkul</option>
-          <option value="evteknik">Ev & Teknik Servis</option>
-          <option value="medya">Fotoğraf & Video</option>
-          <option value="guzellik">Güzellik & Bakım</option>
-          <option value="hukuk">Hukuk & Danışmanlık</option>
-          <option value="insaat">İnşaat & Tadilat</option>
-          <option value="kres">Kreş & Anaokulu</option>
-          <option value="kurye">Kurye & Teslimat</option>
-          <option value="perakende">Mağaza & Perakende</option>
-          <option value="reklam">Matbaa, Reklam & Tasarım</option>
-          <option value="mobilya">Mobilya & Dekorasyon</option>
-          <option value="muhasebe">Muhasebe & Mali Müşavirlik</option>
-          <option value="nakliyat">Nakliyat & Taşımacılık</option>
-          <option value="yurt">Öğrenci Yurdu</option>
-          <option value="oto">Oto Servis & Sanayi</option>
-          <option value="restoran">Restoran & Kafe</option>
-          <option value="saglik">Sağlık & Klinik</option>
-          <option value="spor">Spor & Fitness</option>
-          <option value="surucu">Sürücü Kursu</option>
-          <option value="tarim">Tarım & Hayvancılık</option>
-          <option value="temizlik">Temizlik Hizmetleri</option>
-          <option value="turizm">Turizm & Konaklama</option>
-          <option value="veteriner">Veteriner & Evcil Hayvan</option>
-          <option value="esnaf">Yerel Esnaf</option>
+          <option value="">Ana kategori seçin</option>
+        </select>
+      </label>
+
+      <label>Alt Kategori
+        <select id="institutionSubCategory" required disabled>
+          <option value="">Önce ana kategori seçin</option>
         </select>
       </label>
 
@@ -428,6 +367,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=21"></script>
+<script src="script.js?v=22"></script>
 </body>
 </html>
