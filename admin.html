@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=16">
+  <link rel="stylesheet" href="admin.css?v=17">
   <link rel="stylesheet" href="admin-advanced.css?v=2">
 </head>
 
@@ -96,7 +96,7 @@
         <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
         <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
         <button class="admin-tab" id="offerReportTabBtn">Teklif Veren Kurumlar</button>
-        <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri</button>
+        <button class="admin-tab" id="issuesTabBtn">Sorun Bildirimleri <span id="issueTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="supportTabBtn">Destek Merkezi <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="announcementsTabBtn">Duyurular</button>
         <button class="admin-tab" id="systemTabBtn">Sistem</button>
@@ -317,17 +317,47 @@
       <section id="issuesSection" hidden>
         <div class="section-title issue-title-row">
           <div>
-            <h3>Sorun / İhlal Bildirimleri</h3>
+            <h3>Sorun Çözüm Merkezi</h3>
             <p id="issueCount">Bildirimler yükleniyor...</p>
           </div>
         </div>
 
-        <div class="issue-toolbar">
-          <input type="search" id="issueSearch" placeholder="Teklif no, müşteri, kurum veya açıklama ara...">
+        <div class="issue-fairness-banner">
+          <strong>⚖ Adil inceleme ilkesi</strong>
+          <span>
+            Müşteri bildirimi tek başına firmayı suçlu saymaz. Kilitlenen teklif, iki tarafın açıklamaları
+            ve kayıtlı şartlar birlikte değerlendirilir. Yönetici kararı verilene kadar otomatik ceza uygulanmaz.
+          </span>
+        </div>
+
+        <div class="issue-kpi-grid">
+          <article><span>Toplam</span><strong id="issueKpiTotal">0</strong></article>
+          <article class="danger"><span>Yeni</span><strong id="issueKpiNew">0</strong></article>
+          <article class="info"><span>İnceleniyor</span><strong id="issueKpiReviewing">0</strong></article>
+          <article class="warning"><span>Firma Yanıtı Bekleniyor</span><strong id="issueKpiBusiness">0</strong></article>
+          <article class="warning"><span>Müşteri Yanıtı Bekleniyor</span><strong id="issueKpiCustomer">0</strong></article>
+          <article class="success"><span>Çözüldü</span><strong id="issueKpiResolved">0</strong></article>
+        </div>
+
+        <div class="issue-toolbar detailed">
+          <input type="search" id="issueSearch" placeholder="Teklif no, müşteri, kurum, açıklama veya karar ara...">
           <select id="issueStatusFilter">
             <option value="">Tüm durumlar</option>
-            <option value="new">Açık</option>
+            <option value="new">Yeni</option>
+            <option value="reviewing">İnceleniyor</option>
+            <option value="waiting_business">Firma yanıtı bekleniyor</option>
+            <option value="waiting_customer">Müşteri yanıtı bekleniyor</option>
             <option value="resolved">Çözüldü</option>
+            <option value="archived">Arşiv</option>
+          </select>
+          <select id="issueDecisionFilter">
+            <option value="">Tüm kararlar</option>
+            <option value="mutual_resolution">Taraflar uzlaştı</option>
+            <option value="offer_honored">Kilitli teklif uygulandı</option>
+            <option value="customer_claim_supported">Müşteri bildirimi kayıtlarla desteklendi</option>
+            <option value="business_response_supported">Firma açıklaması kayıtlarla desteklendi</option>
+            <option value="insufficient_evidence">Yeterli kanıt yok</option>
+            <option value="customer_withdrew">Müşteri bildirimini geri çekti</option>
           </select>
         </div>
 
@@ -767,7 +797,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=22"></script>
+  <script src="admin.js?v=23"></script>
   <script src="admin-advanced.js?v=3"></script>
 
 </body>
