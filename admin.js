@@ -2044,3 +2044,479 @@ async function updateInstitutionAccountStatus(id, status) {
     alert("Kurum hesabı güncellenemedi.");
   }
 }
+
+
+/* =========================================================
+   GENEL BAKIŞ / YÖNETİM MERKEZİ
+   ========================================================= */
+
+function setOverviewText(element, value) {
+  if (element) element.textContent = String(value ?? 0);
+}
+
+function getOverviewPendingApplications() {
+  return applicationRecords.filter(item =>
+    String(item.status || "pending") !== "rejected"
+  ).length;
+}
+
+function getOverviewAllIssues() {
+  return quoteRequestRecords.flatMap(request =>
+    (Array.isArray(request.liveIssues) ? request.liveIssues : []).map(issue => ({
+      ...issue,
+      quoteId: request.id,
+      request
+    }))
+  );
+}
+
+function refreshAdminOverview() {
+  if (!overviewSection) return;
+
+  const totalOffers = quoteRequestRecords.reduce(
+    (sum, request) => sum + (Array.isArray(request.liveOffers) ? request.liveOffers.length : 0),
+    0
+  );
+
+  const noOfferRequests = quoteRequestRecords.filter(request =>
+    (Array.isArray(request.liveOffers) ? request.liveOffers.length : 0) === 0 &&
+    !["done", "used"].includes(request.currentState || getAdminQuoteLiveState(request))
+  );
+
+  const lockedCount = quoteRequestRecords.filter(request =>
+    (request.currentState || getAdminQuoteLiveState(request)) === "locked"
+  ).length;
+
+  const usedCount = quoteRequestRecords.filter(request =>
+    (request.currentState || getAdminQuoteLiveState(request)) === "used"
+  ).length;
+
+  const allIssues = getOverviewAllIssues();
+  const openIssues = allIssues.filter(issue =>
+    String(issue.status || "new") !== "resolved"
+  );
+
+  setOverviewText(overviewInstitutionCount, institutionRecords.length);
+  setOverviewText(overviewPendingApplications, getOverviewPendingApplications());
+  setOverviewText(overviewQuoteCount, quoteRequestRecords.length);
+  setOverviewText(overviewNoOfferCount, noOfferRequests.length);
+  setOverviewText(overviewOfferCount, totalOffers);
+  setOverviewText(overviewLockedCount, lockedCount);
+  setOverviewText(overviewUsedCount, usedCount);
+  setOverviewText(overviewIssueCount, openIssues.length);
+
+  renderOverviewAttention(noOfferRequests, openIssues);
+  renderOverviewRecentActivity();
+  renderOverviewCategorySummary();
+  renderOverviewCitySummary();
+}
+
+function renderOverviewAttention(noOfferRequests, openIssues) {
+  if (!overviewAttentionList) return;
+
+  const items = [];
+
+  if (openIssues.length) {
+    items.push({
+      title: `${openIssues.length} açık sorun bildirimi`,
+      description: "Müşterilerin kilitlenmiş tekliflerle ilgili bildirimleri var.",
+      action: "issues",
+      button: "İncele"
+    });
+  }
+
+  if (noOfferRequests.length) {
+    items.push({
+      title: `${noOfferRequests.length} talep henüz teklif almadı`,
+      description: "Uygun kurum eşleşmelerini ve teklif alımı açık kurumları kontrol edin.",
+      action: "quotes",
+      button: "Taleplere Git"
+    });
+  }
+
+  const pendingApplications = getOverviewPendingApplications();
+  if (pendingApplications) {
+    items.push({
+      title: `${pendingApplications} kurum başvurusu bekliyor`,
+      description: "Yeni kurumları inceleyip onaylayabilir veya reddedebilirsiniz.",
+      action: "applications",
+      button: "Başvurular"
+    });
+  }
+
+  const pendingAccounts = institutionAccountRecords.filter(
+    item => String(item.status || "pending") === "pending"
+  ).length;
+
+  if (pendingAccounts) {
+    items.push({
+      title: `${pendingAccounts} kurum hesabı onay bekliyor`,
+      description: "Kurum paneline giriş yetkisi bekleyen hesaplar var.",
+      action: "accounts",
+      button: "Hesaplar"
+    });
+  }
+
+  if (!items.length) {
+    overviewAttentionList.innerHTML =
+      '<div class="empty-state">Şu anda acil işlem gerektiren bir kayıt görünmüyor.</div>';
+    setOverviewText(overviewAttentionCount, 0);
+    return;
+  }
+
+  setOverviewText(overviewAttentionCount, items.length);
+
+  overviewAttentionList.innerHTML = items.map(item => `
+    <div class="overview-attention-item">
+      <div class="overview-attention-main">
+        <strong>${escapeHtml(item.title)}</strong>
+        <span>${escapeHtml(item.description)}</span>
+      </div>
+      <button type="button" data-overview-action="${item.action}">
+        ${escapeHtml(item.button)}
+      </button>
+    </div>
+  `).join("");
+
+  overviewAttentionList.querySelectorAll("[data-overview-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      openAdminTabFromOverview(button.dataset.overviewAction);
+    });
+  });
+}
+
+function openAdminTabFromOverview(action) {
+  const map = {
+    overview: overviewTabBtn,
+    applications: applicationsTabBtn,
+    institutions: institutionsTabBtn,
+    quotes: quotesTabBtn,
+    offers: offerReportTabBtn,
+    issues: issuesTabBtn,
+    accounts: accountsTabBtn
+  };
+
+  map[action]?.click();
+}
+
+function renderOverviewRecentActivity() {
+  if (!overviewRecentActivity) return;
+
+  const recent = [...quoteRequestRecords]
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+    .slice(0, 8);
+
+  if (!recent.length) {
+    overviewRecentActivity.innerHTML =
+      '<div class="empty-state">Henüz teklif talebi bulunmuyor.</div>';
+    return;
+  }
+
+  overviewRecentActivity.innerHTML = recent.map(request => {
+    const state = request.currentState || getAdminQuoteLiveState(request);
+    const [stateLabel] = getAdminQuoteStateMeta(state);
+    const offers = Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
+
+    return `
+      <div class="overview-recent-item">
+        <div class="overview-recent-top">
+          <strong>${escapeHtml(request.service || "Teklif Talebi")}</strong>
+          <span>${formatDate(request.date)}</span>
+        </div>
+        <span>${escapeHtml(request.name || "-")} · ${escapeHtml([request.city, request.district].filter(Boolean).join(" / ") || "-")}</span>
+        <div class="overview-recent-meta">
+          <span class="overview-mini-badge">${escapeHtml(stateLabel)}</span>
+          <span class="overview-mini-badge">${offers} teklif</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderOverviewCategorySummary() {
+  if (!overviewCategoryTableBody) return;
+
+  const map = new Map();
+
+  quoteRequestRecords.forEach(request => {
+    const key = request.subCategory || request.category || request.mainCategory || "diger";
+
+    if (!map.has(key)) {
+      map.set(key, { key, requests: 0, offers: 0, covered: 0 });
+    }
+
+    const row = map.get(key);
+    const offerCount = Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
+
+    row.requests += 1;
+    row.offers += offerCount;
+    if (offerCount > 0) row.covered += 1;
+  });
+
+  const rows = [...map.values()]
+    .sort((a, b) => b.requests - a.requests || b.offers - a.offers)
+    .slice(0, 10);
+
+  if (!rows.length) {
+    overviewCategoryTableBody.innerHTML =
+      '<tr><td colspan="4">Henüz sektör verisi bulunmuyor.</td></tr>';
+    return;
+  }
+
+  overviewCategoryTableBody.innerHTML = rows.map(row => {
+    const coverage = row.requests ? (row.covered / row.requests) * 100 : 0;
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(getReportCategoryLabel(row.key))}</strong></td>
+        <td>${row.requests}</td>
+        <td>${row.offers}</td>
+        <td>
+          %${coverage.toFixed(0)}
+          <div class="overview-progress">
+            <span style="width:${Math.min(100, coverage)}%"></span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderOverviewCitySummary() {
+  if (!overviewCityList) return;
+
+  const map = new Map();
+
+  quoteRequestRecords.forEach(request => {
+    const city = String(request.city || "").trim() || "Belirsiz";
+
+    if (!map.has(city)) {
+      map.set(city, { city, requests: 0, offers: 0 });
+    }
+
+    const row = map.get(city);
+    row.requests += 1;
+    row.offers += Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
+  });
+
+  const rows = [...map.values()]
+    .sort((a, b) => b.requests - a.requests || b.offers - a.offers)
+    .slice(0, 8);
+
+  if (!rows.length) {
+    overviewCityList.innerHTML =
+      '<div class="empty-state">Henüz şehir verisi bulunmuyor.</div>';
+    return;
+  }
+
+  overviewCityList.innerHTML = rows.map(row => `
+    <div class="overview-city-item">
+      <div class="overview-city-top">
+        <strong>${escapeHtml(row.city)}</strong>
+        <span>${row.requests} talep</span>
+      </div>
+      <small>${row.offers} fiyat teklifi gönderildi</small>
+    </div>
+  `).join("");
+}
+
+overviewRefreshBtn?.addEventListener("click", async () => {
+  overviewRefreshBtn.disabled = true;
+  overviewRefreshBtn.textContent = "Yenileniyor...";
+
+  try {
+    await loadApplications();
+    await loadInstitutions();
+    await loadQuoteRequests();
+    await loadInstitutionAccounts();
+    refreshAdminOverview();
+  } finally {
+    overviewRefreshBtn.disabled = false;
+    overviewRefreshBtn.textContent = "Verileri Yenile";
+  }
+});
+
+/* =========================================================
+   SORUN / İHLAL MERKEZİ
+   ========================================================= */
+
+function getFilteredIssues() {
+  const query = String(issueSearch?.value || "")
+    .trim()
+    .toLocaleLowerCase("tr-TR");
+  const status = issueStatusFilter?.value || "";
+
+  return getOverviewAllIssues()
+    .filter(item => {
+      const request = item.request || {};
+      const lock = request.liveLock || {};
+      const itemStatus = String(item.status || "new");
+
+      const haystack = [
+        item.offerCode,
+        item.reason,
+        request.name,
+        request.phone,
+        request.service,
+        request.city,
+        request.district,
+        lock.institutionName
+      ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
+
+      return (!query || haystack.includes(query)) &&
+        (!status || itemStatus === status);
+    })
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+}
+
+function renderIssueCenter() {
+  if (!issuesList) return;
+
+  const all = getOverviewAllIssues();
+  const filtered = getFilteredIssues();
+  const open = all.filter(item => String(item.status || "new") !== "resolved").length;
+
+  if (issueCount) {
+    issueCount.textContent =
+      `${all.length} bildirim · ${open} açık · ${all.length - open} çözüldü`;
+  }
+
+  if (!filtered.length) {
+    issuesList.innerHTML =
+      '<div class="empty-state">Filtreye uygun sorun bildirimi bulunamadı.</div>';
+    return;
+  }
+
+  issuesList.innerHTML = filtered.map(item => {
+    const request = item.request || {};
+    const lock = request.liveLock || {};
+    const resolved = String(item.status || "new") === "resolved";
+
+    return `
+      <article class="issue-card ${resolved ? "is-resolved" : "is-open"}">
+        <div class="issue-card-top">
+          <div>
+            <h4>${escapeHtml(request.service || "Teklif Sorunu")}</h4>
+            <div class="issue-code">Teklif No: ${escapeHtml(item.offerCode || lock.offerCode || "-")}</div>
+          </div>
+          <span class="issue-status ${resolved ? "resolved" : "open"}">
+            ${resolved ? "Çözüldü" : "Açık"}
+          </span>
+        </div>
+
+        <div class="issue-reason">${escapeHtml(item.reason || "Açıklama yok")}</div>
+
+        <div class="issue-meta-grid">
+          <div>
+            <small>Müşteri</small>
+            <strong>${escapeHtml(request.name || "-")}</strong>
+          </div>
+          <div>
+            <small>Kurum</small>
+            <strong>${escapeHtml(lock.institutionName || "-")}</strong>
+          </div>
+          <div>
+            <small>Konum</small>
+            <strong>${escapeHtml([request.city, request.district].filter(Boolean).join(" / ") || "-")}</strong>
+          </div>
+          <div>
+            <small>Bildirim Tarihi</small>
+            <strong>${formatDate(item.date)}</strong>
+          </div>
+        </div>
+
+        <div class="issue-actions">
+          <button
+            type="button"
+            class="resolve"
+            data-issue-action="toggle"
+            data-quote-id="${request.id}"
+            data-issue-id="${item.id}"
+            data-next-status="${resolved ? "new" : "resolved"}"
+          >
+            ${resolved ? "Tekrar Aç" : "✓ Çözüldü Olarak İşaretle"}
+          </button>
+          <button type="button" data-issue-action="quotes">Teklif Talebini Gör</button>
+          <button
+            type="button"
+            class="delete"
+            data-issue-action="delete"
+            data-quote-id="${request.id}"
+            data-issue-id="${item.id}"
+          >
+            Sil
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  issuesList.querySelectorAll("[data-issue-action]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const action = button.dataset.issueAction;
+
+      if (action === "quotes") {
+        quotesTabBtn.click();
+        return;
+      }
+
+      if (action === "toggle") {
+        await updateOfferIssueStatus(
+          button.dataset.quoteId,
+          button.dataset.issueId,
+          button.dataset.nextStatus
+        );
+        return;
+      }
+
+      if (action === "delete") {
+        await deleteOfferIssue(
+          button.dataset.quoteId,
+          button.dataset.issueId
+        );
+      }
+    });
+  });
+}
+
+async function updateOfferIssueStatus(quoteId, issueId, status) {
+  try {
+    await db
+      .collection("quoteRequests")
+      .doc(quoteId)
+      .collection("offerIssues")
+      .doc(issueId)
+      .update({
+        status,
+        updatedAt: new Date().toISOString(),
+        resolvedAt: status === "resolved" ? new Date().toISOString() : null
+      });
+
+    await loadQuoteRequests();
+  } catch (error) {
+    console.error("Sorun bildirimi güncellenemedi:", error);
+    alert("Sorun bildirimi güncellenemedi.");
+  }
+}
+
+async function deleteOfferIssue(quoteId, issueId) {
+  const ok = confirm("Bu sorun bildirimini kalıcı olarak silmek istiyor musunuz?");
+  if (!ok) return;
+
+  try {
+    await db
+      .collection("quoteRequests")
+      .doc(quoteId)
+      .collection("offerIssues")
+      .doc(issueId)
+      .delete();
+
+    await loadQuoteRequests();
+  } catch (error) {
+    console.error("Sorun bildirimi silinemedi:", error);
+    alert("Sorun bildirimi silinemedi.");
+  }
+}
+
+issueSearch?.addEventListener("input", renderIssueCenter);
+issueStatusFilter?.addEventListener("change", renderIssueCenter);
