@@ -401,7 +401,8 @@
     const status = $("supportAdminStatus")?.value || "";
     const tickets = supportAdminRecords.filter(item => {
       const haystack = normalize([
-        item.institutionName,item.subject,item.message,item.adminReply,item.email
+        item.institutionName,item.subject,item.message,item.adminReply,item.email,
+        item.relatedRequestId,item.relatedOfferCode,item.relatedService
       ].filter(Boolean).join(" "));
       return (!query || haystack.includes(query)) &&
         (!status || String(item.status || "new") === status);
@@ -436,6 +437,33 @@
                   : "Yeni"}
           </span>
         </div>
+
+        ${ticket.relatedRequestId ? `
+          <div class="support-admin-reference">
+            <div class="support-admin-reference-head">
+              <div>
+                <span>İLGİLİ TALEP / TEKLİF</span>
+                <strong>${escapeHtml(ticket.relatedService || "Teklif Talebi")}</strong>
+              </div>
+              <button
+                type="button"
+                data-support-open-quote="${escapeHtml(ticket.relatedRequestId)}"
+              >Talebi Aç</button>
+            </div>
+            <div class="support-admin-reference-grid">
+              <span>Talep No <b>${escapeHtml(String(ticket.relatedRequestId).slice(0,10).toUpperCase())}</b></span>
+              <span>Teklif No <b>${escapeHtml(ticket.relatedOfferCode || "-")}</b></span>
+              <span>Durum <b>${escapeHtml(ticket.relatedOfferStatusLabel || ticket.relatedOfferStatus || "-")}</b></span>
+              ${ticket.relatedOfferPrice
+                ? `<span>Fiyat <b>${money(ticket.relatedOfferPrice)}</b></span>`
+                : ""}
+              ${ticket.relatedLocation
+                ? `<span>Konum <b>${escapeHtml(ticket.relatedLocation)}</b></span>`
+                : ""}
+            </div>
+          </div>
+        ` : ""}
+
         <div class="support-admin-message">${escapeHtml(ticket.message || "")}</div>
         ${ticket.adminReply ? `
           <div class="support-admin-existing-reply">
@@ -460,6 +488,36 @@
       button.addEventListener("click", () =>
         saveSupportTicketAdmin(button.dataset.supportSave)
       );
+    });
+
+    root.querySelectorAll("[data-support-open-quote]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const quoteId = button.dataset.supportOpenQuote;
+        document.getElementById("quotesTabBtn")?.click();
+
+        if (typeof loadQuoteRequests === "function" && !quoteRequestRecords.length) {
+          await loadQuoteRequests();
+        }
+
+        requestAnimationFrame(() => {
+          const card = document.querySelector(
+            '#quoteRequestsList .quote-request-card[data-quote-id="' +
+            CSS.escape(String(quoteId || "")) + '"]'
+          );
+
+          if (card) {
+            card.scrollIntoView({ behavior:"smooth", block:"center" });
+            card.classList.add("admin-focus-flash");
+            setTimeout(() => card.classList.remove("admin-focus-flash"), 1800);
+          } else {
+            const search = document.getElementById("quoteRequestSearch");
+            if (search) {
+              search.value = quoteId;
+              search.dispatchEvent(new Event("input",{bubbles:true}));
+            }
+          }
+        });
+      });
     });
   }
 
