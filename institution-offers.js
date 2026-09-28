@@ -59,6 +59,7 @@ loadMatchedQuotes = async function(){
 
     quoteRecords = snapshot.docs
       .map(doc=>({id:doc.id,...doc.data()}))
+      .filter(quoteMatchesInstitutionArea)
       .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
 
     await loadQuoteResponses();
