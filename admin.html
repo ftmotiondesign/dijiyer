@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=8">
+  <link rel="stylesheet" href="admin.css?v=9">
 </head>
 
 <body>
@@ -95,6 +95,47 @@
           <p id="institutionCount">Kurumlar yükleniyor...</p>
         </div>
 
+        <div class="institution-toolbar">
+          <div class="toolbar-search">
+            <span>⌕</span>
+            <input
+              type="search"
+              id="institutionSearch"
+              placeholder="Kurum adı, şehir, ilçe, telefon veya adres ara..."
+            >
+          </div>
+
+          <select id="institutionCategoryFilter">
+            <option value="">Tüm kategoriler</option>
+            <option value="surucu">Sürücü Kursu</option>
+            <option value="kres">Kreş & Anaokulu</option>
+            <option value="yurt">Öğrenci Yurdu</option>
+            <option value="esnaf">Yerel Esnaf</option>
+            <option value="diger">Diğer</option>
+          </select>
+
+          <select id="institutionCityFilter">
+            <option value="">Tüm şehirler</option>
+          </select>
+
+          <select id="institutionFeatureFilter">
+            <option value="">Tüm özellikler</option>
+            <option value="vip">Sadece VIP</option>
+            <option value="video">Sadece videolu</option>
+            <option value="offer">Teklif verenler</option>
+          </select>
+
+          <select id="institutionSort">
+            <option value="name">Ada göre A-Z</option>
+            <option value="city">Şehre göre</option>
+            <option value="newest">En yeni</option>
+          </select>
+
+          <button type="button" id="clearInstitutionFilters">Filtreleri Temizle</button>
+        </div>
+
+        <div class="toolbar-result" id="institutionFilterResult"></div>
+
         <div id="institutionsList"></div>
       </section>
 
@@ -179,7 +220,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=8"></script>
+  <script src="admin.js?v=9"></script>
 
 </body>
 </html>
