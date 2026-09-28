@@ -103,8 +103,29 @@
       <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
 
       <form id="quoteForm">
-        <label>Kategori
-          <select id="quoteCategory" required>
+        <label>Ne arıyorsunuz?
+          <input
+            id="quoteSearch"
+            required
+            type="text"
+            placeholder="Örn. ehliyet, anaokulu, lastik, kiralık ev..."
+          >
+        </label>
+
+        <button
+          type="button"
+          class="btn btn-light full"
+          id="detectQuoteCategoryBtn"
+        >
+          🔎 Uygun Kategoriyi Bul
+        </button>
+
+        <p style="font-size:12px;color:#68758a;margin-top:-4px;">
+          İstersen kategori seçmeden devam edebilirsin. Dijiyer aradığın hizmete göre eşleştirme yapar.
+        </p>
+
+        <label>Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteCategory">
             <option value="">Kategori seçin</option>
             <option value="surucu">Sürücü Kursu</option>
             <option value="kres">Kreş & Anaokulu</option>
@@ -123,8 +144,8 @@
           </select>
         </label>
 
-        <label>Aradığınız hizmet
-          <select id="quoteService" required disabled>
+        <label>Hizmet <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteService" disabled>
             <option value="">Önce kategori seçin</option>
           </select>
         </label>
@@ -316,6 +337,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=18"></script>
+<script src="script.js?v=19"></script>
 </body>
 </html>
