@@ -237,7 +237,7 @@ function renderDetail() {
   };
 
   document.getElementById('whatsappBtn').onclick = () => {
-    const msg = encodeURIComponent(`Merhaba, Rota Rehberi üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`);
+    const msg = encodeURIComponent(`Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 
