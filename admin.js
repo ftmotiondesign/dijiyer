@@ -18,6 +18,13 @@ const loginForm = document.getElementById("adminLoginForm");
 const loginMessage = document.getElementById("loginMessage");
 const applicationsList = document.getElementById("applicationsList");
 const applicationCount = document.getElementById("applicationCount");
+const institutionsList = document.getElementById("institutionsList");
+const institutionCount = document.getElementById("institutionCount");
+const applicationsSection = document.getElementById("applicationsSection");
+const institutionsSection = document.getElementById("institutionsSection");
+const applicationsTabBtn = document.getElementById("applicationsTabBtn");
+const institutionsTabBtn = document.getElementById("institutionsTabBtn");
+const institutionEditModal = document.getElementById("institutionEditModal");
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -42,6 +49,7 @@ auth.onAuthStateChanged(async (user) => {
     dashboardSection.hidden = false;
 
     await loadApplications();
+    await loadInstitutions();
   } else {
     loginSection.hidden = false;
     dashboardSection.hidden = true;
@@ -226,4 +234,159 @@ function escapeHtml(text) {
     '"': "&quot;",
     "'": "&#039;"
   })[char]);
+}
+
+
+applicationsTabBtn.addEventListener("click", () => {
+  applicationsSection.hidden = false;
+  institutionsSection.hidden = true;
+  applicationsTabBtn.classList.add("active");
+  institutionsTabBtn.classList.remove("active");
+});
+
+institutionsTabBtn.addEventListener("click", async () => {
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = false;
+  applicationsTabBtn.classList.remove("active");
+  institutionsTabBtn.classList.add("active");
+  await loadInstitutions();
+});
+
+async function loadInstitutions() {
+  institutionsList.innerHTML = "Kurumlar yükleniyor...";
+
+  try {
+    const snapshot = await db.collection("institutions").get();
+    institutionCount.textContent = `${snapshot.size} yayındaki kurum`;
+
+    if (snapshot.empty) {
+      institutionsList.innerHTML = "<p>Henüz onaylanmış kurum bulunmuyor.</p>";
+      return;
+    }
+
+    institutionsList.innerHTML = "";
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const card = document.createElement("div");
+      card.className = "institution-manage-card";
+
+      card.innerHTML = `
+        <div class="manage-main">
+          <div>
+            <h3>${escapeHtml(data.name || "-")}</h3>
+            <div class="manage-badges">
+              <span>${escapeHtml(data.category || "diger")}</span>
+              ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
+              ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
+            </div>
+          </div>
+
+          <div class="manage-actions">
+            <button class="edit-institution-btn">✏ Düzenle</button>
+            <button class="delete-institution-btn">🗑 Sil</button>
+          </div>
+        </div>
+
+        <div class="manage-info">
+          <p><strong>Konum:</strong> ${escapeHtml(data.city || "-")} / ${escapeHtml(data.district || "-")}</p>
+          <p><strong>Adres:</strong> ${escapeHtml(data.address || "-")}</p>
+          <p><strong>Telefon:</strong> ${escapeHtml(data.phone || "-")}</p>
+          <p><strong>Web / Instagram:</strong> ${escapeHtml(data.website || "-")}</p>
+        </div>
+      `;
+
+      card.querySelector(".edit-institution-btn").addEventListener("click", () => {
+        openInstitutionEdit(doc.id, data);
+      });
+
+      card.querySelector(".delete-institution-btn").addEventListener("click", () => {
+        deleteInstitution(doc.id, data.name || "Kurum");
+      });
+
+      institutionsList.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("Kurumlar yüklenemedi:", error);
+    institutionsList.innerHTML = "<p>Kurumlar yüklenemedi.</p>";
+  }
+}
+
+function openInstitutionEdit(id, data) {
+  document.getElementById("editInstitutionId").value = id;
+  document.getElementById("editName").value = data.name || "";
+  document.getElementById("editCategory").value = data.category || "diger";
+  document.getElementById("editCity").value = data.city || "";
+  document.getElementById("editDistrict").value = data.district || "";
+  document.getElementById("editAddress").value = data.address || "";
+  document.getElementById("editPhone").value = data.phone || "";
+  document.getElementById("editWebsite").value = data.website || "";
+  document.getElementById("editLat").value = Number.isFinite(data.lat) ? data.lat : "";
+  document.getElementById("editLng").value = Number.isFinite(data.lng) ? data.lng : "";
+  document.getElementById("editVip").checked = Boolean(data.vip);
+  document.getElementById("editVideo").checked = Boolean(data.video);
+  document.getElementById("editOffer").checked = data.offer !== false;
+
+  institutionEditModal.classList.remove("hidden");
+}
+
+document.getElementById("closeInstitutionEditModal").addEventListener("click", () => {
+  institutionEditModal.classList.add("hidden");
+});
+
+institutionEditModal.addEventListener("click", (e) => {
+  if (e.target === institutionEditModal) {
+    institutionEditModal.classList.add("hidden");
+  }
+});
+
+document.getElementById("institutionEditForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("editInstitutionId").value;
+  const city = document.getElementById("editCity").value.trim();
+  const district = document.getElementById("editDistrict").value.trim();
+  const latValue = document.getElementById("editLat").value;
+  const lngValue = document.getElementById("editLng").value;
+
+  const updates = {
+    name: document.getElementById("editName").value.trim(),
+    category: document.getElementById("editCategory").value,
+    city,
+    district,
+    location: [city, district].filter(Boolean).join(", "),
+    address: document.getElementById("editAddress").value.trim(),
+    phone: document.getElementById("editPhone").value.trim(),
+    website: document.getElementById("editWebsite").value.trim(),
+    lat: latValue === "" ? null : Number(latValue),
+    lng: lngValue === "" ? null : Number(lngValue),
+    vip: document.getElementById("editVip").checked,
+    video: document.getElementById("editVideo").checked,
+    offer: document.getElementById("editOffer").checked,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    await db.collection("institutions").doc(id).update(updates);
+    institutionEditModal.classList.add("hidden");
+    alert("Kurum bilgileri güncellendi.");
+    await loadInstitutions();
+  } catch (error) {
+    console.error("Kurum güncellenemedi:", error);
+    alert("Kurum güncellenemedi.");
+  }
+});
+
+async function deleteInstitution(id, name) {
+  const ok = confirm(`${name} kurumunu yayından kaldırıp silmek istiyor musunuz?`);
+  if (!ok) return;
+
+  try {
+    await db.collection("institutions").doc(id).delete();
+    await loadInstitutions();
+  } catch (error) {
+    console.error("Kurum silinemedi:", error);
+    alert("Kurum silinemedi.");
+  }
 }
