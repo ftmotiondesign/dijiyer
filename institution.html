@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=18">
+  <link rel="stylesheet" href="institution.css?v=19">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -532,6 +532,21 @@
               </select>
             </label>
 
+            <div class="support-reference-wrap hidden" id="supportReferenceWrap">
+              <label>İlgili Talep / Teklif
+                <select id="supportReferenceSelect">
+                  <option value="">Talep veya teklif seçin</option>
+                </select>
+              </label>
+
+              <div class="support-reference-preview hidden" id="supportReferencePreview"></div>
+
+              <small class="support-reference-help">
+                Teklif sorunu ve fiyat kilidi taleplerinde ilgili kaydı seçmeniz,
+                destek ekibinin süreci daha hızlı incelemesini sağlar.
+              </small>
+            </div>
+
             <label>Konu Başlığı
               <input id="supportSubject" type="text" maxlength="120" required
                 placeholder="Sorunu kısaca yazın">
@@ -735,7 +750,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=11"></script>
+  <script src="institution.js?v=12"></script>
   <script src="institution-layout.js?v=2"></script>
   <script src="institution-offers.js?v=9"></script>
   <script src="institution-communication.js?v=10"></script>
