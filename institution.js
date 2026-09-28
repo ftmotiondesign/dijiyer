@@ -13,6 +13,7 @@ const institutionSessionApp =
 
 const auth = institutionSessionApp.auth();
 const db = institutionSessionApp.firestore();
+const storage = institutionSessionApp.storage();
 
 let currentUser = null;
 let currentAccount = null;
@@ -193,6 +194,260 @@ function parseProfileGalleryUrls(value) {
     .slice(0, 6);
 }
 
+function setProfileUploadStatus(id, text, state = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("is-uploading", "is-success", "is-error");
+  if (state) el.classList.add(state);
+}
+
+function validateProfileImage(file) {
+  if (!file) throw new Error("Görsel seçilmedi.");
+
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type)) {
+    throw new Error("Yalnızca JPG, PNG veya WebP görsel yükleyebilirsiniz.");
+  }
+
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error("Görsel boyutu 8 MB'dan büyük olamaz.");
+  }
+}
+
+function profileImageExtension(file) {
+  const byType = {
+    "image/jpeg":"jpg",
+    "image/png":"png",
+    "image/webp":"webp"
+  };
+  return byType[file.type] || "jpg";
+}
+
+function profileStoragePath(kind, file) {
+  const userId = String(currentUser?.uid || "");
+  const institutionId = String(currentAccount?.institutionId || "");
+  const random = Math.random().toString(36).slice(2, 9);
+  return [
+    "institution-media",
+    userId,
+    institutionId,
+    kind,
+    Date.now() + "_" + random + "." + profileImageExtension(file)
+  ].join("/");
+}
+
+async function uploadInstitutionProfileImage(file, kind, statusId, label) {
+  validateProfileImage(file);
+
+  if (!currentUser?.uid || !currentAccount?.institutionId) {
+    throw new Error("Kurum oturumu bulunamadı. Tekrar giriş yapın.");
+  }
+
+  const ref = storage.ref().child(profileStoragePath(kind, file));
+  const task = ref.put(file, {
+    contentType:file.type,
+    customMetadata:{
+      institutionId:String(currentAccount.institutionId)
+    }
+  });
+
+  return await new Promise((resolve, reject) => {
+    task.on(
+      "state_changed",
+      snapshot => {
+        const percent = snapshot.totalBytes
+          ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+          : 0;
+        setProfileUploadStatus(
+          statusId,
+          label + " yükleniyor · %" + percent,
+          "is-uploading"
+        );
+      },
+      error => reject(error),
+      async () => {
+        try {
+          resolve(await task.snapshot.ref.getDownloadURL());
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+}
+
+async function deleteOwnProfileStorageUrl(url) {
+  const safe = safeProfileUrl(url);
+  if (!safe || !safe.includes("firebasestorage.googleapis.com")) return;
+  try {
+    await storage.refFromURL(safe).delete();
+  } catch (_) {}
+}
+
+function profileUploadErrorText(error) {
+  if (error?.code === "storage/unauthorized") {
+    return "Yükleme yetkisi kapalı. Firebase Storage kurallarını yayınlayın.";
+  }
+  if (error?.code === "storage/canceled") {
+    return "Yükleme iptal edildi.";
+  }
+  return error?.message || "Görsel yüklenemedi.";
+}
+
+async function saveUploadedSingleImage(file, kind, fieldName, inputId, statusId, label) {
+  if (!file) return;
+
+  const previousUrl = safeProfileUrl(currentInstitution?.[fieldName] || "");
+
+  try {
+    const url = await uploadInstitutionProfileImage(
+      file, kind, statusId, label
+    );
+
+    await db.collection("institutions")
+      .doc(currentAccount.institutionId)
+      .update({ [fieldName]:url });
+
+    currentInstitution[fieldName] = url;
+
+    const input = document.getElementById(inputId);
+    if (input) input.value = url;
+
+    renderProfileMediaPreview();
+    updateProfileCompletion();
+
+    setProfileUploadStatus(
+      statusId,
+      label + " yüklendi ve profile kaydedildi.",
+      "is-success"
+    );
+
+    if (previousUrl && previousUrl !== url) {
+      deleteOwnProfileStorageUrl(previousUrl);
+    }
+  } catch (error) {
+    console.error(label + " yüklenemedi:", error);
+    setProfileUploadStatus(
+      statusId,
+      profileUploadErrorText(error),
+      "is-error"
+    );
+  }
+}
+
+async function uploadProfileGalleryFiles(files) {
+  const statusId = "profileGalleryUploadStatus";
+  const selected = [...(files || [])];
+  if (!selected.length) return;
+
+  const current = parseProfileGalleryUrls(
+    currentInstitution?.galleryUrls ||
+    document.getElementById("profileGalleryUrls")?.value
+  );
+
+  const remaining = Math.max(0, 6 - current.length);
+  if (!remaining) {
+    setProfileUploadStatus(
+      statusId,
+      "Galeride en fazla 6 görsel olabilir. Önce bir görseli kaldırın.",
+      "is-error"
+    );
+    return;
+  }
+
+  const rows = selected.slice(0, remaining);
+  const uploaded = [];
+
+  try {
+    for (let i = 0; i < rows.length; i++) {
+      const file = rows[i];
+      validateProfileImage(file);
+
+      setProfileUploadStatus(
+        statusId,
+        "Galeri yükleniyor · " + (i + 1) + "/" + rows.length,
+        "is-uploading"
+      );
+
+      const url = await uploadInstitutionProfileImage(
+        file,
+        "gallery",
+        statusId,
+        "Galeri " + (i + 1) + "/" + rows.length
+      );
+      uploaded.push(url);
+    }
+
+    const next = [...current, ...uploaded].slice(0, 6);
+
+    await db.collection("institutions")
+      .doc(currentAccount.institutionId)
+      .update({ galleryUrls:next });
+
+    currentInstitution.galleryUrls = next;
+
+    const input = document.getElementById("profileGalleryUrls");
+    if (input) input.value = next.join("\n");
+
+    renderProfileMediaPreview();
+
+    setProfileUploadStatus(
+      statusId,
+      uploaded.length + " görsel yüklendi ve profile kaydedildi.",
+      "is-success"
+    );
+  } catch (error) {
+    console.error("Galeri yüklenemedi:", error);
+    setProfileUploadStatus(
+      statusId,
+      profileUploadErrorText(error),
+      "is-error"
+    );
+  }
+}
+
+async function removeProfileGalleryImage(index) {
+  const current = parseProfileGalleryUrls(
+    currentInstitution?.galleryUrls ||
+    document.getElementById("profileGalleryUrls")?.value
+  );
+
+  const url = current[index];
+  if (!url) return;
+
+  const next = current.filter((_, itemIndex) => itemIndex !== index);
+
+  try {
+    await db.collection("institutions")
+      .doc(currentAccount.institutionId)
+      .update({ galleryUrls:next });
+
+    currentInstitution.galleryUrls = next;
+
+    const input = document.getElementById("profileGalleryUrls");
+    if (input) input.value = next.join("\n");
+
+    renderProfileMediaPreview();
+    updateProfileCompletion();
+
+    setProfileUploadStatus(
+      "profileGalleryUploadStatus",
+      "Görsel galeriden kaldırıldı.",
+      "is-success"
+    );
+
+    deleteOwnProfileStorageUrl(url);
+  } catch (error) {
+    console.error("Galeri görseli kaldırılamadı:", error);
+    setProfileUploadStatus(
+      "profileGalleryUploadStatus",
+      "Görsel kaldırılamadı.",
+      "is-error"
+    );
+  }
+}
+
 function renderProfileMediaPreview() {
   const logoUrl = safeProfileUrl(document.getElementById("profileLogoUrl")?.value);
   const coverUrl = safeProfileUrl(document.getElementById("profileCoverUrl")?.value);
@@ -218,9 +473,17 @@ function renderProfileMediaPreview() {
   }
 
   if (galleryPreview) {
-    galleryPreview.innerHTML = galleryUrls.map((url, index) =>
-      '<img src="' + escapeHtml(url) + '" alt="Galeri görseli ' + (index + 1) + '">'
-    ).join("");
+    galleryPreview.innerHTML = galleryUrls.map((url, index) => `
+      <div class="firm-gallery-preview-item">
+        <img src="${escapeHtml(url)}" alt="Galeri görseli ${index + 1}">
+        <button
+          type="button"
+          class="firm-gallery-remove-btn"
+          data-remove-profile-gallery="${index}"
+          aria-label="Görseli kaldır"
+        >×</button>
+      </div>
+    `).join("");
   }
 }
 
@@ -893,6 +1156,43 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
 
 ["profileLogoUrl","profileCoverUrl","profileGalleryUrls"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", renderProfileMediaPreview);
+});
+
+document.getElementById("profileLogoFile")?.addEventListener("change", async event => {
+  const file = event.target.files?.[0];
+  await saveUploadedSingleImage(
+    file,
+    "logo",
+    "logoUrl",
+    "profileLogoUrl",
+    "profileLogoUploadStatus",
+    "Logo"
+  );
+  event.target.value = "";
+});
+
+document.getElementById("profileCoverFile")?.addEventListener("change", async event => {
+  const file = event.target.files?.[0];
+  await saveUploadedSingleImage(
+    file,
+    "cover",
+    "coverUrl",
+    "profileCoverUrl",
+    "profileCoverUploadStatus",
+    "Kapak"
+  );
+  event.target.value = "";
+});
+
+document.getElementById("profileGalleryFiles")?.addEventListener("change", async event => {
+  await uploadProfileGalleryFiles(event.target.files);
+  event.target.value = "";
+});
+
+document.getElementById("profileGalleryPreview")?.addEventListener("click", event => {
+  const button = event.target.closest("[data-remove-profile-gallery]");
+  if (!button) return;
+  removeProfileGalleryImage(Number(button.dataset.removeProfileGallery));
 });
 
 document.getElementById("toggleOfferBtn").addEventListener("click", async () => {
