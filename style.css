@@ -246,3 +246,74 @@ button{cursor:pointer}
 
   
 }
+
+
+/* Kurum giriş sistemi */
+.institution-access-card{
+  width:min(520px,94vw);
+}
+
+.access-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:16px 0;
+  background:#f3f6fb;
+  padding:5px;
+  border-radius:12px;
+}
+
+.access-tab{
+  border:0;
+  background:transparent;
+  padding:11px;
+  border-radius:9px;
+  font-weight:700;
+  color:#64748b;
+}
+
+.access-tab.active{
+  background:#fff;
+  color:#1677ff;
+  box-shadow:0 2px 8px rgba(15,23,42,.08);
+}
+
+#institutionLoginForm,
+#institutionRegisterForm{
+  display:grid;
+  gap:13px;
+}
+
+#institutionLoginForm label,
+#institutionRegisterForm label{
+  display:grid;
+  gap:7px;
+  font-weight:700;
+  font-size:14px;
+}
+
+#institutionLoginForm input,
+#institutionRegisterForm input,
+#institutionRegisterForm select{
+  width:100%;
+  padding:12px;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  background:#fff;
+}
+
+.access-help,
+.access-message{
+  font-size:12px;
+  color:#64748b;
+  margin:0;
+}
+
+.access-message{
+  min-height:18px;
+  font-weight:600;
+}
+
+.hidden{
+  display:none !important;
+}
