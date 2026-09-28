@@ -1,4 +1,15 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",
+  authDomain: "dijiyer.firebaseapp.com",
+  projectId: "dijiyer",
+  storageBucket: "dijiyer.firebasestorage.app",
+  messagingSenderId: "847787778815",
+  appId: "1:847787778815:web:57058aa8dcc4143ec5a2ca"
+};
 
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
 const institutions = [
   {
     id: 1,
