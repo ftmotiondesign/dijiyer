@@ -124,6 +124,46 @@ getQuoteViewStatus = function(quote){
   return sellerOfferState(quote);
 };
 
+function renderFirmHomeOpportunities(){
+  const countEl = document.getElementById("firmOpportunityCount");
+  const listEl = document.getElementById("firmOpportunityList");
+  if (!listEl) return;
+
+  const rows = quoteRecords
+    .filter(quote => sellerOfferState(quote) === "new")
+    .slice(0, 4);
+
+  if (countEl) {
+    countEl.textContent = String(
+      quoteRecords.filter(quote => sellerOfferState(quote) === "new").length
+    );
+  }
+
+  if (!rows.length) {
+    listEl.innerHTML =
+      '<div class="empty-state">Şu anda cevap bekleyen yeni bir talep yok. Yeni eşleşmeler geldiğinde burada görünecek.</div>';
+    return;
+  }
+
+  listEl.innerHTML = rows.map(quote => {
+    const place = [quote.city, quote.district].filter(Boolean).join(" / ") || "-";
+    const note = String(quote.note || "").trim();
+    return `
+      <article class="firm-opportunity-item">
+        <div class="firm-opportunity-main">
+          <strong>${offerSafe(quote.service || "Teklif Talebi")}</strong>
+          <div class="firm-opportunity-meta">
+            <span>📍 ${offerSafe(place)}</span>
+            <span>🕒 ${offerSafe(formatRelativeTime(quote.date))}</span>
+          </div>
+          ${note ? `<div class="firm-opportunity-note">${offerSafe(note)}</div>` : ""}
+        </div>
+        <button type="button" data-firm-opportunity="${offerSafe(quote.id)}">Teklif Ver</button>
+      </article>
+    `;
+  }).join("");
+}
+
 renderSummary = function(){
   const states = quoteRecords.map(q => sellerOfferState(q));
   const newCount = states.filter(state => state === "new").length;
@@ -142,6 +182,21 @@ renderSummary = function(){
   document.getElementById("lockedQuoteCount").textContent = lockedCount;
   document.getElementById("latestQuoteTime").textContent =
     quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
+
+  const firmHomeNewCount = document.getElementById("firmHomeNewCount");
+  const firmHomeOfferedCount = document.getElementById("firmHomeOfferedCount");
+  const firmHomeOfferStatus = document.getElementById("firmHomeOfferStatus");
+
+  if (firmHomeNewCount) firmHomeNewCount.textContent = String(newCount);
+  if (firmHomeOfferedCount) firmHomeOfferedCount.textContent = String(institutionOfferMap.size);
+
+  if (firmHomeOfferStatus) {
+    const enabled = currentInstitution?.offer !== false;
+    firmHomeOfferStatus.textContent = enabled ? "● Teklif alımı açık" : "● Teklif alımı kapalı";
+    firmHomeOfferStatus.classList.toggle("off", !enabled);
+  }
+
+  renderFirmHomeOpportunities();
 
   updateQuoteShortcutCounts({
     all: quoteRecords.length,
