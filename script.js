@@ -107,6 +107,17 @@ function addMarkers() {
 }
 addMarkers();
 
+// Temel kurum listesini ve detay kartını hemen göster.
+// Aşağıdaki ek özelliklerden biri hata verse bile ana ekran boş kalmasın.
+setTimeout(() => {
+  try {
+    renderList();
+    renderDetail();
+  } catch (error) {
+    console.error('Ana ekran oluşturulamadı:', error);
+  }
+}, 0);
+
 function getFilteredInstitutions() {
   const query = document.getElementById('searchInput').value.trim().toLowerCase();
   const checkedCategories = [...document.querySelectorAll('.categoryFilter:checked')].map(x => x.value);
@@ -760,6 +771,4 @@ async function loadApprovedInstitutions() {
 }
 
 loadProvinces();
-renderList();
-renderDetail();
 loadApprovedInstitutions();
