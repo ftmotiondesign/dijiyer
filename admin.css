@@ -18,7 +18,7 @@ button{
 }
 
 .admin-page{
-  max-width:1200px;
+  max-width:1440px;
   margin:auto;
   padding:30px;
 }
@@ -1455,5 +1455,407 @@ button{
 
   .offer-report-export-btn{
     width:100%;
+  }
+}
+
+
+/* ===== GENEL BAKIŞ / YÖNETİM MERKEZİ ===== */
+.admin-tabs{
+  flex-wrap:wrap;
+}
+
+.overview-title-row,
+.issue-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.overview-refresh-btn{
+  border:1px solid #d9e0ea;
+  background:#fff;
+  color:#172033;
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:700;
+}
+
+.overview-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin:18px 0;
+}
+
+.overview-kpi{
+  background:#fff;
+  border:1px solid #e6ebf2;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 6px 20px rgba(16,24,40,.04);
+}
+
+.overview-kpi span{
+  display:block;
+  color:#667085;
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.overview-kpi strong{
+  display:block;
+  font-size:31px;
+  line-height:1;
+  margin-bottom:9px;
+}
+
+.overview-kpi small{
+  color:#8a94a6;
+}
+
+.overview-kpi.warning{
+  border-color:#f8d78b;
+  background:#fffaf0;
+}
+
+.overview-kpi.danger{
+  border-color:#f7b4b4;
+  background:#fff6f6;
+}
+
+.overview-kpi.success{
+  border-color:#bfe8cf;
+  background:#f7fff9;
+}
+
+.overview-two-column{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:16px;
+}
+
+.overview-panel{
+  background:#fff;
+  border:1px solid #e6ebf2;
+  border-radius:16px;
+  padding:18px;
+  min-width:0;
+}
+
+.overview-panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.overview-panel-head h4{
+  margin:0 0 4px;
+  font-size:17px;
+}
+
+.overview-panel-head p{
+  margin:0;
+  color:#7a8495;
+  font-size:13px;
+}
+
+.overview-count-badge{
+  min-width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#eef4ff;
+  color:#1677ff;
+  font-weight:800;
+}
+
+.overview-attention-list,
+.overview-recent-list,
+.overview-city-list{
+  display:grid;
+  gap:10px;
+}
+
+.overview-attention-item,
+.overview-recent-item,
+.overview-city-item{
+  border:1px solid #edf0f5;
+  border-radius:12px;
+  padding:12px 13px;
+  background:#fbfcfe;
+}
+
+.overview-attention-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.overview-attention-main{
+  min-width:0;
+}
+
+.overview-attention-main strong,
+.overview-recent-item strong{
+  display:block;
+  margin-bottom:4px;
+}
+
+.overview-attention-main span,
+.overview-recent-item span{
+  color:#7a8495;
+  font-size:13px;
+}
+
+.overview-attention-item button{
+  border:0;
+  background:#1677ff;
+  color:#fff;
+  border-radius:9px;
+  padding:8px 11px;
+  font-weight:700;
+  flex:0 0 auto;
+}
+
+.overview-recent-top,
+.overview-city-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.overview-recent-meta{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:7px;
+}
+
+.overview-mini-badge{
+  font-size:12px;
+  padding:4px 7px;
+  background:#eef4ff;
+  color:#2457a6;
+  border-radius:999px;
+}
+
+.overview-table-wrap{
+  overflow:auto;
+}
+
+.overview-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.overview-table th,
+.overview-table td{
+  text-align:left;
+  padding:10px 8px;
+  border-bottom:1px solid #edf0f5;
+  font-size:13px;
+}
+
+.overview-table th{
+  color:#667085;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+}
+
+.overview-progress{
+  height:7px;
+  background:#edf1f7;
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.overview-progress > span{
+  display:block;
+  height:100%;
+  background:#1677ff;
+  border-radius:999px;
+}
+
+.overview-city-item strong{
+  font-size:14px;
+}
+
+.overview-city-item small{
+  color:#7a8495;
+}
+
+/* ===== SORUN / İHLAL MERKEZİ ===== */
+.issue-toolbar{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 220px;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.issue-toolbar input,
+.issue-toolbar select{
+  width:100%;
+  border:1px solid #d9e0ea;
+  border-radius:10px;
+  padding:11px 12px;
+  background:#fff;
+}
+
+#issuesList{
+  display:grid;
+  gap:12px;
+}
+
+.issue-card{
+  background:#fff;
+  border:1px solid #e6ebf2;
+  border-radius:15px;
+  padding:16px;
+}
+
+.issue-card.is-open{
+  border-left:4px solid #e5484d;
+}
+
+.issue-card.is-resolved{
+  border-left:4px solid #2fa36b;
+  opacity:.9;
+}
+
+.issue-card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.issue-card h4{
+  margin:0 0 5px;
+}
+
+.issue-code{
+  color:#667085;
+  font-size:13px;
+}
+
+.issue-status{
+  border-radius:999px;
+  padding:6px 9px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.issue-status.open{
+  background:#fff0f0;
+  color:#c92a2a;
+}
+
+.issue-status.resolved{
+  background:#ecfbf2;
+  color:#238a55;
+}
+
+.issue-reason{
+  margin:13px 0;
+  padding:12px;
+  background:#f8fafc;
+  border-radius:10px;
+  line-height:1.5;
+}
+
+.issue-meta-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:13px;
+}
+
+.issue-meta-grid div{
+  background:#fbfcfe;
+  border:1px solid #edf0f5;
+  border-radius:10px;
+  padding:10px;
+}
+
+.issue-meta-grid small{
+  display:block;
+  color:#7a8495;
+  margin-bottom:4px;
+}
+
+.issue-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.issue-actions button{
+  border:1px solid #d9e0ea;
+  background:#fff;
+  border-radius:9px;
+  padding:9px 12px;
+  font-weight:700;
+}
+
+.issue-actions .resolve{
+  background:#1677ff;
+  border-color:#1677ff;
+  color:#fff;
+}
+
+.issue-actions .delete{
+  color:#c92a2a;
+  border-color:#f1c1c1;
+}
+
+@media (max-width:1100px){
+  .overview-kpi-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .issue-meta-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media (max-width:780px){
+  .admin-page{
+    padding:16px;
+  }
+  .overview-two-column{
+    grid-template-columns:1fr;
+  }
+  .overview-kpi-grid{
+    grid-template-columns:1fr 1fr;
+  }
+  .issue-toolbar{
+    grid-template-columns:1fr;
+  }
+  .overview-title-row,
+  .issue-title-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+@media (max-width:520px){
+  .overview-kpi-grid{
+    grid-template-columns:1fr;
+  }
+  .issue-meta-grid{
+    grid-template-columns:1fr;
+  }
+  .overview-attention-item{
+    align-items:flex-start;
+    flex-direction:column;
   }
 }
