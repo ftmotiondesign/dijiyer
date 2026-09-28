@@ -11,6 +11,8 @@
   let enhancing=false;
   let watchedQuoteId=null;
   let customerAudioUnlocked=false;
+  let customerResumeBusy=false;
+  let lastCustomerResumeSync=0;
   const customerMessageTitleBase=document.title;
 
   const originalOfferHtml=offerHtml;
@@ -415,6 +417,106 @@
       customerMessageWatchers.set(institutionId,unsubscribe);
     });
   }
+
+  function disconnectCustomerMessageWatchersOnly(){
+    customerMessageWatchers.forEach(unsubscribe=>{
+      try{unsubscribe();}catch(_){}
+    });
+    customerMessageWatchers.clear();
+  }
+
+  async function syncCustomerMessagesNow(bundle,{notify=true}={}){
+    if(!bundle?.access?.quoteId)return;
+
+    const quoteId=String(bundle.access.quoteId);
+    const offers=bundle.offers||[];
+
+    await Promise.all(offers.map(async offer=>{
+      const institutionId=String(offer.institutionId||offer.id||"");
+      if(!institutionId)return;
+
+      const previousRows=customerMessageRows.get(institutionId)||[];
+      const previousLatest=latestInstitutionMessage(previousRows);
+
+      try{
+        const snapshot=await db.collection("quoteRequests").doc(quoteId)
+          .collection("conversations").doc(institutionId)
+          .collection("messages").orderBy("date","asc").get();
+
+        const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+        customerMessageRows.set(institutionId,rows);
+
+        const modalOpen=
+          activeConversation &&
+          activeConversation.quoteId===quoteId &&
+          activeConversation.institutionId===institutionId &&
+          !document.getElementById("djyConversationModal")?.classList.contains("hidden");
+
+        if(modalOpen){
+          const latest=latestInstitutionMessage(rows);
+          if(latest?.date)setCustomerSeenAt(quoteId,institutionId,latest.date);
+          customerUnreadMap.set(institutionId,0);
+          return;
+        }
+
+        const unread=customerUnreadMessages(quoteId,institutionId,rows);
+        customerUnreadMap.set(institutionId,unread.length);
+
+        if(notify && unread.length){
+          const latest=latestInstitutionMessage(rows);
+          const previousDate=String(previousLatest?.date||"");
+          const latestDate=String(latest?.date||"");
+
+          if(latest && (!previousDate || latestDate>previousDate)){
+            showCustomerMessageAlert(institutionId,latest);
+          }
+        }
+      }catch(error){
+        console.warn("Mobil mesaj senkronizasyonu yapılamadı:",institutionId,error);
+      }
+    }));
+
+    updateCustomerMessageTitle();
+    renderLiveTracking();
+  }
+
+  async function resumeCustomerMessaging(){
+    if(customerResumeBusy||!currentAccess||!liveOffers.length)return;
+
+    const now=Date.now();
+    if(now-lastCustomerResumeSync<1500)return;
+
+    customerResumeBusy=true;
+    lastCustomerResumeSync=now;
+
+    try{
+      const bundle={
+        access:currentAccess,
+        offers:liveOffers,
+        lock:liveLock
+      };
+
+      // Mobil tarayıcı arka planda Firestore bağlantısını askıya alabilir.
+      // Sayfaya dönüldüğünde mesajları bir kez eşitleyip canlı dinleyicileri yeniden kuruyoruz.
+      await syncCustomerMessagesNow(bundle,{notify:true});
+      disconnectCustomerMessageWatchersOnly();
+      ensureCustomerMessageWatchers(bundle);
+    }finally{
+      customerResumeBusy=false;
+    }
+  }
+
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden)resumeCustomerMessaging();
+  });
+
+  window.addEventListener("pageshow",()=>{
+    setTimeout(resumeCustomerMessaging,150);
+  });
+
+  window.addEventListener("focus",()=>{
+    setTimeout(resumeCustomerMessaging,250);
+  });
 
   document.addEventListener("pointerdown",()=>{customerAudioUnlocked=true;},{once:true});
   document.addEventListener("keydown",()=>{customerAudioUnlocked=true;},{once:true});
