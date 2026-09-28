@@ -138,3 +138,31 @@
   line-height:1.4;
   font-weight:700;
 }
+
+
+/* Teklif doğrulama detayları */
+.verify-data .verify-data-wide{
+  align-items:flex-start;
+}
+.verify-data .verify-data-wide strong{
+  max-width:68%;
+  line-height:1.45;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.verify-lock-value{
+  color:#15803d;
+}
+@media(max-width:640px){
+  .verify-data div{
+    align-items:flex-start;
+  }
+  .verify-data strong{
+    max-width:62%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .verify-data .verify-data-wide strong{
+    max-width:62%;
+  }
+}
