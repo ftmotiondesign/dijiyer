@@ -103,12 +103,49 @@
     });
   }
 
-  function firmMessageHtml(msg){
+  function chatDayKey(value){
+    if(!value)return "";
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return "";
+    return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+  }
+
+  function chatDayLabel(value){
+    if(!value)return "";
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return "";
+
+    const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+    const day=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+    const diff=Math.round((today-day)/86400000);
+
+    if(diff===0)return "Bugün";
+    if(diff===1)return "Dün";
+    return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  }
+
+  function renderFirmConversation(rows){
+    let previousDay="";
+    let previousSender="";
+    return rows.map(msg=>{
+      const day=chatDayKey(msg.date);
+      const dayDivider=day!==previousDay
+        ? '<div class="chat-day-divider"><span>'+offerSafe(chatDayLabel(msg.date))+'</span></div>'
+        : '';
+      const sameSender=previousDay===day && previousSender===msg.sender;
+      previousDay=day;
+      previousSender=msg.sender;
+      return dayDivider + firmMessageHtml(msg,sameSender);
+    }).join("");
+  }
+
+  function firmMessageHtml(msg,sameSender=false){
     const mine=msg.sender==="institution";
     const text=offerSafe(msg.text||"").replace(/\n/g,"<br>");
     const time=offerSafe(formatChatTime(msg.date));
     return `
-      <div class="firm-message-row ${mine?"mine":"theirs"}">
+      <div class="firm-message-row ${mine?"mine":"theirs"} ${sameSender?"same-sender":""}">
         <div class="firm-message ${mine?"mine":"customer"} ${msg.kind||""}">
           <div class="firm-message-text">${text}</div>
           <div class="firm-message-meta">
@@ -371,7 +408,7 @@
       [quote?.service,quote?.city,quote?.district].filter(Boolean).join(" · ")||"Teklif görüşmesi";
 
     box.innerHTML=rows.length
-      ? rows.map(firmMessageHtml).join("")
+      ? renderFirmConversation(rows)
       : '<div class="firm-empty-message">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
 
     requestAnimationFrame(()=>{
