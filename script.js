@@ -275,6 +275,152 @@ function renderSidebarCategories() {
 
 renderSidebarCategories();
 
+function clearAllCategorySelections() {
+  document.querySelectorAll('.categoryFilter, .subCategoryFilter')
+    .forEach(input => { input.checked = false; });
+}
+
+function syncMobileQuickFilterState() {
+  const videoOnly = document.getElementById('videoOnly');
+  const offerOnly = document.getElementById('offerOnly');
+  document.getElementById('mobileVideoOnlyBtn')?.classList.toggle('active', Boolean(videoOnly?.checked));
+  document.getElementById('mobileOfferOnlyBtn')?.classList.toggle('active', Boolean(offerOnly?.checked));
+}
+
+function getSelectedMainCategory() {
+  const checkedSub = document.querySelector('.subCategoryFilter:checked');
+  if (checkedSub) return checkedSub.dataset.mainCategory || '';
+
+  const checkedMain = document.querySelector('.categoryFilter:checked');
+  return checkedMain?.value || '';
+}
+
+function renderMobileSubcategories(mainKey) {
+  const root = document.getElementById('mobileSubcategories');
+  if (!root) return;
+
+  const rows = Object.entries(categoryTaxonomy[mainKey]?.subs || {});
+
+  if (!mainKey || !rows.length) {
+    root.innerHTML = '';
+    root.classList.add('hidden');
+    return;
+  }
+
+  root.classList.remove('hidden');
+  root.innerHTML = rows.map(([subKey, label]) => {
+    const input = document.querySelector(
+      '.subCategoryFilter[data-main-category="' + mainKey + '"][value="' + subKey + '"]'
+    );
+    return `
+      <button
+        type="button"
+        class="mobile-subcategory-btn ${input?.checked ? 'active' : ''}"
+        data-mobile-subcategory="${subKey}"
+        data-mobile-main="${mainKey}"
+      >${label}</button>
+    `;
+  }).join('');
+
+  root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
+    button.addEventListener('click', () => {
+      const selectedMain = button.dataset.mobileMain;
+      const selectedSub = button.dataset.mobileSubcategory;
+      const target = document.querySelector(
+        '.subCategoryFilter[data-main-category="' + selectedMain + '"][value="' + selectedSub + '"]'
+      );
+      const parent = document.querySelector(
+        '.categoryFilter[value="' + selectedMain + '"]'
+      );
+
+      const wasSelected = Boolean(target?.checked);
+
+      document.querySelectorAll(
+        '.subCategoryFilter[data-main-category="' + selectedMain + '"]'
+      ).forEach(input => { input.checked = false; });
+
+      if (target && !wasSelected) {
+        target.checked = true;
+        if (parent) parent.checked = true;
+      }
+
+      renderMobileCategories();
+      renderList();
+    });
+  });
+}
+
+function renderMobileCategories() {
+  const root = document.getElementById('mobileCategories');
+  if (!root) return;
+
+  const activeMain = getSelectedMainCategory();
+
+  root.innerHTML = Object.entries(categoryTaxonomy).map(([key, item]) => `
+    <button
+      type="button"
+      class="mobile-category-btn ${activeMain === key ? 'active' : ''}"
+      data-mobile-category="${key}"
+    >
+      <span class="mobile-category-icon">${categoryIcons[key] || '•'}</span>
+      <span>${item.label}</span>
+    </button>
+  `).join('');
+
+  root.querySelectorAll('[data-mobile-category]').forEach(button => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.mobileCategory;
+      const currentlyActive = getSelectedMainCategory() === key;
+
+      clearAllCategorySelections();
+
+      if (!currentlyActive) {
+        const parent = document.querySelector('.categoryFilter[value="' + key + '"]');
+        if (parent) parent.checked = true;
+      }
+
+      renderMobileCategories();
+      renderList();
+    });
+  });
+
+  renderMobileSubcategories(activeMain);
+  syncMobileQuickFilterState();
+}
+
+document.getElementById('mobileClearCategoriesBtn')?.addEventListener('click', () => {
+  clearAllCategorySelections();
+  renderMobileCategories();
+  renderList();
+});
+
+document.getElementById('mobileVideoOnlyBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('videoOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+});
+
+document.getElementById('mobileOfferOnlyBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('offerOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+});
+
+document.querySelectorAll('.categoryFilter, .subCategoryFilter').forEach(input => {
+  input.addEventListener('change', () => {
+    renderMobileCategories();
+  });
+});
+
+document.getElementById('videoOnly')?.addEventListener('change', syncMobileQuickFilterState);
+document.getElementById('offerOnly')?.addEventListener('change', syncMobileQuickFilterState);
+
+renderMobileCategories();
+
 const institutions = [
   {
     id: 1,
@@ -344,7 +490,32 @@ let activeLocationDistrict = 'Merkez';
 let institutionMapInstance = null;
 let institutionLocationMarker = null;
 
-const map = L.map('map', { zoomControl: true }).setView([40.149, 26.407], 14);
+const map = L.map('map', {
+  zoomControl: true,
+  // Fare tekerleği haritanın üzerindeyken sayfanın aşağı/yukarı kaymasını engellemesin.
+  scrollWheelZoom: false
+}).setView([40.149, 26.407], 14);
+
+function configureMainMapInteraction() {
+  const isMobileMap = window.matchMedia('(max-width: 820px)').matches;
+
+  if (isMobileMap) {
+    // Mobilde parmakla dikey kaydırma sayfayı hareket ettirsin; harita kaydırmayı yakalamasın.
+    map.dragging.disable();
+    map.touchZoom.disable();
+    map.doubleClickZoom.disable();
+  } else {
+    map.dragging.enable();
+    map.touchZoom.enable();
+    map.doubleClickZoom.enable();
+  }
+
+  // Her boyutta sayfa scroll'u öncelikli olsun.
+  map.scrollWheelZoom.disable();
+}
+
+configureMainMapInteraction();
+window.addEventListener('resize', configureMainMapInteraction);
 
 const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -2190,6 +2361,14 @@ document.getElementById('institutionForgotPasswordBtn').addEventListener('click'
   }
 });
 
+
+document.getElementById('heroQuoteBtn')?.addEventListener('click', () => {
+  openModal('quoteModal');
+});
+
+document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
+  document.getElementById('institutionAddBtn')?.click();
+});
 
 loadMainLocationProvinces();
 loadProvinces();
