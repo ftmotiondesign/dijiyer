@@ -73,16 +73,70 @@ const categoryTaxonomy = {
 };
 
 const legacyCategoryToTaxonomy = {
-  kres:['egitim','kres'], surucu:['egitim','surucu'], yurt:['egitim','yurt'], egitim:['egitim','dershane'],
-  oto:['otomotiv','oto_servis'], restoran:['yemeicme','restoran'], guzellik:['saglikguzellik','guzellik'],
-  saglik:['saglikguzellik','klinik'], spor:['saglikguzellik','spor'], mobilya:['evyapi','mobilya'],
-  insaat:['evyapi','insaat'], evteknik:['evyapi','teknik_servis'], temizlik:['evyapi','temizlik'],
-  emlak:['emlak','emlak_ofisi'], turizm:['turizm','otel'], dugun:['organizasyonmedya','organizasyon'],
-  medya:['organizasyonmedya','video'], reklam:['organizasyonmedya','reklam'], nakliyat:['tasimacilik','nakliyat'],
-  kurye:['tasimacilik','kurye'], hukuk:['profesyonel','hukuk'], muhasebe:['profesyonel','muhasebe'],
-  teknoloji:['profesyonel','bilgisayar'], veteriner:['profesyonel','veteriner'], tarim:['profesyonel','tarim'],
-  perakende:['alisveris','esnaf'], esnaf:['alisveris','esnaf'], diger:['diger','diger']
-};
+  // Eğitim
+  kres:['egitim','kres'], dershane:['egitim','dershane'], surucu:['egitim','surucu'],
+  ozel_ders:['egitim','ozel_ders'], dil_kursu:['egitim','dil_kursu'], etut:['egitim','etut'],
+  ozel_okul:['egitim','ozel_okul'], yurt:['egitim','yurt'], egitim:['egitim','dershane'],
+
+  // Otomotiv
+  oto:['otomotiv','oto_servis'], oto_servis:['otomotiv','oto_servis'],
+  kaporta_boya:['otomotiv','kaporta_boya'], oto_elektrik:['otomotiv','oto_elektrik'],
+  lastik_jant:['otomotiv','lastik_jant'], oto_yikama:['otomotiv','oto_yikama'],
+  ekspertiz:['otomotiv','ekspertiz'], galeri:['otomotiv','galeri'], rentacar:['otomotiv','rentacar'],
+  yedek_parca:['otomotiv','yedek_parca'], motosiklet:['otomotiv','motosiklet'],
+
+  // Yeme & İçme
+  restoran:['yemeicme','restoran'], kafe:['yemeicme','kafe'], fastfood:['yemeicme','fastfood'],
+  pastane:['yemeicme','pastane'], pizza:['yemeicme','pizza'], doner:['yemeicme','doner'],
+  pide_lahmacun:['yemeicme','pide_lahmacun'], catering:['yemeicme','catering'],
+  ev_yemekleri:['yemeicme','ev_yemekleri'],
+
+  // Sağlık & Güzellik
+  saglik:['saglikguzellik','klinik'], dis_klinigi:['saglikguzellik','dis_klinigi'],
+  klinik:['saglikguzellik','klinik'], psikolog:['saglikguzellik','psikolog'],
+  diyetisyen:['saglikguzellik','diyetisyen'], fizyoterapi:['saglikguzellik','fizyoterapi'],
+  guzellik:['saglikguzellik','guzellik'], kuafor:['saglikguzellik','kuafor'],
+  berber:['saglikguzellik','berber'], spor:['saglikguzellik','spor'],
+
+  // Ev & Yapı
+  mobilya:['evyapi','mobilya'], dekorasyon:['evyapi','dekorasyon'], insaat:['evyapi','insaat'],
+  elektrikci:['evyapi','elektrikci'], tesisatci:['evyapi','tesisatci'],
+  teknik_servis:['evyapi','teknik_servis'], evteknik:['evyapi','teknik_servis'],
+  klima:['evyapi','klima'], cam_balkon:['evyapi','cam_balkon'], temizlik:['evyapi','temizlik'],
+
+  // Emlak
+  emlak:['emlak','emlak_ofisi'], emlak_ofisi:['emlak','emlak_ofisi'], konut:['emlak','konut'],
+  arsa:['emlak','arsa'], ticari:['emlak','ticari'], gunluk_kiralik:['emlak','gunluk_kiralik'],
+
+  // Turizm
+  turizm:['turizm','otel'], otel:['turizm','otel'], pansiyon:['turizm','pansiyon'],
+  apart:['turizm','apart'], bungalov:['turizm','bungalov'], seyahat:['turizm','seyahat'],
+  kamp:['turizm','kamp'],
+
+  // Organizasyon & Medya
+  dugun:['organizasyonmedya','organizasyon'], dugun_salonu:['organizasyonmedya','dugun_salonu'],
+  organizasyon:['organizasyonmedya','organizasyon'], fotograf:['organizasyonmedya','fotograf'],
+  medya:['organizasyonmedya','video'], video:['organizasyonmedya','video'],
+  drone:['organizasyonmedya','drone'], gelinlik:['organizasyonmedya','gelinlik'],
+  cicekci:['organizasyonmedya','cicekci'], reklam:['organizasyonmedya','reklam'],
+
+  // Taşımacılık
+  nakliyat:['tasimacilik','nakliyat'], kurye:['tasimacilik','kurye'],
+  sehirici:['tasimacilik','sehirici'], depolama:['tasimacilik','depolama'],
+
+  // Profesyonel
+  hukuk:['profesyonel','hukuk'], muhasebe:['profesyonel','muhasebe'], web:['profesyonel','web'],
+  sosyal_medya:['profesyonel','sosyal_medya'], teknoloji:['profesyonel','bilgisayar'],
+  bilgisayar:['profesyonel','bilgisayar'], danismanlik:['profesyonel','danismanlik'],
+  veteriner:['profesyonel','veteriner'], tarim:['profesyonel','tarim'],
+
+  // Alışveriş
+  perakende:['alisveris','esnaf'], giyim:['alisveris','giyim'], ayakkabi:['alisveris','ayakkabi'],
+  market:['alisveris','market'], elektronik:['alisveris','elektronik'], kirtasiye:['alisveris','kirtasiye'],
+  petshop:['alisveris','petshop'], zuccaciye:['alisveris','zuccaciye'], esnaf:['alisveris','esnaf'],
+
+  diger:['diger','diger']
+}
 
 function resolveTaxonomy(record) {
   if (record && record.mainCategory) {
