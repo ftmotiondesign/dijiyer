@@ -2498,6 +2498,18 @@ document.getElementById('institutionForgotPasswordBtn').addEventListener('click'
 });
 
 
+document.getElementById('mobileQuoteActionBtn')?.addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  openModal('quoteModal');
+});
+
+document.getElementById('mobileInstitutionActionBtn')?.addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  openModal('institutionAccessModal');
+});
+
 document.getElementById('heroQuoteBtn')?.addEventListener('click', () => {
   openModal('quoteModal');
 });
