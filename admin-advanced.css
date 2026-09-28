@@ -182,3 +182,23 @@
     width:100%;
   }
 }
+
+
+/* Compact kurum sağlık alanı */
+.institution-health-slot .institution-health-box{
+  margin-top:9px;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  padding:8px;
+  gap:6px;
+}
+.institution-health-slot .institution-health-box span{
+  font-size:8px;
+}
+.institution-health-slot .institution-health-box strong{
+  font-size:9px;
+}
+@media(max-width:620px){
+  .institution-health-slot .institution-health-box{
+    grid-template-columns:1fr 1fr;
+  }
+}
