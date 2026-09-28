@@ -25,6 +25,15 @@ const institutionsSection = document.getElementById("institutionsSection");
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
+const institutionSearch = document.getElementById("institutionSearch");
+const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
+const institutionCityFilter = document.getElementById("institutionCityFilter");
+const institutionFeatureFilter = document.getElementById("institutionFeatureFilter");
+const institutionSort = document.getElementById("institutionSort");
+const clearInstitutionFilters = document.getElementById("clearInstitutionFilters");
+const institutionFilterResult = document.getElementById("institutionFilterResult");
+
+let institutionRecords = [];
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -257,61 +266,259 @@ async function loadInstitutions() {
 
   try {
     const snapshot = await db.collection("institutions").get();
-    institutionCount.textContent = `${snapshot.size} yayındaki kurum`;
 
-    if (snapshot.empty) {
-      institutionsList.innerHTML = "<p>Henüz onaylanmış kurum bulunmuyor.</p>";
-      return;
-    }
+    institutionRecords = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
-    institutionsList.innerHTML = "";
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const card = document.createElement("div");
-      card.className = "institution-manage-card";
-
-      card.innerHTML = `
-        <div class="manage-main">
-          <div>
-            <h3>${escapeHtml(data.name || "-")}</h3>
-            <div class="manage-badges">
-              <span>${escapeHtml(data.category || "diger")}</span>
-              ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
-              ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
-            </div>
-          </div>
-
-          <div class="manage-actions">
-            <button class="edit-institution-btn">✏ Düzenle</button>
-            <button class="delete-institution-btn">🗑 Sil</button>
-          </div>
-        </div>
-
-        <div class="manage-info">
-          <p><strong>Konum:</strong> ${escapeHtml(data.city || "-")} / ${escapeHtml(data.district || "-")}</p>
-          <p><strong>Adres:</strong> ${escapeHtml(data.address || "-")}</p>
-          <p><strong>Telefon:</strong> ${escapeHtml(data.phone || "-")}</p>
-          <p><strong>Web / Instagram:</strong> ${escapeHtml(data.website || "-")}</p>
-        </div>
-      `;
-
-      card.querySelector(".edit-institution-btn").addEventListener("click", () => {
-        openInstitutionEdit(doc.id, data);
-      });
-
-      card.querySelector(".delete-institution-btn").addEventListener("click", () => {
-        deleteInstitution(doc.id, data.name || "Kurum");
-      });
-
-      institutionsList.appendChild(card);
-    });
+    institutionCount.textContent = `${institutionRecords.length} yayındaki kurum`;
+    populateInstitutionCityFilter();
+    renderManagedInstitutions();
 
   } catch (error) {
     console.error("Kurumlar yüklenemedi:", error);
     institutionsList.innerHTML = "<p>Kurumlar yüklenemedi.</p>";
   }
 }
+
+function populateInstitutionCityFilter() {
+  const selected = institutionCityFilter.value;
+
+  const cities = [...new Set(
+    institutionRecords
+      .map(item => (item.city || "").trim())
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "tr"));
+
+  institutionCityFilter.innerHTML =
+    '<option value="">Tüm şehirler</option>' +
+    cities.map(city =>
+      `<option value="${escapeHtml(city)}">${escapeHtml(city)}</option>`
+    ).join("");
+
+  if (cities.includes(selected)) {
+    institutionCityFilter.value = selected;
+  }
+}
+
+function getFilteredManagedInstitutions() {
+  const query = institutionSearch.value.trim().toLocaleLowerCase("tr-TR");
+  const category = institutionCategoryFilter.value;
+  const city = institutionCityFilter.value;
+  const feature = institutionFeatureFilter.value;
+  const sort = institutionSort.value;
+
+  let data = institutionRecords.filter(item => {
+    const haystack = [
+      item.name,
+      item.city,
+      item.district,
+      item.address,
+      item.phone,
+      item.website
+    ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
+
+    const matchesQuery = !query || haystack.includes(query);
+    const matchesCategory = !category || item.category === category;
+    const matchesCity = !city || item.city === city;
+
+    let matchesFeature = true;
+    if (feature === "vip") matchesFeature = Boolean(item.vip);
+    if (feature === "video") matchesFeature = Boolean(item.video);
+    if (feature === "offer") matchesFeature = item.offer !== false;
+
+    return matchesQuery && matchesCategory && matchesCity && matchesFeature;
+  });
+
+  if (sort === "name") {
+    data.sort((a, b) => (a.name || "").localeCompare(b.name || "", "tr"));
+  } else if (sort === "city") {
+    data.sort((a, b) => {
+      const cityCompare = (a.city || "").localeCompare(b.city || "", "tr");
+      if (cityCompare !== 0) return cityCompare;
+      return (a.name || "").localeCompare(b.name || "", "tr");
+    });
+  } else if (sort === "newest") {
+    data.sort((a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  return data;
+}
+
+function renderManagedInstitutions() {
+  const data = getFilteredManagedInstitutions();
+
+  institutionFilterResult.textContent =
+    `${data.length} kurum gösteriliyor · Toplam ${institutionRecords.length}`;
+
+  if (!data.length) {
+    institutionsList.innerHTML =
+      '<div class="empty-state">Aramaya veya filtrelere uygun kurum bulunamadı.</div>';
+    return;
+  }
+
+  institutionsList.innerHTML = "";
+
+  data.forEach((data) => {
+    const card = document.createElement("div");
+    card.className = "institution-manage-card";
+
+    const categoryLabels = {
+      surucu: "Sürücü Kursu",
+      kres: "Kreş & Anaokulu",
+      yurt: "Öğrenci Yurdu",
+      esnaf: "Yerel Esnaf",
+      diger: "Diğer"
+    };
+
+    const hasCoordinates =
+      Number.isFinite(data.lat) && Number.isFinite(data.lng);
+
+    const phoneDigits = String(data.phone || "").replace(/\D/g, "");
+    const whatsappDigits =
+      phoneDigits.startsWith("0") ? "90" + phoneDigits.slice(1) : phoneDigits;
+
+    card.innerHTML = `
+      <div class="manage-main">
+        <div class="manage-title">
+          <h3>${escapeHtml(data.name || "-")}</h3>
+          <div class="manage-badges">
+            <span>${escapeHtml(categoryLabels[data.category] || data.category || "Diğer")}</span>
+            ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
+            ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
+            ${data.offer !== false ? '<span class="badge-offer">Teklif</span>' : ''}
+          </div>
+        </div>
+
+        <div class="manage-actions">
+          <button class="edit-institution-btn">✏ Düzenle</button>
+          ${hasCoordinates ? '<button class="map-institution-btn">📍 Harita</button>' : ''}
+          <button class="delete-institution-btn">🗑 Sil</button>
+        </div>
+      </div>
+
+      <div class="manage-info-grid">
+        <div>
+          <small>Konum</small>
+          <strong>${escapeHtml([data.city, data.district].filter(Boolean).join(" / ") || "-")}</strong>
+        </div>
+        <div>
+          <small>Telefon</small>
+          <strong>${escapeHtml(data.phone || "-")}</strong>
+        </div>
+        <div class="wide">
+          <small>Adres</small>
+          <strong>${escapeHtml(data.address || "-")}</strong>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="quick-toggle ${data.vip ? "on" : ""}" data-field="vip">
+          ★ VIP: ${data.vip ? "Açık" : "Kapalı"}
+        </button>
+        <button class="quick-toggle ${data.video ? "on" : ""}" data-field="video">
+          ▶ Video: ${data.video ? "Var" : "Yok"}
+        </button>
+        <button class="quick-toggle ${data.offer !== false ? "on" : ""}" data-field="offer">
+          ₺ Teklif: ${data.offer !== false ? "Açık" : "Kapalı"}
+        </button>
+        ${whatsappDigits ? '<button class="whatsapp-manage-btn">WhatsApp</button>' : ''}
+        ${data.website ? '<button class="website-manage-btn">Web / Instagram</button>' : ''}
+      </div>
+    `;
+
+    card.querySelector(".edit-institution-btn").addEventListener("click", () => {
+      openInstitutionEdit(data.id, data);
+    });
+
+    card.querySelector(".delete-institution-btn").addEventListener("click", () => {
+      deleteInstitution(data.id, data.name || "Kurum");
+    });
+
+    const mapBtn = card.querySelector(".map-institution-btn");
+    if (mapBtn) {
+      mapBtn.addEventListener("click", () => {
+        window.open(
+          `https://www.google.com/maps/search/?api=1&query=${data.lat},${data.lng}`,
+          "_blank"
+        );
+      });
+    }
+
+    card.querySelectorAll(".quick-toggle").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const field = button.dataset.field;
+        const currentValue =
+          field === "offer" ? data.offer !== false : Boolean(data[field]);
+
+        await quickUpdateInstitution(data.id, field, !currentValue);
+      });
+    });
+
+    const whatsappBtn = card.querySelector(".whatsapp-manage-btn");
+    if (whatsappBtn) {
+      whatsappBtn.addEventListener("click", () => {
+        window.open(`https://wa.me/${whatsappDigits}`, "_blank");
+      });
+    }
+
+    const websiteBtn = card.querySelector(".website-manage-btn");
+    if (websiteBtn) {
+      websiteBtn.addEventListener("click", () => {
+        let url = data.website.trim();
+        if (!/^https?:\/\//i.test(url)) {
+          if (url.startsWith("@")) {
+            url = "https://instagram.com/" + url.slice(1);
+          } else if (!url.includes(".")) {
+            url = "https://instagram.com/" + url.replace(/^\//, "");
+          } else {
+            url = "https://" + url;
+          }
+        }
+        window.open(url, "_blank");
+      });
+    }
+
+    institutionsList.appendChild(card);
+  });
+}
+
+async function quickUpdateInstitution(id, field, value) {
+  try {
+    await db.collection("institutions").doc(id).update({
+      [field]: value,
+      updatedAt: new Date().toISOString()
+    });
+
+    const record = institutionRecords.find(item => item.id === id);
+    if (record) record[field] = value;
+
+    renderManagedInstitutions();
+  } catch (error) {
+    console.error("Hızlı güncelleme hatası:", error);
+    alert("Değişiklik kaydedilemedi.");
+  }
+}
+
+[institutionSearch, institutionCategoryFilter, institutionCityFilter, institutionFeatureFilter, institutionSort]
+  .forEach((element) => {
+    element.addEventListener(
+      element.tagName === "INPUT" ? "input" : "change",
+      renderManagedInstitutions
+    );
+  });
+
+clearInstitutionFilters.addEventListener("click", () => {
+  institutionSearch.value = "";
+  institutionCategoryFilter.value = "";
+  institutionCityFilter.value = "";
+  institutionFeatureFilter.value = "";
+  institutionSort.value = "name";
+  renderManagedInstitutions();
+});
 
 function openInstitutionEdit(id, data) {
   document.getElementById("editInstitutionId").value = id;
