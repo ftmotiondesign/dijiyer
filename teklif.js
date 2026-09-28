@@ -22,6 +22,8 @@ let stopOffersListener=null;
 let stopLockListener=null;
 let liveOffers=[];
 let liveLock=null;
+const offerUpdateVersions=new Map();
+let offerListenerInitialized=false;
 
 function safe(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -72,6 +74,46 @@ function offerState(offer,lock){
 function stateLabel(s){
   return {offered:"Fiyat Garantili",locked:"Fiyat Kilitli",used:"Kullanıldı",expired:"Süresi Doldu",closed:"Başka teklif seçildi"}[s]||s;
 }
+
+function offerValidityHoursFromDates(offer){
+  if(!offer?.expiresAt)return 0;
+  const start=offer.updatedAt || offer.createdAt;
+  if(!start)return 0;
+  const diff=new Date(offer.expiresAt).getTime()-new Date(start).getTime();
+  if(!Number.isFinite(diff)||diff<=0)return 0;
+  return Math.max(1,Math.round(diff/3600000));
+}
+function offerValidityText(offer){
+  const h=offerValidityHoursFromDates(offer);
+  if(h===1)return "1 saat";
+  if(h===3)return "3 saat";
+  if(h===12)return "12 saat";
+  if(h===24)return "24 saat";
+  if(h===72)return "3 gün";
+  if(h===168)return "7 gün";
+  if(h>24 && h%24===0)return (h/24)+" gün";
+  return h ? h+" saat" : "belirtilen süre";
+}
+function acceptanceTermsHtml(offer){
+  const validity=offerValidityText(offer);
+  return `
+    <div class="offer-acceptance-box">
+      <div class="offer-acceptance-title">Teklifi kabul etme şartları</div>
+      <div class="offer-acceptance-grid">
+        <div><span>Fiyat</span><strong>${money(offer.price)}</strong></div>
+        <div><span>Geçerlilik</span><strong>${safe(validity)}</strong></div>
+        <div><span>Son kabul</span><strong>${fmtDate(offer.expiresAt)}</strong></div>
+        <div><span>KDV</span><strong>${safe(offer.vatStatus||"-")}</strong></div>
+        <div><span>Ek ücret</span><strong>${safe(offer.extraFee||"Yok")}</strong></div>
+      </div>
+      <div class="offer-acceptance-warning">
+        ⏱ Bu fiyat <b>${safe(validity)}</b> için geçerlidir. Bu süre içinde fiyatı kilitlemezseniz teklif geçersiz olur.
+      </div>
+      ${offer.conditions?`<div class="offer-condition"><span>Özel şart</span><strong>${safe(offer.conditions)}</strong></div>`:""}
+    </div>
+  `;
+}
+
 
 function getLocalRequestDetail(access){
   try{
@@ -162,7 +204,33 @@ function startLiveTracking(access){
 
   stopOffersListener=quoteRef.collection("offers").onSnapshot(
     snapshot=>{
-      liveOffers=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+      const nextOffers=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+
+      if(offerListenerInitialized){
+        snapshot.docChanges().forEach(change=>{
+          if(change.type!=="modified")return;
+          const offer={id:change.doc.id,...change.doc.data()};
+          const previousVersion=offerUpdateVersions.get(change.doc.id)||"";
+          const nextVersion=String(offer.updatedAt||"");
+
+          if(nextVersion && nextVersion!==previousVersion){
+            toast(
+              (offer.institutionName||"Kurum")+
+              " teklifini güncelledi: "+
+              money(offer.price)+
+              " · "+
+              offerValidityText(offer)+
+              " geçerli"
+            );
+          }
+        });
+      }
+
+      nextOffers.forEach(offer=>{
+        offerUpdateVersions.set(String(offer.id),String(offer.updatedAt||""));
+      });
+      offerListenerInitialized=true;
+      liveOffers=nextOffers;
       renderLiveTracking();
     },
     error=>{
@@ -225,10 +293,23 @@ function offerHtml(bundle,offer){
         </div>
         <span class="status ${state==="expired"||state==="closed"?"red":state==="locked"||state==="used"?"green":""}">${stateLabel(state)}</span>
       </div>
+
       <div class="offer-price">${money(offer.price)}</div>
-      <div class="offer-meta">KDV: ${safe(offer.vatStatus||"-")} · Son geçerlilik: ${fmtDate(offer.expiresAt)}</div>
-      <div class="offer-scope"><b>Teklif kapsamı</b><br>${safe(offer.scope||"")}${offer.conditions?`<br><br><b>Özel şart:</b> ${safe(offer.conditions)}`:""}</div>
-      ${state==="offered"?`<div class="offer-actions"><button class="lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}">🔒 Fiyatı Kilitle</button></div>`:""}
+      <div class="offer-updated-meta">
+        ${offer.updatedAt && offer.createdAt && offer.updatedAt!==offer.createdAt
+          ? "🔔 Teklif güncellendi · "+fmtDate(offer.updatedAt)
+          : "Teklif tarihi · "+fmtDate(offer.createdAt)}
+      </div>
+
+      <div class="offer-scope">
+        <b>Teklif kapsamı</b><br>${safe(offer.scope||"")}
+      </div>
+
+      ${acceptanceTermsHtml(offer)}
+
+      ${state==="offered"
+        ? `<div class="offer-actions"><button class="lock-btn accept-lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}">✓ Şartları Kabul Et ve Fiyatı Kilitle</button></div>`
+        : ""}
     </article>`;
 }
 
@@ -333,7 +414,7 @@ async function lockOffer(quoteId,institutionId,button){
   }catch(error){
     console.error(error);toast(error.message||"Teklif kilitlenemedi.");
   }finally{
-    button.disabled=false;button.textContent="🔒 Fiyatı Kilitle";
+    button.disabled=false;button.textContent="✓ Şartları Kabul Et ve Fiyatı Kilitle";
   }
 }
 
