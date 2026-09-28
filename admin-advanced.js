@@ -377,7 +377,9 @@
       vip_on:["vip",true,"VIP yapıldı"],
       vip_off:["vip",false,"VIP kaldırıldı"],
       video_on:["video",true,"Videolu işaretlendi"],
-      video_off:["video",false,"Video işareti kaldırıldı"]
+      video_off:["video",false,"Video işareti kaldırıldı"],
+      ad_pause:["adStatus","paused","Reklam duraklatıldı"],
+      ad_off:["adStatus","none","Reklam kapatıldı"]
     };
     if (!actions[action]) return;
 
