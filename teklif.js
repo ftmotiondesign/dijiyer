@@ -252,6 +252,8 @@ function render(bundle){
         <button class="secondary" id="copyTrackingCodeBtn">Takip Kodunu Kopyala</button>
         <a class="secondary" href="index.html">Yeni Talep Oluştur</a>
       </div>
+
+      ${requestDetailHtml(access)}
     </article>
 
     ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
