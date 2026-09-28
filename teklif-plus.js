@@ -540,7 +540,7 @@
             <textarea id="djyMessageText" rows="3" maxlength="1000" placeholder="Firmaya sorunuzu yazın..."></textarea>
             <div class="djy-message-actions">
               <button type="button" class="djy-revision-btn" id="djyRevisionBtn">↻ Revizyon İste</button>
-              <button type="submit" class="lock-btn">Mesaj Gönder</button>
+              <button type="submit" class="djy-chat-send" aria-label="Gönder">➤</button>
             </div>
           </form>
         </div>
@@ -553,6 +553,13 @@
     document.getElementById("djyMessageForm").addEventListener("submit",async e=>{
       e.preventDefault();
       await sendCustomerMessage("message");
+    });
+
+    document.getElementById("djyMessageText").addEventListener("keydown",event=>{
+      if(event.key==="Enter" && !event.shiftKey && !event.isComposing){
+        event.preventDefault();
+        document.getElementById("djyMessageForm").requestSubmit();
+      }
     });
     document.getElementById("djyRevisionBtn").onclick=()=>sendCustomerMessage("revision_request");
   }
