@@ -372,7 +372,9 @@
         .collection("messages").orderBy("date","asc");
 
       const unsubscribe=ref.onSnapshot(snapshot=>{
-        const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+        const rows=sortCustomerConversationMessages(
+          snapshot.docs.map(d=>({id:d.id,...d.data()}))
+        );
         customerMessageRows.set(institutionId,rows);
 
         const modalOpen=
@@ -443,7 +445,9 @@
           .collection("conversations").doc(institutionId)
           .collection("messages").orderBy("date","asc").get();
 
-        const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+        const rows=sortCustomerConversationMessages(
+          snapshot.docs.map(d=>({id:d.id,...d.data()}))
+        );
         customerMessageRows.set(institutionId,rows);
 
         const modalOpen=
@@ -584,7 +588,9 @@
       .collection("conversations").doc(activeConversation.institutionId)
       .collection("messages").orderBy("date","asc")
       .onSnapshot(snapshot=>{
-        const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+        const rows=sortCustomerConversationMessages(
+          snapshot.docs.map(d=>({id:d.id,...d.data()}))
+        );
         box.innerHTML=rows.length?rows.map(messageHtml).join(""):'<div class="empty">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
         customerMessageRows.set(activeConversation.institutionId,rows);
         markCustomerConversationRead(activeConversation.quoteId,activeConversation.institutionId);
@@ -593,6 +599,15 @@
         console.error(error);
         box.innerHTML='<div class="empty">Mesajlar yüklenemedi. Firestore kurallarını güncelleyin.</div>';
       });
+  }
+
+  function sortCustomerConversationMessages(rows){
+    return [...rows].sort((a,b)=>{
+      const aDate=String(a.date||"");
+      const bDate=String(b.date||"");
+      if(aDate===bDate)return String(a.id||"").localeCompare(String(b.id||""));
+      return aDate.localeCompare(bDate);
+    });
   }
 
   function messageHtml(msg){
