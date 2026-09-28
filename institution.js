@@ -562,6 +562,8 @@ async function loadInstitutionStats() {
         `).join("")
       : '<div class="empty-state">Henüz yorum veya puan bulunmuyor.</div>';
 
+    await loadSectorStats(weekKeys);
+
   } catch (error) {
     console.error("İstatistikler yüklenemedi:", error);
 
@@ -577,6 +579,95 @@ async function loadInstitutionStats() {
       reviews.innerHTML =
         '<div class="empty-state">Yorumlar yüklenemedi.</div>';
     }
+  }
+}
+
+
+async function loadSectorStats(weekKeys) {
+  const sectorLabel = document.getElementById("sectorLabel");
+  const sectorInstitutionCount = document.getElementById("sectorInstitutionCount");
+  const sectorWeekViews = document.getElementById("sectorWeekViews");
+  const sectorReviewCount = document.getElementById("sectorReviewCount");
+  const sectorAverageRating = document.getElementById("sectorAverageRating");
+  const sectorStatsNote = document.getElementById("sectorStatsNote");
+
+  if (!currentInstitution || !currentInstitution.category) {
+    sectorStatsNote.textContent = "Kurum kategorisi bulunamadı.";
+    return;
+  }
+
+  const category = currentInstitution.category;
+  sectorLabel.textContent = categoryLabels[category] || category;
+  sectorStatsNote.textContent = "Sektör verileri hesaplanıyor...";
+
+  try {
+    const institutionSnapshot = await db.collection("institutions")
+      .where("category", "==", category)
+      .get();
+
+    const sectorInstitutionIds = institutionSnapshot.docs.map(doc => doc.id);
+    sectorInstitutionCount.textContent = sectorInstitutionIds.length;
+
+    if (!sectorInstitutionIds.length) {
+      sectorWeekViews.textContent = "0";
+      sectorReviewCount.textContent = "0";
+      sectorAverageRating.textContent = "0.0";
+      sectorStatsNote.textContent = "Bu sektörde henüz kurum bulunmuyor.";
+      return;
+    }
+
+    const reviewSnapshots = await Promise.all(
+      sectorInstitutionIds.map(id =>
+        db.collection("institutionReviews")
+          .where("institutionId", "==", id)
+          .get()
+      )
+    );
+
+    const sectorReviews = reviewSnapshots.flatMap(snapshot =>
+      snapshot.docs
+        .map(doc => doc.data())
+        .filter(item => item.status === "published")
+    );
+
+    const sectorAverage = sectorReviews.length
+      ? sectorReviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / sectorReviews.length
+      : 0;
+
+    sectorReviewCount.textContent = sectorReviews.length;
+    sectorAverageRating.textContent =
+      sectorReviews.length ? sectorAverage.toFixed(1) : "0.0";
+
+    try {
+      const analyticsSnapshots = await Promise.all(
+        sectorInstitutionIds.map(id =>
+          db.collection("institutionAnalytics")
+            .where("institutionId", "==", id)
+            .get()
+        )
+      );
+
+      const sectorEvents = analyticsSnapshots.flatMap(snapshot =>
+        snapshot.docs.map(doc => doc.data())
+      );
+
+      const sectorWeekViewCount = sectorEvents.filter(item =>
+        item.type === "profile_view" && weekKeys.has(item.day)
+      ).length;
+
+      sectorWeekViews.textContent = sectorWeekViewCount;
+      sectorStatsNote.textContent =
+        "Sektör karşılaştırması son 7 günlük Dijiyer verilerine göre hesaplanır.";
+    } catch (analyticsError) {
+      console.warn("Sektör trafik verisi okunamadı:", analyticsError);
+      sectorWeekViews.textContent = "—";
+      sectorStatsNote.textContent =
+        "Kurum ve yorum sektör verileri hazır. Sektör trafik yetkisi Firestore Rules ile açılacak.";
+    }
+
+  } catch (error) {
+    console.error("Sektör istatistikleri yüklenemedi:", error);
+    sectorStatsNote.textContent = "Sektör istatistikleri şu anda yüklenemedi.";
   }
 }
 
