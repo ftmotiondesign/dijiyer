@@ -133,7 +133,7 @@
   $("supportTabBtn")?.addEventListener("click", async () => {
     showAdvancedSection("supportSection","supportTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("supportTabBtn");
-    await loadSupportCenter();
+    await renderSupportCenter();
   });
 
   $("announcementsTabBtn")?.addEventListener("click", () => {
@@ -1172,7 +1172,7 @@
     decorateExistingInstitutionCards();
     populateAnnouncementTargets();
     renderAnnouncementHistory();
-    loadSupportCenter();
+    renderSupportCenter();
     refreshAdminNotifications();
     renderAudit();
   }, 1200);
