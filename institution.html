@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=5">
+  <link rel="stylesheet" href="institution.css?v=6">
   <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
@@ -26,6 +26,10 @@
         <div class="eyebrow">KURUM YÖNETİM PANELİ</div>
         <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
         <p id="panelInstitutionLocation"></p>
+        <div class="welcome-meta">
+          <span id="panelCategoryBadge">Kategori yükleniyor...</span>
+          <span id="panelServiceArea">Hizmet bölgesi yükleniyor...</span>
+        </div>
       </div>
 
       <div class="welcome-badges">
@@ -46,6 +50,55 @@
     </nav>
 
     <section class="panel-view active" data-panel-view="summary">
+
+      <section class="work-focus-card" id="workFocusCard">
+        <div class="work-focus-top">
+          <div>
+            <span class="eyebrow">BUGÜN NE VAR?</span>
+            <h2>İş Öncelikleriniz</h2>
+            <p id="workPriorityText">Teklif durumunuz yükleniyor...</p>
+          </div>
+
+          <div class="work-focus-actions">
+            <button type="button" class="work-action primary" id="openNewQuotesBtn">
+              <span>🔔 Yeni Teklifleri Gör</span>
+              <strong id="workNewCount">0</strong>
+            </button>
+
+            <button type="button" class="work-action" id="openVerifyBtn">
+              <span>✓ Teklif Doğrula</span>
+              <strong id="workLockedCount">0</strong>
+            </button>
+          </div>
+        </div>
+
+        <div class="work-metrics">
+          <article>
+            <span>Cevap Bekleyen</span>
+            <strong id="pendingQuoteCount">0</strong>
+            <small>Henüz fiyat vermediğiniz talepler</small>
+          </article>
+
+          <article>
+            <span>Gönderilen Teklif</span>
+            <strong id="offeredQuoteCount">0</strong>
+            <small>Müşteri kararını bekleyen teklifler</small>
+          </article>
+
+          <article>
+            <span>Fiyat Kilitlendi</span>
+            <strong id="lockedQuoteCount">0</strong>
+            <small>Müşterinin seçtiği teklifler</small>
+          </article>
+
+          <article>
+            <span>Son Talep</span>
+            <strong id="latestQuoteTime">-</strong>
+            <small>En son eşleşen müşteri talebi</small>
+          </article>
+        </div>
+      </section>
+
       <div class="stats-grid">
         <article class="stat-card">
           <span>Yeni Teklif</span>
@@ -81,6 +134,11 @@
             <button class="quick-card" id="goProfileBtn">
               <strong>✏️ Bilgileri Düzenle</strong>
               <span>Telefon, adres, web sitesi</span>
+            </button>
+
+            <button class="quick-card" id="goVerifyBtn">
+              <strong>✓ Teklif Doğrula</strong>
+              <span>Müşterinin teklif kodunu kontrol et</span>
             </button>
 
             <button class="quick-card" id="toggleOfferBtn">
@@ -333,7 +391,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=6"></script>
-  <script src="institution-offers.js?v=1"></script>
+  <script src="institution.js?v=7"></script>
+  <script src="institution-offers.js?v=2"></script>
 </body>
 </html>
