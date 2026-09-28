@@ -78,6 +78,14 @@ const categoryTaxonomy = {
   diger: { label:'Diğer', subs:{ diger:'Diğer Hizmet' }}
 };
 
+function getSortedCategoryEntries() {
+  return Object.entries(categoryTaxonomy).sort(([keyA, a], [keyB, b]) => {
+    if (keyA === 'diger') return 1;
+    if (keyB === 'diger') return -1;
+    return String(a.label || '').localeCompare(String(b.label || ''), 'tr');
+  });
+}
+
 const legacyCategoryToTaxonomy = {
   // Eğitim
   kres:['egitim','kres'], dershane:['egitim','dershane'], surucu:['egitim','surucu'],
