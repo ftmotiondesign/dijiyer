@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=17" />
+  <link rel="stylesheet" href="style.css?v=18" />
   <link rel="stylesheet" href="offers.css?v=2" />
 </head>
 <body>
@@ -200,16 +200,54 @@
     </div>
   </section>
 
-  <section class="explore-intro" id="exploreSection">
-    <div>
-      <span class="explore-kicker">KURUMLARI KEŞFET</span>
+  <section class="explore-intro explore-control-center" id="exploreSection">
+    <div class="explore-copy">
+      <div class="explore-topline">
+        <span class="explore-kicker">KURUMLARI KEŞFET</span>
+        <span class="explore-live-count">
+          <strong id="exploreResultCount">0</strong>
+          <span id="exploreResultLabel">kurum listeleniyor</span>
+        </span>
+      </div>
+
       <h2>Yakınındaki işletmeleri bul ve karşılaştır</h2>
-      <p>Konum, kategori, video ve teklif durumuna göre filtrele. Haritadan veya listeden işletmeleri incele.</p>
+      <p>
+        İhtiyacına uygun kurumları konum, kategori, teklif ve video durumuna göre daralt.
+        Haritadan yerini gör, listeden karşılaştır.
+      </p>
+
+      <button type="button" class="explore-clear-btn hidden" id="exploreClearFiltersBtn">
+        Filtreleri Temizle
+      </button>
     </div>
-    <div class="explore-badges">
-      <span>📍 Konuma göre</span>
-      <span>🏷️ Teklif verenler</span>
-      <span>🎥 Videolu kurumlar</span>
+
+    <div class="explore-quick-actions">
+      <button type="button" class="explore-filter-card location" id="exploreLocationBtn">
+        <span class="explore-filter-icon">📍</span>
+        <span class="explore-filter-copy">
+          <strong>Konumunu Seç</strong>
+          <small id="exploreLocationText">Çanakkale, Merkez</small>
+        </span>
+        <span class="explore-filter-action">Değiştir ›</span>
+      </button>
+
+      <button type="button" class="explore-filter-card" id="exploreOfferBtn">
+        <span class="explore-filter-icon offer">🏷️</span>
+        <span class="explore-filter-copy">
+          <strong>Teklif Verenler</strong>
+          <small>Hemen fiyat alabileceğin kurumlar</small>
+        </span>
+        <span class="explore-filter-check" aria-hidden="true">✓</span>
+      </button>
+
+      <button type="button" class="explore-filter-card" id="exploreVideoBtn">
+        <span class="explore-filter-icon video">🎥</span>
+        <span class="explore-filter-copy">
+          <strong>Videolu Kurumlar</strong>
+          <small>Mekânı ve hizmeti videodan incele</small>
+        </span>
+        <span class="explore-filter-check" aria-hidden="true">✓</span>
+      </button>
     </div>
   </section>
 
@@ -708,7 +746,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=35"></script>
+<script src="script.js?v=36"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
