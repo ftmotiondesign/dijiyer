@@ -13,7 +13,7 @@
 
   const selectedInstitutionIds = new Set();
   let announcementSelectedIds = [];
-  let supportTicketRecords = [];
+  let supportAdminRecords = [];
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -410,6 +410,10 @@
     $("supportAdminCount").textContent =
       supportAdminRecords.length + " talep · " + open + " açık · " +
       (supportAdminRecords.length-open) + " çözüldü";
+
+    if ($("adminSupportTabCount")) {
+      $("adminSupportTabCount").textContent = open;
+    }
 
     root.innerHTML = tickets.length ? tickets.map(ticket => `
       <article class="support-admin-card">
