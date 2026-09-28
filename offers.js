@@ -53,17 +53,36 @@
 
   async function getRequestBundle(quoteId){
     const quoteRef = db.collection("quoteRequests").doc(quoteId);
-    const [offersSnap, lockSnap] = await Promise.all([
-      quoteRef.collection("offers").get(),
-      quoteRef.collection("locks").doc("main").get()
-    ]);
+
     let localData={};
     try{localData=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");}catch(e){}
+
+    let offersList=[];
+    let lockData=null;
+    let loadError=null;
+
+    try{
+      const offersSnap=await quoteRef.collection("offers").get();
+      offersList=offersSnap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(error){
+      console.error("Kurum teklifleri okunamadı:",quoteId,error);
+      loadError=error;
+    }
+
+    try{
+      const lockSnap=await quoteRef.collection("locks").doc("main").get();
+      lockData=lockSnap.exists ? lockSnap.data() : null;
+    }catch(error){
+      console.error("Fiyat kilidi okunamadı:",quoteId,error);
+      loadError=loadError || error;
+    }
+
     return {
       id: quoteId,
       quote: localData[quoteId] || {service:"Teklif Talebi",date:""},
-      offers: offersSnap.docs.map(d => ({id:d.id,...d.data()})),
-      lock: lockSnap.exists ? lockSnap.data() : null
+      offers: offersList,
+      lock: lockData,
+      loadError
     };
   }
 
@@ -130,7 +149,9 @@
       ? lockedTicketHtml(bundle)
       : offers.length
         ? `<div class="customer-offers-grid">${offers.map(o=>offerHtml(bundle,o)).join("")}</div>`
-        : '<div class="offer-center-note">Henüz kurum teklifi gelmedi. Teklif geldiğinde burada görünecek.</div>';
+        : bundle.loadError
+          ? '<div class="offer-center-note">Talebiniz kayıtlı. Kurum teklifleri şu anda okunamıyor. Firestore teklif izinlerini kontrol edin.</div>'
+          : '<div class="offer-center-note">Henüz kurum teklifi gelmedi. Teklif geldiğinde burada görünecek.</div>';
 
     return `
       <article class="customer-request-card">
@@ -156,14 +177,33 @@
     }
     myOffersList.innerHTML='<div class="offer-center-note">Teklifleriniz yükleniyor...</div>';
     try{
-      const bundles=(await Promise.all(ids.map(getRequestBundle))).filter(Boolean);
-      myOffersList.innerHTML=bundles.length ? bundles.map(requestHtml).join("") : '<div class="offer-center-note">Teklif kaydı bulunamadı.</div>';
+      const results=await Promise.allSettled(ids.map(getRequestBundle));
+      const bundles=results
+        .filter(result=>result.status==="fulfilled" && result.value)
+        .map(result=>result.value);
+
+      myOffersList.innerHTML=bundles.length
+        ? bundles.map(requestHtml).join("")
+        : '<div class="offer-center-note">Teklif kaydı bulunamadı.</div>';
+
       bindMyOfferActions();
       drawQrCodes();
       updateCountdowns();
     }catch(error){
       console.error("Müşteri teklifleri yüklenemedi:",error);
-      myOffersList.innerHTML='<div class="offer-center-note">Teklifler şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.</div>';
+
+      let localData={};
+      try{localData=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");}catch(e){}
+
+      const fallbackBundles=ids.map(id=>({
+        id,
+        quote:localData[id] || {service:"Teklif Talebi",date:""},
+        offers:[],
+        lock:null,
+        loadError:error
+      }));
+
+      myOffersList.innerHTML=fallbackBundles.map(requestHtml).join("");
     }
   }
 
