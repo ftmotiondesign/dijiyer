@@ -171,14 +171,71 @@ function showPanelError(message) {
   panelError.textContent = message;
 }
 
+function safeProfileUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch (_) {
+    return "";
+  }
+}
+
+function parseProfileGalleryUrls(value) {
+  const rows = Array.isArray(value)
+    ? value
+    : String(value || "").split(/\n|,/);
+
+  return rows
+    .map(item => safeProfileUrl(item))
+    .filter(Boolean)
+    .slice(0, 6);
+}
+
+function renderProfileMediaPreview() {
+  const logoUrl = safeProfileUrl(document.getElementById("profileLogoUrl")?.value);
+  const coverUrl = safeProfileUrl(document.getElementById("profileCoverUrl")?.value);
+  const galleryUrls = parseProfileGalleryUrls(
+    document.getElementById("profileGalleryUrls")?.value
+  );
+
+  const logoPreview = document.getElementById("profileLogoPreview");
+  const coverPreview = document.getElementById("profileCoverPreview");
+  const galleryPreview = document.getElementById("profileGalleryPreview");
+
+  if (logoPreview) {
+    logoPreview.innerHTML = logoUrl
+      ? '<img src="' + escapeHtml(logoUrl) + '" alt="Kurum logosu">'
+      : "<span>🏢</span>";
+  }
+
+  if (coverPreview) {
+    coverPreview.style.backgroundImage = coverUrl
+      ? 'url("' + coverUrl.replace(/"/g, "%22") + '")'
+      : "";
+    coverPreview.classList.toggle("has-image", Boolean(coverUrl));
+  }
+
+  if (galleryPreview) {
+    galleryPreview.innerHTML = galleryUrls.map((url, index) =>
+      '<img src="' + escapeHtml(url) + '" alt="Galeri görseli ' + (index + 1) + '">'
+    ).join("");
+  }
+}
+
 function calculateProfileCompletion(institution) {
   const checks = [
     { ok: Boolean(String(institution.name || "").trim()), label: "kurum adı" },
-    { ok: Boolean(String(institution.phone || "").trim()), label: "telefon" },
-    { ok: Boolean(String(institution.website || "").trim()), label: "web / Instagram" },
+    { ok: Boolean(String(institution.description || "").trim()), label: "açıklama" },
+    { ok: Boolean(String(institution.phone || institution.whatsapp || "").trim()), label: "telefon / WhatsApp" },
+    { ok: Boolean(String(institution.website || institution.instagram || "").trim()), label: "web / Instagram" },
     { ok: Boolean(String(institution.address || "").trim()), label: "adres" },
     { ok: Boolean(String(institution.city || "").trim()) && Boolean(String(institution.district || "").trim()), label: "şehir / ilçe" },
-    { ok: Boolean(String(institution.category || institution.subCategory || "").trim()), label: "kategori" }
+    { ok: Boolean(String(institution.category || institution.subCategory || "").trim()), label: "kategori" },
+    { ok: Boolean(String(institution.logoUrl || "").trim()), label: "logo" },
+    { ok: Boolean(String(institution.serviceAreas || "").trim()), label: "hizmet bölgeleri" },
+    { ok: Boolean(String(institution.weekdayHours || "").trim()), label: "çalışma saatleri" }
   ];
 
   const completed = checks.filter(item => item.ok).length;
@@ -527,8 +584,19 @@ function renderInstitutionHeader() {
     currentAccount.email || currentUser.email || "-";
 
   document.getElementById("profileName").value = institution.name || "";
+  document.getElementById("profileDescription").value = institution.description || "";
   document.getElementById("profilePhone").value = institution.phone || "";
+  document.getElementById("profileWhatsapp").value = institution.whatsapp || institution.phone || "";
   document.getElementById("profileWebsite").value = institution.website || "";
+  document.getElementById("profileInstagram").value = institution.instagram || "";
+  document.getElementById("profileLogoUrl").value = institution.logoUrl || "";
+  document.getElementById("profileCoverUrl").value = institution.coverUrl || "";
+  document.getElementById("profileServiceAreas").value = institution.serviceAreas || "";
+  document.getElementById("profileWeekdayHours").value = institution.weekdayHours || "";
+  document.getElementById("profileSaturdayHours").value = institution.saturdayHours || "";
+  document.getElementById("profileSundayHours").value = institution.sundayHours || "";
+  document.getElementById("profileGalleryUrls").value =
+    (Array.isArray(institution.galleryUrls) ? institution.galleryUrls : []).join("\n");
   document.getElementById("profileAddress").value = institution.address || "";
   document.getElementById("profileLocation").textContent =
     [institution.city, institution.district].filter(Boolean).join(" / ") || "-";
@@ -536,6 +604,7 @@ function renderInstitutionHeader() {
     categoryLabels[institution.category] || institution.category || "-";
   document.getElementById("profileOffer").checked = institution.offer !== false;
 
+  renderProfileMediaPreview();
   updateOfferUi();
   updateProfileCompletion();
 }
@@ -789,8 +858,20 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
 
   const changes = {
     name: document.getElementById("profileName").value.trim(),
+    description: document.getElementById("profileDescription").value.trim(),
     phone: document.getElementById("profilePhone").value.trim(),
+    whatsapp: document.getElementById("profileWhatsapp").value.trim(),
     website: document.getElementById("profileWebsite").value.trim(),
+    instagram: document.getElementById("profileInstagram").value.trim(),
+    logoUrl: safeProfileUrl(document.getElementById("profileLogoUrl").value),
+    coverUrl: safeProfileUrl(document.getElementById("profileCoverUrl").value),
+    serviceAreas: document.getElementById("profileServiceAreas").value.trim(),
+    weekdayHours: document.getElementById("profileWeekdayHours").value.trim(),
+    saturdayHours: document.getElementById("profileSaturdayHours").value.trim(),
+    sundayHours: document.getElementById("profileSundayHours").value.trim(),
+    galleryUrls: parseProfileGalleryUrls(
+      document.getElementById("profileGalleryUrls").value
+    ),
     address: document.getElementById("profileAddress").value.trim(),
     offer: document.getElementById("profileOffer").checked
   };
@@ -802,12 +883,16 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
 
     Object.assign(currentInstitution, changes);
     renderInstitutionHeader();
-    profileMessage.textContent = "Değişiklikler kaydedildi.";
+    profileMessage.textContent = "Değişiklikler kaydedildi. Müşteri profiliniz güncellendi.";
   } catch (error) {
     console.error("Kurum bilgileri kaydedilemedi:", error);
     profileMessage.textContent =
       "Kaydedilemedi. Firestore yetkisini kontrol edin.";
   }
+});
+
+["profileLogoUrl","profileCoverUrl","profileGalleryUrls"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", renderProfileMediaPreview);
 });
 
 document.getElementById("toggleOfferBtn").addEventListener("click", async () => {
