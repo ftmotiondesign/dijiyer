@@ -119,11 +119,60 @@ body{
   border-radius:14px;
   padding:20px;
   box-shadow:0 5px 18px rgba(0,0,0,.05);
+  card.querySelector(".approve-btn").addEventListener("click", () => {
+  approveApplication(doc.id, data);
+});
 }
 
 .application-card h3{
   margin:0 0 5px;
   font-size:20px;
+  async function approveApplication(id, data) {
+  try {
+
+    const institution = {
+      name: data.name || "",
+      category: data.category || "",
+      city: data.city || "",
+      district: data.district || "",
+      location: `${data.city || ""}, ${data.district || ""}`,
+      address: data.address || "",
+      phone: data.phone || "",
+      website: data.website || "",
+
+      rating: 0,
+      reviewCount: 0,
+
+      video: false,
+      offer: true,
+      vip: false,
+
+      status: "active",
+      createdAt: new Date().toISOString()
+    };
+
+    const batch = db.batch();
+
+    const institutionRef =
+      db.collection("institutions").doc(id);
+
+    const applicationRef =
+      db.collection("institutionApplications").doc(id);
+
+    batch.set(institutionRef, institution);
+    batch.delete(applicationRef);
+
+    await batch.commit();
+
+    alert("Kurum onaylandı.");
+
+    loadApplications();
+
+  } catch (error) {
+    console.error("Onaylama hatası:", error);
+    alert("Kurum onaylanamadı.");
+  }
+}
 }
 
 .application-top span{
