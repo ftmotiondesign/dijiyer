@@ -1,0 +1,123 @@
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+button,a{font:inherit}
+.panel-header{
+  height:70px;
+  padding:0 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#fff;
+  border-bottom:1px solid #e5eaf1;
+}
+.panel-brand{
+  color:#1677ff;
+  font-size:24px;
+  font-weight:800;
+  text-decoration:none;
+}
+.panel-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.panel-actions a,
+.panel-actions button{
+  border:1px solid #d9e0ea;
+  background:#fff;
+  color:#334155;
+  border-radius:9px;
+  padding:9px 12px;
+  text-decoration:none;
+  cursor:pointer;
+}
+.panel-shell{
+  max-width:1100px;
+  margin:auto;
+  padding:28px;
+}
+.welcome-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  background:#fff;
+  border:1px solid #e1e6ee;
+  border-radius:18px;
+  padding:24px;
+}
+.eyebrow{
+  color:#1677ff;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.welcome-card h1{
+  margin:7px 0 5px;
+}
+.welcome-card p{
+  margin:0;
+  color:#64748b;
+}
+.approved-badge{
+  background:#ecfdf5;
+  color:#15803d;
+  padding:8px 11px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+.panel-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:18px;
+}
+.panel-card{
+  background:#fff;
+  border:1px solid #e1e6ee;
+  border-radius:16px;
+  padding:20px;
+}
+.panel-card h2{
+  margin-top:0;
+}
+.info-row{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:10px;
+  padding:11px 0;
+  border-top:1px solid #eef2f7;
+}
+.info-row:first-of-type{border-top:0}
+.info-row span{color:#64748b}
+.empty-box{
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  border-radius:12px;
+  padding:22px;
+  color:#475569;
+}
+.empty-box p{
+  margin:7px 0 0;
+  line-height:1.5;
+}
+.panel-error{
+  margin-top:18px;
+  padding:15px;
+  border-radius:12px;
+  background:#fff1f2;
+  color:#be123c;
+}
+@media(max-width:720px){
+  .panel-header{padding:0 14px}
+  .panel-shell{padding:14px}
+  .welcome-card{flex-direction:column}
+  .panel-grid{grid-template-columns:1fr}
+  .info-row{grid-template-columns:1fr}
+}
