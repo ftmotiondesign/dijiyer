@@ -2907,3 +2907,188 @@ body[data-panel-current="stats"] .persistent-performance{
     grid-template-areas:"icon copy value";
   }
 }
+
+
+/* =========================================================
+   GELİŞMİŞ KURUM PROFİLİ
+   ========================================================= */
+
+.firm-profile-form{
+  gap:16px;
+}
+
+.firm-profile-section{
+  display:grid;
+  gap:13px;
+  padding:17px;
+  border:1px solid #e2e8f0;
+  border-radius:15px;
+  background:#fbfcfe;
+}
+
+.firm-profile-section-head h3{
+  margin:3px 0 2px;
+  color:#172033;
+  font-size:16px;
+}
+
+.firm-profile-section-head p,
+.profile-field-help{
+  margin:0;
+  color:#7a8798;
+  font-size:10.5px;
+  line-height:1.45;
+}
+
+.profile-form label > small{
+  color:#8a96a8;
+  font-size:10px;
+  font-weight:500;
+}
+
+.form-grid.three{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.firm-profile-media-preview{
+  position:relative;
+  min-height:178px;
+  margin-bottom:6px;
+}
+
+.firm-cover-preview{
+  min-height:150px;
+  border:1px dashed #cbd6e4;
+  border-radius:15px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  background:
+    linear-gradient(135deg,rgba(22,119,255,.06),rgba(255,255,255,.85)),
+    #f3f7fb;
+  background-size:cover;
+  background-position:center;
+  color:#8190a3;
+  font-size:11px;
+}
+
+.firm-cover-preview.has-image > span{
+  display:none;
+}
+
+.firm-logo-preview{
+  position:absolute;
+  left:18px;
+  bottom:0;
+  width:74px;
+  height:74px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:4px solid #fff;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(15,23,42,.13);
+  font-size:28px;
+}
+
+.firm-logo-preview img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.firm-gallery-preview{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:7px;
+}
+
+.firm-gallery-preview:empty{
+  display:none;
+}
+
+.firm-gallery-preview img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border:1px solid #e0e6ee;
+  border-radius:10px;
+  background:#f1f5f9;
+}
+
+.firm-profile-savebar{
+  position:sticky;
+  bottom:10px;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:13px 14px;
+  border:1px solid #d8e4f2;
+  border-radius:13px;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 12px 30px rgba(15,23,42,.11);
+  backdrop-filter:blur(10px);
+}
+
+.firm-profile-savebar > div{
+  min-width:0;
+}
+
+.firm-profile-savebar strong{
+  display:block;
+  color:#23334a;
+  font-size:12px;
+}
+
+.firm-profile-savebar span{
+  display:block;
+  margin-top:3px;
+  color:#8491a2;
+  font-size:9.5px;
+}
+
+.firm-profile-savebar .primary-btn{
+  flex:0 0 auto;
+}
+
+@media(max-width:760px){
+  .firm-profile-section{
+    padding:13px;
+  }
+
+  .form-grid.three{
+    grid-template-columns:1fr;
+  }
+
+  .firm-profile-media-preview{
+    min-height:145px;
+  }
+
+  .firm-cover-preview{
+    min-height:122px;
+  }
+
+  .firm-logo-preview{
+    left:12px;
+    width:64px;
+    height:64px;
+    border-radius:15px;
+  }
+
+  .firm-gallery-preview{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .firm-profile-savebar{
+    bottom:76px;
+    align-items:stretch;
+    flex-direction:column;
+  }
+
+  .firm-profile-savebar .primary-btn{
+    width:100%;
+  }
+}
