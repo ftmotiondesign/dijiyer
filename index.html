@@ -426,10 +426,13 @@
             </select>
           </label>
 
-          <label>İlçe
-            <select id="quoteDistrict" required disabled>
+          <label>İlçe <small style="font-weight:normal;">(isteğe bağlı)</small>
+            <select id="quoteDistrict" disabled>
               <option value="">Önce şehir seçin</option>
             </select>
+            <small style="display:block;margin-top:5px;color:#68758a;font-weight:normal;">
+              İlçe seçmezseniz talebiniz şehir genelindeki uygun kurumlara gönderilir.
+            </small>
           </label>
         </div>
 
@@ -705,7 +708,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=33"></script>
+<script src="script.js?v=32"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
