@@ -1173,6 +1173,7 @@ function buildInstitutionOfferReport() {
         offerDate: getOfferEventDate(offer, request),
         state,
         requestId: request.id,
+        requestDate: request.date || null,
         service: request.service || "Teklif Talebi",
         customerName: request.name || "-",
         customerPhone: request.phone || "-",
@@ -1238,6 +1239,8 @@ function aggregateInstitutionOfferEvents(events) {
         usedCount: 0,
         lostCount: 0,
         expiredCount: 0,
+        responseMinutesTotal: 0,
+        responseMinutesCount: 0,
         latestOfferDate: null,
         events: []
       });
@@ -1254,6 +1257,15 @@ function aggregateInstitutionOfferEvents(events) {
     if (event.state === "used") row.usedCount += 1;
     if (event.state === "lost") row.lostCount += 1;
     if (event.state === "expired") row.expiredCount += 1;
+
+    if (event.offerDate && event.requestDate) {
+      const responseMinutes =
+        (new Date(event.offerDate).getTime() - new Date(event.requestDate).getTime()) / 60000;
+      if (Number.isFinite(responseMinutes) && responseMinutes >= 0) {
+        row.responseMinutesTotal += responseMinutes;
+        row.responseMinutesCount += 1;
+      }
+    }
 
     if (
       event.offerDate &&
@@ -1276,7 +1288,12 @@ function aggregateInstitutionOfferEvents(events) {
       minPrice: row.prices.length ? Math.min(...row.prices) : 0,
       maxPrice: row.prices.length ? Math.max(...row.prices) : 0,
       selectionRate: row.offerCount ? (selectedCount / row.offerCount) * 100 : 0,
-      usageRate: row.offerCount ? (row.usedCount / row.offerCount) * 100 : 0
+      usageRate: row.offerCount ? (row.usedCount / row.offerCount) * 100 : 0,
+      averageResponseMinutes: row.responseMinutesCount
+        ? row.responseMinutesTotal / row.responseMinutesCount
+        : 0,
+      responseRate: 0,
+      eligibleRequestCount: 0
     };
   });
 }
@@ -1322,6 +1339,14 @@ function populateOfferReportFilters() {
   }
 }
 
+function formatResponseDuration(minutes) {
+  const value = Number(minutes || 0);
+  if (!value) return "-";
+  if (value < 60) return Math.round(value) + " dk";
+  if (value < 1440) return (value / 60).toFixed(value < 120 ? 1 : 0).replace(".", ",") + " sa";
+  return (value / 1440).toFixed(1).replace(".", ",") + " gün";
+}
+
 function renderInstitutionOfferReport() {
   if (!offerReportTableBody) return;
 
@@ -1343,6 +1368,29 @@ function renderInstitutionOfferReport() {
     return !query || haystack.includes(query);
   });
 
+  const periodStart = getOfferReportPeriodStart();
+
+  rows.forEach(row => {
+    const eligible = quoteRequestRecords.filter(request => {
+      if (periodStart) {
+        const requestTime = new Date(request.date || 0).getTime();
+        if (!requestTime || requestTime < periodStart) return false;
+      }
+
+      const requestCategory = String(request.subCategory || request.category || "");
+      const rowCategory = String(row.category || "");
+      const categoryMatch = requestCategory === rowCategory;
+      const cityMatch = String(request.city || "") === String(row.city || "");
+
+      return categoryMatch && cityMatch;
+    }).length;
+
+    row.eligibleRequestCount = eligible;
+    row.responseRate = eligible
+      ? Math.min(100, (row.offerCount / eligible) * 100)
+      : 0;
+  });
+
   institutionOfferReportRecords = rows;
 
   rows = [...rows];
@@ -1355,6 +1403,14 @@ function renderInstitutionOfferReport() {
     rows.sort((a,b) => b.usedCount - a.usedCount || b.selectedCount - a.selectedCount);
   } else if (sort === "selection_desc") {
     rows.sort((a,b) => b.selectionRate - a.selectionRate || b.offerCount - a.offerCount);
+  } else if (sort === "response_desc") {
+    rows.sort((a,b) => b.responseRate - a.responseRate || b.offerCount - a.offerCount);
+  } else if (sort === "response_time_asc") {
+    rows.sort((a,b) => {
+      const av = a.averageResponseMinutes || Number.MAX_SAFE_INTEGER;
+      const bv = b.averageResponseMinutes || Number.MAX_SAFE_INTEGER;
+      return av - bv;
+    });
   } else if (sort === "volume_desc") {
     rows.sort((a,b) => b.totalPrice - a.totalPrice);
   } else if (sort === "average_asc") {
@@ -1406,7 +1462,7 @@ function renderInstitutionOfferReport() {
   if (!rows.length) {
     offerReportTableBody.innerHTML = `
       <tr>
-        <td colspan="11" class="offer-report-empty">
+        <td colspan="13" class="offer-report-empty">
           ${institutionOfferReportEvents.length
             ? "Seçili filtrelere uygun teklif veren kurum bulunamadı."
             : "Henüz fiyat teklifi veren kurum bulunmuyor."}
@@ -1438,10 +1494,17 @@ function renderInstitutionOfferReport() {
       <td><span class="report-badge used">${row.usedCount}</span></td>
       <td>
         <div class="report-rate">
+          <strong>%${row.responseRate.toFixed(1).replace(".", ",")}</strong>
+          <span><i style="width:${Math.min(100,row.responseRate)}%"></i></span>
+        </div>
+      </td>
+      <td>
+        <div class="report-rate">
           <strong>%${row.selectionRate.toFixed(1).replace(".", ",")}</strong>
           <span><i style="width:${Math.min(100,row.selectionRate)}%"></i></span>
         </div>
       </td>
+      <td>${formatResponseDuration(row.averageResponseMinutes)}</td>
       <td>${row.latestOfferDate ? formatDate(row.latestOfferDate) : "-"}</td>
       <td>
         <button
@@ -1498,8 +1561,10 @@ function openInstitutionOfferReportDetail(institutionId) {
     <article><span>Kullanılan</span><strong>${row.usedCount}</strong></article>
     <article><span>Kaybedilen</span><strong>${row.lostCount}</strong></article>
     <article><span>Süresi Dolan</span><strong>${row.expiredCount}</strong></article>
+    <article><span>Teklif Verme Oranı</span><strong>%${row.responseRate.toFixed(1).replace(".", ",")}</strong></article>
     <article><span>Seçilme Oranı</span><strong>%${row.selectionRate.toFixed(1).replace(".", ",")}</strong></article>
     <article><span>Kullanım Oranı</span><strong>%${row.usageRate.toFixed(1).replace(".", ",")}</strong></article>
+    <article><span>Ort. Yanıt Süresi</span><strong>${formatResponseDuration(row.averageResponseMinutes)}</strong></article>
   `;
 
   const events = [...row.events].sort((a,b) =>
@@ -1549,7 +1614,7 @@ function exportInstitutionOfferReportCsv() {
     "Kurum","Kategori","Şehir","İlçe","Toplam Teklif",
     "Teklif Hacmi","Ortalama Teklif","En Düşük","En Yüksek",
     "Aktif","Seçilen","Kullanılan","Kaybedilen","Süresi Dolan",
-    "Seçilme Oranı","Kullanım Oranı","Son Teklif"
+    "Teklif Verme Oranı","Seçilme Oranı","Kullanım Oranı","Ortalama Yanıt Dakika","Son Teklif"
   ];
 
   const rows = institutionOfferReportRecords.map(row => [
@@ -1567,8 +1632,10 @@ function exportInstitutionOfferReportCsv() {
     row.usedCount,
     row.lostCount,
     row.expiredCount,
+    row.responseRate.toFixed(1),
     row.selectionRate.toFixed(1),
     row.usageRate.toFixed(1),
+    Math.round(row.averageResponseMinutes || 0),
     row.latestOfferDate ? formatDate(row.latestOfferDate) : "-"
   ]);
 
