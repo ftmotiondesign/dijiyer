@@ -919,7 +919,32 @@ document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
 document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
+
+const institutionActions = document.getElementById('institutionActions');
+const institutionActionsBtn = document.getElementById('institutionActionsBtn');
+const institutionActionsMenu = document.getElementById('institutionActionsMenu');
+
+function setInstitutionActionsMenu(open) {
+  institutionActionsMenu.classList.toggle('hidden', !open);
+  institutionActionsBtn.setAttribute('aria-expanded', String(open));
+  institutionActions.classList.toggle('open', open);
+}
+
+institutionActionsBtn.addEventListener('click', event => {
+  event.stopPropagation();
+  setInstitutionActionsMenu(institutionActionsMenu.classList.contains('hidden'));
+});
+
+institutionActionsMenu.addEventListener('click', event => event.stopPropagation());
+
+document.addEventListener('click', event => {
+  if (!institutionActions.contains(event.target)) {
+    setInstitutionActionsMenu(false);
+  }
+});
+
 document.getElementById('institutionAddBtn').onclick = () => {
+  setInstitutionActionsMenu(false);
   openModal('institutionModal');
   setTimeout(() => initInstitutionMap(), 150);
 };
@@ -1753,16 +1778,20 @@ let institutionSessionUser = null;
 institutionAuth.onAuthStateChanged(user => {
   institutionSessionUser = user || null;
 
+  const institutionLoginBtnLabel = document.getElementById('institutionLoginBtnLabel');
+
   if (user) {
-    institutionLoginBtn.textContent = '🏢 Kurum Panelim';
+    if (institutionLoginBtnLabel) institutionLoginBtnLabel.textContent = 'Kurum Panelim';
     institutionLoginBtn.dataset.loggedIn = 'true';
   } else {
-    institutionLoginBtn.textContent = '🏢 Kurum Girişi';
+    if (institutionLoginBtnLabel) institutionLoginBtnLabel.textContent = 'Kurum Paneli';
     institutionLoginBtn.dataset.loggedIn = 'false';
   }
 });
 
 institutionLoginBtn.addEventListener('click', async () => {
+  setInstitutionActionsMenu(false);
+
   if (institutionSessionUser) {
     try {
       const accountDoc =
