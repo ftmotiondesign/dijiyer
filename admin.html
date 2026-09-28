@@ -1,1 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Dijiyer Admin Paneli</title>
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+  <div class="admin-page">
+
+    <header class="admin-header">
+      <div>
+        <h1>Dijiyer</h1>
+        <p>Yönetim Paneli</p>
+      </div>
+
+      <a href="index.html">Siteye Dön</a>
+    </header>
+
+
+    <!-- GİRİŞ ALANI -->
+
+    <section id="loginSection" class="admin-card">
+
+      <h2>Yönetici Girişi</h2>
+
+      <form id="adminLoginForm">
+
+        <label>
+          E-posta
+          <input
+            type="email"
+            id="adminEmail"
+            placeholder="E-posta adresiniz"
+            required
+          >
+        </label>
+
+        <label>
+          Şifre
+          <input
+            type="password"
+            id="adminPassword"
+            placeholder="Şifreniz"
+            required
+          >
+        </label>
+
+        <button type="submit">
+          Giriş Yap
+        </button>
+
+      </form>
+
+      <p id="loginMessage"></p>
+
+    </section>
+
+
+    <!-- ADMIN PANELİ -->
+
+    <section id="dashboardSection" hidden>
+
+      <div class="dashboard-title">
+
+        <div>
+          <h2>Kurum Başvuruları</h2>
+          <p id="applicationCount">
+            Başvurular yükleniyor...
+          </p>
+        </div>
+
+        <button id="logoutBtn">
+          Çıkış Yap
+        </button>
+
+      </div>
+
+
+      <div id="applicationsList">
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- FIREBASE -->
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+
+  <script src="admin.js"></script>
+
+</body>
+</html>
