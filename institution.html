@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=2">
+  <link rel="stylesheet" href="institution.css?v=2">\n  <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
   <header class="panel-header">
@@ -38,7 +38,7 @@
       <button class="panel-tab" data-panel-tab="quotes">
         Teklifler <span class="tab-count" id="quoteTabCount">0</span>
       </button>
-      <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
+      <button class="panel-tab" data-panel-tab="verify">Teklif Doğrula</button>\n      <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
       <button class="panel-tab" data-panel-tab="account">Hesap</button>
     </nav>
 
@@ -99,12 +99,36 @@
           <select id="quotePanelFilter">
             <option value="">Tümü</option>
             <option value="new">Yeni</option>
-            <option value="interested">İlgileniyorum</option>
+            <option value="offered">Teklif Verildi</option>
+            <option value="locked">Fiyat Kilitlendi</option>
+            <option value="expired">Süresi Doldu</option>
+            <option value="used">Kullanıldı</option>
             <option value="not_interested">İlgilenmiyorum</option>
           </select>
         </div>
 
         <div id="institutionQuotesList" class="quote-list"></div>
+      </article>
+    </section>
+
+
+    <section class="panel-view" data-panel-view="verify">
+      <article class="panel-card">
+        <div class="card-head">
+          <div>
+            <h2>Teklif Doğrula</h2>
+            <p>Müşterinin gösterdiği QR kodu okutun veya DJY- ile başlayan teklif numarasını girin.</p>
+          </div>
+        </div>
+
+        <div class="verify-offer-form">
+          <input id="verifyOfferCode" type="text" placeholder="Örn. DJY-AB12CD34" autocomplete="off">
+          <button id="verifyOfferBtn" type="button">Doğrula</button>
+        </div>
+
+        <div id="verifyOfferResult">
+          <div class="empty-state">Bir teklif kodu girerek doğrulama yapabilirsiniz.</div>
+        </div>
       </article>
     </section>
 
@@ -184,6 +208,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=3""></script>
+  <script src="institution.js?v=4"></script>\n  <script src="institution-offers.js?v=1"></script>
 </body>
 </html>
