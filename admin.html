@@ -6,8 +6,8 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=19">
-  <link rel="stylesheet" href="admin-advanced.css?v=3">
+  <link rel="stylesheet" href="admin.css?v=20">
+  <link rel="stylesheet" href="admin-advanced.css?v=4">
 </head>
 
 <body>
@@ -279,6 +279,21 @@
           <p id="institutionCount">Kurumlar yükleniyor...</p>
         </div>
 
+        <div class="institution-mini-stats">
+          <button type="button" data-institution-stat-filter="">
+            <span>Toplam</span><strong id="institutionStatTotal">0</strong>
+          </button>
+          <button type="button" data-institution-stat-filter="offer">
+            <span>Teklif Açık</span><strong id="institutionStatOffer">0</strong>
+          </button>
+          <button type="button" data-institution-stat-filter="vip">
+            <span>VIP</span><strong id="institutionStatVip">0</strong>
+          </button>
+          <button type="button" data-institution-stat-filter="video">
+            <span>Videolu</span><strong id="institutionStatVideo">0</strong>
+          </button>
+        </div>
+
         <div class="institution-toolbar">
           <div class="toolbar-search">
             <span>⌕</span>
@@ -329,7 +344,8 @@
             <option value="">Tüm özellikler</option>
             <option value="vip">Sadece VIP</option>
             <option value="video">Sadece videolu</option>
-            <option value="offer">Teklif verenler</option>
+            <option value="offer">Teklif alımı açık</option>
+            <option value="offer_off">Teklif alımı kapalı</option>
           </select>
 
           <select id="institutionSort">
@@ -884,8 +900,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=25"></script>
-  <script src="admin-advanced.js?v=4"></script>
+  <script src="admin.js?v=26"></script>
+  <script src="admin-advanced.js?v=5"></script>
 
 </body>
 </html>
