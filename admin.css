@@ -2256,3 +2256,60 @@ button{
   .issue-case-actions button{width:100%}
   .issue-case-actions button.archive{margin-left:0}
 }
+
+
+/* ===== TEKLİF HAREKET MERKEZİ ===== */
+.quote-activity-launch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:13px 0;padding:11px 12px;border:1px solid #cfe0ff;border-radius:11px;background:#f8fbff}
+.quote-activity-launch span{color:#64748b;font-size:10px;text-align:right}
+.quote-activity-btn{flex:0 0 auto;border:0;border-radius:9px;padding:9px 12px;background:#1d4ed8;color:#fff;font-weight:850}
+.quote-archive-btn{border-color:#cbd5e1!important;color:#475569!important;background:#f8fafc!important}
+.quote-activity-modal-card{width:min(920px,96vw);max-height:92vh;overflow:auto}
+.quote-activity-header h2{margin:4px 0 5px}
+.quote-activity-header p{margin:0;color:#64748b;font-size:12px}
+.quote-activity-privacy{display:grid;gap:3px;margin:13px 0;padding:11px 12px;border:1px solid #dbeafe;border-radius:11px;background:#f8fbff}
+.quote-activity-privacy strong{color:#1d4ed8;font-size:11px}
+.quote-activity-privacy span{color:#64748b;font-size:10px;line-height:1.5}
+.quote-activity-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.quote-activity-summary article{padding:11px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+.quote-activity-summary span{display:block;color:#64748b;font-size:9px;font-weight:900;margin-bottom:5px}
+.quote-activity-summary strong{display:block;color:#172033;font-size:17px}
+.quote-activity-toolbar{display:grid;grid-template-columns:minmax(190px,1fr) auto auto auto;gap:8px;margin-bottom:10px}
+.quote-activity-toolbar select,.quote-activity-toolbar button{min-height:39px;border:1px solid #d8e0ea;border-radius:9px;background:#fff;padding:0 10px;font-weight:800;color:#334155}
+.quote-activity-toolbar button:hover{background:#f8fafc}
+.quote-activity-completeness{display:grid;gap:3px;margin-bottom:12px;padding:10px 11px;border-radius:10px;background:#f8fafc;color:#64748b}
+.quote-activity-completeness strong{font-size:11px}
+.quote-activity-completeness span{font-size:10px;line-height:1.5}
+.quote-activity-completeness.success{border:1px solid #bbf7d0;background:#f0fdf4;color:#166534}
+.quote-activity-completeness.warning{border:1px solid #fde68a;background:#fffbeb;color:#92400e}
+.quote-activity-timeline{position:relative;display:grid;gap:0;padding:2px 0 12px}
+.quote-activity-timeline::before{content:"";position:absolute;left:13px;top:5px;bottom:15px;width:2px;background:#e2e8f0}
+.quote-activity-event{position:relative;display:grid;grid-template-columns:28px 1fr;gap:10px;padding:7px 0}
+.quote-activity-dot{position:relative;z-index:1;width:12px;height:12px;margin:8px 0 0 8px;border:3px solid #fff;border-radius:50%;background:#64748b;box-shadow:0 0 0 1px #cbd5e1}
+.quote-activity-event.category-request .quote-activity-dot{background:#0ea5e9}
+.quote-activity-event.category-offer .quote-activity-dot{background:#2563eb}
+.quote-activity-event.category-message .quote-activity-dot{background:#8b5cf6}
+.quote-activity-event.category-revision .quote-activity-dot{background:#f59e0b}
+.quote-activity-event.category-lock .quote-activity-dot{background:#16a34a}
+.quote-activity-event.category-issue .quote-activity-dot{background:#ef4444}
+.quote-activity-event.category-admin .quote-activity-dot{background:#475569}
+.quote-activity-event-body{padding:10px 11px;border:1px solid #e5e7eb;border-radius:11px;background:#fff}
+.quote-activity-event-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:5px}
+.quote-activity-type{display:inline-flex;padding:3px 6px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:9px;font-weight:900}
+.quote-activity-event time{color:#94a3b8;font-size:9px}
+.quote-activity-event-body>strong{display:block;color:#172033;font-size:12px}
+.quote-activity-event-body>small{display:block;color:#64748b;font-size:10px;margin-top:2px}
+.quote-activity-event-body>p{margin:7px 0 0;padding:8px 9px;border-radius:8px;background:#f8fafc;color:#475569;font-size:10px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.quote-activity-loading{padding:22px;text-align:center;color:#64748b}
+@media(max-width:760px){
+  .quote-activity-launch{align-items:stretch;flex-direction:column}
+  .quote-activity-launch span{text-align:left}
+  .quote-activity-btn{width:100%}
+  .quote-activity-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quote-activity-summary .wide{grid-column:1/-1}
+  .quote-activity-toolbar{grid-template-columns:1fr 1fr}
+  .quote-activity-toolbar select{grid-column:1/-1}
+}
+@media(max-width:480px){
+  .quote-activity-toolbar{grid-template-columns:1fr}
+  .quote-activity-toolbar select{grid-column:auto}
+}
