@@ -828,7 +828,21 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   };
 
   try {
-    await db.collection('quoteRequests').add(request);
+    const quoteRef = await db.collection('quoteRequests').add(request);
+
+    if (typeof window.rememberCustomerQuote === 'function') {
+      window.rememberCustomerQuote(quoteRef.id, request);
+    } else {
+      const key = 'dijiyerCustomerQuoteIds';
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!saved.includes(quoteRef.id)) saved.unshift(quoteRef.id);
+      localStorage.setItem(key, JSON.stringify(saved.slice(0, 30)));
+
+      const dataKey = 'dijiyerCustomerQuoteData';
+      const dataMap = JSON.parse(localStorage.getItem(dataKey) || '{}');
+      dataMap[quoteRef.id] = request;
+      localStorage.setItem(dataKey, JSON.stringify(dataMap));
+    }
 
     closeModal('quoteModal');
     e.target.reset();
