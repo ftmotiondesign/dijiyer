@@ -155,6 +155,8 @@ async function approveApplication(id, data) {
       address: data.address || "",
       phone: data.phone || "",
       website: data.website || "",
+      lat: Number.isFinite(data.lat) ? data.lat : null,
+      lng: Number.isFinite(data.lng) ? data.lng : null,
       rating: 0,
       reviewCount: 0,
       video: false,
