@@ -427,9 +427,15 @@ async function findInstitutionOnMap() {
   const name = document.getElementById('institutionName').value.trim();
   const city = document.getElementById('institutionCity').value;
   const district = document.getElementById('institutionDistrict').value;
+  const address = document.getElementById('institutionAddress').value.trim();
 
   if (!name) {
     showToast('Önce kurum adını yazın.');
+    return;
+  }
+
+  if (!city || !district) {
+    showToast('Daha doğru arama için önce şehir ve ilçeyi seçin.');
     return;
   }
 
@@ -438,26 +444,35 @@ async function findInstitutionOnMap() {
   button.disabled = true;
   button.textContent = 'Aranıyor...';
 
-  const query = [name, district, city, 'Türkiye']
-    .filter(Boolean)
-    .join(', ');
+  const queries = [
+    [name, address, district, city, 'Türkiye'].filter(Boolean).join(', '),
+    [name, district, city, 'Türkiye'].filter(Boolean).join(', '),
+    [name, city, 'Türkiye'].filter(Boolean).join(', ')
+  ];
 
   try {
-    const response = await fetch(
-      'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&countrycodes=tr&accept-language=tr&q=' +
-      encodeURIComponent(query)
-    );
+    let place = null;
 
-    if (!response.ok) throw new Error('Arama başarısız');
+    for (const query of queries) {
+      const response = await fetch(
+        'https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&countrycodes=tr&accept-language=tr&q=' +
+        encodeURIComponent(query)
+      );
 
-    const result = await response.json();
+      if (!response.ok) continue;
 
-    if (!result.length) {
-      showToast('Kurum bulunamadı. Konumu haritadan elle işaretleyebilirsiniz.');
+      const result = await response.json();
+      if (result.length) {
+        place = result[0];
+        break;
+      }
+    }
+
+    if (!place) {
+      showToast('Ücretsiz haritada bulunamadı. Google Maps bağlantısını kullanın.');
       return;
     }
 
-    const place = result[0];
     const lat = Number(place.lat);
     const lng = Number(place.lon);
 
@@ -488,68 +503,11 @@ async function findInstitutionOnMap() {
     showToast('Kurum bulundu ve haritada işaretlendi.');
   } catch (error) {
     console.error('Kurum arama hatası:', error);
-    showToast('Kurum aranamadı. Konumu haritadan elle işaretleyebilirsiniz.');
+    showToast('Ücretsiz arama başarısız oldu. Google Maps bağlantısını kullanabilirsiniz.');
   } finally {
     button.disabled = false;
     button.textContent = oldText;
   }
-}
-
-function useGoogleMapsUrl() {
-  initInstitutionMap();
-
-  const url = document.getElementById('institutionGoogleMapsUrl').value.trim();
-
-  if (!url) {
-    showToast('Google Maps bağlantısını yapıştırın.');
-    return;
-  }
-
-  if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
-    showToast('Kısa paylaşım linki yerine tarayıcı adres çubuğundaki uzun Google Maps linkini yapıştırın.');
-    return;
-  }
-
-  const patterns = [
-    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
-    /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
-    /[?&](?:q|query|destination)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
-  ];
-
-  let lat = null;
-  let lng = null;
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) {
-      lat = Number(match[1]);
-      lng = Number(match[2]);
-      break;
-    }
-  }
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    showToast('Bu bağlantıdan koordinat okunamadı. Google Maps sayfasını açıp adres çubuğundaki uzun linki kopyalayın.');
-    return;
-  }
-
-  document.getElementById('institutionLat').value = lat.toFixed(6);
-  document.getElementById('institutionLng').value = lng.toFixed(6);
-
-  institutionMapInstance.setView([lat, lng], 17);
-
-  if (institutionLocationMarker) {
-    institutionLocationMarker.setLatLng([lat, lng]);
-  } else {
-    institutionLocationMarker = L.marker([lat, lng]).addTo(institutionMapInstance);
-  }
-
-  const name = document.getElementById('institutionName').value.trim() || 'Kurum';
-  institutionLocationMarker
-    .bindPopup('<strong>' + escapeHtml(name) + '</strong><br>Google Maps bağlantısından konum alındı.')
-    .openPopup();
-
-  showToast('Google Maps konumu haritaya aktarıldı.');
 }
 
 async function centerInstitutionMapFromAddress() {
