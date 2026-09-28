@@ -24,6 +24,7 @@ let liveOffers=[];
 let liveLock=null;
 const offerUpdateVersions=new Map();
 let offerListenerInitialized=false;
+let offerSortMode=localStorage.getItem("dijiyerOfferSortMode")||"arrival";
 
 function safe(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -275,7 +276,14 @@ function lockedHtml(bundle){
       <div class="locked-code">GARANTİLİ TEKLİF · ${safe(lock.offerCode||"")}</div>
       <div class="locked-price">${money(lock.price)}</div>
       <div class="offer-scope">${safe(lock.scope||"")}</div>
-      <div class="offer-meta" style="margin-top:9px">Geçerlilik: <b>${fmtDate(lock.expiresAt)}</b></div>
+      <div class="locked-terms-box">
+        <strong>Kilitlenen şartlar</strong>
+        <div><span>Fiyat</span><b>${money(lock.price)}</b></div>
+        <div><span>KDV</span><b>${safe(lock.vatStatus||"-")}</b></div>
+        <div><span>Son geçerlilik</span><b>${fmtDate(lock.expiresAt)}</b></div>
+        ${lock.conditions?`<div><span>Özel şart</span><b>${safe(lock.conditions)}</b></div>`:""}
+        <p>Bu kayıt kilitlendikten sonra firma fiyatı ve şartları değiştiremez.</p>
+      </div>
       <div id="lockedQr" class="qr-box" data-url="${safe(verifyUrl)}"></div>
       <div class="countdown" data-countdown="${safe(lock.expiresAt||"")}"></div>
       ${state==="locked"?`<div class="offer-actions" style="justify-content:center"><button class="report-btn" data-report>İşletme Teklife Uymadı</button></div>`:""}
@@ -313,9 +321,38 @@ function offerHtml(bundle,offer){
     </article>`;
 }
 
+function sortOffersForCustomer(rows){
+  const offers=[...rows];
+  if(offerSortMode==="price_asc") return offers.sort((a,b)=>Number(a.price||0)-Number(b.price||0));
+  if(offerSortMode==="price_desc") return offers.sort((a,b)=>Number(b.price||0)-Number(a.price||0));
+  if(offerSortMode==="latest") return offers.sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+  if(offerSortMode==="validity") return offers.sort((a,b)=>new Date(a.expiresAt||8640000000000000)-new Date(b.expiresAt||8640000000000000));
+  return offers.sort((a,b)=>new Date(a.createdAt||0)-new Date(b.createdAt||0));
+}
+
+function offerFairnessToolbarHtml(count){
+  if(count<2)return "";
+  return `
+    <div class="offer-fairness-toolbar">
+      <div>
+        <strong>Tarafsız teklif görünümü</strong>
+        <span>Varsayılan sıralama geliş sırasıdır. Dijiyer hiçbir kurumu ücretle öne çıkarmaz; sıralamayı siz değiştirebilirsiniz.</span>
+      </div>
+      <label>Sırala
+        <select id="offerSortSelect">
+          <option value="arrival" ${offerSortMode==="arrival"?"selected":""}>Geliş sırası</option>
+          <option value="price_asc" ${offerSortMode==="price_asc"?"selected":""}>Fiyat: düşükten yükseğe</option>
+          <option value="price_desc" ${offerSortMode==="price_desc"?"selected":""}>Fiyat: yüksekten düşüğe</option>
+          <option value="latest" ${offerSortMode==="latest"?"selected":""}>En son güncellenen</option>
+          <option value="validity" ${offerSortMode==="validity"?"selected":""}>Süresi önce dolacak</option>
+        </select>
+      </label>
+    </div>
+  `;
+}
 function render(bundle){
   const access=bundle.access;
-  const offers=[...bundle.offers].sort((a,b)=>Number(a.price||0)-Number(b.price||0));
+  const offers=sortOffersForCustomer(bundle.offers);
   results.classList.remove("hidden");
   results.innerHTML=`
     <article class="request-summary">
@@ -337,8 +374,17 @@ function render(bundle){
       ${requestDetailHtml(access)}
     </article>
 
-    ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
+    ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
+
+  const sortSelect=document.getElementById("offerSortSelect");
+  if(sortSelect){
+    sortSelect.onchange=()=>{
+      offerSortMode=sortSelect.value;
+      localStorage.setItem("dijiyerOfferSortMode",offerSortMode);
+      renderLiveTracking();
+    };
+  }
 
   const refreshBtn=document.getElementById("refreshTrackingBtn");
   if(refreshBtn)refreshBtn.onclick=refreshTracking;
@@ -376,12 +422,32 @@ function render(bundle){
   updateCountdowns();
 }
 
+function confirmOfferLock(offer){
+  const validity=offerValidityText(offer);
+  const lines=[
+    "Bu teklifi kabul edip fiyatı kilitlemek üzeresiniz.",
+    "",
+    "Firma: "+(offer.institutionName||"Kurum"),
+    "Fiyat: "+money(offer.price),
+    "Geçerlilik: "+validity,
+    "Son kabul: "+fmtDate(offer.expiresAt),
+    "KDV: "+(offer.vatStatus||"-")
+  ];
+  if(offer.conditions)lines.push("Özel şart: "+offer.conditions);
+  lines.push("", "Kilitledikten sonra firma bu teklifin fiyatını ve şartlarını değiştiremez.", "Devam etmek istiyor musunuz?");
+  return window.confirm(lines.join("\n"));
+}
 async function lockOffer(quoteId,institutionId,button){
-  button.disabled=true;button.textContent="Kilitleniyor...";
+  const quoteRef=db.collection("quoteRequests").doc(quoteId);
+  const offerRef=quoteRef.collection("offers").doc(institutionId);
+  const lockRef=quoteRef.collection("locks").doc("main");
   try{
-    const quoteRef=db.collection("quoteRequests").doc(quoteId);
-    const offerRef=quoteRef.collection("offers").doc(institutionId);
-    const lockRef=quoteRef.collection("locks").doc("main");
+    const previewSnap=await offerRef.get();
+    if(!previewSnap.exists){ toast("Teklif bulunamadı."); return; }
+    const previewOffer=previewSnap.data();
+    if(!confirmOfferLock(previewOffer))return;
+    button.disabled=true;
+    button.textContent="Kilitleniyor...";
 
     await db.runTransaction(async tx=>{
       const [offerSnap,lockSnap]=await Promise.all([tx.get(offerRef),tx.get(lockRef)]);
