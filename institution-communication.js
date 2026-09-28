@@ -192,6 +192,12 @@
       badge.classList.toggle("has-unread",total>0);
     }
 
+    const firmHomeMessageCount=document.getElementById("firmHomeMessageCount");
+    if(firmHomeMessageCount){
+      firmHomeMessageCount.textContent=String(total);
+      firmHomeMessageCount.classList.toggle("has-unread",total>0);
+    }
+
     document.title=total>0
       ? "("+total+") Yeni Mesaj · "+institutionMessageTitleBase
       : institutionMessageTitleBase;
