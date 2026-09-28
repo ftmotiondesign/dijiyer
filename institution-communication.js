@@ -1,7 +1,11 @@
 (function(){
   const engagementMap=new Map();
   const messagesMap=new Map();
+  const unreadMessageMap=new Map();
+  const messageWatchers=new Map();
   let communicationRefreshBusy=false;
+  let activeMessageQuoteId=null;
+  const institutionMessageTitleBase=document.title;
 
   const baseQuoteCardHtml=quoteCardHtml;
   quoteCardHtml=function(quote,compact=false){
@@ -11,6 +15,7 @@
     const engagement=engagementMap.get(quote.id)||{};
     const messages=messagesMap.get(quote.id)||[];
     const customerMessages=messages.filter(m=>m.sender==="customer").length;
+    const unreadMessages=unreadMessageMap.get(quote.id)||0;
     const pendingRevision=!!(engagement.revisionRequestedAt&&!engagement.revisionRespondedAt);
 
     const viewedHtml=engagement.viewedAt
@@ -21,9 +26,11 @@
       : engagement.revisionRespondedAt
         ? '<span class="firm-com-badge viewed">✓ Revizyon yanıtlandı</span>'
         : "";
-    const messageBadge=customerMessages
-      ? `<span class="firm-com-badge message">💬 ${customerMessages} müşteri mesajı</span>`
-      : "";
+    const messageBadge=unreadMessages
+      ? `<span class="firm-com-badge message unread">💬 ${unreadMessages} yeni mesaj</span>`
+      : customerMessages
+        ? `<span class="firm-com-badge message">💬 ${customerMessages} müşteri mesajı</span>`
+        : "";
 
     const timeline=firmTimelineHtml(quote,engagement);
 
@@ -31,8 +38,11 @@
       <section class="firm-communication-box" data-firm-communication="${offerSafe(quote.id)}">
         <div class="firm-com-status-row">${viewedHtml}${revisionHtml}${messageBadge}</div>
         ${timeline}
-        <details class="firm-conversation">
-          <summary>💬 Müşteri ile mesajlaş <span>${messages.length?"("+messages.length+")":""}</span></summary>
+        <details class="firm-conversation" data-firm-conversation="${offerSafe(quote.id)}">
+          <summary>
+            💬 Müşteri ile mesajlaş
+            <span>${unreadMessages ? '<b class="firm-unread-count">'+unreadMessages+'</b>' : (messages.length?"("+messages.length+")":"")}</span>
+          </summary>
           <div class="firm-message-thread" data-firm-thread="${offerSafe(quote.id)}">
             ${messages.length?messages.map(firmMessageHtml).join(""):'<div class="firm-empty-message">Henüz mesaj yok.</div>'}
           </div>
@@ -46,7 +56,11 @@
         </details>
       </section>`;
 
-    return html.replace('</article>',panel+'</article>');
+    const cardHtml=html.replace(
+      '<article class="quote-card">',
+      '<article class="quote-card" data-quote-card="'+offerSafe(quote.id)+'">'
+    );
+    return cardHtml.replace('</article>',panel+'</article>');
   };
 
   function firmTimelineHtml(quote,engagement){
@@ -77,6 +91,139 @@
     </div>`;
   }
 
+  function messageSeenKey(quoteId){
+    return "dijiyerInstitutionMessageSeen_"+String(currentAccount?.institutionId||"")+"_"+String(quoteId);
+  }
+
+  function getSeenAt(quoteId){
+    return localStorage.getItem(messageSeenKey(quoteId))||"";
+  }
+
+  function setSeenAt(quoteId,date){
+    if(date) localStorage.setItem(messageSeenKey(quoteId),date);
+  }
+
+  function incomingCustomerMessages(quoteId,rows){
+    const seenAt=getSeenAt(quoteId);
+    return rows.filter(msg =>
+      msg.sender==="customer" &&
+      (!seenAt || String(msg.date||"")>seenAt)
+    );
+  }
+
+  function updateInstitutionMessageCount(){
+    const total=[...unreadMessageMap.values()]
+      .reduce((sum,value)=>sum+Number(value||0),0);
+
+    const badge=document.getElementById("messageTabCount");
+    if(badge){
+      badge.textContent="💬 "+total;
+      badge.classList.toggle("has-unread",total>0);
+    }
+
+    document.title=total>0
+      ? "("+total+") Yeni Mesaj · "+institutionMessageTitleBase
+      : institutionMessageTitleBase;
+  }
+
+  function latestCustomerMessage(rows){
+    return [...rows]
+      .filter(msg=>msg.sender==="customer")
+      .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))[0]||null;
+  }
+
+  function markInstitutionConversationRead(quoteId){
+    const rows=messagesMap.get(quoteId)||[];
+    const latest=latestCustomerMessage(rows);
+    if(latest?.date) setSeenAt(quoteId,latest.date);
+    unreadMessageMap.set(quoteId,0);
+    updateInstitutionMessageCount();
+  }
+
+  function showInstitutionMessageAlert(quoteId,msg){
+    activeMessageQuoteId=quoteId;
+    const alert=document.getElementById("liveMessageAlert");
+    const text=document.getElementById("liveMessageAlertText");
+    if(!alert)return;
+
+    const quote=quoteRecords.find(item=>String(item.id)===String(quoteId));
+    if(text){
+      const customer=quote?.name||"Müşteri";
+      const preview=String(msg?.text||"").trim();
+      text.textContent=customer+(preview?" · "+preview.slice(0,90):" size mesaj gönderdi.");
+    }
+
+    alert.classList.remove("hidden");
+    if(typeof playNewQuoteSound==="function") playNewQuoteSound();
+  }
+
+  function hideInstitutionMessageAlert(){
+    document.getElementById("liveMessageAlert")?.classList.add("hidden");
+  }
+
+  function stopUnusedMessageWatchers(){
+    const activeIds=new Set(quoteRecords.slice(0,40).map(q=>String(q.id)));
+    messageWatchers.forEach((unsubscribe,quoteId)=>{
+      if(activeIds.has(String(quoteId)))return;
+      try{unsubscribe();}catch(_){}
+      messageWatchers.delete(quoteId);
+      unreadMessageMap.delete(quoteId);
+    });
+  }
+
+  function startMessageWatcher(quoteId){
+    if(!currentAccount?.institutionId||messageWatchers.has(quoteId))return;
+
+    let initial=true;
+    const ref=db.collection("quoteRequests").doc(quoteId)
+      .collection("conversations").doc(currentAccount.institutionId)
+      .collection("messages").orderBy("date","asc");
+
+    const unsubscribe=ref.onSnapshot(snapshot=>{
+      const rows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+      messagesMap.set(quoteId,rows);
+
+      const unread=incomingCustomerMessages(quoteId,rows);
+      unreadMessageMap.set(quoteId,unread.length);
+      updateInstitutionMessageCount();
+
+      if(!initial){
+        const added=snapshot.docChanges()
+          .filter(change=>change.type==="added")
+          .map(change=>({id:change.doc.id,...change.doc.data()}))
+          .filter(msg=>msg.sender==="customer");
+
+        if(added.length){
+          const newest=added.sort(
+            (a,b)=>String(b.date||"").localeCompare(String(a.date||""))
+          )[0];
+
+          const details=document.querySelector(
+            '[data-firm-conversation="'+CSS.escape(String(quoteId))+'"]'
+          );
+
+          if(details?.open){
+            markInstitutionConversationRead(quoteId);
+          }else{
+            showInstitutionMessageAlert(quoteId,newest);
+          }
+        }
+      }
+
+      initial=false;
+      renderQuotes();
+    },error=>{
+      console.warn("Mesaj bildirimi dinlenemedi:",quoteId,error);
+    });
+
+    messageWatchers.set(quoteId,unsubscribe);
+  }
+
+  function startMessageWatchers(){
+    stopUnusedMessageWatchers();
+    quoteRecords.slice(0,40).forEach(q=>startMessageWatcher(q.id));
+  }
+
   async function loadCommunicationForQuote(quoteId){
     if(!currentAccount?.institutionId)return;
     const quoteRef=db.collection("quoteRequests").doc(quoteId);
@@ -87,7 +234,10 @@
           .collection("messages").orderBy("date","asc").get()
       ]);
       engagementMap.set(quoteId,engSnap.exists?engSnap.data():{});
-      messagesMap.set(quoteId,msgSnap.docs.map(d=>({id:d.id,...d.data()})));
+      const rows=msgSnap.docs.map(d=>({id:d.id,...d.data()}));
+      messagesMap.set(quoteId,rows);
+      unreadMessageMap.set(quoteId,incomingCustomerMessages(quoteId,rows).length);
+      updateInstitutionMessageCount();
     }catch(error){
       console.warn("Teklif iletişim verileri yüklenemedi:",quoteId,error);
       if(!engagementMap.has(quoteId))engagementMap.set(quoteId,{});
@@ -130,6 +280,17 @@
       };
     });
 
+    institutionQuotesList.querySelectorAll("[data-firm-conversation]").forEach(details=>{
+      details.ontoggle=()=>{
+        if(details.open){
+          const quoteId=details.dataset.firmConversation;
+          markInstitutionConversationRead(quoteId);
+          hideInstitutionMessageAlert();
+          renderQuotes();
+        }
+      };
+    });
+
     institutionQuotesList.querySelectorAll("[data-firm-refresh-chat]").forEach(btn=>{
       btn.onclick=async()=>{
         btn.disabled=true;
@@ -163,6 +324,7 @@
   loadMatchedQuotes=async function(){
     await baseLoadMatchedQuotes();
     await loadCommunicationData();
+    startMessageWatchers();
     renderQuotes();
     renderSummary();
   };
@@ -199,6 +361,32 @@
       }
     }
   };
+
+  document.getElementById("liveMessageAlertBtn")?.addEventListener("click",()=>{
+    if(!activeMessageQuoteId)return;
+    hideInstitutionMessageAlert();
+    quotePanelFilter.value="";
+    setPanelTab("quotes");
+    syncQuoteShortcutActive();
+    renderQuotes();
+
+    requestAnimationFrame(()=>{
+      const details=document.querySelector(
+        '[data-firm-conversation="'+CSS.escape(String(activeMessageQuoteId))+'"]'
+      );
+      const card=document.querySelector(
+        '[data-quote-card="'+CSS.escape(String(activeMessageQuoteId))+'"]'
+      );
+
+      if(details){
+        details.open=true;
+        markInstitutionConversationRead(activeMessageQuoteId);
+      }
+      card?.scrollIntoView({behavior:"smooth",block:"center"});
+    });
+  });
+
+  document.getElementById("liveMessageAlertClose")?.addEventListener("click",hideInstitutionMessageAlert);
 
   setInterval(async()=>{
     if(document.hidden||!currentInstitution||!quoteRecords.length)return;
