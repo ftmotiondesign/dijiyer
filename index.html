@@ -234,6 +234,35 @@
     </div>
   </div>
 
+  <div class="modal hidden" id="quoteSuccessModal">
+    <div class="modal-card quote-success-card">
+      <button class="modal-close" data-close="quoteSuccessModal">×</button>
+
+      <div class="quote-success-check">✓</div>
+      <h2>Teklif Talebiniz Gönderildi</h2>
+      <p id="quoteSuccessCount">Talebiniz uygun kurumlarla eşleştiriliyor.</p>
+
+      <div class="quote-success-code-box">
+        <span>TAKİP KODUNUZ</span>
+        <strong id="quoteSuccessCode">-</strong>
+      </div>
+
+      <label class="quote-success-link-label">Özel Teklif Linkiniz
+        <input id="quoteSuccessLink" type="text" readonly>
+      </label>
+
+      <div class="quote-success-note">
+        🔐 Tekliflerinizi başka telefondan açmak için bu takip kodu ile talep formunda yazdığınız telefon numarasını kullanacaksınız.
+      </div>
+
+      <div class="quote-success-actions">
+        <button type="button" class="btn btn-primary" id="quoteOpenTrackingBtn">Tekliflerimi Gör</button>
+        <button type="button" class="btn btn-light" id="quoteCopyTrackingBtn">Linki Kopyala</button>
+        <button type="button" class="btn btn-whatsapp" id="quoteWhatsappTrackingBtn">WhatsApp'tan Kendime Gönder</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal hidden" id="myOffersModal">
     <div class="modal-card my-offers-card">
       <button class="modal-close" data-close="myOffersModal">×</button>
