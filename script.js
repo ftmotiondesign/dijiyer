@@ -355,10 +355,12 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
     showToast('Kurum başvurunuz alındı.');
   })
   .catch(error => {
-    console.error('Başvuru kaydedilemedi:', error);
-    showToast('Başvuru gönderilemedi. Lütfen tekrar deneyin.');
-  });
-  
+  console.error('Başvuru kaydedilemedi:', error);
+  showToast('Başvuru gönderilemedi. Lütfen tekrar deneyin.');
+});
+
+});
+
 async function loadProvinces() {
   const citySelect = document.getElementById('institutionCity');
   const districtSelect = document.getElementById('institutionDistrict');
