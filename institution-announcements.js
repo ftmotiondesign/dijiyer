@@ -8,12 +8,30 @@
       : [];
   }
 
+  function localReadIds() {
+    try {
+      const key = "dijiyer_announcement_reads_" + String(currentAccount?.institutionId || "");
+      return JSON.parse(localStorage.getItem(key) || "[]").map(String);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveLocalReadId(id) {
+    try {
+      const key = "dijiyer_announcement_reads_" + String(currentAccount?.institutionId || "");
+      const values = [...new Set([...localReadIds(), String(id)])];
+      localStorage.setItem(key, JSON.stringify(values));
+    } catch (_) {}
+  }
+
   function readIds() {
-    return new Set(
-      Array.isArray(currentInstitution?.adminAnnouncementReads)
+    return new Set([
+      ...(Array.isArray(currentInstitution?.adminAnnouncementReads)
         ? currentInstitution.adminAnnouncementReads.map(String)
-        : []
-    );
+        : []),
+      ...localReadIds()
+    ]);
   }
 
   function priorityLabel(value) {
@@ -89,6 +107,8 @@
 
   async function markAnnouncementRead(id) {
     if (!id || !currentAccount?.institutionId) return;
+    saveLocalReadId(id);
+
     try {
       await db.collection("institutions")
         .doc(currentAccount.institutionId)
@@ -104,16 +124,19 @@
           : []),
         String(id)
       ];
-      dismissedAlerts.delete(String(id));
-      renderInstitutionAnnouncements();
     } catch (error) {
-      console.error("Duyuru okundu bilgisi kaydedilemedi:", error);
+      console.warn("Duyuru okundu bilgisi sunucuya kaydedilemedi; yerel olarak saklandı.", error);
     }
+
+    dismissedAlerts.delete(String(id));
+    renderInstitutionAnnouncements();
   }
 
   async function markAllAnnouncementsRead() {
     const ids = announcements().map(item => String(item.id || "")).filter(Boolean);
     if (!ids.length || !currentAccount?.institutionId) return;
+
+    ids.forEach(saveLocalReadId);
 
     try {
       await db.collection("institutions")
@@ -132,11 +155,12 @@
           ...ids
         ])
       ];
-      document.getElementById("institutionAnnouncementAlert")?.classList.add("hidden");
-      renderInstitutionAnnouncements();
     } catch (error) {
-      console.error("Duyurular okundu olarak işaretlenemedi:", error);
+      console.warn("Tüm duyuruların okundu bilgisi sunucuya kaydedilemedi; yerel olarak saklandı.", error);
     }
+
+    document.getElementById("institutionAnnouncementAlert")?.classList.add("hidden");
+    renderInstitutionAnnouncements();
   }
 
   function startAnnouncementWatcher() {
