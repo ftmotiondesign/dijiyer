@@ -93,14 +93,31 @@
     });
   }
 
+  function formatChatTime(value){
+    if(!value)return "";
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return "";
+    return date.toLocaleTimeString("tr-TR",{
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }
+
   function firmMessageHtml(msg){
     const mine=msg.sender==="institution";
-    const label=msg.kind==="revision_request"?"REVİZYON TALEBİ":msg.kind==="revision_response"?"REVİZYON YANITI":mine?"SİZ":"MÜŞTERİ";
-    return `<div class="firm-message ${mine?"mine":"customer"} ${msg.kind||""}">
-      <span>${offerSafe(label)}</span>
-      <div>${offerSafe(msg.text||"")}</div>
-      <small>${formatDate(msg.date)}</small>
-    </div>`;
+    const text=offerSafe(msg.text||"").replace(/\n/g,"<br>");
+    const time=offerSafe(formatChatTime(msg.date));
+    return `
+      <div class="firm-message-row ${mine?"mine":"theirs"}">
+        <div class="firm-message ${mine?"mine":"customer"} ${msg.kind||""}">
+          <div class="firm-message-text">${text}</div>
+          <div class="firm-message-meta">
+            <span class="firm-message-time">${time}</span>
+            ${mine?'<span class="firm-message-check">✓✓</span>':""}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function messageSeenKey(quoteId){
