@@ -71,10 +71,41 @@ let institutionMapInstance = null;
 let institutionLocationMarker = null;
 
 const map = L.map('map', { zoomControl: true }).setView([40.149, 26.407], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap'
-}).addTo(map);
+});
+
+const satelliteLayer = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri'
+  }
+);
+
+streetLayer.addTo(map);
+
+const mapStreetBtn = document.getElementById('mapStreetBtn');
+const mapSatelliteBtn = document.getElementById('mapSatelliteBtn');
+
+function setMainMapView(mode) {
+  if (mode === 'satellite') {
+    if (map.hasLayer(streetLayer)) map.removeLayer(streetLayer);
+    if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
+    mapSatelliteBtn.classList.add('active');
+    mapStreetBtn.classList.remove('active');
+  } else {
+    if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+    if (!map.hasLayer(streetLayer)) streetLayer.addTo(map);
+    mapStreetBtn.classList.add('active');
+    mapSatelliteBtn.classList.remove('active');
+  }
+}
+
+mapStreetBtn.addEventListener('click', () => setMainMapView('street'));
+mapSatelliteBtn.addEventListener('click', () => setMainMapView('satellite'));
 
 const markers = new Map();
 
@@ -408,10 +439,29 @@ function initInstitutionMap() {
   if (!institutionMapInstance) {
     institutionMapInstance = L.map('institutionMap').setView([39.0, 35.0], 6);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const institutionStreetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
-    }).addTo(institutionMapInstance);
+    });
+
+    const institutionSatelliteLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri'
+      }
+    );
+
+    institutionStreetLayer.addTo(institutionMapInstance);
+
+    L.control.layers(
+      {
+        'Harita': institutionStreetLayer,
+        'Uydu': institutionSatelliteLayer
+      },
+      {},
+      { position: 'topright' }
+    ).addTo(institutionMapInstance);
 
     institutionMapInstance.on('click', e => {
       const { lat, lng } = e.latlng;
