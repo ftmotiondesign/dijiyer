@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=9">
+  <link rel="stylesheet" href="admin.css?v=10">
 </head>
 
 <body>
@@ -78,6 +78,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" id="applicationsTabBtn">Kurum Başvuruları</button>
         <button class="admin-tab" id="institutionsTabBtn">Kurumları Yönet</button>
+        <button class="admin-tab" id="quotesTabBtn">Teklif Talepleri</button>
       </div>
 
       <section id="applicationsSection">
@@ -137,6 +138,30 @@
         <div class="toolbar-result" id="institutionFilterResult"></div>
 
         <div id="institutionsList"></div>
+      </section>
+
+      <section id="quotesSection" hidden>
+        <div class="section-title">
+          <h3>Teklif Talepleri</h3>
+          <p id="quoteRequestCount">Talepler yükleniyor...</p>
+        </div>
+
+        <div class="quote-toolbar">
+          <input
+            type="search"
+            id="quoteRequestSearch"
+            placeholder="Müşteri, telefon, şehir, ilçe veya hizmet ara..."
+          >
+
+          <select id="quoteStatusFilter">
+            <option value="">Tüm durumlar</option>
+            <option value="new">Yeni</option>
+            <option value="sent">İletildi</option>
+            <option value="done">Sonuçlandı</option>
+          </select>
+        </div>
+
+        <div id="quoteRequestsList"></div>
       </section>
 
     </section>
@@ -220,7 +245,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=9"></script>
+  <script src="admin.js?v=10"></script>
 
 </body>
 </html>
