@@ -301,11 +301,37 @@ function clearAllCategorySelections() {
     .forEach(input => { input.checked = false; });
 }
 
+function syncExploreQuickFilterState() {
+  const videoOnly = document.getElementById('videoOnly');
+  const offerOnly = document.getElementById('offerOnly');
+
+  document.getElementById('exploreVideoBtn')
+    ?.classList.toggle('active', Boolean(videoOnly?.checked));
+  document.getElementById('exploreOfferBtn')
+    ?.classList.toggle('active', Boolean(offerOnly?.checked));
+
+  const hasCategoryFilter = Boolean(
+    document.querySelector('.categoryFilter:checked, .subCategoryFilter:checked')
+  );
+  const hasSearch = Boolean(
+    document.getElementById('searchInput')?.value.trim()
+  );
+  const hasQuickFilter = Boolean(videoOnly?.checked || offerOnly?.checked);
+  const hasLocationFilter = Boolean(activeLocationCity || activeLocationDistrict);
+
+  document.getElementById('exploreClearFiltersBtn')
+    ?.classList.toggle(
+      'hidden',
+      !(hasCategoryFilter || hasSearch || hasQuickFilter || hasLocationFilter)
+    );
+}
+
 function syncMobileQuickFilterState() {
   const videoOnly = document.getElementById('videoOnly');
   const offerOnly = document.getElementById('offerOnly');
   document.getElementById('mobileVideoOnlyBtn')?.classList.toggle('active', Boolean(videoOnly?.checked));
   document.getElementById('mobileOfferOnlyBtn')?.classList.toggle('active', Boolean(offerOnly?.checked));
+  syncExploreQuickFilterState();
 }
 
 function getSelectedMainCategory() {
@@ -712,6 +738,17 @@ function renderList() {
 
   updateMarkerVisibility(data);
   document.getElementById('resultCount').textContent = `${data.length} sonuç`;
+
+  const exploreResultCount = document.getElementById('exploreResultCount');
+  const exploreResultLabel = document.getElementById('exploreResultLabel');
+
+  if (exploreResultCount) exploreResultCount.textContent = data.length;
+  if (exploreResultLabel) {
+    exploreResultLabel.textContent =
+      data.length === 1 ? 'kurum listeleniyor' : 'kurum listeleniyor';
+  }
+
+  syncExploreQuickFilterState();
 
   list.innerHTML = data.map(inst => `
     <article class="institution-card ${String(inst.id) === String(selectedId) ? 'active' : ''}" data-id="${inst.id}">
@@ -1313,6 +1350,57 @@ document.getElementById('searchInput').addEventListener('input', renderList);
 document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
+
+document.getElementById('exploreOfferBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('offerOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+});
+
+document.getElementById('exploreVideoBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('videoOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+});
+
+document.getElementById('exploreLocationBtn')?.addEventListener('click', () => {
+  locationBtn?.scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => setLocationPopover(true), 350);
+});
+
+document.getElementById('exploreClearFiltersBtn')?.addEventListener('click', () => {
+  clearAllCategorySelections();
+
+  const search = document.getElementById('searchInput');
+  const videoOnly = document.getElementById('videoOnly');
+  const offerOnly = document.getElementById('offerOnly');
+
+  if (search) search.value = '';
+  if (videoOnly) videoOnly.checked = false;
+  if (offerOnly) offerOnly.checked = false;
+
+  activeLocationCity = '';
+  activeLocationDistrict = '';
+
+  if (mainLocationCity) mainLocationCity.value = '';
+  if (mainLocationDistrict) {
+    mainLocationDistrict.innerHTML = '<option value="">Tüm İlçeler</option>';
+    mainLocationDistrict.disabled = true;
+  }
+
+  updateMainLocationButton();
+  renderMobileCategories();
+  syncMobileQuickFilterState();
+  renderList();
+
+  try { map.setView([39.0, 35.0], 6); } catch (_) {}
+  showToast('Filtreler temizlendi.');
+});
+
 document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
 
 const institutionActions = document.getElementById('institutionActions');
@@ -1845,14 +1933,22 @@ document.addEventListener('click', (event) => {
 locationPopover?.addEventListener('click', event => event.stopPropagation());
 
 function updateMainLocationButton() {
+  const exploreLocationText = document.getElementById('exploreLocationText');
+
   if (!activeLocationCity) {
     locationBtnText.textContent = 'Tüm Türkiye';
+    if (exploreLocationText) exploreLocationText.textContent = 'Tüm Türkiye';
+    syncExploreQuickFilterState();
     return;
   }
 
-  locationBtnText.textContent = activeLocationDistrict
+  const label = activeLocationDistrict
     ? activeLocationCity + ', ' + activeLocationDistrict
     : activeLocationCity;
+
+  locationBtnText.textContent = label;
+  if (exploreLocationText) exploreLocationText.textContent = label;
+  syncExploreQuickFilterState();
 }
 
 async function loadMainLocationDistricts(provinceId, selectedDistrict = '') {
