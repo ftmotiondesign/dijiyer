@@ -10,6 +10,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
+const auth = firebase.auth();
+
+const institutionRegistrationApp =
+  firebase.apps.find(app => app.name === 'institutionRegistration') ||
+  firebase.initializeApp(firebaseConfig, 'institutionRegistration');
+
+const institutionRegistrationAuth = institutionRegistrationApp.auth();
+const institutionRegistrationDb = institutionRegistrationApp.firestore();
 const institutions = [
   {
     id: 1,
@@ -1056,8 +1064,161 @@ async function loadApprovedInstitutions() {
   }
 }
 
+
+const institutionLoginBtn = document.getElementById('institutionLoginBtn');
+const institutionLoginTab = document.getElementById('institutionLoginTab');
+const institutionRegisterTab = document.getElementById('institutionRegisterTab');
+const institutionLoginForm = document.getElementById('institutionLoginForm');
+const institutionRegisterForm = document.getElementById('institutionRegisterForm');
+const institutionLoginMessage = document.getElementById('institutionLoginMessage');
+const institutionRegisterMessage = document.getElementById('institutionRegisterMessage');
+
+function setInstitutionAccessMode(mode) {
+  const loginMode = mode === 'login';
+
+  institutionLoginTab.classList.toggle('active', loginMode);
+  institutionRegisterTab.classList.toggle('active', !loginMode);
+  institutionLoginForm.classList.toggle('hidden', !loginMode);
+  institutionRegisterForm.classList.toggle('hidden', loginMode);
+
+  institutionLoginMessage.textContent = '';
+  institutionRegisterMessage.textContent = '';
+}
+
+institutionLoginBtn.addEventListener('click', () => {
+  setInstitutionAccessMode('login');
+  openModal('institutionAccessModal');
+});
+
+institutionLoginTab.addEventListener('click', () => setInstitutionAccessMode('login'));
+institutionRegisterTab.addEventListener('click', () => setInstitutionAccessMode('register'));
+
+async function loadInstitutionRegistrationOptions() {
+  const select = document.getElementById('institutionAccountInstitution');
+  select.innerHTML = '<option value="">Kurumlar yükleniyor...</option>';
+
+  try {
+    const snapshot = await db.collection('institutions').get();
+    const rows = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''), 'tr'));
+
+    select.innerHTML = '<option value="">Kurumunuzu seçin</option>';
+
+    rows.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent =
+        (item.name || 'Kurum') +
+        ([item.city, item.district].filter(Boolean).length
+          ? ' — ' + [item.city, item.district].filter(Boolean).join(' / ')
+          : '');
+      option.dataset.name = item.name || 'Kurum';
+      select.appendChild(option);
+    });
+
+    if (!rows.length) {
+      select.innerHTML = '<option value="">Henüz onaylı kurum bulunmuyor</option>';
+    }
+  } catch (error) {
+    console.error('Kurum hesap listesi yüklenemedi:', error);
+    select.innerHTML = '<option value="">Kurumlar yüklenemedi</option>';
+  }
+}
+
+institutionRegisterForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const institutionSelect = document.getElementById('institutionAccountInstitution');
+  const institutionId = institutionSelect.value;
+  const institutionName =
+    institutionSelect.options[institutionSelect.selectedIndex]?.dataset.name || '';
+  const email = document.getElementById('institutionRegisterEmail').value.trim();
+  const password = document.getElementById('institutionRegisterPassword').value;
+
+  institutionRegisterMessage.textContent = 'Hesap oluşturuluyor...';
+
+  let createdUser = null;
+
+  try {
+    const credential =
+      await institutionRegistrationAuth.createUserWithEmailAndPassword(email, password);
+
+    createdUser = credential.user;
+
+    await institutionRegistrationDb.collection('institutionUsers').doc(createdUser.uid).set({
+      email,
+      institutionId,
+      institutionName,
+      status: 'pending',
+      date: new Date().toISOString()
+    });
+
+    await institutionRegistrationAuth.signOut();
+
+    institutionRegisterForm.reset();
+    institutionRegisterMessage.textContent =
+      'Başvurunuz alındı. Yönetici onayından sonra giriş yapabilirsiniz.';
+  } catch (error) {
+    console.error('Kurum hesabı oluşturulamadı:', error);
+
+    if (createdUser) {
+      try { await createdUser.delete(); } catch (_) {}
+    }
+
+    const messages = {
+      'auth/email-already-in-use': 'Bu e-posta ile daha önce hesap oluşturulmuş.',
+      'auth/invalid-email': 'Geçerli bir e-posta adresi yazın.',
+      'auth/weak-password': 'Şifre en az 6 karakter olmalı.',
+      'permission-denied': 'Kurum hesabı kaydedilemedi. Firestore yetkisini kontrol edin.'
+    };
+
+    institutionRegisterMessage.textContent =
+      messages[error.code] || 'Hesap oluşturulamadı. Lütfen tekrar deneyin.';
+  }
+});
+
+institutionLoginForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const email = document.getElementById('institutionLoginEmail').value.trim();
+  const password = document.getElementById('institutionLoginPassword').value;
+
+  institutionLoginMessage.textContent = 'Giriş yapılıyor...';
+
+  try {
+    const credential = await auth.signInWithEmailAndPassword(email, password);
+    const accountDoc = await db.collection('institutionUsers').doc(credential.user.uid).get();
+
+    if (!accountDoc.exists) {
+      await auth.signOut();
+      institutionLoginMessage.textContent =
+        'Bu hesap bir kurum hesabına bağlı değil.';
+      return;
+    }
+
+    const account = accountDoc.data();
+
+    if (account.status !== 'approved') {
+      await auth.signOut();
+      institutionLoginMessage.textContent =
+        account.status === 'rejected'
+          ? 'Kurum hesabı başvurunuz onaylanmadı.'
+          : 'Kurum hesabınız henüz yönetici onayında.';
+      return;
+    }
+
+    window.location.href = 'institution.html';
+  } catch (error) {
+    console.error('Kurum girişi başarısız:', error);
+    institutionLoginMessage.textContent = 'E-posta veya şifre hatalı.';
+  }
+});
+
+
 loadProvinces();
 loadQuoteProvinces();
+loadInstitutionRegistrationOptions();
 renderList();
 renderDetail();
 loadApprovedInstitutions();
