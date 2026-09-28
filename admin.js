@@ -119,6 +119,18 @@ async function loadApplications() {
       `;
 
       applicationsList.appendChild(card);
+
+      card.querySelector(".approve-btn").addEventListener("click", () => {
+        approveApplication(doc.id, data);
+      });
+
+      card.querySelector(".reject-btn").addEventListener("click", () => {
+        rejectApplication(doc.id);
+      });
+
+      card.querySelector(".delete-btn").addEventListener("click", () => {
+        deleteApplication(doc.id);
+      });
     });
 
   } catch (error) {
@@ -126,6 +138,73 @@ async function loadApplications() {
 
     applicationsList.innerHTML =
       "<p>Başvurular yüklenemedi. Yetkinizi kontrol edin.</p>";
+  }
+}
+
+async function approveApplication(id, data) {
+  const ok = confirm("Bu kurumu onaylamak istiyor musunuz?");
+  if (!ok) return;
+
+  try {
+    const institution = {
+      name: data.name || "",
+      category: data.category || "",
+      city: data.city || "",
+      district: data.district || "",
+      location: [data.city, data.district].filter(Boolean).join(", "),
+      address: data.address || "",
+      phone: data.phone || "",
+      website: data.website || "",
+      rating: 0,
+      reviewCount: 0,
+      video: false,
+      offer: true,
+      vip: false,
+      status: "active",
+      createdAt: new Date().toISOString()
+    };
+
+    const batch = db.batch();
+    batch.set(db.collection("institutions").doc(id), institution);
+    batch.delete(db.collection("institutionApplications").doc(id));
+    await batch.commit();
+
+    alert("Kurum onaylandı.");
+    await loadApplications();
+  } catch (error) {
+    console.error("Onaylama hatası:", error);
+    alert("Kurum onaylanamadı. Firestore kurallarını kontrol edin.");
+  }
+}
+
+async function rejectApplication(id) {
+  const ok = confirm("Bu başvuruyu reddetmek istiyor musunuz?");
+  if (!ok) return;
+
+  try {
+    await db.collection("institutionApplications").doc(id).update({
+      status: "rejected",
+      rejectedAt: new Date().toISOString()
+    });
+
+    alert("Başvuru reddedildi.");
+    await loadApplications();
+  } catch (error) {
+    console.error("Reddetme hatası:", error);
+    alert("Başvuru reddedilemedi.");
+  }
+}
+
+async function deleteApplication(id) {
+  const ok = confirm("Bu başvuruyu kalıcı olarak silmek istiyor musunuz?");
+  if (!ok) return;
+
+  try {
+    await db.collection("institutionApplications").doc(id).delete();
+    await loadApplications();
+  } catch (error) {
+    console.error("Silme hatası:", error);
+    alert("Başvuru silinemedi.");
   }
 }
 
