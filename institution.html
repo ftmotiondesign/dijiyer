@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=6">
+  <link rel="stylesheet" href="institution.css?v=7">
   <link rel="stylesheet" href="offers.css?v=1">
 </head>
 <body>
@@ -37,6 +37,16 @@
         <span class="offer-badge" id="panelOfferBadge">Teklif durumu yükleniyor</span>
       </div>
     </section>
+
+    <div class="live-quote-alert hidden" id="liveQuoteAlert">
+      <div class="live-quote-alert-icon">🔔</div>
+      <div class="live-quote-alert-copy">
+        <strong>Yeni teklif talebi geldi</strong>
+        <span id="liveQuoteAlertText">Yeni bir müşteri talebi kurumunuzla eşleşti.</span>
+      </div>
+      <button type="button" id="liveQuoteAlertBtn">Teklifi Gör</button>
+      <button type="button" class="live-quote-alert-close" id="liveQuoteAlertClose" aria-label="Kapat">×</button>
+    </div>
 
     <nav class="panel-tabs primary-panel-tabs">
       <button class="panel-tab active" data-panel-tab="summary">📌 Özet</button>
@@ -129,7 +139,24 @@
         </article>
 
         <article class="panel-card">
-          <h2>Hızlı İşlemler</h2>
+          <div class="card-head">
+            <h2>Hızlı İşlemler</h2>
+          </div>
+
+          <div class="profile-completion-card">
+            <div class="profile-completion-top">
+              <div>
+                <span>Profil Tamamlanma</span>
+                <strong id="profileCompletionPercent">%0</strong>
+              </div>
+              <button type="button" id="completeProfileBtn">Profili Tamamla</button>
+            </div>
+            <div class="profile-completion-track">
+              <div class="profile-completion-bar" id="profileCompletionBar"></div>
+            </div>
+            <small id="profileCompletionText">Profil bilgileri kontrol ediliyor...</small>
+          </div>
+
           <div class="quick-grid">
             <button class="quick-card" id="goProfileBtn">
               <strong>✏️ Bilgileri Düzenle</strong>
@@ -166,6 +193,27 @@
             <option value="used">Kullanıldı</option>
             <option value="not_interested">İlgilenmiyorum</option>
           </select>
+        </div>
+
+        <div class="quote-status-shortcuts" id="quoteStatusShortcuts">
+          <button type="button" class="quote-shortcut active" data-quote-shortcut="">
+            Tümü <span id="shortcutCountAll">0</span>
+          </button>
+          <button type="button" class="quote-shortcut" data-quote-shortcut="new">
+            Yeni <span id="shortcutCountNew">0</span>
+          </button>
+          <button type="button" class="quote-shortcut" data-quote-shortcut="offered">
+            Teklif Verildi <span id="shortcutCountOffered">0</span>
+          </button>
+          <button type="button" class="quote-shortcut" data-quote-shortcut="locked">
+            Kilitlenen <span id="shortcutCountLocked">0</span>
+          </button>
+          <button type="button" class="quote-shortcut" data-quote-shortcut="used">
+            Kullanıldı <span id="shortcutCountUsed">0</span>
+          </button>
+          <button type="button" class="quote-shortcut" data-quote-shortcut="expired">
+            Süresi Doldu <span id="shortcutCountExpired">0</span>
+          </button>
         </div>
 
         <div id="institutionQuotesList" class="quote-list"></div>
@@ -391,7 +439,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=7"></script>
-  <script src="institution-offers.js?v=2"></script>
+  <script src="institution.js?v=8"></script>
+  <script src="institution-offers.js?v=3"></script>
 </body>
 </html>
