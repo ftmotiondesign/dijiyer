@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=13" />\n  <link rel="stylesheet" href="offers.css?v=1" />
 </head>
 <body>
   <header class="topbar">
@@ -25,7 +25,7 @@
     </div>
 
     <button class="location-btn" id="locationBtn">📍 Çanakkale, Merkez ▾</button>
-    <button class="btn btn-primary" id="addInstitutionBtn">Toplu Teklif Al</button>
+    <button class="btn btn-primary" id="addInstitutionBtn">Toplu Teklif Al</button>\n    <button class="btn btn-light my-offers-btn" id="myOffersBtn">🔒 Tekliflerim <span class="my-offers-count" id="myOffersCount"></span></button>
     <button class="btn btn-light" id="institutionAddBtn">+ Kurum Ekle</button>
     <button class="btn btn-light" id="institutionLoginBtn">🏢 Kurum Girişi</button>
   </header>
@@ -162,6 +162,26 @@
           Uygun Kurumlara Teklif Gönder
         </button>
       </form>
+    </div>
+  </div>
+
+
+  <div class="modal hidden" id="myOffersModal">
+    <div class="modal-card my-offers-card">
+      <button class="modal-close" data-close="myOffersModal">×</button>
+      <h2>Tekliflerim</h2>
+      <p>Bu cihazdan gönderdiğiniz toplu teklif talepleri ve kurumların verdiği fiyatlar burada görünür.</p>
+
+      <div class="offer-trust-strip">
+        <div class="offer-trust-item">🔒 Fiyat Kilidi</div>
+        <div class="offer-trust-item">⏱ Süreli Teklif</div>
+        <div class="offer-trust-item">▦ QR Doğrulama</div>
+        <div class="offer-trust-item">✓ Tek Kullanım</div>
+      </div>
+
+      <div id="myOffersList">
+        <div class="offer-center-note">Teklifleriniz yükleniyor...</div>
+      </div>
     </div>
   </div>
 
@@ -369,6 +389,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=25"""""></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>\n<script src="script.js?v=26"></script>\n<script src="offers.js?v=1"></script>
 </body>
 </html>
