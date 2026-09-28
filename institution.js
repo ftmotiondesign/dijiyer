@@ -279,6 +279,21 @@ function playNewQuoteSound() {
   } catch (_) {}
 }
 
+function quoteMatchesInstitutionArea(quote) {
+  if (!currentInstitution) return false;
+
+  const quoteDistrict =
+    String(quote?.district || '').trim().toLocaleLowerCase('tr-TR');
+
+  // İlçe seçilmediyse şehir genelindeki tüm eşleşen kurumlar görebilir.
+  if (!quoteDistrict) return true;
+
+  const institutionDistrict =
+    String(currentInstitution.district || '').trim().toLocaleLowerCase('tr-TR');
+
+  return quoteDistrict === institutionDistrict;
+}
+
 function startLiveQuoteWatcher() {
   if (!currentInstitution || !currentInstitution.category || !currentInstitution.city) return;
 
@@ -300,7 +315,8 @@ function startLiveQuoteWatcher() {
 
       const added = snapshot.docChanges()
         .filter(change => change.type === "added")
-        .map(change => ({ id: change.doc.id, ...change.doc.data() }));
+        .map(change => ({ id: change.doc.id, ...change.doc.data() }))
+        .filter(quoteMatchesInstitutionArea);
 
       if (!added.length) return;
 
@@ -466,6 +482,7 @@ async function loadMatchedQuotes() {
 
     quoteRecords = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(quoteMatchesInstitutionArea)
       .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
 
     await loadQuoteResponses();
