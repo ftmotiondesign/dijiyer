@@ -286,7 +286,7 @@ function lockedHtml(bundle){
       </div>
       <div id="lockedQr" class="qr-box" data-url="${safe(verifyUrl)}"></div>
       <div class="countdown" data-countdown="${safe(lock.expiresAt||"")}"></div>
-      ${state==="locked"?`<div class="offer-actions" style="justify-content:center"><button class="report-btn" data-report>İşletme Teklife Uymadı</button></div>`:""}
+      ${state==="locked"?`<div class="offer-actions" style="justify-content:center"><button class="report-btn" data-report>⚠ Teklifle İlgili Sorun Bildir</button></div>`:""}
     </article>`;
 }
 
@@ -417,7 +417,7 @@ function render(bundle){
     btn.addEventListener("click",()=>lockOffer(access.quoteId,btn.dataset.institutionId,btn));
   });
   const report=results.querySelector("[data-report]");
-  if(report)report.addEventListener("click",()=>reportIssue(access.quoteId,bundle.lock.offerCode));
+  if(report)report.addEventListener("click",()=>openOfferIssueModal(access.quoteId,bundle.lock.offerCode));
   drawQr();
   updateCountdowns();
 }
@@ -484,19 +484,123 @@ async function lockOffer(quoteId,institutionId,button){
   }
 }
 
-async function reportIssue(quoteId,offerCode){
-  const reason=prompt("Sorunu kısaca yazın. Örn: İşletme geçerli fiyatı kabul etmedi.");
-  if(!reason||!reason.trim())return;
+function ensureOfferIssueModal(){
+  if(document.getElementById("offerIssueModal"))return;
+
+  document.body.insertAdjacentHTML("beforeend",`
+    <div class="offer-issue-modal hidden" id="offerIssueModal">
+      <div class="offer-issue-card">
+        <button type="button" class="offer-issue-close" id="offerIssueClose" aria-label="Kapat">×</button>
+
+        <div class="offer-issue-icon">⚠</div>
+        <h2>Teklifle İlgili Sorun Bildir</h2>
+        <p class="offer-issue-intro">
+          Sorunu seçin. Bildirim doğrudan firmayı suçlu ilan etmez; durum kayıt altına alınır ve gerektiğinde incelenir.
+        </p>
+
+        <form id="offerIssueForm">
+          <label class="offer-issue-option">
+            <input type="radio" name="issueReason" value="Firma kilitlenen fiyatı kabul etmedi" required>
+            <span><strong>Firma kilitlenen fiyatı kabul etmedi</strong><small>Kilitlenen fiyat yerine farklı bir fiyat istendi.</small></span>
+          </label>
+
+          <label class="offer-issue-option">
+            <input type="radio" name="issueReason" value="Ek ücret istendi">
+            <span><strong>Ek ücret istendi</strong><small>Teklifte belirtilmeyen ek bir ödeme talep edildi.</small></span>
+          </label>
+
+          <label class="offer-issue-option">
+            <input type="radio" name="issueReason" value="Teklif kapsamı değiştirildi">
+            <span><strong>Teklif kapsamı değiştirildi</strong><small>Kilitlenen hizmet veya ürün kapsamı sonradan değiştirildi.</small></span>
+          </label>
+
+          <label class="offer-issue-option">
+            <input type="radio" name="issueReason" value="Hizmet verilmek istenmedi">
+            <span><strong>Hizmet verilmek istenmedi</strong><small>Geçerli ve kilitli teklif olmasına rağmen hizmet reddedildi.</small></span>
+          </label>
+
+          <label class="offer-issue-option">
+            <input type="radio" name="issueReason" value="Diğer">
+            <span><strong>Diğer</strong><small>Yukarıdakiler dışında bir sorun yaşadım.</small></span>
+          </label>
+
+          <label class="offer-issue-detail">
+            Açıklama <span>(opsiyonel)</span>
+            <textarea id="offerIssueDetail" maxlength="500" rows="3" placeholder="Sorunu kısaca açıklayın."></textarea>
+          </label>
+
+          <div class="offer-issue-fairness">
+            <strong>Adil değerlendirme</strong>
+            <span>Bildirim; teklif kodu, kilitlenen fiyat ve şartlarla birlikte değerlendirilir. Tek taraflı beyan otomatik ceza oluşturmaz.</span>
+          </div>
+
+          <button type="submit" class="offer-issue-submit">Bildirimi Gönder</button>
+        </form>
+      </div>
+    </div>
+  `);
+
+  const modal=document.getElementById("offerIssueModal");
+  document.getElementById("offerIssueClose").onclick=()=>modal.classList.add("hidden");
+  modal.addEventListener("click",event=>{
+    if(event.target===modal)modal.classList.add("hidden");
+  });
+}
+
+let pendingIssueContext=null;
+
+function openOfferIssueModal(quoteId,offerCode){
+  ensureOfferIssueModal();
+  pendingIssueContext={quoteId,offerCode};
+
+  const form=document.getElementById("offerIssueForm");
+  form.reset();
+  document.getElementById("offerIssueModal").classList.remove("hidden");
+
+  form.onsubmit=async event=>{
+    event.preventDefault();
+
+    const selected=form.querySelector('input[name="issueReason"]:checked');
+    if(!selected){
+      toast("Lütfen sorun türünü seçin.");
+      return;
+    }
+
+    const detail=String(document.getElementById("offerIssueDetail").value||"").trim();
+    const reason=detail
+      ? selected.value+" — "+detail
+      : selected.value;
+
+    const submit=form.querySelector('button[type="submit"]');
+    submit.disabled=true;
+    submit.textContent="Gönderiliyor...";
+
+    try{
+      await reportIssue(pendingIssueContext.quoteId,pendingIssueContext.offerCode,reason);
+      document.getElementById("offerIssueModal").classList.add("hidden");
+    }finally{
+      submit.disabled=false;
+      submit.textContent="Bildirimi Gönder";
+    }
+  };
+}
+
+async function reportIssue(quoteId,offerCode,reason){
+  const cleanReason=String(reason||"").trim().slice(0,500);
+  if(!cleanReason)return;
+
   try{
     await db.collection("quoteRequests").doc(quoteId).collection("offerIssues").add({
       offerCode,
-      reason:reason.trim().slice(0,500),
+      reason:cleanReason,
       status:"new",
       date:new Date().toISOString()
     });
-    toast("Bildiriminiz alındı.");
+    toast("Sorun bildiriminiz alındı.");
   }catch(error){
-    console.error(error);toast("Bildirim gönderilemedi.");
+    console.error(error);
+    toast("Bildirim gönderilemedi.");
+    throw error;
   }
 }
 
