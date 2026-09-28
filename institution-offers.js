@@ -312,15 +312,17 @@ async function saveRealOffer(form){
   try{
     const quoteRef=db.collection("quoteRequests").doc(quoteId);
     const offerRef=quoteRef.collection("offers").doc(currentAccount.institutionId);
-    await Promise.all([
-      offerRef.set(data,{merge:true}),
-      db.collection("offerLookup").doc(code).set({
-        quoteId,
-        institutionId:currentAccount.institutionId,
-        offerCode:code,
-        updatedAt:new Date().toISOString()
-      },{merge:true})
-    ]);
+    const lookupRef=db.collection("offerLookup").doc(code);
+
+    const batch=db.batch();
+    batch.set(offerRef,data,{merge:true});
+    batch.set(lookupRef,{
+      quoteId,
+      institutionId:currentAccount.institutionId,
+      offerCode:code,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+    await batch.commit();
 
     institutionOfferMap.set(quoteId,{id:currentAccount.institutionId,...data});
     if(responseMap.get(quoteId)?.status==="not_interested"){
