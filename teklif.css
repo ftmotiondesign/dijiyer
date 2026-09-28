@@ -312,3 +312,102 @@ button,input{font:inherit}.hidden{display:none!important}
     z-index:3;
   }
 }
+
+
+/* WhatsApp benzeri müşteri sohbet alanı */
+.djy-modal-card{
+  background:#efeae2;
+  overflow:hidden;
+}
+.djy-modal-head{
+  margin:-18px -18px 0;
+  padding:12px 14px;
+  background:#f0f2f5;
+  border-bottom:1px solid #dde1e5;
+}
+.djy-conversation-context{
+  margin:0 -18px;
+  border-radius:0;
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
+}
+.djy-messages{
+  margin:0 -8px;
+  border-radius:0;
+  padding:14px 12px;
+  background:#efeae2;
+}
+.djy-message{
+  box-shadow:0 1px 1px rgba(0,0,0,.08);
+  border-radius:8px;
+}
+.djy-message.mine{
+  background:#d9fdd3;
+  color:#111b21;
+  border-bottom-right-radius:2px;
+}
+.djy-message.theirs{
+  background:#fff;
+  color:#111b21;
+  border:0;
+  border-bottom-left-radius:2px;
+}
+.djy-message-form{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:end;
+  margin:10px -8px -8px;
+  padding:9px 10px;
+  background:#f0f2f5;
+}
+.djy-message-form textarea{
+  min-height:42px;
+  max-height:110px;
+  resize:none;
+  border:0;
+  border-radius:22px;
+  background:#fff;
+  padding:11px 14px;
+}
+.djy-message-actions{
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.djy-message-actions .djy-revision-btn{
+  display:none;
+}
+.djy-chat-send{
+  width:42px!important;
+  height:42px;
+  padding:0!important;
+  border:0;
+  border-radius:50%;
+  background:#00a884;
+  color:#fff;
+  font-size:18px;
+  font-weight:900;
+}
+@media(max-width:640px){
+  .djy-modal-card{
+    padding:14px;
+  }
+  .djy-modal-head{
+    margin:-14px -14px 0;
+  }
+  .djy-conversation-context{
+    margin:0 -14px;
+  }
+  .djy-message-form{
+    margin:8px -4px -4px;
+    grid-template-columns:1fr auto;
+  }
+  .djy-message-actions{
+    flex-direction:row;
+  }
+  .djy-message-actions button{
+    width:42px;
+  }
+}
