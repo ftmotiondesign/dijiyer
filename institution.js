@@ -7,10 +7,12 @@ const firebaseConfig = {
   appId: "1:847787778815:web:57058aa8dcc4143ec5a2ca"
 };
 
-firebase.initializeApp(firebaseConfig);
+const institutionSessionApp =
+  firebase.apps.find(app => app.name === "institutionSession") ||
+  firebase.initializeApp(firebaseConfig, "institutionSession");
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth = institutionSessionApp.auth();
+const db = institutionSessionApp.firestore();
 
 let currentUser = null;
 let currentAccount = null;
@@ -442,9 +444,20 @@ document.getElementById("sendPasswordResetBtn").addEventListener("click", async 
   }
 });
 
+let authResolved = false;
+
+const authRestoreTimer = setTimeout(() => {
+  if (!authResolved && !auth.currentUser) {
+    showPanelError("Oturum bilgisi yüklenemedi. Ana sayfadan tekrar kurum girişi yapın.");
+  }
+}, 5000);
+
 auth.onAuthStateChanged(async user => {
+  authResolved = true;
+  clearTimeout(authRestoreTimer);
+
   if (!user) {
-    window.location.replace("index.html");
+    showPanelError("Kurum oturumu bulunamadı. Lütfen ana sayfadan tekrar giriş yapın.");
     return;
   }
 
