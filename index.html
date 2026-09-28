@@ -140,22 +140,29 @@
       </label>
 
       <label>Şehir
-        <input
-          type="text"
-          id="institutionCity"
-          value="Çanakkale"
-          required
-        />
-      </label>
+  <select id="institutionCity" required>
+    <option value="">Şehir seçin</option>
+    <option value="Çanakkale">Çanakkale</option>
+  </select>
+</label>
 
-      <label>İlçe
-        <input
-          type="text"
-          id="institutionDistrict"
-          placeholder="Örn. Merkez"
-          required
-        />
-      </label>
+<label>İlçe
+  <select id="institutionDistrict" required>
+    <option value="">İlçe seçin</option>
+    <option value="Merkez">Merkez</option>
+    <option value="Ayvacık">Ayvacık</option>
+    <option value="Bayramiç">Bayramiç</option>
+    <option value="Biga">Biga</option>
+    <option value="Bozcaada">Bozcaada</option>
+    <option value="Çan">Çan</option>
+    <option value="Eceabat">Eceabat</option>
+    <option value="Ezine">Ezine</option>
+    <option value="Gelibolu">Gelibolu</option>
+    <option value="Gökçeada">Gökçeada</option>
+    <option value="Lapseki">Lapseki</option>
+    <option value="Yenice">Yenice</option>
+  </select>
+</label>
 
       <label>Adres
         <textarea
