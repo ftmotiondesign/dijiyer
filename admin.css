@@ -1,0 +1,156 @@
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+
+.admin-page{
+  max-width:1200px;
+  margin:auto;
+  padding:30px;
+}
+
+.admin-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
+}
+
+.admin-header h1{
+  margin:0;
+  color:#1677ff;
+}
+
+.admin-header p{
+  margin:5px 0 0;
+  color:#6b7280;
+}
+
+.admin-header a{
+  text-decoration:none;
+  color:#1677ff;
+  font-weight:bold;
+}
+
+.admin-card{
+  max-width:450px;
+  margin:60px auto;
+  background:white;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
+}
+
+.admin-card h2{
+  margin-top:0;
+}
+
+.admin-card form{
+  display:grid;
+  gap:16px;
+}
+
+.admin-card label{
+  display:grid;
+  gap:7px;
+  font-weight:bold;
+}
+
+.admin-card input{
+  padding:13px;
+  border:1px solid #d9e0ea;
+  border-radius:9px;
+  font-size:15px;
+}
+
+.admin-card button{
+  border:0;
+  background:#1677ff;
+  color:white;
+  padding:13px;
+  border-radius:9px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#loginMessage{
+  color:#d32f2f;
+  margin-bottom:0;
+}
+
+.dashboard-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.dashboard-title h2{
+  margin-bottom:5px;
+}
+
+.dashboard-title p{
+  margin:0;
+  color:#6b7280;
+}
+
+#logoutBtn{
+  border:1px solid #d9e0ea;
+  background:white;
+  padding:10px 16px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+#applicationsList{
+  display:grid;
+  gap:15px;
+}
+
+.application-card{
+  background:white;
+  border:1px solid #e1e6ee;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.application-card h3{
+  margin:0 0 5px;
+  font-size:20px;
+}
+
+.application-top span{
+  display:inline-block;
+  background:#edf5ff;
+  color:#1677ff;
+  padding:5px 9px;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.application-info{
+  margin-top:15px;
+}
+
+.application-info p{
+  margin:8px 0;
+  color:#4b5563;
+}
+
+@media(max-width:700px){
+  .admin-page{
+    padding:15px;
+  }
+
+  .admin-header{
+    align-items:flex-start;
+  }
+}
