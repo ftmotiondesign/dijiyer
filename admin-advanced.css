@@ -202,3 +202,244 @@
     grid-template-columns:1fr 1fr;
   }
 }
+
+
+/* =========================================================
+   Yönetim Paneli - Gelişmiş Destek Merkezi
+   ========================================================= */
+.support-section-title{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.support-refresh-btn{
+  border:1px solid #d7e0eb;
+  border-radius:9px;
+  background:#fff;
+  color:#475569;
+  padding:9px 12px;
+  font-weight:800;
+}
+
+.support-admin-kpis{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:13px;
+}
+
+.support-admin-kpis button{
+  min-width:0;
+  padding:13px 14px;
+  display:grid;
+  gap:3px;
+  text-align:left;
+  border:1px solid #e1e7ef;
+  border-radius:12px;
+  background:#fff;
+  cursor:pointer;
+}
+
+.support-admin-kpis button:hover{
+  border-color:#9ec5ff;
+  box-shadow:0 5px 16px rgba(22,119,255,.07);
+}
+
+.support-admin-kpis button.danger{
+  background:#fffafa;
+  border-color:#fee2e2;
+}
+
+.support-admin-kpis span{
+  color:#64748b;
+  font-size:10px;
+  font-weight:800;
+}
+
+.support-admin-kpis strong{
+  color:#172033;
+  font-size:24px;
+  line-height:1;
+}
+
+.support-admin-kpis small{
+  color:#94a3b8;
+  font-size:9.5px;
+}
+
+.support-admin-kpis button.danger strong{
+  color:#b91c1c;
+}
+
+.support-toolbar{
+  grid-template-columns:minmax(220px,1.6fr) repeat(3,minmax(130px,.55fr));
+}
+
+.support-filter-summary{
+  min-height:18px;
+  margin:-2px 0 10px;
+  color:#64748b;
+  font-size:10.5px;
+  font-weight:700;
+}
+
+.support-admin-card{
+  position:relative;
+  overflow:hidden;
+}
+
+.support-admin-card.overdue{
+  border-color:#fecaca;
+  box-shadow:0 6px 18px rgba(185,28,28,.055);
+}
+
+.support-admin-card.overdue::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  background:#ef4444;
+}
+
+.support-admin-title-wrap{
+  min-width:0;
+}
+
+.support-admin-labels{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+}
+
+.support-category-chip,
+.support-ticket-no,
+.support-overdue-chip{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:850;
+}
+
+.support-category-chip{
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+
+.support-ticket-no{
+  background:#f1f5f9;
+  color:#64748b;
+}
+
+.support-overdue-chip{
+  background:#fff1f2;
+  color:#be123c;
+}
+
+.support-admin-state-column{
+  display:grid;
+  justify-items:end;
+  gap:5px;
+  flex:0 0 auto;
+}
+
+.support-admin-state-column small{
+  color:#94a3b8;
+  font-size:9px;
+  font-weight:750;
+}
+
+.support-admin-state-column .overdue-text{
+  color:#b91c1c;
+}
+
+.support-admin-message strong{
+  display:block;
+  margin-bottom:5px;
+  color:#64748b;
+  font-size:9px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+.support-admin-message p{
+  margin:0;
+  color:#334155;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.support-quick-actions{
+  margin-top:9px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  align-items:center;
+}
+
+.support-quick-actions button{
+  border:1px solid #d8e0ea;
+  border-radius:8px;
+  background:#fff;
+  color:#475569;
+  padding:7px 10px;
+  font-size:10px;
+  font-weight:800;
+}
+
+.support-quick-actions button.success{
+  border-color:#bbf7d0;
+  background:#f0fdf4;
+  color:#15803d;
+}
+
+.support-done-note{
+  color:#15803d;
+  font-size:10px;
+  font-weight:800;
+}
+
+@media(max-width:900px){
+  .support-admin-kpis{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .support-toolbar{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:650px){
+  .support-section-title{
+    align-items:stretch;
+    flex-direction:column;
+  }
+
+  .support-refresh-btn{
+    width:100%;
+  }
+
+  .support-toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .support-admin-head{
+    flex-direction:column;
+  }
+
+  .support-admin-state-column{
+    justify-items:start;
+  }
+
+  .support-admin-kpis{
+    grid-template-columns:1fr 1fr;
+  }
+}
