@@ -19,6 +19,7 @@ let currentAccount = null;
 let currentInstitution = null;
 let quoteRecords = [];
 let responseMap = new Map();
+let supportTicketRecords = [];
 
 let liveQuoteUnsubscribe = null;
 let liveQuoteWatcherReady = false;
@@ -338,12 +339,20 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     if (btn.dataset.panelTab === "stats" && currentInstitution) {
       await loadInstitutionStats();
     }
+
+    if (btn.dataset.panelTab === "support" && currentAccount) {
+      await loadSupportTickets();
+    }
   });
 });
 
 document.getElementById("goQuotesBtn").addEventListener("click", () => setPanelTab("quotes"));
 document.getElementById("goProfileBtn").addEventListener("click", () => setPanelTab("profile"));
 document.getElementById("goVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
+document.getElementById("goSupportBtn")?.addEventListener("click", async () => {
+  setPanelTab("support");
+  if (currentAccount) await loadSupportTickets();
+});
 document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
   quotePanelFilter.value = "new";
   setPanelTab("quotes");
@@ -714,6 +723,142 @@ document.getElementById("sendPasswordResetBtn").addEventListener("click", async 
 });
 
 
+
+function getSupportStatusMeta(status) {
+  const map = {
+    new: ["Yeni", "new"],
+    reviewing: ["İnceleniyor", "reviewing"],
+    answered: ["Cevaplandı", "answered"],
+    resolved: ["Çözüldü", "resolved"]
+  };
+  return map[status] || ["Yeni", "new"];
+}
+
+async function loadSupportTickets() {
+  const list = document.getElementById("supportTicketsList");
+  const tabCount = document.getElementById("supportTabCount");
+  const openCount = document.getElementById("supportOpenCount");
+
+  if (!list || !currentAccount) return;
+
+  list.innerHTML = '<div class="empty-state">Destek talepleri yükleniyor...</div>';
+
+  try {
+    const snapshot = await db.collection("supportTickets")
+      .where("institutionId", "==", currentAccount.institutionId)
+      .get();
+
+    supportTicketRecords = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a,b) => new Date(b.updatedAt || b.date || 0) - new Date(a.updatedAt || a.date || 0));
+
+    const open = supportTicketRecords.filter(item =>
+      String(item.status || "new") !== "resolved"
+    );
+
+    if (tabCount) tabCount.textContent = open.length;
+    if (openCount) openCount.textContent = open.length + " açık";
+
+    if (!supportTicketRecords.length) {
+      list.innerHTML =
+        '<div class="empty-state">Henüz destek talebiniz yok. Bir sorun yaşadığınızda buradan bize ulaşabilirsiniz.</div>';
+      return;
+    }
+
+    list.innerHTML = supportTicketRecords.map(ticket => {
+      const [statusText, statusClass] = getSupportStatusMeta(ticket.status);
+
+      return `
+        <article class="support-ticket-card">
+          <div class="support-ticket-head">
+            <div>
+              <span class="support-ticket-category">${escapeHtml(ticket.category || "Destek")}</span>
+              <h3>${escapeHtml(ticket.subject || "Destek Talebi")}</h3>
+            </div>
+            <span class="support-status support-status-${statusClass}">${statusText}</span>
+          </div>
+
+          <p class="support-ticket-message">${escapeHtml(ticket.message || "")}</p>
+
+          ${ticket.adminReply ? `
+            <div class="support-admin-reply">
+              <strong>💬 Dijiyer Destek Yanıtı</strong>
+              <p>${escapeHtml(ticket.adminReply)}</p>
+              <small>${formatDate(ticket.adminReplyAt || ticket.updatedAt)}</small>
+            </div>
+          ` : `
+            <div class="support-awaiting">
+              Destek ekibinin yanıtı bekleniyor.
+            </div>
+          `}
+
+          <div class="support-ticket-meta">
+            <span>Talep: ${formatDate(ticket.date)}</span>
+            <span>No: ${escapeHtml(ticket.id.slice(0,8).toUpperCase())}</span>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error("Destek talepleri yüklenemedi:", error);
+    list.innerHTML =
+      '<div class="empty-state">Destek talepleri yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+  }
+}
+
+document.getElementById("supportTicketForm")?.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!currentUser || !currentAccount || !currentInstitution) return;
+
+  const category = document.getElementById("supportCategory").value;
+  const subject = document.getElementById("supportSubject").value.trim();
+  const message = document.getElementById("supportMessage").value.trim();
+  const feedback = document.getElementById("supportFormMessage");
+  const submit = document.getElementById("supportSubmitBtn");
+
+  if (!category || !subject || !message) {
+    feedback.textContent = "Lütfen tüm alanları doldurun.";
+    return;
+  }
+
+  submit.disabled = true;
+  submit.textContent = "Gönderiliyor...";
+  feedback.textContent = "";
+
+  try {
+    const now = new Date().toISOString();
+
+    await db.collection("supportTickets").add({
+      institutionId: currentAccount.institutionId,
+      userId: currentUser.uid,
+      institutionName: currentInstitution.name || currentAccount.institutionName || "Kurum",
+      email: currentAccount.email || currentUser.email || "",
+      category,
+      subject,
+      message,
+      status: "new",
+      date: now,
+      updatedAt: now,
+      adminReply: "",
+      adminReplyAt: ""
+    });
+
+    event.target.reset();
+    feedback.textContent = "Destek talebiniz oluşturuldu.";
+    await loadSupportTickets();
+
+  } catch (error) {
+    console.error("Destek talebi oluşturulamadı:", error);
+    feedback.textContent = "Destek talebi gönderilemedi. Firestore yetkisini kontrol edin.";
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Destek Talebi Gönder";
+  }
+});
+
+
 function panelLocalDayKey(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -981,7 +1126,8 @@ auth.onAuthStateChanged(async user => {
     renderInstitutionHeader();
     await Promise.all([
       loadMatchedQuotes(),
-      loadInstitutionStats()
+      loadInstitutionStats(),
+      loadSupportTickets()
     ]);
 
     startLiveQuoteWatcher();
