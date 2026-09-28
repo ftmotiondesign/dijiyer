@@ -1288,14 +1288,34 @@ institutionLoginForm.addEventListener('submit', async e => {
 
   institutionLoginMessage.textContent = 'Giriş yapılıyor...';
 
+  let credential;
+
   try {
-    const credential = await auth.signInWithEmailAndPassword(email, password);
+    credential = await auth.signInWithEmailAndPassword(email, password);
+  } catch (error) {
+    console.error('Kurum Firebase Auth girişi başarısız:', error);
+
+    const authMessages = {
+      'auth/invalid-credential': 'E-posta veya şifre doğru değil.',
+      'auth/wrong-password': 'Şifre doğru değil.',
+      'auth/user-not-found': 'Bu e-posta ile kayıtlı bir hesap bulunamadı.',
+      'auth/invalid-email': 'E-posta adresi geçerli değil.',
+      'auth/too-many-requests': 'Çok fazla giriş denemesi yapıldı. Bir süre sonra tekrar deneyin.',
+      'auth/user-disabled': 'Bu hesap devre dışı bırakılmış.'
+    };
+
+    institutionLoginMessage.textContent =
+      authMessages[error.code] || `Giriş yapılamadı: ${error.code || 'bilinmeyen hata'}`;
+    return;
+  }
+
+  try {
     const accountDoc = await db.collection('institutionUsers').doc(credential.user.uid).get();
 
     if (!accountDoc.exists) {
       await auth.signOut();
       institutionLoginMessage.textContent =
-        'Bu hesap bir kurum hesabına bağlı değil.';
+        'Giriş başarılı ancak bu kullanıcıya bağlı kurum hesabı bulunamadı.';
       return;
     }
 
@@ -1312,8 +1332,41 @@ institutionLoginForm.addEventListener('submit', async e => {
 
     window.location.href = 'institution.html';
   } catch (error) {
-    console.error('Kurum girişi başarısız:', error);
-    institutionLoginMessage.textContent = 'E-posta veya şifre hatalı.';
+    console.error('Kurum hesabı Firestore kontrolü başarısız:', error);
+    await auth.signOut();
+
+    institutionLoginMessage.textContent =
+      error.code === 'permission-denied'
+        ? 'Giriş başarılı ancak kurum hesabı bilgisi okunamadı. Firestore yetkisini kontrol edin.'
+        : `Giriş başarılı ancak kurum hesabı kontrol edilemedi: ${error.code || 'bilinmeyen hata'}`;
+  }
+});
+
+document.getElementById('institutionForgotPasswordBtn').addEventListener('click', async () => {
+  const email = document.getElementById('institutionLoginEmail').value.trim();
+
+  if (!email) {
+    institutionLoginMessage.textContent =
+      'Önce giriş yaptığınız e-posta adresini yazın.';
+    return;
+  }
+
+  institutionLoginMessage.textContent = 'Şifre yenileme bağlantısı gönderiliyor...';
+
+  try {
+    await auth.sendPasswordResetEmail(email);
+    institutionLoginMessage.textContent =
+      'Şifre yenileme bağlantısı e-posta adresinize gönderildi.';
+  } catch (error) {
+    console.error('Şifre yenileme hatası:', error);
+
+    const resetMessages = {
+      'auth/invalid-email': 'Geçerli bir e-posta adresi yazın.',
+      'auth/user-not-found': 'Bu e-posta ile kayıtlı hesap bulunamadı.'
+    };
+
+    institutionLoginMessage.textContent =
+      resetMessages[error.code] || `Şifre yenileme gönderilemedi: ${error.code || 'bilinmeyen hata'}`;
   }
 });
 
