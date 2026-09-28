@@ -753,8 +753,10 @@ function renderList() {
 
   list.innerHTML = data.map(inst => `
     <article class="institution-card ${String(inst.id) === String(selectedId) ? 'active' : ''}" data-id="${inst.id}">
-      <div class="thumb">
-        <span>${inst.emoji}</span>
+      <div class="thumb ${inst.logoUrl ? 'has-logo' : ''}">
+        ${inst.logoUrl
+          ? '<img src="' + safePublicProfileUrl(inst.logoUrl) + '" alt="' + escapeHtml(inst.name) + ' logosu">'
+          : '<span>' + inst.emoji + '</span>'}
         ${inst.video ? '<div class="video-badge">▶ Videolu</div>' : ''}
       </div>
       ${inst.vip ? '<div class="vip">VIP</div>' : ''}
@@ -790,6 +792,41 @@ function renderList() {
   renderDetail();
 }
 
+function safePublicProfileUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch (_) {
+    return "";
+  }
+}
+
+function publicInstagramUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("@")) {
+    return "https://www.instagram.com/" + encodeURIComponent(raw.slice(1));
+  }
+  if (/^[a-zA-Z0-9._]+$/.test(raw)) {
+    return "https://www.instagram.com/" + encodeURIComponent(raw);
+  }
+  return safePublicProfileUrl(raw);
+}
+
+function normalizeWhatsappNumber(value) {
+  let digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length === 11) {
+    digits = "90" + digits.slice(1);
+  } else if (digits.length === 10 && digits.startsWith("5")) {
+    digits = "90" + digits;
+  }
+  return digits;
+}
+
 function renderDetail() {
   const panel = document.getElementById('detailPanel');
   const inst = institutions.find(i => String(i.id) === String(selectedId));
@@ -820,26 +857,39 @@ function renderDetail() {
 
   panel.innerHTML = `
     <div class="detail-top">
-      <div class="video-box">
-        <div class="video-scene"></div>
-        <div class="play">▶</div>
-        <div class="video-title">🎥 Rota & Mekan Videosu</div>
+      <div class="video-box profile-cover-box ${inst.coverUrl ? 'has-cover' : ''}">
+        ${inst.coverUrl
+          ? '<img src="' + safePublicProfileUrl(inst.coverUrl) + '" alt="' + escapeHtml(inst.name) + ' kapak görseli">'
+          : '<div class="video-scene"></div><div class="play">▶</div><div class="video-title">🎥 Rota & Mekan Videosu</div>'}
       </div>
 
       <div class="detail-info">
-        <h1>${inst.name}${inst.vip ? '<span class="vip-inline">VIP</span>' : ''}</h1>
-        <div class="rating">⭐ ${inst.rating} <span>(${inst.reviewCount} değerlendirme)</span></div>
-        <div class="address">📍 ${inst.address}, ${inst.location}</div>
-        <div class="info-boxes">
+        <div class="profile-title-row">
+          ${inst.logoUrl
+            ? '<img class="public-profile-logo" src="' + safePublicProfileUrl(inst.logoUrl) + '" alt="' + escapeHtml(inst.name) + ' logosu">'
+            : '<div class="public-profile-logo fallback">' + (inst.emoji || '🏢') + '</div>'}
+          <div>
+            <h1>${inst.name}${inst.vip ? '<span class="vip-inline">VIP</span>' : ''}</h1>
+            <div class="rating" id="detailRating">⭐ ${inst.rating} <span>(${inst.reviewCount} değerlendirme)</span></div>
+          </div>
+        </div>
+
+        <div class="address">📍 ${[inst.address, inst.location].filter(Boolean).join(', ')}</div>
+
+        ${inst.description
+          ? '<div class="public-profile-description">' + escapeHtml(inst.description) + '</div>'
+          : ''}
+
+        <div class="info-boxes public-profile-info-boxes">
           <div class="info-box">
-            <strong>🚗 Ehliyet Sınıfları</strong>
-            ${inst.classes}
+            <strong>🧭 Hizmet Bölgesi</strong>
+            <div>${escapeHtml(inst.serviceAreas || inst.location || '-')}</div>
           </div>
           <div class="info-box">
-            <strong>⚙️ Özel Hizmetler</strong>
-            <div class="check">✓ Deneyimli Eğitmen Kadrosu</div>
-            <div class="check">✓ Modern Eğitim Araçları</div>
-            <div class="check">✓ Sınav Öncesi Destek</div>
+            <strong>🕒 Çalışma Saatleri</strong>
+            <div class="public-hours-row"><span>Hafta içi</span><b>${escapeHtml(inst.weekdayHours || '-')}</b></div>
+            <div class="public-hours-row"><span>Cumartesi</span><b>${escapeHtml(inst.saturdayHours || '-')}</b></div>
+            <div class="public-hours-row"><span>Pazar</span><b>${escapeHtml(inst.sundayHours || '-')}</b></div>
           </div>
         </div>
       </div>
@@ -850,22 +900,24 @@ function renderDetail() {
       <button class="cta offer" id="quoteBtn">📄 Toplu Teklif Al</button>
     </div>
 
-    <div class="secondary-actions">
+    <div class="secondary-actions public-profile-actions">
       <button id="routeBtn">🧭 Yol Tarifi Al</button>
+      ${inst.website ? '<button id="websiteBtn">🌐 Web Sitesi</button>' : ''}
+      ${inst.instagram ? '<button id="instagramBtn">📷 Instagram</button>' : ''}
       <button id="reviewBtn">⭐ Yorum Yap / Puan Ver</button>
       <button id="favoriteBtn">♡ Favoriye Ekle</button>
     </div>
 
     <div class="gallery-head">
-      <h3>🖼️ Galeri: Mekan, Pist ve Araç Filosu</h3>
-      <small>Tüm fotoğrafları gör →</small>
+      <h3>🖼️ Kurum Galerisi</h3>
+      <small>${Array.isArray(inst.galleryUrls) && inst.galleryUrls.length ? inst.galleryUrls.length + ' görsel' : 'Henüz görsel eklenmedi'}</small>
     </div>
-    <div class="gallery">
-      <div class="gallery-item"><span>Sınıf Çekim</span></div>
-      <div class="gallery-item"><span>Eğitim Pisti</span></div>
-      <div class="gallery-item"><span>Araç Filosu</span></div>
-      <div class="gallery-item"><span>Simülatör</span></div>
-      <div class="gallery-item"><span>Kayıt Ofisi</span></div>
+    <div class="gallery public-profile-gallery">
+      ${Array.isArray(inst.galleryUrls) && inst.galleryUrls.length
+        ? inst.galleryUrls.slice(0,6).map((url,index) =>
+            '<div class="gallery-item has-image"><img src="' + safePublicProfileUrl(url) + '" alt="Galeri görseli ' + (index + 1) + '"></div>'
+          ).join('')
+        : '<div class="gallery-empty">Kurum henüz galeri görseli eklemedi.</div>'}
     </div>
 
     <div class="reviews">
@@ -901,8 +953,21 @@ function renderDetail() {
   document.getElementById('whatsappBtn').onclick = () => {
     trackInstitutionEvent(inst, 'whatsapp_click');
     const msg = encodeURIComponent(`Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`);
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    const number = normalizeWhatsappNumber(inst.whatsapp || inst.phone);
+    window.open(number
+      ? `https://wa.me/${number}?text=${msg}`
+      : `https://wa.me/?text=${msg}`, '_blank');
   };
+
+  document.getElementById('websiteBtn')?.addEventListener('click', () => {
+    const url = safePublicProfileUrl(inst.website);
+    if (url) window.open(url, '_blank', 'noopener');
+  });
+
+  document.getElementById('instagramBtn')?.addEventListener('click', () => {
+    const url = publicInstagramUrl(inst.instagram);
+    if (url) window.open(url, '_blank', 'noopener');
+  });
 
   document.getElementById('favoriteBtn').onclick = () => {
     const favs = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -2234,7 +2299,19 @@ async function loadApprovedInstitutions() {
         district: data.district || '',
         address: data.address || '',
         phone: data.phone || '',
+        whatsapp: data.whatsapp || data.phone || '',
         website: data.website || '',
+        instagram: data.instagram || '',
+        description: data.description || '',
+        logoUrl: safePublicProfileUrl(data.logoUrl || ''),
+        coverUrl: safePublicProfileUrl(data.coverUrl || ''),
+        serviceAreas: data.serviceAreas || '',
+        weekdayHours: data.weekdayHours || '',
+        saturdayHours: data.saturdayHours || '',
+        sundayHours: data.sundayHours || '',
+        galleryUrls: Array.isArray(data.galleryUrls)
+          ? data.galleryUrls.map(safePublicProfileUrl).filter(Boolean).slice(0,6)
+          : [],
         classes: data.classes || 'Bilgi eklenecek',
         video: Boolean(data.video),
         offer: data.offer !== false,
