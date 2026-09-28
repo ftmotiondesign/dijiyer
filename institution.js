@@ -137,6 +137,30 @@ function formatDate(value) {
       });
 }
 
+function formatRelativeTime(value) {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60000);
+
+  if (minutes < 1) return "Az önce";
+  if (minutes < 60) return minutes + " dk önce";
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + " sa önce";
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return days + " gün önce";
+
+  return date.toLocaleDateString("tr-TR", {
+    day:"2-digit",
+    month:"2-digit"
+  });
+}
+
 function showPanelError(message) {
   panelError.hidden = false;
   panelError.textContent = message;
@@ -164,6 +188,13 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
 
 document.getElementById("goQuotesBtn").addEventListener("click", () => setPanelTab("quotes"));
 document.getElementById("goProfileBtn").addEventListener("click", () => setPanelTab("profile"));
+document.getElementById("goVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
+document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
+  quotePanelFilter.value = "new";
+  setPanelTab("quotes");
+  renderQuotes();
+});
+document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
 
 function renderInstitutionHeader() {
   const institution = currentInstitution;
@@ -173,6 +204,22 @@ function renderInstitutionHeader() {
 
   document.getElementById("panelInstitutionLocation").textContent =
     [institution.city, institution.district].filter(Boolean).join(" / ");
+
+  const categoryText =
+    categoryLabels[institution.category] ||
+    categoryLabels[institution.subCategory] ||
+    institution.subCategory ||
+    institution.category ||
+    "Kategori belirtilmemiş";
+
+  const categoryBadge = document.getElementById("panelCategoryBadge");
+  const serviceArea = document.getElementById("panelServiceArea");
+
+  if (categoryBadge) categoryBadge.textContent = "🏷️ " + categoryText;
+  if (serviceArea) {
+    serviceArea.textContent =
+      "📍 " + ([institution.city, institution.district].filter(Boolean).join(" / ") || "Hizmet bölgesi belirtilmemiş");
+  }
 
   document.getElementById("panelEmail").textContent =
     currentAccount.email || currentUser.email || "-";
@@ -204,6 +251,10 @@ function updateOfferUi() {
     active
       ? "Yeni eşleşmeler almaya devam ediyorsunuz."
       : "Yeni teklif eşleşmeleri şu anda kapalı.";
+
+  if (quoteRecords.length || document.getElementById("workPriorityText")) {
+    renderSummary();
+  }
 }
 
 async function loadQuoteResponses() {
@@ -251,10 +302,34 @@ function getQuoteViewStatus(quote) {
 
 function renderSummary() {
   const newCount = quoteRecords.filter(q => getQuoteViewStatus(q) === "new").length;
+  const offeredCount = quoteRecords.filter(q => getQuoteViewStatus(q) === "interested").length;
+  const lockedCount = 0;
 
   document.getElementById("newQuoteCount").textContent = newCount;
   document.getElementById("totalQuoteCount").textContent = quoteRecords.length;
   document.getElementById("quoteTabCount").textContent = newCount;
+
+  document.getElementById("workNewCount").textContent = newCount;
+  document.getElementById("workLockedCount").textContent = lockedCount;
+  document.getElementById("pendingQuoteCount").textContent = newCount;
+  document.getElementById("offeredQuoteCount").textContent = offeredCount;
+  document.getElementById("lockedQuoteCount").textContent = lockedCount;
+  document.getElementById("latestQuoteTime").textContent =
+    quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
+
+  const priorityText = document.getElementById("workPriorityText");
+  const focusCard = document.getElementById("workFocusCard");
+
+  if (currentInstitution?.offer === false) {
+    priorityText.textContent = "Teklif alımınız kapalı. Yeni müşteri talepleriyle eşleşmek için teklif alımını açabilirsiniz.";
+    focusCard.dataset.state = "paused";
+  } else if (newCount > 0) {
+    priorityText.textContent = newCount + " yeni müşteri talebi sizi bekliyor. Hızlı dönüş yapmak için teklifleri inceleyin.";
+    focusCard.dataset.state = "urgent";
+  } else {
+    priorityText.textContent = "Şu anda cevap bekleyen yeni talep yok.";
+    focusCard.dataset.state = "clear";
+  }
 
   const latest = quoteRecords.slice(0, 3);
   recentQuotes.innerHTML = latest.length
