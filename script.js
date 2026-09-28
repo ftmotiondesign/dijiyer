@@ -320,6 +320,7 @@ document.getElementById('videoOnly').addEventListener('change', renderList);
 document.getElementById('offerOnly').addEventListener('change', renderList);
 document.getElementById('sortSelect').addEventListener('change', renderList);
 document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
+document.getElementById('institutionAddBtn').onclick = () => openModal('institutionModal');
 
 renderList();
 renderDetail();
