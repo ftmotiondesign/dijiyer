@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body>
   <header class="topbar">
@@ -27,7 +27,7 @@
     <button class="location-btn" id="locationBtn">📍 Çanakkale, Merkez ▾</button>
     <button class="btn btn-primary" id="addInstitutionBtn">Toplu Teklif Al</button>
     <button class="btn btn-light" id="institutionAddBtn">+ Kurum Ekle</button>
-    <button class="btn btn-light">👤 Giriş</button>
+    <button class="btn btn-light" id="institutionLoginBtn">🏢 Kurum Girişi</button>
   </header>
 
   <main class="app-layout">
@@ -350,6 +350,57 @@
   </div>
 </div>
 
+
+  <div class="modal hidden" id="institutionAccessModal">
+    <div class="modal-card institution-access-card">
+      <button class="modal-close" data-close="institutionAccessModal">×</button>
+
+      <h2>Kurum Girişi</h2>
+      <p>Teklifleri görmek ve kurum panelini kullanmak için giriş yapın.</p>
+
+      <div class="access-tabs">
+        <button type="button" class="access-tab active" id="institutionLoginTab">Giriş Yap</button>
+        <button type="button" class="access-tab" id="institutionRegisterTab">Hesap Oluştur</button>
+      </div>
+
+      <form id="institutionLoginForm">
+        <label>E-posta
+          <input id="institutionLoginEmail" type="email" required placeholder="ornek@kurum.com">
+        </label>
+
+        <label>Şifre
+          <input id="institutionLoginPassword" type="password" required minlength="6" placeholder="Şifreniz">
+        </label>
+
+        <button class="btn btn-primary full" type="submit">Kurum Paneline Gir</button>
+        <p class="access-message" id="institutionLoginMessage"></p>
+      </form>
+
+      <form id="institutionRegisterForm" class="hidden">
+        <label>Kurumunuz
+          <select id="institutionAccountInstitution" required>
+            <option value="">Kurumlar yükleniyor...</option>
+          </select>
+        </label>
+
+        <p class="access-help">
+          Kurumunuz listede yoksa önce “+ Kurum Ekle” bölümünden başvuru gönderin.
+        </p>
+
+        <label>E-posta
+          <input id="institutionRegisterEmail" type="email" required placeholder="ornek@kurum.com">
+        </label>
+
+        <label>Şifre
+          <input id="institutionRegisterPassword" type="password" required minlength="6" placeholder="En az 6 karakter">
+        </label>
+
+        <button class="btn btn-primary full" type="submit">Kurum Hesabı Oluştur</button>
+        <p class="access-message" id="institutionRegisterMessage"></p>
+      </form>
+    </div>
+  </div>
+
   <div class="modal hidden" id="reviewModal">
     <div class="modal-card">
       <button class="modal-close" data-close="reviewModal">×</button>
@@ -374,8 +425,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=20"></script>
+<script src="script.js?v=21"></script>
 </body>
 </html>
