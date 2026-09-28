@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
   <header class="topbar">
@@ -34,20 +34,9 @@
     <aside class="sidebar">
       <div class="panel-title">☰ Filtreler</div>
 
-      <section class="filter-section">
+      <section class="filter-section category-filter-section">
         <h3>Ana Kategori</h3>
-        <label><input type="checkbox" class="categoryFilter" value="egitim"> 📚 Eğitim</label>
-        <label><input type="checkbox" class="categoryFilter" value="otomotiv"> 🚗 Otomotiv</label>
-        <label><input type="checkbox" class="categoryFilter" value="yemeicme"> 🍽️ Yeme & İçme</label>
-        <label><input type="checkbox" class="categoryFilter" value="saglikguzellik"> 🩺 Sağlık & Güzellik</label>
-        <label><input type="checkbox" class="categoryFilter" value="evyapi"> 🏠 Ev & Yapı</label>
-        <label><input type="checkbox" class="categoryFilter" value="emlak"> 🏢 Emlak</label>
-        <label><input type="checkbox" class="categoryFilter" value="turizm"> 🏨 Turizm & Konaklama</label>
-        <label><input type="checkbox" class="categoryFilter" value="organizasyonmedya"> 📸 Organizasyon & Medya</label>
-        <label><input type="checkbox" class="categoryFilter" value="tasimacilik"> 🚚 Taşımacılık & Teslimat</label>
-        <label><input type="checkbox" class="categoryFilter" value="profesyonel"> 💼 Profesyonel Hizmetler</label>
-        <label><input type="checkbox" class="categoryFilter" value="alisveris"> 🛒 Alışveriş & Yerel Esnaf</label>
-        <label><input type="checkbox" class="categoryFilter" value="diger"> ➕ Diğer</label>
+        <div id="sidebarCategories" class="sidebar-categories"></div>
       </section>
 
       <section class="filter-section">
@@ -366,6 +355,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="script.js?v=23""></script>
+<script src="script.js?v=24""></script>
 </body>
 </html>
