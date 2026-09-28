@@ -230,8 +230,14 @@
 
   function drawQrCodes(){
     if(typeof QRCode==="undefined") return;
-    myOffersList.querySelectorAll("canvas[data-offer-qr]").forEach(canvas=>{
-      QRCode.toCanvas(canvas,canvas.dataset.qrUrl,{width:180,margin:1},()=>{});
+    myOffersList.querySelectorAll("[data-offer-qr]").forEach(box=>{
+      box.innerHTML="";
+      new QRCode(box,{
+        text:box.dataset.qrUrl,
+        width:180,
+        height:180,
+        correctLevel:QRCode.CorrectLevel.M
+      });
     });
   }
 
