@@ -2568,3 +2568,342 @@ body[data-panel-current="stats"] .persistent-performance{
     grid-template-columns:1fr;
   }
 }
+
+
+/* =========================================================
+   FİRMA ANA ÇALIŞMA EKRANI
+   ========================================================= */
+
+.firm-home-command{
+  margin-bottom:16px;
+  padding:20px;
+  border:1px solid #dfe7f1;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(15,23,42,.045);
+}
+
+.firm-home-command-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:16px;
+}
+
+.firm-home-command-head h2,
+.firm-opportunity-head h2{
+  margin:4px 0 4px;
+  color:#172033;
+  font-size:21px;
+}
+
+.firm-home-command-head p,
+.firm-opportunity-head p{
+  margin:0;
+  color:#7a8799;
+  font-size:12px;
+  line-height:1.45;
+}
+
+.firm-home-status{
+  flex:0 0 auto;
+  min-height:34px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 11px;
+  border-radius:999px;
+  background:#eef8f1;
+  color:#15803d;
+  font-size:10.5px;
+  font-weight:850;
+}
+
+.firm-home-status.off{
+  background:#f1f5f9;
+  color:#64748b;
+}
+
+.firm-home-action-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+
+.firm-home-action{
+  min-width:0;
+  min-height:105px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:14px;
+  border:1px solid #e0e7ef;
+  border-radius:14px;
+  background:#fbfcfe;
+  color:#17243a;
+  text-align:left;
+  transition:.18s ease;
+}
+
+.firm-home-action:hover{
+  border-color:#a9c8f5;
+  background:#f7fbff;
+  transform:translateY(-1px);
+  box-shadow:0 7px 18px rgba(15,54,102,.07);
+}
+
+.firm-home-action.primary{
+  border-color:#c8dcfb;
+  background:#f3f8ff;
+}
+
+.firm-home-action-icon{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#edf5ff;
+  font-size:18px;
+}
+
+.firm-home-action-copy{
+  min-width:0;
+}
+
+.firm-home-action-copy strong{
+  display:block;
+  color:#1c2b42;
+  font-size:13px;
+}
+
+.firm-home-action-copy small{
+  display:block;
+  margin-top:4px;
+  color:#7b8798;
+  font-size:10px;
+  line-height:1.35;
+}
+
+.firm-home-action-value{
+  min-width:34px;
+  height:34px;
+  padding:0 7px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#1677ff;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.firm-home-action-value.profile{
+  min-width:44px;
+  background:#eef2f7;
+  color:#475569;
+}
+
+.firm-opportunity-card{
+  margin-bottom:16px;
+  padding:20px;
+  border:1px solid #dfe7f1;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(15,23,42,.045);
+}
+
+.firm-opportunity-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+}
+
+.firm-opportunity-head-actions{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex:0 0 auto;
+}
+
+.firm-opportunity-head-actions > span{
+  color:#667085;
+  font-size:11px;
+}
+
+.firm-opportunity-head-actions > span strong{
+  color:#172033;
+  font-size:15px;
+}
+
+.firm-opportunity-head-actions button{
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid #dbe4ef;
+  border-radius:9px;
+  background:#fff;
+  color:#1766c2;
+  font-size:10.5px;
+  font-weight:850;
+}
+
+.firm-opportunity-list{
+  display:grid;
+  gap:9px;
+}
+
+.firm-opportunity-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  padding:13px 14px;
+  border:1px solid #e8edf3;
+  border-radius:12px;
+  background:#fbfcfe;
+}
+
+.firm-opportunity-main{
+  min-width:0;
+}
+
+.firm-opportunity-main strong{
+  display:block;
+  color:#1a2a42;
+  font-size:13px;
+}
+
+.firm-opportunity-meta{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:5px;
+}
+
+.firm-opportunity-meta span{
+  color:#728096;
+  font-size:10.5px;
+}
+
+.firm-opportunity-note{
+  margin-top:6px;
+  color:#7a8797;
+  font-size:10.5px;
+  line-height:1.4;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+
+.firm-opportunity-item button{
+  min-height:38px;
+  padding:0 12px;
+  border:0;
+  border-radius:9px;
+  background:#1677ff;
+  color:#fff;
+  font-size:10.5px;
+  font-weight:850;
+  white-space:nowrap;
+}
+
+@media(max-width:1100px){
+  .firm-home-action-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:760px){
+  .firm-home-command,
+  .firm-opportunity-card{
+    padding:14px;
+    border-radius:14px;
+  }
+
+  .firm-home-command-head,
+  .firm-opportunity-head{
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .firm-home-command-head h2,
+  .firm-opportunity-head h2{
+    font-size:18px;
+  }
+
+  .firm-home-status{
+    min-height:30px;
+  }
+
+  .firm-home-action-grid{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .firm-home-action{
+    min-height:92px;
+    grid-template-columns:36px minmax(0,1fr);
+    grid-template-areas:
+      "icon value"
+      "copy copy";
+    gap:7px 8px;
+    padding:12px;
+  }
+
+  .firm-home-action-icon{
+    grid-area:icon;
+    width:34px;
+    height:34px;
+    font-size:16px;
+  }
+
+  .firm-home-action-copy{
+    grid-area:copy;
+  }
+
+  .firm-home-action-value{
+    grid-area:value;
+    justify-self:end;
+    min-width:30px;
+    height:30px;
+    font-size:11px;
+  }
+
+  .firm-home-action-copy strong{
+    font-size:12px;
+  }
+
+  .firm-home-action-copy small{
+    font-size:9.5px;
+  }
+
+  .firm-opportunity-head-actions{
+    width:100%;
+    justify-content:space-between;
+  }
+
+  .firm-opportunity-item{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  .firm-opportunity-item button{
+    width:100%;
+  }
+}
+
+@media(max-width:430px){
+  .firm-home-action-grid{
+    grid-template-columns:1fr;
+  }
+
+  .firm-home-action{
+    min-height:80px;
+    grid-template-columns:38px minmax(0,1fr) auto;
+    grid-template-areas:"icon copy value";
+  }
+}
