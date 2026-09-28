@@ -286,6 +286,7 @@ institutionsTabBtn.addEventListener("click", async () => {
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
   quotesTabBtn.classList.remove("active");
+  accountsTabBtn.classList.remove("active");
   await loadInstitutions();
 });
 
