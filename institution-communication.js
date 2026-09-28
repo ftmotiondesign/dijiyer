@@ -280,7 +280,10 @@
 
       initial=false;
       renderQuotes();
-      if(String(activeInstitutionChatQuoteId||"")===String(quoteId))renderInstitutionChat();
+      if(String(activeInstitutionChatQuoteId||"")===String(quoteId)){
+        renderInstitutionChat();
+        scrollInstitutionChatToBottom("smooth");
+      }
     },error=>{
       console.warn("Mesaj bildirimi dinlenemedi:",quoteId,error);
     });
@@ -388,11 +391,30 @@
         input.value="";
         await loadCommunicationForQuote(quoteId);
         renderInstitutionChat();
+        scrollInstitutionChatToBottom("smooth");
       }finally{
         send.disabled=false;
         input.focus();
       }
     });
+  }
+
+  function scrollInstitutionChatToBottom(behavior="auto"){
+    const box=document.getElementById("institutionChatMessages");
+    if(!box)return;
+
+    const run=()=>{
+      box.scrollTo({
+        top:box.scrollHeight,
+        behavior
+      });
+    };
+
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(run);
+    });
+
+    setTimeout(run,80);
   }
 
   function renderInstitutionChat(){
@@ -411,9 +433,7 @@
       ? renderFirmConversation(rows)
       : '<div class="firm-empty-message">Henüz mesaj yok. İlk mesajı siz gönderin.</div>';
 
-    requestAnimationFrame(()=>{
-      box.scrollTop=box.scrollHeight;
-    });
+    scrollInstitutionChatToBottom("auto");
   }
 
   function openInstitutionChat(quoteId){
@@ -421,9 +441,16 @@
     activeInstitutionChatQuoteId=String(quoteId);
     markInstitutionConversationRead(activeInstitutionChatQuoteId);
     hideInstitutionMessageAlert();
+
+    const modal=document.getElementById("institutionChatModal");
+    modal.classList.remove("hidden");
     renderInstitutionChat();
-    document.getElementById("institutionChatModal").classList.remove("hidden");
-    setTimeout(()=>document.getElementById("institutionChatText")?.focus(),80);
+    scrollInstitutionChatToBottom("auto");
+
+    setTimeout(()=>{
+      scrollInstitutionChatToBottom("auto");
+      document.getElementById("institutionChatText")?.focus();
+    },100);
   }
 
   function closeInstitutionChat(){
