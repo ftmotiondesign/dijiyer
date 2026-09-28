@@ -1297,3 +1297,27 @@ button{cursor:pointer}
 @media(max-width:900px){
   .support-layout{grid-template-columns:1fr}
 }
+
+/* Kurum paneli teklif iletişimi */
+.firm-communication-box{margin-top:14px;padding-top:13px;border-top:1px solid #e5eaf1}
+.firm-com-status-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.firm-com-badge{display:inline-flex;padding:6px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:900}
+.firm-com-badge.viewed{background:#ecfdf5;color:#15803d}.firm-com-badge.revision{background:#fff7ed;color:#c2410c}.firm-com-badge.message{background:#eff6ff;color:#1d4ed8}
+.firm-progress{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px;margin:10px 0}
+.firm-progress-step{display:grid;grid-template-columns:11px 1fr;gap:7px;padding:8px;border-radius:10px;background:#f8fafc;opacity:.48}
+.firm-progress-step.done{opacity:1}.firm-progress-step>span{width:8px;height:8px;border-radius:50%;background:#cbd5e1;margin-top:4px}.firm-progress-step.done>span{background:#16a34a}
+.firm-progress-step strong{display:block;font-size:10px}.firm-progress-step small{display:block;margin-top:2px;color:#64748b;font-size:9px}
+.firm-conversation{margin-top:9px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}
+.firm-conversation summary{cursor:pointer;padding:11px 12px;font-weight:900;color:#1d4ed8;background:#f8fbff}
+.firm-message-thread{max-height:280px;overflow:auto;padding:10px;background:#f8fafc;display:flex;flex-direction:column;gap:7px}
+.firm-message{max-width:82%;padding:9px 10px;border-radius:11px;font-size:12px;line-height:1.45}
+.firm-message.mine{align-self:flex-end;background:#1677ff;color:#fff}.firm-message.customer{align-self:flex-start;background:#fff;border:1px solid #e2e8f0}
+.firm-message.revision_request{outline:2px solid #fdba74}.firm-message.revision_response{outline:2px solid #86efac}
+.firm-message>span{display:block;font-size:9px;font-weight:900;letter-spacing:.04em;margin-bottom:3px;opacity:.78}.firm-message small{display:block;margin-top:4px;font-size:9px;opacity:.68}
+.firm-empty-message{text-align:center;padding:16px;color:#64748b;font-size:12px}
+.firm-message-form{padding:10px}.firm-message-form textarea{width:100%;resize:vertical;border:1px solid #d8e0ea;border-radius:10px;padding:10px;outline:none}
+.firm-message-form textarea:focus{border-color:#8bb8ff}
+.firm-message-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.firm-message-actions button{border:0;border-radius:9px;padding:9px 11px;font-weight:900;font-size:11px}
+.firm-message-actions .secondary-action{background:#eef2f7;color:#475569}.firm-message-actions .primary-action{background:#1677ff;color:#fff}
+@media(max-width:640px){.firm-message-actions{flex-direction:column}.firm-message-actions button{width:100%}.firm-progress{grid-template-columns:1fr 1fr}}
