@@ -1745,3 +1745,14 @@ button{cursor:pointer}
 .firm-message-row:not(.same-sender){
   margin-top:6px!important;
 }
+
+/* Mesaj gönderen kimliği */
+.firm-message-author{
+  margin-bottom:3px;
+  color:#53bdeb;
+  font-size:10px;
+  line-height:1.2;
+  font-weight:900;
+}
+.institution-chat-messages .firm-message.customer .firm-message-author{color:#d8b4fe}
+.institution-chat-messages .offer-update-message{border:1px solid rgba(83,189,235,.45)!important}
