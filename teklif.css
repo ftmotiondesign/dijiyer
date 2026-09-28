@@ -77,13 +77,110 @@ button,input{font:inherit}.hidden{display:none!important}
 @media(max-width:640px){.djy-offer-meta-flags{width:100%;margin-left:0}.djy-message-actions{flex-direction:column}.djy-message-actions button{width:100%}.djy-compare-head{flex-direction:column}.djy-clear-compare{width:100%}}
 
 /* Talep detayları */
-.request-detail-box{margin-top:14px;border:1px solid #dce5f0;border-radius:13px;background:#f8fbff;overflow:hidden}
-.request-detail-box summary{cursor:pointer;list-style:none;padding:12px 14px;font-size:12px;font-weight:900;color:#1d4ed8;display:flex;align-items:center;gap:7px}
+.request-detail-box{
+  margin-top:18px;
+  border:2px solid #8fbbff;
+  border-radius:16px;
+  background:#f7fbff;
+  overflow:hidden;
+  box-shadow:0 7px 20px rgba(22,119,255,.08);
+}
+
+.request-detail-box summary{
+  min-height:58px;
+  cursor:pointer;
+  list-style:none;
+  padding:0 18px;
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(135deg,#1769ff,#1156d8);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  letter-spacing:-.1px;
+  transition:filter .18s ease, transform .18s ease;
+}
+
+.request-detail-box summary:hover{
+  filter:brightness(1.04);
+}
+
+.request-detail-box summary::after{
+  content:"Aç";
+  margin-left:auto;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.17);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+
+.request-detail-box[open] summary::after{
+  content:"Kapat";
+}
+
 .request-detail-box summary::-webkit-details-marker{display:none}
-.request-detail-box[open] summary{border-bottom:1px solid #e4ebf4;background:#f0f6ff}
-.request-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:13px}
-.request-detail-grid>div{padding:10px;border:1px solid #e6edf5;border-radius:10px;background:#fff}
-.request-detail-grid span{display:block;font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.request-detail-grid strong{display:block;font-size:12px;color:#172033;line-height:1.45}
-.request-detail-note{grid-column:1/-1}
-@media(max-width:640px){.request-detail-grid{grid-template-columns:1fr}.request-detail-note{grid-column:auto}}
+
+.request-detail-box[open] summary{
+  border-bottom:1px solid #d9e7fb;
+  background:linear-gradient(135deg,#125bdf,#0d47b8);
+}
+
+.request-detail-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:15px;
+}
+
+.request-detail-grid>div{
+  padding:12px;
+  border:1px solid #e0e9f5;
+  border-radius:11px;
+  background:#fff;
+}
+
+.request-detail-grid span{
+  display:block;
+  font-size:10px;
+  font-weight:900;
+  color:#64748b;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  margin-bottom:5px;
+}
+
+.request-detail-grid strong{
+  display:block;
+  font-size:13px;
+  color:#172033;
+  line-height:1.5;
+}
+
+.request-detail-note{
+  grid-column:1/-1;
+  border-color:#cfe0f7 !important;
+  background:#fbfdff !important;
+}
+
+@media(max-width:640px){
+  .request-detail-box summary{
+    min-height:56px;
+    padding:0 14px;
+    font-size:14px;
+  }
+
+  .request-detail-box summary::after{
+    padding:5px 8px;
+  }
+
+  .request-detail-grid{
+    grid-template-columns:1fr;
+    padding:12px;
+  }
+
+  .request-detail-note{grid-column:auto}
+}
