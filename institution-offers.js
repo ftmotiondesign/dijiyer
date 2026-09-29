@@ -171,6 +171,8 @@ renderSummary = function(){
   const lockedCount = states.filter(state => state === "locked").length;
   const usedCount = states.filter(state => state === "used").length;
 
+  if (typeof updatePersistentNewRequestCard === "function") updatePersistentNewRequestCard(newCount);
+
   document.getElementById("newQuoteCount").textContent = newCount;
   document.getElementById("totalQuoteCount").textContent = quoteRecords.length;
   document.getElementById("quoteTabCount").textContent = newCount;
