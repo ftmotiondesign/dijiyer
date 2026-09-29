@@ -3501,3 +3501,106 @@ button{
     justify-content:space-between;
   }
 }
+
+
+/* =========================================================
+   ANA SAYFA BÖLÜM İÇERİK DÜZENLEME
+   ========================================================= */
+.overview-section-edit-btn{
+  min-height:30px;
+  padding:0 11px;
+  border:1px solid #cfe0f6 !important;
+  border-radius:9px !important;
+  background:#f5f9ff !important;
+  color:#1677ff !important;
+  font-size:8px !important;
+  font-weight:900 !important;
+  cursor:pointer;
+  box-shadow:none !important;
+}
+.overview-section-edit-btn:hover{
+  border-color:#9fc8ff !important;
+  background:#edf5ff !important;
+}
+
+.home-section-editor-card{
+  width:min(760px,96vw);
+}
+.home-section-editor-eyebrow{
+  display:block;
+  margin-bottom:5px;
+  color:#1677ff;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.home-section-editor-help{
+  margin:-4px 0 18px;
+  color:#7b8798;
+  font-size:11px;
+  line-height:1.5;
+}
+.home-section-editor-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.home-section-editor-fields label{
+  min-width:0;
+  font-size:11px;
+}
+.home-section-editor-fields label.full{
+  grid-column:1/-1;
+}
+.home-section-editor-fields textarea{
+  min-height:88px;
+  resize:vertical;
+}
+.home-section-editor-field-note{
+  display:block;
+  margin-top:-2px;
+  color:#95a1b0;
+  font-size:8px;
+  font-weight:600;
+  line-height:1.35;
+}
+.home-section-editor-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:4px;
+}
+.home-section-editor-reset{
+  border:1px solid #d9e2ec !important;
+  background:#f8fafc !important;
+  color:#52657c !important;
+  box-shadow:none !important;
+}
+.home-section-editor-message{
+  min-height:18px;
+  margin:0;
+  color:#2d7c50;
+  font-size:10px;
+  font-weight:800;
+}
+.home-section-editor-message.error{
+  color:#c84646;
+}
+
+@media(max-width:720px){
+  .overview-visibility-actions{
+    flex-wrap:wrap;
+  }
+  .home-section-editor-fields{
+    grid-template-columns:1fr;
+  }
+  .home-section-editor-fields label.full{
+    grid-column:auto;
+  }
+  .home-section-editor-actions{
+    flex-direction:column-reverse;
+  }
+  .home-section-editor-actions button{
+    width:100%;
+  }
+}
