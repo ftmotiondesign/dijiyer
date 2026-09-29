@@ -28,6 +28,13 @@
       action:"Özete Dön",
       actionTarget:"summary"
     },
+    showcase: {
+      group:"KURUMUM",
+      title:"Tanıtım Hizmetleri",
+      description:"Konum Videosu ve 360° Sanal Tur ile kurum sayfanızı daha güçlü bir vitrine dönüştürün.",
+      action:"Müşteri Sayfamı Gör",
+      actionTarget:"profile-preview"
+    },
     stats: {
       group:"KURUMUM",
       title:"İstatistikler",
@@ -92,6 +99,11 @@
       if (filter) filter.value = "new";
       setPanelTab("quotes");
       if (typeof renderQuotes === "function") renderQuotes();
+      return;
+    }
+
+    if (target === "profile-preview") {
+      document.getElementById("publicProfilePreviewBtn")?.click();
       return;
     }
 
