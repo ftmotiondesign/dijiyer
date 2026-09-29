@@ -3851,7 +3851,9 @@ function renderPageTopMiniBanner(reset=false){
           ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+campaignImage+'"></video>'
           : (campaignImage
               ? '<img src="'+campaignImage+'" alt="'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu kampanya')+'">'
-              : '<div class="page-top-mini-campaign-fallback"><small>SPONSORLU</small><strong>'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')+'</strong><span>'+escapeHtml(ad.text || '')+'</span></div>'))+
+              : '<div class="page-top-mini-campaign-fallback"><strong>'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')+'</strong><span>'+escapeHtml(ad.text || '')+'</span></div>'))+
+      '</div>'+
+      '<div class="page-top-mini-actions">'+
         '<span class="page-top-mini-sponsored">SPONSORLU</span>'+
         '<b class="page-top-mini-cta">İncele →</b>'+
       '</div>'+
