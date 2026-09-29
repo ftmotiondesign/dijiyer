@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dijiyer - Ücretsiz Teklif Al</title>
+  <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css?v=45" />
+  <link rel="stylesheet" href="offers.css?v=3" />
+</head>
+<body class="standalone-quote-page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-pin">D</div>
+      <div>
+        <div class="brand-title">Dijiyer</div>
+        <div class="brand-sub">Bul. Karşılaştır. Teklif Al.</div>
+      </div>
+    </div>
+
+    <div class="searchbar">
+      <span>⌕</span>
+      <input id="searchInput" type="search" placeholder="Sürücü kursu, kreş, yurt veya hizmet ara..." />
+    </div>
+
+    <div class="location-picker" id="locationPicker">
+      <button class="location-btn" id="locationBtn" type="button" aria-expanded="false">
+        <span class="location-pin">📍</span>
+        <span id="locationBtnText">Çanakkale, Merkez</span>
+        <span class="location-arrow">⌄</span>
+      </button>
+
+      <div class="location-popover hidden" id="locationPopover">
+        <div class="location-popover-head">
+          <div>
+            <strong>Konum Seç</strong>
+            <small>İl ve ilçeye göre kurumları filtrele</small>
+          </div>
+          <button type="button" class="location-close" id="locationCloseBtn" aria-label="Kapat">×</button>
+        </div>
+
+        <label>İl
+          <select id="mainLocationCity">
+            <option value="">Tüm İller</option>
+          </select>
+        </label>
+
+        <label>İlçe
+          <select id="mainLocationDistrict" disabled>
+            <option value="">Tüm İlçeler</option>
+          </select>
+        </label>
+
+        <div class="location-actions">
+          <button type="button" class="btn btn-light" id="clearMainLocationBtn">Tüm Türkiye</button>
+          <button type="button" class="btn btn-primary" id="applyMainLocationBtn">Uygula</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary quote-main-btn" id="addInstitutionBtn">Toplu Teklif Al</button>
+    <button class="btn btn-light my-offers-btn" id="myOffersBtn">🔒 Tekliflerim <span class="my-offers-count" id="myOffersCount"></span></button>
+    <a href="teklif.html?v=5" class="tracking-floating-btn" id="trackingMainBtn" aria-label="Teklif takip sayfasını aç"><span class="tracking-floating-icon">🔍</span><span class="tracking-floating-label">Teklif Takip</span></a>
+
+    <div class="institution-actions" id="institutionActions">
+      <button
+        type="button"
+        class="institution-actions-btn"
+        id="institutionActionsBtn"
+        aria-expanded="false"
+      >
+        <span class="institution-actions-icon">🏢</span>
+        <span>Kurum İşlemleri</span>
+        <span class="institution-actions-arrow">⌄</span>
+      </button>
+
+      <div class="institution-actions-menu hidden" id="institutionActionsMenu">
+        <div class="institution-actions-head">
+          <strong>Kurum İşlemleri</strong>
+          <small>İşletmeni ekle veya paneline giriş yap</small>
+        </div>
+
+        <button type="button" class="institution-menu-item" id="institutionAddBtn">
+          <span class="institution-menu-icon add">＋</span>
+          <span class="institution-menu-copy">
+            <strong>Kurum Ekle</strong>
+            <small>Dijiyer'e yeni işletme ekle</small>
+          </span>
+        </button>
+
+        <button type="button" class="institution-menu-item" id="institutionLoginBtn">
+          <span class="institution-menu-icon panel">🏢</span>
+          <span class="institution-menu-copy">
+            <strong id="institutionLoginBtnLabel">Kurum Paneli</strong>
+            <small>Teklifleri ve kurum bilgilerini yönet</small>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="standalone-page-back">
+    <a href="index.html">← Ana Sayfa</a>
+  </div>
+
+  <section class="home-hero">
+    <div class="home-hero-inner">
+      <div class="home-hero-copy">
+        <span class="home-hero-kicker">DİJİYER · YEREL TEKLİF PLATFORMU</span>
+        <h1>İhtiyacını yaz.<br>Yakınındaki işletmeler teklif versin.</h1>
+        <p>
+          Kurumları tek tek aramak yerine ihtiyacını oluştur, uygun işletmelerden
+          fiyat al, karşılaştır ve teklifini güvenle takip et.
+        </p>
+
+        <div class="home-hero-actions">
+          <button type="button" class="hero-primary-btn" id="heroQuoteBtn">
+            Ücretsiz Teklif Al
+          </button>
+          <button type="button" class="hero-secondary-btn" id="heroInstitutionBtn">
+            İşletmeni Ücretsiz Ekle
+          </button>
+        </div>
+
+        <div class="home-hero-note">
+          Kredi kartı gerekmez · Üyelik zorunlu değil · Gizli ücret yok
+        </div>
+      </div>
+
+      <div class="home-hero-side">
+        <div class="home-hero-mascot-stage" aria-label="Diji, Dijiyer yardımcı maskotu">
+          <img
+            class="home-hero-mascot"
+            src="data:image/webp;base64,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"
+            alt="Diji, Dijiyer yardımcı maskotu"
+            width="160"
+            height="160"
+            decoding="async"
+          >
+          <div class="diji-speech">
+            <strong>Merhaba, ben Diji!</strong>
+            <span>Ne arıyorsun? Sana uygun işletmeleri bulalım.</span>
+          </div>
+        </div>
+
+        <div class="home-hero-free-card">
+          <div class="free-zero">0 TL</div>
+          <strong>Dijiyer'de temel işlemler ücretsiz</strong>
+          <p>Müşteri ve işletmeler için başlangıç maliyeti yok.</p>
+
+          <div class="free-mini-grid">
+            <span>✓ Üye olmak</span>
+            <span>✓ Teklif almak</span>
+            <span>✓ Teklif vermek</span>
+            <span>✓ Satıştan komisyon yok</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="main-portals-section" aria-label="Dijiyer ana hizmetleri">
+    <div class="main-portals-heading">
+      <div>
+        <span>DİJİYER'DE NE YAPMAK İSTİYORSUN?</span>
+        <h2>İhtiyacına göre doğrudan ilgili alana geç</h2>
+      </div>
+      <small>Teklif · İş · Bayi &amp; Servis</small>
+    </div>
+
+    <div class="main-portals-grid">
+      <a class="main-portal-card portal-quote" href="teklif-al.html">
+        <span class="main-portal-icon">🏷</span>
+        <div class="main-portal-copy">
+          <small>ÜCRETSİZ TEKLİF</small>
+          <strong>Teklif Al</strong>
+          <p>İhtiyacını yaz, uygun işletmelerden fiyatları tek yerde karşılaştır.</p>
+        </div>
+        <span class="main-portal-arrow">→</span>
+      </a>
+
+      <a class="main-portal-card portal-jobs" href="is-firsatlari.html">
+        <span class="main-portal-icon">💼</span>
+        <div class="main-portal-copy">
+          <small>İŞ &amp; EK KAZANÇ</small>
+          <strong>İş Fırsatları</strong>
+          <p>Yakınındaki işleri, eleman ilanlarını ve ek kazanç fırsatlarını keşfet.</p>
+        </div>
+        <span class="main-portal-arrow">→</span>
+      </a>
+
+      <a class="main-portal-card portal-brands" href="bayi-servis.html">
+        <span class="main-portal-icon">🔧</span>
+        <div class="main-portal-copy">
+          <small>MARKA REHBERİ</small>
+          <strong>Bayi &amp; Servis Bul</strong>
+          <p>Büyük markaların yetkili bayi, mağaza ve servis noktalarına ulaş.</p>
+        </div>
+        <span class="main-portal-arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="free-benefit-strip" aria-label="Müşteri ve işletme avantajları">
+    <div class="free-benefit-card buyer">
+      <small>ALICI İÇİN</small>
+      <strong>Doğru Hizmeti Hızlı Bul</strong>
+      <span>İhtiyacına uygun işletmeleri tek yerde keşfet.</span>
+    </div>
+    <div class="free-benefit-card buyer">
+      <small>ALICI İÇİN</small>
+      <strong>Kolayca Teklif Topla</strong>
+      <span>Birden fazla kurumdan ücretsiz fiyat iste.</span>
+    </div>
+    <div class="free-benefit-card seller">
+      <small>İŞLETME İÇİN</small>
+      <strong>Yeni Müşterilere Ulaş</strong>
+      <span>Hizmet arayan kullanıcılara görünür ol ve teklif ver.</span>
+    </div>
+    <div class="free-benefit-card seller">
+      <small>İŞLETME İÇİN</small>
+      <strong>Komisyonsuz Bağlantı Kur</strong>
+      <span>Müşteriyle doğrudan iletişim kur, satıştan komisyon kesilmesin.</span>
+    </div>
+  </section>
+
+  <section class="home-section how-it-works">
+    <div class="home-section-heading">
+      <span>3 ADIMDA DİJİYER</span>
+      <h2>Tek tek işletme aramadan teklif al</h2>
+      <p>İhtiyacını oluştur, uygun işletmeler fiyat versin, sen karşılaştırıp karar ver.</p>
+    </div>
+
+    <div class="how-grid">
+      <article class="how-card">
+        <div class="how-number">1</div>
+        <div class="how-icon">✍️</div>
+        <h3>İhtiyacını yaz</h3>
+        <p>Aradığın hizmeti, konumu ve varsa özel isteğini belirt.</p>
+      </article>
+
+      <article class="how-card">
+        <div class="how-number">2</div>
+        <div class="how-icon">💬</div>
+        <h3>Teklifleri karşılaştır</h3>
+        <p>Uygun işletmelerin fiyatlarını ve teklif detaylarını tek yerde gör.</p>
+      </article>
+
+      <article class="how-card">
+        <div class="how-number">3</div>
+        <div class="how-icon">🔒</div>
+        <h3>Uygun olanı seç</h3>
+        <p>Teklifi seç, fiyatı kilitle ve geçerlilik süresi boyunca güvenle kullan.</p>
+      </article>
+    </div>
+
+    <div class="how-action">
+      <button type="button" class="section-primary-btn" id="howQuoteBtn">Hemen Ücretsiz Teklif Al</button>
+      <button type="button" class="section-link-btn" id="exploreScrollBtn">Önce kurumları incele ↓</button>
+    </div>
+  </section>
+
+  <section class="mobile-discovery" aria-label="Mobil kategori seçimi">
+    <button type="button" class="mobile-search-location" id="mobileSearchLocationBtn">
+      <span class="mobile-search-location-icon">📍</span>
+      <span class="mobile-search-location-copy">
+        <small>NEREDE ARIYORSUNUZ?</small>
+        <strong id="mobileSearchLocationText">Konum seçiliyor...</strong>
+        <em id="mobileSearchLocationHint">Sonuçlar bu bölgeye göre gösterilir</em>
+      </span>
+      <span class="mobile-search-location-action">Değiştir ›</span>
+    </button>
+
+    <div class="mobile-search-quick-filters" aria-label="Hızlı kurum filtreleri">
+      <button type="button" id="mobileOfferOnlyBtn">
+        <span>🏷</span>
+        <strong>Teklif Verenler</strong>
+      </button>
+      <button type="button" id="mobileVideoOnlyBtn">
+        <span>🎥</span>
+        <strong>Videolu Kurumlar</strong>
+      </button>
+      <button type="button" id="mobileTour360Btn">
+        <span>🧭</span>
+        <strong>360° Turu Olanlar</strong>
+      </button>
+    </div>
+
+    <div class="mobile-discovery-head">
+      <div>
+        <strong>Ne arıyorsunuz?</strong>
+        <span>Kelimeyle arayın veya aşağıdan kategori seçin</span>
+      </div>
+      <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
+    </div>
+
+    <div class="mobile-keyword-search" role="search" aria-label="Hizmet veya kurum ara">
+      <span class="mobile-keyword-search-icon">⌕</span>
+      <input
+        id="mobileDiscoverySearchInput"
+        type="search"
+        autocomplete="off"
+        enterkeyhint="search"
+        placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
+        aria-label="Hizmet veya kurum adı yazın"
+      >
+      <button type="button" class="mobile-keyword-clear hidden" id="mobileDiscoverySearchClear" aria-label="Aramayı temizle">×</button>
+      <button type="button" class="mobile-keyword-submit" id="mobileDiscoverySearchBtn">Ara</button>
+    </div>
+
+    <div class="mobile-keyword-hints" aria-label="Örnek aramalar">
+      <button type="button" data-mobile-search-example="ehliyet">Ehliyet</button>
+      <button type="button" data-mobile-search-example="anaokulu">Anaokulu</button>
+      <button type="button" data-mobile-search-example="oto servis">Oto Servis</button>
+      <button type="button" data-mobile-search-example="pizza">Pizza</button>
+    </div>
+
+    <div class="mobile-category-scroll" id="mobileCategories"></div>
+    <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
+
+    <div class="mobile-category-result hidden" id="mobileCategoryResult">
+      <div class="mobile-category-result-top">
+        <div class="mobile-category-result-copy">
+          <span id="mobileCategoryResultLabel">Kategori seçildi</span>
+          <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
+          <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
+        </div>
+        <div class="mobile-category-result-location">
+          <span>📍</span>
+          <div>
+            <small>Konum</small>
+            <strong id="mobileCategoryResultLocation">Çanakkale / Merkez</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-category-result-actions compact">
+        <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
+      </div>
+    </div>
+
+    <section class="mobile-instant-results hidden" id="mobileInstantResults" aria-label="Eşleşen kurumlar">
+      <div class="mobile-instant-results-head">
+        <div>
+          <span>ARAMA SONUÇLARI</span>
+          <strong id="mobileInstantResultsTitle">Eşleşen kurumlar</strong>
+        </div>
+        <button type="button" id="mobileInstantResultsClose" aria-label="Sonuçları kapat">×</button>
+      </div>
+      <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
+    </section>
+
+    <input type="checkbox" id="videoOnly" hidden>
+    <input type="checkbox" id="offerOnly" hidden>
+    <input type="checkbox" id="tour360Only" hidden>
+  </section>
+
+  <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
+    <div class="premium-showcase-heading">
+      <div>
+        <span class="premium-showcase-kicker">PREMIUM SPONSORLU</span>
+        <strong>Ana Sayfa Vitrini</strong>
+      </div>
+      <small>Dijiyer'in en görünür reklam alanı</small>
+    </div>
+
+    <div class="premium-showcase-stage" id="premiumShowcaseStage">
+      <div class="premium-showcase-loading">Premium vitrin hazırlanıyor...</div>
+    </div>
+
+    <div class="premium-showcase-dots" id="premiumShowcaseDots" aria-label="Premium reklam geçişleri"></div>
+  </section>
+
+    <section class="external-ad-zone hidden" id="externalAdZone" aria-label="Reklam">
+    <div class="external-ad-zone-head">
+      <span>REKLAM</span>
+      <small>Harici / iş ortaklığı</small>
+    </div>
+    <div class="external-ad-stage" id="externalAdStage"></div>
+    <div class="external-ad-dots" id="externalAdDots" aria-label="Reklam geçişleri"></div>
+  </section>
+
+  <section class="mobile-sponsored-slot" id="mobileSponsoredSlot" aria-label="Mobil sponsorlu işletme">
+    <div class="mobile-sponsored-placeholder">
+      <div class="mobile-sponsored-placeholder-icon">📣</div>
+      <div class="mobile-sponsored-placeholder-copy">
+        <span>SPONSORLU ALAN</span>
+        <strong>İşletmeni burada göster</strong>
+        <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
+      </div>
+      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+    </div>
+  </section>
+
+  <section class="home-sponsored-section" id="sponsoredSection" aria-label="Sponsorlu işletmeler">
+    <div class="sponsored-section-head">
+      <div>
+        <span class="sponsored-kicker">SPONSORLU</span>
+        <h2>Öne çıkan işletmeler</h2>
+        <p>Bulunduğun bölgedeki sponsorlu işletmeleri keşfet.</p>
+      </div>
+      <div class="sponsored-slider-controls" id="sponsoredSliderControls" aria-label="Sponsorlu reklam geçişleri">
+        <button type="button" id="sponsoredPrevBtn" aria-label="Önceki sponsorlu reklam">‹</button>
+        <button type="button" id="sponsoredNextBtn" aria-label="Sonraki sponsorlu reklam">›</button>
+      </div>
+    </div>
+
+    <div class="sponsored-rail" id="homeSponsoredRail">
+      <div class="sponsored-loading">Sponsorlu alan hazırlanıyor...</div>
+    </div>
+  </section>
+
+  <main class="app-layout" id="resultsSection">
+    <aside class="sidebar">
+      <div class="panel-title"><span class="filter-menu-icon" aria-hidden="true">☰</span><span>Filtreler</span></div>
+
+      <section class="filter-section category-filter-section">
+        <h3>Ana Kategori</h3>
+        <div id="sidebarCategories" class="sidebar-categories"></div>
+      </section>
+
+      <div class="sidebar-sponsored-slot" id="sidebarSponsoredSlot" aria-label="Sponsorlu alan">
+        <div class="sidebar-sponsored-placeholder">
+          <span>SPONSORLU</span>
+          <strong>İşletmeni burada göster</strong>
+          <small>Ana sayfada görünürlüğünü artır.</small>
+          <button type="button" data-advertise-home>Reklam Ver</button>
+        </div>
+      </div>
+
+      <div class="sidebar-note">
+  <strong>Dijiyer</strong>
+  <p>Aradığın hizmeti bul, kurumları karşılaştır, teklif al ve kolayca ulaş.</p>
+</div>
+    </aside>
+
+    <section class="workspace">
+      <section class="mobile-daily-stats stats-disabled" id="mobileDailyStats" aria-label="Bugünkü Dijiyer istatistikleri">
+        <div class="mobile-daily-stats-head">
+          <div>
+            <span>BUGÜN DİJİYER'DE</span>
+            <strong>Günlük teklif hareketleri</strong>
+          </div>
+          <small><i></i> Canlı</small>
+        </div>
+
+        <div class="mobile-daily-stats-grid">
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">📝</span>
+            <div>
+              <strong id="dailyQuoteRequestCount">—</strong>
+              <small>Teklif İstendi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">💬</span>
+            <div>
+              <strong id="dailyOfferCount">—</strong>
+              <small>Teklif Verildi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">✓</span>
+            <div>
+              <strong id="dailyAcceptedCount">—</strong>
+              <small>Kabul Edildi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat mobile-daily-stat-top">
+            <span class="mobile-daily-stat-icon">↗</span>
+            <div>
+              <strong id="dailyTopService">—</strong>
+              <small>En Çok Teklif Alınan</small>
+              <em id="dailyTopServiceCount"></em>
+            </div>
+          </article>
+        </div>
+
+        <div class="mobile-daily-stats-note" id="mobileDailyStatsNote">
+          Bugünün verileri yükleniyor...
+        </div>
+      </section>
+
+      <div class="map-card">
+        <div class="map-tabs">
+          <button class="active" id="mapStreetBtn">Harita</button>
+          <button id="mapSatelliteBtn">Uydu</button>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <section class="decision-alternatives" id="decisionAlternatives" aria-label="Aynı alanda başka seçenekler">
+        <div class="decision-alternatives-head">
+          <div>
+            <span>AYNI ALANDA BAŞKA SEÇENEKLER</span>
+            <strong>Haritadaki benzer kurumlara hızlıca göz at</strong>
+          </div>
+          <small>Bir kuruma dokununca sağdaki hızlı önizleme değişir.</small>
+        </div>
+        <div class="decision-alternatives-rail" id="decisionAlternativesRail"></div>
+      </section>
+
+      <div class="content-grid">
+        <section class="list-panel">
+          <div class="section-head">
+            <div>
+              <h2>Kurum Listesi</h2>
+              <small id="resultCount">3 sonuç</small>
+            </div>
+            <select id="sortSelect">
+              <option value="recommended">Önerilen</option>
+              <option value="rating">Puana göre</option>
+              <option value="distance">Mesafeye göre</option>
+            </select>
+          </div>
+          <div id="institutionList" class="institution-list"></div>
+        </section>
+
+        <section class="brand-directory-mobile" id="brandDirectoryMobile" aria-label="Marka bayi ve servis rehberi">
+          <div class="brand-directory-head">
+            <div>
+              <span>MARKA BAYİ &amp; SERVİS REHBERİ</span>
+              <h2>Yetkili bayi ve servisi hızlı bul</h2>
+              <p>Markanı seç, yetkili bayi veya servise hızlıca ulaş.</p>
+            </div>
+            <div class="brand-directory-location">
+              <small>📍 Bölge</small>
+              <strong id="brandDirectoryLocation">Çanakkale / Merkez</strong>
+              <button type="button" id="brandDirectoryChangeLocation">Değiştir</button>
+            </div>
+          </div>
+
+          <div class="brand-directory-search">
+            <span>⌕</span>
+            <input id="brandDirectorySearch" type="search" autocomplete="off" placeholder="Marka, bayi, servis veya adres ara..." aria-label="Marka bayi ve servis ara">
+            <button type="button" id="brandDirectorySearchClear" class="hidden" aria-label="Aramayı temizle">×</button>
+          </div>
+
+          <div class="brand-directory-brand-row" id="brandDirectoryBrands" aria-label="Markalar"></div>
+
+          <div class="brand-directory-type-row" aria-label="Bayi servis türü">
+            <button type="button" class="active" data-brand-directory-type="all">Tümü</button>
+            <button type="button" data-brand-directory-type="service">🔧 Yetkili Servis</button>
+            <button type="button" data-brand-directory-type="dealer">🏪 Bayi / Mağaza</button>
+          </div>
+
+          <div class="brand-directory-result-head">
+            <div>
+              <strong id="brandDirectoryResultTitle">Yakındaki noktalar</strong>
+              <span id="brandDirectoryResultHint">Markaya dokun, yetkili noktaları görüntüle</span>
+            </div>
+            <b id="brandDirectoryResultCount">0</b>
+          </div>
+
+          <div class="brand-directory-results" id="brandDirectoryResults"></div>
+
+          <div class="brand-directory-note">
+            <span>ⓘ</span>
+            <p>Bayi ve servis bilgileri zamanla değişebilir. Gitmeden önce telefonla doğrulamanızı öneririz.</p>
+          </div>
+        </section>
+
+        <section class="mobile-jobs-board" id="mobileJobsBoard" aria-label="Dijiyer İş Fırsatları">
+          <div class="mobile-jobs-head">
+            <div>
+              <span>DİJİYER İŞ FIRSATLARI</span>
+              <h2>Yakınındaki iş ve ek kazanç fırsatları</h2>
+              <p>İş ara, eleman bul veya yapabildiğin işi yayınla.</p>
+            </div>
+            <button type="button" class="mobile-jobs-post-btn" id="mobileJobsPostBtn">+ İlan Ver</button>
+          </div>
+
+          <div class="mobile-jobs-search">
+            <span class="mobile-jobs-search-icon">⌕</span>
+            <input
+              id="mobileJobsSearchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="İş, meslek veya yetenek ara..."
+              aria-label="İş ilanlarında ara"
+            >
+            <button type="button" class="hidden" id="mobileJobsSearchClear" aria-label="Aramayı temizle">×</button>
+          </div>
+
+          <div class="mobile-jobs-search-results hidden" id="mobileJobsSearchResults" aria-live="polite">
+            <div class="mobile-jobs-search-results-head">
+              <div>
+                <span>ARAMA SONUÇLARI</span>
+                <strong><b id="mobileJobsSearchResultCount">0</b> ilan bulundu</strong>
+              </div>
+              <button type="button" id="mobileJobsSearchResultsClose" aria-label="Arama sonuçlarını kapat">×</button>
+            </div>
+            <div class="mobile-jobs-search-results-list" id="mobileJobsSearchResultsList"></div>
+          </div>
+
+          <div class="mobile-jobs-location-box">
+            <div class="mobile-jobs-location-head">
+              <div>
+                <span>NEREDE ARIYORSUN?</span>
+                <strong>İşin yapılacağı yeri seç</strong>
+              </div>
+              <span class="mobile-jobs-location-count"><b id="mobileJobsResultCount">0</b> ilan</span>
+            </div>
+
+            <div class="mobile-jobs-location-modes" role="tablist" aria-label="İş konumu">
+              <button type="button" class="active" data-job-location-mode="local">📍 Yerel</button>
+              <button type="button" data-job-location-mode="remote">🌐 Online / Evden</button>
+              <button type="button" data-job-location-mode="all">🇹🇷 Tüm Türkiye</button>
+            </div>
+
+            <div class="mobile-jobs-location-selects" id="mobileJobsLocationSelects">
+              <label>
+                <span>İl</span>
+                <select id="mobileJobsCitySelect">
+                  <option value="">İller yükleniyor...</option>
+                </select>
+              </label>
+              <label>
+                <span>İlçe</span>
+                <select id="mobileJobsDistrictSelect" disabled>
+                  <option value="">Önce il seçin</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="mobile-jobs-location-note" id="mobileJobsLocationNote">
+              📍 <b id="mobileJobsLocationLabel">Bulunduğun bölge</b> içindeki ilanlar gösteriliyor.
+            </div>
+          </div>
+
+          <div class="mobile-jobs-switch" role="tablist" aria-label="İş ilanı türleri">
+            <button type="button" class="active" data-job-filter="all">Tümü</button>
+            <button type="button" data-job-filter="hire">🏢 Eleman Arayan</button>
+            <button type="button" data-job-filter="work">👤 İş Arayan</button>
+          </div>
+
+          <div class="mobile-jobs-quick-filters" aria-label="Hızlı iş filtreleri">
+            <button type="button" class="active" data-job-quick="all">Tüm Türler</button>
+            <button type="button" data-job-quick="extra">⚡ Günlük / Ek İş</button>
+            <button type="button" data-job-quick="parttime">◷ Part-time</button>
+            <button type="button" data-job-quick="weekend">📅 Hafta sonu</button>
+            <button type="button" data-job-quick="project">🧩 Proje bazlı</button>
+          </div>
+
+          <div class="mobile-jobs-category-head">
+            <div>
+              <strong>Kategoriler</strong>
+              <span>Dokunarak ilanları filtrele</span>
+            </div>
+            <button type="button" class="hidden" id="mobileJobsClearFilters">Temizle</button>
+          </div>
+
+          <div class="mobile-jobs-categories" id="mobileJobsCategories"></div>
+
+          <div class="mobile-jobs-results-head">
+            <div>
+              <strong id="mobileJobsResultsTitle">Tüm iş fırsatları</strong>
+              <span id="mobileJobsResultsHint">En yeni ilanlar önce</span>
+            </div>
+          </div>
+
+          <div class="mobile-jobs-list" id="mobileJobsList">
+            <div class="mobile-jobs-loading">İş fırsatları hazırlanıyor...</div>
+          </div>
+
+          <div class="mobile-jobs-footer">
+            <button type="button" id="mobileJobsHireBtn">🏢 Eleman / Yardımcı Ara</button>
+            <button type="button" id="mobileJobsWorkBtn">👤 İş / Ek İş Ara</button>
+          </div>
+        </section>
+
+        <section class="detail-panel" id="detailPanel">
+          <!-- JS ile doldurulur -->
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <section class="home-section trust-section">
+    <div class="trust-copy">
+      <span class="trust-kicker">GÜVENLİ TEKLİF SİSTEMİ</span>
+      <h2>“Bu fiyat değişti” sürprizi olmasın.</h2>
+      <p>
+        Dijiyer'de seçilen teklifin fiyatı ve şartları kayıt altında tutulur.
+        Teklifin geçerlilik süresi bellidir ve işletmede teklif koduyla doğrulanabilir.
+      </p>
+
+      <button type="button" class="section-primary-btn" id="trustQuoteBtn">
+        Fiyat Garantili Teklif Al
+      </button>
+    </div>
+
+    <div class="trust-grid">
+      <article>
+        <span class="trust-icon">🔒</span>
+        <div>
+          <strong>Fiyat Kilidi</strong>
+          <p>Seçtiğin teklifin fiyatı kayıt altına alınır.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">⏱️</span>
+        <div>
+          <strong>Geçerlilik Süresi</strong>
+          <p>İşletme teklifin ne zamana kadar geçerli olduğunu belirtir.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">▦</span>
+        <div>
+          <strong>Teklif Kodu / QR</strong>
+          <p>İşletmede teklif hızlıca doğrulanabilir.</p>
+        </div>
+      </article>
+
+      <article>
+        <span class="trust-icon">✓</span>
+        <div>
+          <strong>Tek Kullanım Takibi</strong>
+          <p>Kullanılan teklif sistemde durum değiştirerek takip edilir.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="business-cta-section">
+    <div class="business-cta-copy">
+      <span>İŞLETMELER İÇİN</span>
+      <h2>Yeni müşteriler seni arasın, sen teklifini ver.</h2>
+      <p>
+        İşletmeni Dijiyer'e ücretsiz ekle. Bölgen ve sektörünle eşleşen talepleri gör,
+        teklif ver ve kurum panelinden süreci takip et.
+      </p>
+
+      <div class="business-benefits">
+        <span>✓ Üyelik ücretsiz</span>
+        <span>✓ Teklif vermek ücretsiz</span>
+        <span>✓ Aylık zorunlu ücret yok</span>
+        <span>✓ Kazandığın işten %0 komisyon</span>
+      </div>
+
+      <div class="business-actions">
+        <button type="button" class="business-primary-btn" id="businessAddBtn">İşletmeni Ücretsiz Ekle</button>
+        <button type="button" class="business-secondary-btn" id="businessPanelBtn">Kurum Paneline Gir</button>
+      </div>
+    </div>
+
+    <div class="business-cta-card">
+      <span class="business-card-label">İŞLETME MALİYETİ</span>
+      <strong>0 TL</strong>
+      <p>Başlangıçta kayıt ücreti, teklif verme ücreti veya satış komisyonu yok.</p>
+      <div class="business-card-list">
+        <div><b>Ücretsiz</b><span>Kurum profili</span></div>
+        <div><b>Ücretsiz</b><span>Teklif verme</span></div>
+        <div><b>%0</b><span>İş / satış komisyonu</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dijiyer-earnings-bottom-section" id="dijiyerEarningsBottom" aria-label="Dijiyer Kazanç">
+    <!-- JS ile doldurulur -->
+  </section>
+
+  <footer class="home-footer">
+    <div class="home-footer-brand">
+      <div class="brand-pin">D</div>
+      <div>
+        <strong>Dijiyer</strong>
+        <span>Bul. Karşılaştır. Teklif Al.</span>
+      </div>
+    </div>
+
+    <div class="home-footer-copy">
+      <strong>Yerel işletmeler ve müşteriler tek yerde.</strong>
+      <span>Ücretsiz teklif al, ücretsiz teklif ver, komisyonsuz ilerle.</span>
+    </div>
+
+    <div class="home-footer-actions">
+      <button type="button" id="footerQuoteBtn">Teklif Al</button>
+      <button type="button" id="footerInstitutionBtn">İşletme Ekle</button>
+      <a href="#resultsSection">Kurumları İncele</a>
+    </div>
+  </footer>
+
+  <section class="dijiyer-legal-footer" aria-label="Dijiyer bilgilendirme">
+    <div class="dijiyer-legal-note">
+      Dijiyer; kullanıcılar, işletmeler ve hizmet sağlayıcılar arasında keşif, iletişim ve teklif alışverişini kolaylaştıran bir platformdur.
+      Kurumlar ve kullanıcılar tarafından yayınlanan profil bilgileri, fiyatlar, teklifler, kampanyalar, görseller, videolar, ilanlar ve diğer içeriklerin
+      doğruluğu, güncelliği ve yasal uygunluğu ilgili içeriği oluşturan kişi veya kuruma aittir. Dijiyer, aksi açıkça belirtilmedikçe hizmeti bizzat
+      sunmaz; kullanıcıların işlem öncesinde teklif kapsamını, fiyatı, geçerlilik süresini ve hizmet koşullarını kontrol etmesi önerilir.
+      Şüpheli, hatalı veya kurallara aykırı içerikleri destek kanalı üzerinden bildirebilirsiniz.
+    </div>
+
+    <div class="dijiyer-legal-bottom">
+      <span>Copyright © 2026 Dijiyer · Tüm hakları saklıdır.</span>
+      <strong>Bul. Karşılaştır. Teklif Al.</strong>
+    </div>
+  </section>
+
+<div class="modal hidden" id="quoteModal">
+    <div class="modal-card">
+      <button type="button" class="modal-close" data-close="quoteModal" onclick="document.getElementById('quoteModal').classList.add('hidden'); return false;">×</button>
+      <h2>Toplu Teklif Talebi</h2>
+      <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
+
+      <form id="quoteForm">
+        <label>Ne arıyorsunuz?
+          <input
+            id="quoteSearch"
+            type="text"
+            placeholder="Örn. ehliyet, anaokulu, lastik, kiralık ev..."
+          >
+        </label>
+
+        <button
+          type="button"
+          class="btn btn-light full"
+          id="detectQuoteCategoryBtn"
+        >
+          🔎 Uygun Kategoriyi Bul
+        </button>
+
+        <p style="font-size:12px;color:#68758a;margin-top:-4px;">
+          Ne aradığınızı yazabilir veya ana kategori + alt kategori seçerek devam edebilirsiniz.
+        </p>
+
+        <label>Ana Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteCategory">
+            <option value="">Ana kategori seçin</option>
+          </select>
+        </label>
+
+        <label>Alt Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteService" disabled>
+            <option value="">Önce ana kategori seçin</option>
+          </select>
+        </label>
+
+        <div class="form-grid-2">
+          <label>Şehir
+            <select id="quoteCity" required>
+              <option value="">Şehir seçin</option>
+            </select>
+          </label>
+
+          <label>İlçe <small style="font-weight:normal;">(isteğe bağlı)</small>
+            <select id="quoteDistrict" disabled>
+              <option value="">Önce şehir seçin</option>
+            </select>
+            <small style="display:block;margin-top:5px;color:#68758a;font-weight:normal;">
+              İlçe seçmezseniz talebiniz şehir genelindeki uygun kurumlara gönderilir.
+            </small>
+          </label>
+        </div>
+
+        <label>Ad Soyad
+          <input id="quoteName" required type="text" placeholder="Adınız ve soyadınız">
+        </label>
+
+        <label>Telefon
+          <input id="quotePhone" required type="tel" placeholder="05xx xxx xx xx">
+        </label>
+
+        <label>Not
+          <textarea id="quoteNote" rows="3" placeholder="Örn. otomatik vites, hafta sonu ders, bütçe aralığı..."></textarea>
+        </label>
+
+        <button class="btn btn-primary full" type="submit">
+          Uygun Kurumlara Teklif Gönder
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="quoteSuccessModal">
+    <div class="modal-card quote-success-card">
+      <button type="button" class="modal-close" data-close="quoteSuccessModal" onclick="document.getElementById('quoteSuccessModal').classList.add('hidden'); return false;">×</button>
+
+      <div class="quote-success-check">✓</div>
+      <h2>Teklif Talebiniz Gönderildi</h2>
+      <p id="quoteSuccessCount">Talebiniz uygun kurumlarla eşleştiriliyor.</p>
+
+      <div class="quote-success-code-box">
+        <span>TAKİP KODUNUZ</span>
+        <strong id="quoteSuccessCode">-</strong>
+      </div>
+
+      <label class="quote-success-link-label">Özel Teklif Linkiniz
+        <input id="quoteSuccessLink" type="text" readonly>
+      </label>
+
+      <div class="quote-success-note">
+        🔐 Tekliflerinizi başka telefondan açmak için bu takip kodu ile talep formunda yazdığınız telefon numarasını kullanacaksınız.
+      </div>
+
+      <div class="quote-success-actions">
+        <button type="button" class="btn btn-primary" id="quoteOpenTrackingBtn">Tekliflerimi Gör</button>
+        <button type="button" class="btn btn-light" id="quoteCopyTrackingBtn">Linki Kopyala</button>
+        <button type="button" class="btn btn-whatsapp" id="quoteWhatsappTrackingBtn">WhatsApp'tan Kendime Gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="myOffersModal">
+    <div class="modal-card my-offers-card">
+      <button type="button" class="modal-close" data-close="myOffersModal" onclick="document.getElementById('myOffersModal').classList.add('hidden'); return false;">×</button>
+      <h2>Tekliflerim</h2>
+      <p>Gönderdiğiniz talepleri, gelen teklifleri ve geçerlilik sürelerini buradan takip edebilirsiniz.</p>
+
+      <div class="offer-trust-strip">
+        <div class="offer-trust-item">🔒 Fiyat Kilidi</div>
+        <div class="offer-trust-item">⏱ Süreli Teklif</div>
+        <div class="offer-trust-item">▦ QR Doğrulama</div>
+        <div class="offer-trust-item">✓ Tek Kullanım</div>
+      </div>
+
+      <div id="myOffersList">
+        <div class="offer-center-note">Teklifleriniz yükleniyor...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="institutionModal">
+  <div class="modal-card">
+    <button type="button" class="modal-close" data-close="institutionModal" onclick="document.getElementById('institutionModal').classList.add('hidden'); return false;">×</button>
+
+    <h2>Kurum Ekle</h2>
+    <p>İşletmenizi Dijiyer'e eklemek için bilgileri doldurun.</p>
+
+    <form id="institutionForm">
+
+      <label>Kurum / İşletme Adı
+        <input
+          type="text"
+          id="institutionName"
+          placeholder="Örn. Ayyıldız Sürücü Kursu"
+          required
+        />
+      </label>
+
+      <label>Google Maps Bağlantısı
+        <input
+          type="text"
+          id="institutionGoogleMapsUrl"
+          placeholder="Google Maps'teki uzun bağlantıyı yapıştırın"
+        />
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-light full"
+        id="useGoogleMapsUrlBtn"
+        style="margin-top:-4px;margin-bottom:10px;"
+      >
+        📍 Konumu Google Maps Bağlantısından Al
+      </button>
+
+      <label>Ana Kategori
+        <select id="institutionCategory" required>
+          <option value="">Ana kategori seçin</option>
+        </select>
+      </label>
+
+      <label>Alt Kategori
+        <select id="institutionSubCategory" required disabled>
+          <option value="">Önce ana kategori seçin</option>
+        </select>
+      </label>
+
+     <label>Şehir
+  <select id="institutionCity" required>
+    <option value="">Şehir seçin</option>
+  </select>
+</label>
+
+<label>İlçe
+  <select id="institutionDistrict" required disabled>
+    <option value="">Önce şehir seçin</option>
+  </select>
+</label>
+
+      <label>Adres
+        <textarea
+          id="institutionAddress"
+          rows="3"
+          placeholder="Açık adres"
+          required
+        ></textarea>
+      </label>
+
+      <button
+        type="button"
+        class="btn btn-light full"
+        id="findInstitutionBtn"
+      >
+        📍 Adresi Haritada Bul
+      </button>
+
+      <p style="font-size:12px; color:#68758a; margin-top:-4px;">
+        Açık adresi yazdıktan sonra bu butona basın. Bulunamazsa Google Maps bağlantısını kullanın.
+      </p>
+
+      <label>Telefon / WhatsApp
+        <input
+          type="tel"
+          id="institutionPhone"
+          placeholder="05xx xxx xx xx"
+          required
+        />
+      </label>
+
+      <label>Instagram veya Web Sitesi
+  <input
+    type="text"
+    id="institutionWebsite"
+    placeholder="İsteğe bağlı"
+  />
+</label>
+
+<label>
+  Kurum Konumu
+  <div
+    id="institutionMap"
+    style="height:260px; border-radius:12px; margin-top:8px;"
+  ></div>
+</label>
+
+<p style="font-size:12px; color:#68758a; margin-top:0;">
+  Haritada kurumun bulunduğu noktaya tıklayın.
+</p>
+
+<input type="hidden" id="institutionLat">
+<input type="hidden" id="institutionLng">
+
+<button class="btn btn-primary full" type="submit">
+  Kurum Başvurusu Gönder
+</button>
+
+    </form>
+  </div>
+</div>
+
+
+  <div class="modal hidden" id="institutionAccessModal">
+    <div class="modal-card institution-access-card">
+      <button type="button" class="modal-close" data-close="institutionAccessModal" onclick="document.getElementById('institutionAccessModal').classList.add('hidden'); return false;">×</button>
+
+      <h2>Kurum Girişi</h2>
+      <p>Teklifleri görmek ve kurum panelini kullanmak için giriş yapın.</p>
+
+      <div class="access-tabs">
+        <button type="button" class="access-tab active" id="institutionLoginTab">Giriş Yap</button>
+        <button type="button" class="access-tab" id="institutionRegisterTab">Hesap Oluştur</button>
+      </div>
+
+      <form id="institutionLoginForm">
+        <label>E-posta
+          <input id="institutionLoginEmail" type="email" required placeholder="ornek@kurum.com">
+        </label>
+
+        <label>Şifre
+          <input id="institutionLoginPassword" type="password" required minlength="6" placeholder="Şifreniz">
+        </label>
+
+        <label class="remember-row">
+          <input id="institutionRememberMe" type="checkbox" checked>
+          <span>Beni hatırla</span>
+        </label>
+
+        <button class="btn btn-primary full" type="submit">Kurum Paneline Gir</button>
+        <button class="btn btn-light full" type="button" id="institutionForgotPasswordBtn">Şifremi Unuttum</button>
+        <p class="access-message" id="institutionLoginMessage"></p>
+      </form>
+
+      <form id="institutionRegisterForm" class="hidden">
+        <label>Kurumunuz
+          <select id="institutionAccountInstitution" required>
+            <option value="">Kurumlar yükleniyor...</option>
+          </select>
+        </label>
+
+        <p class="access-help">
+          Kurumunuz listede yoksa önce “+ Kurum Ekle” bölümünden başvuru gönderin.
+        </p>
+
+        <label>E-posta
+          <input id="institutionRegisterEmail" type="email" required placeholder="ornek@kurum.com">
+        </label>
+
+        <label>Şifre
+          <input id="institutionRegisterPassword" type="password" required minlength="6" placeholder="En az 6 karakter">
+        </label>
+
+        <button class="btn btn-primary full" type="submit">Kurum Hesabı Oluştur</button>
+        <p class="access-message" id="institutionRegisterMessage"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="reviewModal">
+    <div class="modal-card">
+      <button type="button" class="modal-close" data-close="reviewModal" onclick="document.getElementById('reviewModal').classList.add('hidden'); return false;">×</button>
+      <h2>Yorum Yap / Puan Ver</h2>
+      <form id="reviewForm">
+        <div class="stars-input" id="starsInput">
+          <button type="button" data-star="1">☆</button>
+          <button type="button" data-star="2">☆</button>
+          <button type="button" data-star="3">☆</button>
+          <button type="button" data-star="4">☆</button>
+          <button type="button" data-star="5">☆</button>
+        </div>
+        <input type="hidden" id="ratingValue" value="0">
+        <label>Yorum<textarea required rows="4" placeholder="Deneyiminizi kısaca paylaşın..."></textarea></label>
+        <button class="btn btn-primary full" type="submit">Yorumu Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="jobPostModal">
+    <div class="modal-card job-post-modal-card">
+      <button type="button" class="modal-close" data-close="jobPostModal">×</button>
+
+      <div class="job-post-modal-head">
+        <span>DİJİYER İŞ FIRSATLARI</span>
+        <h2>İlanını Oluştur</h2>
+        <p>Kategori, çalışma şekli ve ilan süresini seç; arayanların seni daha kolay bulmasını sağla.</p>
+      </div>
+
+      <form id="jobPostForm" class="job-post-form">
+        <div class="job-post-type-grid">
+          <label>
+            <input type="radio" name="jobPostType" value="hire" checked>
+            <span><b>🏢 Eleman Arıyorum</b><small>İşletme veya kişi yardımcı / çalışan arıyor.</small></span>
+          </label>
+          <label>
+            <input type="radio" name="jobPostType" value="work">
+            <span><b>👤 İş Arıyorum</b><small>Yapabileceğin işleri ve müsaitliğini paylaş.</small></span>
+          </label>
+        </div>
+
+        <div class="form-grid-2">
+          <label>Kategori
+            <select id="jobPostCategory" required>
+              <option value="">Kategori seçin</option>
+            </select>
+          </label>
+          <label>İlan Süresi
+            <select id="jobPostDuration" required>
+              <option value="7">7 gün</option>
+              <option value="15" selected>15 gün</option>
+              <option value="30">30 gün</option>
+            </select>
+          </label>
+        </div>
+
+        <label>İlan Başlığı
+          <input id="jobPostTitle" type="text" maxlength="100" required placeholder="Örn. Boyacı yanına 3 günlük yardımcı aranıyor">
+        </label>
+
+        <div class="job-post-location-block">
+          <div class="job-post-location-title">
+            <span>İŞ NEREDE YAPILACAK?</span>
+            <small>Online ve evden işler şehir bağımsız da yayınlanabilir.</small>
+          </div>
+
+          <div class="job-post-location-mode-grid">
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="onsite" checked>
+              <span><b>📍 İş yerinde / Sahada</b><small>Belirli il ve ilçede yapılır.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="remote">
+              <span><b>🌐 Online / Uzaktan</b><small>Türkiye'nin her yerinden yapılabilir.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="home">
+              <span><b>🏠 Evden üretim / Sipariş</b><small>Evde hazırlanır, teslim veya kargo yapılabilir.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="hybrid">
+              <span><b>🔄 Hibrit</b><small>Hem yerinde hem online yapılabilir.</small></span>
+            </label>
+          </div>
+
+          <div class="form-grid-2" id="jobPostLocationSelects">
+            <label>İl
+              <select id="jobPostCity" required>
+                <option value="">İller yükleniyor...</option>
+              </select>
+            </label>
+            <label>İlçe
+              <select id="jobPostDistrict" disabled>
+                <option value="">Önce il seçin</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="job-post-location-helper" id="jobPostLocationHelper">
+            Yerel ilanlarda il seçimi zorunludur.
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <label>Çalışma Düzeni
+            <select id="jobPostWorkMode" required>
+              <option value="Günlük / Ek İş">Günlük / Ek İş</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Tam zamanlı">Tam zamanlı</option>
+              <option value="Proje bazlı">Proje bazlı</option>
+              <option value="Hafta sonu">Hafta sonu</option>
+              <option value="Esnek">Esnek</option>
+            </select>
+          </label>
+          <label>Ücret
+            <input id="jobPostWage" type="text" maxlength="80" placeholder="Örn. Günlük 1.500 TL / Görüşülür">
+          </label>
+        </div>
+
+        <label>Açıklama
+          <textarea id="jobPostDescription" rows="4" maxlength="700" required placeholder="Yapılacak işi, aranan deneyimi veya yapabileceğin işleri kısaca anlat."></textarea>
+        </label>
+
+        <div class="form-grid-2">
+          <label>İletişim Adı
+            <input id="jobPostContactName" type="text" maxlength="80" required placeholder="Ad Soyad / İşletme">
+          </label>
+          <label>Telefon / WhatsApp
+            <input id="jobPostPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+          </label>
+        </div>
+
+        <label class="job-post-confirm">
+          <input id="jobPostConfirm" type="checkbox" required>
+          <span>İlanın yasal, güvenli ve doğru bilgiler içerdiğini onaylıyorum.</span>
+        </label>
+
+        <div class="job-post-review-note">İlanlar ilk aşamada kontrol sonrası yayınlanır. Telefon numarası kart üzerinde açık gösterilmez.</div>
+
+        <button type="submit" class="btn btn-primary full" id="jobPostSubmitBtn">İlanı Gönder</button>
+        <p class="form-message" id="jobPostMessage"></p>
+      </form>
+    </div>
+  </div>
+
+  <button type="button" class="mobile-back-to-top" id="mobileBackToTopBtn" aria-label="Sayfanın başına dön" title="Yukarı çık">↑</button>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="script.js?v=52"></script>
+<script src="offers.js?v=2"></script>
+</body>
+</html>
