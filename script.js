@@ -5654,6 +5654,77 @@ function paintPremiumPlacementBanners(ads){
   return true;
 }
 
+let homeSponsoredSliderTimer = null;
+
+function stopHomeSponsoredSlider(){
+  if(homeSponsoredSliderTimer){
+    clearInterval(homeSponsoredSliderTimer);
+    homeSponsoredSliderTimer=null;
+  }
+}
+
+function homeSponsoredStep(){
+  const rail=document.getElementById('homeSponsoredRail');
+  if(!rail)return 0;
+
+  const card=rail.querySelector('.sponsored-card');
+  if(!card)return 0;
+
+  const styles=getComputedStyle(rail);
+  const gap=parseFloat(styles.columnGap || styles.gap || '12') || 12;
+  return card.getBoundingClientRect().width + gap;
+}
+
+function moveHomeSponsoredSlider(direction=1){
+  const rail=document.getElementById('homeSponsoredRail');
+  if(!rail)return;
+
+  const step=homeSponsoredStep();
+  if(!step)return;
+
+  const max=Math.max(0,rail.scrollWidth-rail.clientWidth);
+  let target=rail.scrollLeft+(step*direction);
+
+  if(direction>0 && target>max-4)target=0;
+  if(direction<0 && target<0)target=max;
+
+  rail.scrollTo({left:target,behavior:'smooth'});
+}
+
+function setupHomeSponsoredSlider(){
+  const rail=document.getElementById('homeSponsoredRail');
+  const controls=document.getElementById('sponsoredSliderControls');
+  const prev=document.getElementById('sponsoredPrevBtn');
+  const next=document.getElementById('sponsoredNextBtn');
+
+  stopHomeSponsoredSlider();
+  if(!rail)return;
+
+  const cards=[...rail.querySelectorAll('.sponsored-card')];
+  const canSlide=cards.length>2;
+
+  if(controls)controls.classList.toggle('hidden',!canSlide);
+  if(prev)prev.onclick=()=>moveHomeSponsoredSlider(-1);
+  if(next)next.onclick=()=>moveHomeSponsoredSlider(1);
+
+  if(!canSlide)return;
+
+  homeSponsoredSliderTimer=setInterval(()=>{
+    if(document.hidden)return;
+    moveHomeSponsoredSlider(1);
+  },6000);
+
+  rail.onmouseenter=stopHomeSponsoredSlider;
+  rail.onmouseleave=()=>{
+    if(!homeSponsoredSliderTimer){
+      homeSponsoredSliderTimer=setInterval(()=>{
+        if(document.hidden)return;
+        moveHomeSponsoredSlider(1);
+      },6000);
+    }
+  };
+}
+
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
@@ -5669,10 +5740,11 @@ function renderSponsoredAds() {
     const sponsorBanners = getHomepageSponsorBannerAds();
 
     rail.innerHTML = sponsorBanners.length
-      ? sponsorBanners.slice(0,3).map(homepageSponsorBannerHtml).join('')
+      ? sponsorBanners.slice(0,8).map(homepageSponsorBannerHtml).join('')
       : homepageAdSalesHtml();
 
     bindHomepageAdvertiseButtons();
+    setupHomeSponsoredSlider();
   }
 
   if (sidebar) {
