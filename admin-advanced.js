@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","promotionPackagesSection","promotionOrdersSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -17,6 +17,9 @@
   let promotionAdminRecords = [];
   let promotionPackageRecords = [];
   let bannerAdRecords = [];
+  let adAnalyticsRecords = [];
+  let adCalendarCursor = new Date();
+  let adCalendarSelectedDate = new Date();
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -149,6 +152,18 @@
     showAdvancedSection("promotionOrdersSection","promotionOrdersTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionOrdersTabBtn");
     await renderPromotionOrdersAdmin(true);
+  });
+
+  $("adCalendarTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("adCalendarSection","adCalendarTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("adCalendarTabBtn");
+    await renderAdCalendar(true);
+  });
+
+  $("adRevenueTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("adRevenueSection","adRevenueTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("adRevenueTabBtn");
+    await renderAdRevenueCenter(true);
   });
 
   $("supportTabBtn")?.addEventListener("click", async () => {
