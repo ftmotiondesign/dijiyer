@@ -901,3 +901,161 @@
   .admin-main-nav{grid-template-columns:repeat(6,max-content)}
   .admin-quick-strip{grid-template-columns:1fr 1fr}
 }
+
+
+/* =========================================================
+   Tanıtım Siparişleri V2 - Paket ve fiyat yönetimi
+   ========================================================= */
+.promotion-order-admin-top{display:grid;gap:9px}
+.promotion-package-overview{
+  padding:12px;border:1px solid #dce7f4;border-radius:11px;
+  background:linear-gradient(145deg,#f7fbff,#fff);
+}
+.promotion-package-title{
+  display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+}
+.promotion-package-title>div:first-child{display:grid;gap:3px}
+.promotion-package-title>div:first-child span{
+  color:#1677ff;font-size:8px;font-weight:950;letter-spacing:.07em;
+}
+.promotion-package-title strong{font-size:12px;color:#26364d}
+.promotion-package-meta{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.promotion-package-meta span{
+  padding:4px 6px;border-radius:7px;background:#eef5ff;color:#526b8a;
+  font-size:8px;font-weight:800;
+}
+.promotion-package-overview>p{
+  margin:8px 0;color:#64748b;font-size:9.5px;line-height:1.55;
+}
+.promotion-benefit-box{
+  padding:8px 9px;border-radius:8px;background:#f0fdf4;border:1px solid #d2efda;
+  display:grid;gap:2px;
+}
+.promotion-benefit-box b{font-size:8.5px;color:#15803d}
+.promotion-benefit-box span{font-size:9px;color:#526b5a;line-height:1.5}
+.promotion-package-includes{margin-top:8px;display:flex;gap:5px;flex-wrap:wrap}
+.promotion-package-includes span{
+  padding:5px 7px;border-radius:7px;background:#fff;border:1px solid #e1e8f0;
+  color:#536276;font-size:8.5px;font-weight:750;
+}
+
+.promotion-order-customer-input{
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;
+}
+.promotion-order-customer-input>div{
+  padding:9px;border:1px solid #e5eaf0;border-radius:9px;background:#fff;
+}
+.promotion-order-customer-input span{
+  display:block;margin-bottom:4px;color:#94a3b8;font-size:7.8px;font-weight:900;letter-spacing:.05em;
+}
+.promotion-order-customer-input p{margin:0;color:#526175;font-size:9.5px;line-height:1.5}
+
+.promotion-scope-editor,.promotion-pricing-editor{
+  margin-top:10px;padding:12px;border:1px solid #e0e7ef;border-radius:11px;background:#fff;
+}
+.promotion-editor-heading{
+  margin-bottom:9px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+}
+.promotion-editor-heading>div{display:grid;gap:2px}
+.promotion-editor-heading>div>span{color:#1677ff;font-size:8px;font-weight:950;letter-spacing:.07em}
+.promotion-editor-heading strong{font-size:11px;color:#26364d}
+.promotion-editor-heading small{color:#94a3b8;font-size:8.5px}
+.promotion-scope-editor textarea{
+  width:100%;padding:9px;border:1px solid #d7e0ea;border-radius:8px;
+  resize:vertical;color:#334155;font-size:9.5px;line-height:1.5;
+}
+
+.promotion-base-price-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;
+}
+.promotion-base-price-row label,.promotion-price-extra-row label{
+  display:grid;gap:4px;
+}
+.promotion-base-price-row span,.promotion-price-extra-row label span{
+  color:#8491a2;font-size:8px;font-weight:850;
+}
+.promotion-base-price-row input,.promotion-price-extra-row input{
+  width:100%;min-height:34px;padding:7px 8px;
+  border:1px solid #d7e0ea;border-radius:8px;background:#fff;font-size:9.5px;
+}
+.promotion-extra-price-list{display:grid;gap:6px}
+.promotion-price-extra-row{
+  display:grid;grid-template-columns:minmax(180px,1fr) 130px 30px;gap:6px;align-items:end;
+  padding:7px;border:1px solid #edf1f5;border-radius:9px;background:#fbfcfe;
+}
+.promotion-price-extra-row>button{
+  width:30px;height:34px;border:1px solid #fecaca;border-radius:8px;
+  background:#fff7f7;color:#b91c1c;font-size:16px;cursor:pointer;
+}
+.promotion-add-extra-btn{
+  margin-top:7px;padding:7px 9px;border:1px dashed #93c5fd;border-radius:8px;
+  background:#f8fbff;color:#1d4ed8;font-size:9px;font-weight:850;cursor:pointer;
+}
+.promotion-price-summary{
+  margin-top:10px;padding:10px;border-radius:10px;background:#f8fafc;border:1px solid #e5eaf0;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+}
+.promotion-price-summary>div{padding:5px 7px;display:grid;gap:3px;border-right:1px solid #e5eaf0}
+.promotion-price-summary>div:last-child{border-right:0}
+.promotion-price-summary span{color:#94a3b8;font-size:7.5px;font-weight:850}
+.promotion-price-summary b{font-size:9.5px;color:#475569}
+.promotion-price-summary .discount b{color:#b45309}
+.promotion-price-summary .total{
+  margin:-3px;padding:8px;border:1px solid #bfdbfe;border-radius:8px;background:#eff6ff;
+}
+.promotion-price-summary .total span{color:#1d4ed8}
+.promotion-price-summary .total strong{font-size:13px;color:#1268da}
+
+.promotion-admin-message-grid{
+  margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:7px;
+}
+.promotion-admin-message-grid label{
+  padding:10px;border:1px solid #dbe7f5;border-radius:10px;background:#f8fbff;
+  display:grid;gap:5px;
+}
+.promotion-admin-message-grid label.internal-note{background:#fffaf2;border-color:#fde4b9}
+.promotion-admin-message-grid label>span{font-size:8.5px;font-weight:900;color:#1268da}
+.promotion-admin-message-grid label.internal-note>span{color:#b45309}
+.promotion-admin-message-grid textarea{
+  width:100%;padding:8px;border:1px solid #d7e0ea;border-radius:8px;background:#fff;
+  resize:vertical;font-size:9.5px;line-height:1.5;
+}
+.promotion-admin-message-grid small{font-size:7.8px;color:#94a3b8}
+
+.promotion-admin-controls-v2{
+  grid-template-columns:180px 160px auto;
+  justify-content:end;
+}
+.promotion-admin-controls-v2>button{
+  min-width:150px;background:#1677ff;
+}
+
+@media(max-width:900px){
+  .promotion-price-summary{grid-template-columns:1fr 1fr}
+  .promotion-price-summary>div{border-right:0;border-bottom:1px solid #e5eaf0}
+  .promotion-price-summary .total{grid-column:1/-1}
+  .promotion-admin-message-grid{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .promotion-order-customer-input{grid-template-columns:1fr}
+  .promotion-package-title,.promotion-editor-heading{flex-direction:column}
+  .promotion-package-meta{justify-content:flex-start}
+  .promotion-base-price-row{grid-template-columns:1fr}
+  .promotion-price-extra-row{grid-template-columns:1fr 100px 30px}
+  .promotion-admin-controls-v2{grid-template-columns:1fr}
+}
+
+.promotion-admin-guide{
+  margin-bottom:8px;padding:8px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  border:1px solid #dbe7f5;border-radius:11px;background:#f8fbff;
+}
+.promotion-admin-guide>div{display:grid;grid-template-columns:25px 1fr;gap:7px;align-items:center;padding:6px}
+.promotion-admin-guide b{
+  width:25px;height:25px;border-radius:8px;display:grid;place-items:center;
+  background:#1677ff;color:#fff;font-size:9px;
+}
+.promotion-admin-guide span{display:grid;gap:2px}
+.promotion-admin-guide strong{font-size:9px;color:#334155}
+.promotion-admin-guide small{font-size:8px;color:#8491a2}
+@media(max-width:650px){.promotion-admin-guide{grid-template-columns:1fr}}
