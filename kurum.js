@@ -85,7 +85,7 @@ function renderProfile(){
         <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">HİZMETLER</span><h2>Sunulan Hizmetler</h2><p>Kurum profilinde belirtilen hizmetler.</p></div></div><div class="kp-services">${serviceRows.map(s=>'<span class="kp-service">✓ '+escapeHtml(s)+'</span>').join("")}</div></section>
         <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">FOTOĞRAF & VİDEO</span><h2>Kurumdan Görseller</h2><p>Mekan ve hizmet görsellerini inceleyin.</p></div></div><div class="kp-media">${gallery.length?gallery.map(u=>'<div class="kp-photo"><img src="'+escapeHtml(u)+'" alt="Kurum görseli"></div>').join(""):'<div class="kp-empty">Kurum henüz galeri görseli eklemedi.</div>'}</div>${tour?'<div class="kp-special"><a href="'+escapeHtml(tour)+'" target="_blank" rel="noopener">◉ 360° Sanal Turu Aç</a></div>':""}</section>
         <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">DEĞERLENDİRMELER</span><h2>Müşteri Yorumları</h2><p>Kurum hakkında yapılan değerlendirmeler.</p></div><div class="kp-review-score"><strong id="reviewScore">${ratingText(x.rating)}</strong><span id="reviewCount">${Number(x.reviewCount||0)} değerlendirme</span></div></div><div id="reviewsList" class="kp-review-list"><div class="kp-empty">Yorumlar yükleniyor...</div></div><button id="reviewOpenBtn" class="kp-btn" style="margin-top:9px">★ Yorum Yap / Puan Ver</button></section>
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">BENZER KURUMLAR</span><h2>Yakındaki Benzer Kurumlar</h2><p>Aynı kategori ve bölgedeki kurumlar.</p></div></div><div id="similarList" class="kp-similar"><div class="kp-empty">Benzer kurumlar yükleniyor...</div></div></section>
+        ${!x.vip?'<section class="kp-card"><div class="kp-head"><div><span class="eyebrow">BENZER KURUMLAR</span><h2>Yakındaki Benzer Kurumlar</h2><p>Aynı kategori ve bölgedeki kurumlar.</p></div></div><div id="similarList" class="kp-similar"><div class="kp-empty">Benzer kurumlar yükleniyor...</div></div></section>':""}
       </div>
 
       <aside class="kp-side">
@@ -150,6 +150,10 @@ function renderReviews(){
 }
 
 async function loadSimilar(){
+  // VIP kurumlarda ziyaretçiyi rakip profillere yönlendirmemek için
+  // "Yakındaki Benzer Kurumlar" bölümü hiç gösterilmez.
+  if(institution?.vip)return;
+
   const root=document.getElementById("similarList");
   if(!root)return;
   if(institution.isDemo){root.innerHTML='<div class="kp-empty">Benzer kurumlar gerçek kurum verileri geldikçe burada gösterilecek.</div>';return}
