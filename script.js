@@ -1033,12 +1033,16 @@ function renderCompareBar() {
     .map(id => institutions.find(inst => String(inst.id) === String(id)))
     .filter(Boolean);
 
+  const trackingButton = document.getElementById('trackingMainBtn');
+
   if (!selected.length) {
     bar.classList.add('hidden');
     bar.innerHTML = '';
+    trackingButton?.classList.remove('compare-active');
     return;
   }
 
+  trackingButton?.classList.add('compare-active');
   bar.classList.remove('hidden');
   bar.innerHTML = `
     <div class="compare-bar-copy">
