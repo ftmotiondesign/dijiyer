@@ -3548,7 +3548,7 @@
           <small>Bitiş: ${escapeHtml(row.endAt)}</small>
         </div>
         <div>
-          <button type="button" data-renew-whatsapp="${escapeHtml(row.kind+":"+row.id)}">WhatsApp</button>
+          <button type="button" data-renew-whatsapp="${escapeHtml(row.kind+":"+row.id)}">Yenilemeyi Görüş</button>
           <button type="button" data-renew-manage="${escapeHtml(row.kind+":"+row.id)}">Yönet</button>
         </div>
       </div>
