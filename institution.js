@@ -1019,48 +1019,312 @@ function renderShowcaseRecommendations(state=getShowcaseServiceState()) {
   `).join("");
 }
 
+const PROMOTION_SERVICES = {
+  location:{
+    id:"location_video",name:"Konum Tanıtım Videosu",icon:"▶",
+    lead:"İşletmenizin konumunu profesyonel videoyla müşteriye anlatın.",
+    benefit:"Müşteri adres aramakla uğraşmadan kurumunuza nasıl ulaşacağını görür. Kurum profiliniz ve sosyal medya içerikleriniz daha açıklayıcı hale gelir.",
+    includes:["Harita ve rota anlatımı","Kurum adı, adres ve ulaşım bilgileri","Dikey Reels uyumlu video","Dijiyer kurum sayfasında kullanım"],
+    process:"Kurum konumu ve rota belirlenir; harita görüntüleri, kurum bilgileri ve görsel anlatım tek videoda birleştirilir.",
+    required:"Kurum adresi, logo, telefon, başlangıç noktası tercihi ve varsa kullanılacak kurum fotoğraf/video içerikleri.",
+    delivery:"Ortalama 2–4 iş günü",revision:"1 revizyon",
+    price:750,priceLabel:"750 TL'den başlayan fiyatlarla",
+    extras:["Video sonuna özel kampanya ekranı","Hazır kurum videonuzu ekleme","Ek sosyal medya ölçüsü"],
+    example:"Harita üzerinde kuruma yaklaşan rota, bina/işletme görünümü ve kısa adres anlatımı."
+  },
+  tour:{
+    id:"virtual_tour",name:"360° Sanal Tur",icon:"360°",
+    lead:"Müşteriniz işletmenize gelmeden önce mekanınızı çevrimiçi gezsin.",
+    benefit:"Mekanınızı daha şeffaf gösterir; sınıf, oda, salon veya işletme alanları hakkında müşterinin önceden fikir edinmesini sağlar.",
+    includes:["Gezilebilir 360° tur","QR / NFC ile açılabilir bağlantı","Kurum sayfasına ekleme desteği","Web sitesinde kullanılabilir bağlantı"],
+    process:"Mekan uygun noktalardan 360° çekilir, sahneler birbirine bağlanır ve gezilebilir tur hazırlanır.",
+    required:"Çekim için uygun gün/saat, mekan erişimi ve turda gösterilecek alanların belirlenmesi.",
+    delivery:"Çekim sonrası ortalama 3–7 iş günü",revision:"1 düzenleme turu",
+    price:0,priceLabel:"Mekan büyüklüğüne göre fiyatlandırılır",
+    extras:["Ek kat / bölüm","Özel bilgi noktaları","Web sitesi yerleştirme desteği"],
+    example:"Girişten sınıflara veya salonlara geçilebilen, telefonda ve bilgisayarda açılan 360° tur."
+  },
+  reels:{
+    id:"reels_video",name:"Reels Tanıtım Videosu",icon:"▸",
+    lead:"Kurumunuzu kısa ve dikkat çekici bir videoyla anlatın.",
+    benefit:"Hizmetinizi sosyal medyada daha hızlı anlatır ve müşterinin kurumunuzu birkaç saniye içinde anlamasını sağlar.",
+    includes:["Dikey 1080×1920 video","Kurgu ve hareketli yazılar","Müzik veya seslendirme seçeneği","Kuruma özel çağrı mesajı"],
+    process:"İçerik, kampanya veya hizmet bilgisi alınır; metin ve görseller kısa video akışına dönüştürülür.",
+    required:"Logo, kullanılacak görseller/videolar, hizmet veya kampanya bilgileri.",
+    delivery:"Ortalama 2–4 iş günü",revision:"1 revizyon",
+    price:0,priceLabel:"İçerik kapsamına göre fiyatlandırılır",
+    extras:["Profesyonel seslendirme","Ek video süresi","Farklı ölçüde ikinci versiyon"],
+    example:"15–30 saniyelik, hizmet başlıkları ve çağrı mesajı içeren dikey tanıtım videosu."
+  },
+  bannerDesign:{
+    id:"banner_design",name:"Reklam Banner Tasarımı",icon:"▣",
+    lead:"Kampanyanızı Dijiyer ve sosyal medya için profesyonel görsele dönüştürün.",
+    benefit:"Sponsorlu alanlarda daha düzenli ve güven veren bir görünüm oluşturur.",
+    includes:["Markaya uygun tasarım","Dijiyer reklam ölçüsüne uygun çalışma","Kampanya başlığı ve çağrı mesajı"],
+    process:"Logo, kampanya metni ve görseller alınır; reklam alanına uygun tasarım hazırlanır.",
+    required:"Logo, kampanya/hizmet bilgisi, varsa kullanılacak fotoğraf.",
+    delivery:"Ortalama 1–3 iş günü",revision:"1 revizyon",
+    price:0,priceLabel:"Tasarıma göre fiyatlandırılır",
+    extras:["Ek sosyal medya ölçüsü","Hareketli banner versiyonu"],
+    example:"Kurum logosu, kampanya mesajı ve çağrı butonuyla hazırlanmış sponsorlu banner."
+  },
+  homepage:{id:"homepage_showcase",name:"Ana Sayfa Vitrini",icon:"⌂",lead:"Kurumunuzu Dijiyer'in en görünür sponsorlu alanlarından birinde yayınlayın.",benefit:"Daha fazla profil ziyareti ve marka görünürlüğü sağlar.",includes:["Sponsorlu ana sayfa alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],process:"Kurum ve kampanya içeriği kontrol edilir, uygun vitrin alanı planlanır.",required:"Logo, kısa tanıtım metni ve varsa banner.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 içerik kontrolü",price:0,priceLabel:"Yayın süresine göre fiyatlandırılır",extras:["Banner tasarımı","Video içerik"],example:"Ana sayfada 'Sponsorlu' etiketiyle kurum kartı veya banner gösterimi."},
+  regionalAd:{id:"regional_showcase",name:"Şehir / İlçe Vitrini",icon:"📍",lead:"Belirli şehir veya ilçede kurum arayan müşterilere sponsorlu olarak görünün.",benefit:"Reklamı hizmet verdiğiniz bölgeyle sınırlandırarak daha ilgili kullanıcıya ulaşmanızı sağlar.",includes:["Şehir/ilçe sponsorlu alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],process:"Hedef bölge ve yayın süresi seçilir; uygun reklam alanı planlanır.",required:"Hedef şehir/ilçe, logo ve kısa tanıtım metni.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi içerik kontrolü",price:0,priceLabel:"Bölge ve süreye göre fiyatlandırılır",extras:["Banner tasarımı","Kampanya duyurusu"],example:"Çanakkale / Merkez aramalarında sponsorlu kurum görünümü."},
+  categoryAd:{id:"category_showcase",name:"Kategori Vitrini",icon:"🏷️",lead:"Hizmetinizi arayan kullanıcıların karşısına sponsorlu kurum olarak çıkın.",benefit:"Reklamınızı genel kitle yerine doğrudan sektörünüzü inceleyen kullanıcılara gösterir.",includes:["Kategori sponsorlu alanı","Kurum sayfasına yönlendirme","Sponsorlu etiketi"],process:"Kurum kategorisi doğrulanır ve uygun yayın dönemi belirlenir.",required:"Logo ve kısa kurum tanıtımı.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi içerik kontrolü",price:0,priceLabel:"Kategori ve süreye göre fiyatlandırılır",extras:["Banner tasarımı"],example:"Sürücü kursları kategorisinde sponsorlu kurum kartı."},
+  bannerAd:{id:"banner_ad",name:"Dijiyer Banner Reklamı",icon:"▰",lead:"Kampanyanızı Dijiyer içindeki banner alanlarında yayınlayın.",benefit:"Kayıt, indirim ve dönemsel kampanyalarınıza ek görünürlük sağlar.",includes:["Dijiyer banner alanı","Tıklamada kurum profiline yönlendirme","Yayın süresi takibi"],process:"Banner kontrol edilir veya tasarlanır, alan ve tarih planlanır.",required:"Hazır banner veya tasarım için logo ve kampanya bilgisi.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 kontrol",price:0,priceLabel:"Alan ve süreye göre fiyatlandırılır",extras:["Banner tasarımı","Hareketli banner"],example:"Dijiyer sayfasında kampanya görselinin sponsorlu banner olarak yayınlanması."},
+  campaign:{id:"campaign_announcement",name:"Kampanya Duyurusu",icon:"📣",lead:"Kayıt, indirim veya yeni hizmet duyurunuzu daha görünür hale getirin.",benefit:"Kurum profilinizi ziyaret eden veya ilgili alana bakan müşteriye güncel kampanyanızı anlatır.",includes:["Kampanya duyuru kartı","Kurum sayfasına bağlantı","Yayın dönemi planlama"],process:"Duyuru metni ve tarih bilgisi alınır, yayın alanına göre hazırlanır.",required:"Kampanya metni, başlangıç/bitiş tarihi ve varsa görsel.",delivery:"İçerik onayı sonrası",revision:"1 metin/görsel düzenlemesi",price:0,priceLabel:"Yayın kapsamına göre fiyatlandırılır",extras:["Banner tasarımı","Reels videosu"],example:"'Ekim kayıtları başladı' veya '%20 erken kayıt' duyuru alanı."},
+  videoAd:{id:"video_showcase_ad",name:"Video Vitrin Reklamı",icon:"▶",lead:"Kısa tanıtım videonuzu sponsorlu video alanında gösterin.",benefit:"Hareketli içerikle daha fazla dikkat çekerek kurumunuzu hızlı anlatmanızı sağlar.",includes:["Sponsorlu video alanı","Kurum profiline yönlendirme","Yayın süresi takibi"],process:"Video teknik olarak kontrol edilir, yayın alanı ve tarih planlanır.",required:"Hazır video veya video hazırlanacaksa içerik materyalleri.",delivery:"Onay sonrası planlanan tarihte",revision:"Hazır video için teknik kontrol",price:0,priceLabel:"Süre ve alana göre fiyatlandırılır",extras:["Reels video üretimi"],example:"Kısa tanıtım videosunun Dijiyer sponsorlu video alanında gösterilmesi."},
+  packageStarter:{id:"package_starter",name:"Başlangıç Görünürlüğü",icon:"★",lead:"Dijiyer reklamını ilk kez deneyecek kurumlar için başlangıç paketi.",benefit:"Tek tasarım ve kategori görünürlüğünü birlikte kullanarak düşük adımla reklam deneyimi başlatır.",includes:["Reklam banner tasarımı","Kategori vitrini"],process:"İçerik hazırlanır ve kategori yayın dönemi planlanır.",required:"Logo, tanıtım metni ve kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket fiyatı planlamada netleşir",extras:["Ek yayın süresi"],example:"Banner + kategori içinde sponsorlu kurum gösterimi."},
+  packageRegional:{id:"package_regional",name:"Bölgesel Görünürlük",icon:"📍",lead:"Bölgesel müşteri arayan kurumlar için içerik + yerel reklam paketi.",benefit:"Şehir/ilçe hedeflemesiyle kampanyanızı yerel kullanıcılara daha görünür kılar.",includes:["Banner tasarımı","Şehir / ilçe vitrini","Kampanya duyurusu"],process:"Bölge ve kampanya planlanır, tasarım hazırlanır ve yayınlanır.",required:"Logo, hedef bölge, kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Bölge ve süreye göre paket fiyatı",extras:["Kategori vitrini"],example:"Yerel banner + bölgesel sponsorlu görünürlük + kampanya duyurusu."},
+  combo:{id:"location_tour_combo",name:"Dijiyer Mekan Tanıtım Paketi",icon:"360°",lead:"Konum videosu ve 360° sanal turu tek pakette birleştirin.",benefit:"Müşteriye hem size nasıl ulaşacağını hem de mekanda ne göreceğini tek kurum profilinde gösterir.",includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],process:"Konum ve mekan çekimi birlikte planlanır, iki içerik hazırlanıp kurum profilinize eklenir.",required:"Kurum adresi, çekim günü, logo ve mekan erişimi.",delivery:"Çekim sonrası ortalama 5–10 iş günü",revision:"1 düzenleme turu",price:0,priceLabel:"Mekan ve çekim kapsamına göre fiyatlandırılır",extras:["Reels tanıtım videosu","QR/NFC yönlendirme"],example:"Profilde 'Konum Videosu' ve '360° Sanal Tur' alanlarının birlikte aktif olması."},
+  packagePlus:{id:"package_plus",name:"Görünürlük Plus",icon:"＋",lead:"İçerik üretimiyle ana sayfa görünürlüğünü birleştiren paket.",benefit:"Hazırlanan tanıtım içeriğini aynı zamanda sponsorlu görünürlükle destekler.",includes:["Konum Videosu","Banner tasarımı","Ana Sayfa Vitrini"],process:"İçerikler hazırlanır ve sponsorlu yayın dönemi planlanır.",required:"Logo, adres, kurum bilgileri ve kampanya mesajı.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket kapsamına göre fiyatlandırılır",extras:["Kategori vitrini"],example:"Konum videosu + banner + ana sayfa sponsorlu vitrin."},
+  packagePremium:{id:"package_premium",name:"Premium Tanıtım",icon:"◆",lead:"İçerik ve Dijiyer görünürlüğünü kapsamlı bir pakette birleştirin.",benefit:"Kurum profilinizde güçlü içerik oluştururken farklı sponsorlu alanlarda görünürlüğünüzü artırır.",includes:["Konum Videosu + 360° Tur","Ana Sayfa Vitrini","Kategori Vitrini","Şehir / İlçe Vitrini"],process:"Çekim, tasarım ve reklam yayını tek plan altında hazırlanır.",required:"Kurum bilgileri, çekim erişimi, hedef bölge ve kampanya amacı.",delivery:"Kapsama göre planlanır",revision:"İçeriklerde 1 revizyon",price:0,priceLabel:"Kapsama özel paket fiyatı",extras:["Reels video","Kampanya duyurusu"],example:"İçerik üretimi + çoklu sponsorlu görünürlük planı."},
+  consultation:{id:"promotion_consultation",name:"Tanıtım Planlama Görüşmesi",icon:"?",lead:"Kurumunuz için hangi tanıtım hizmetinin daha uygun olduğunu birlikte belirleyin.",benefit:"Gereksiz hizmet almadan kurumunuzun eksik görünürlük alanlarına göre plan oluşturmanızı sağlar.",includes:["Profil değerlendirmesi","Hizmet önerisi","Kısa tanıtım planı"],process:"Kurum profiliniz ve hedefiniz incelenir, uygun hizmetler belirlenir.",required:"Tanıtım hedefiniz ve öncelikli hizmetiniz.",delivery:"Planlanan görüşme zamanı",revision:"-",price:0,priceLabel:"Ücretsiz ön değerlendirme",extras:[],example:"Kurum profilinizde eksik olan tanıtım alanlarına göre hizmet önerisi."}
+};
+
+let activePromotionServiceKey="";
+let promotionOrdersUnsubscribe=null;
+let promotionOrderRecords=[];
+
+function promotionStatusLabel(status){
+  return {
+    new:"Yeni Sipariş",
+    contacting:"Görüşülüyor",
+    preparing:"Hazırlanıyor",
+    approval:"Onay Bekliyor",
+    completed:"Tamamlandı"
+  }[status] || "Yeni Sipariş";
+}
+
+function promotionStatusStep(status){
+  return {new:1,contacting:2,preparing:3,approval:4,completed:5}[status] || 1;
+}
+
+function makePromotionOrderCode(){
+  return "DJY-H-" + String(Date.now()).slice(-6);
+}
+
+function getPromotionConfig(type){
+  return PROMOTION_SERVICES[type] || PROMOTION_SERVICES.consultation;
+}
+
+function openPromotionDetail(type){
+  const service=getPromotionConfig(type);
+  activePromotionServiceKey=type in PROMOTION_SERVICES ? type : "consultation";
+
+  document.getElementById("promotionDetailIcon").textContent=service.icon;
+  document.getElementById("promotionDetailName").textContent=service.name;
+  document.getElementById("promotionDetailLead").textContent=service.lead;
+  document.getElementById("promotionDetailBenefit").textContent=service.benefit;
+  document.getElementById("promotionDetailIncludes").innerHTML=
+    service.includes.map(item=>"<li>"+escapeHtml(item)+"</li>").join("");
+  document.getElementById("promotionDetailProcess").textContent=service.process;
+  document.getElementById("promotionDetailRequired").textContent=service.required;
+  document.getElementById("promotionDetailDelivery").textContent=service.delivery;
+  document.getElementById("promotionDetailRevision").textContent=service.revision;
+  document.getElementById("promotionDetailPrice").textContent=service.priceLabel;
+  document.getElementById("promotionDetailExtras").textContent=
+    service.extras.length ? service.extras.join(" · ") : "Ek seçenek bulunmuyor.";
+  document.getElementById("promotionDetailExample").textContent=service.example;
+
+  document.getElementById("promotionDetailModal").classList.remove("hidden");
+}
+
+function closePromotionDetail(){
+  document.getElementById("promotionDetailModal")?.classList.add("hidden");
+}
+
+function openPromotionOrder(type){
+  const service=getPromotionConfig(type);
+  activePromotionServiceKey=type in PROMOTION_SERVICES ? type : "consultation";
+
+  closePromotionDetail();
+
+  document.getElementById("promotionOrderFormView").classList.remove("hidden");
+  document.getElementById("promotionOrderSuccess").classList.add("hidden");
+  document.getElementById("promotionOrderMessage").textContent="";
+  document.getElementById("promotionOrderTitle").textContent=service.name+" Siparişi";
+  document.getElementById("promotionOrderInstitution").textContent=
+    currentInstitution?.name || currentAccount?.institutionName || "Kurum";
+  document.getElementById("promotionOrderService").textContent=service.name;
+  document.getElementById("promotionOrderPhone").value=
+    currentInstitution?.phone || currentInstitution?.whatsapp || "";
+  document.getElementById("promotionOrderPrice").textContent=service.priceLabel;
+
+  const wrap=document.getElementById("promotionOrderExtrasWrap");
+  const extras=document.getElementById("promotionOrderExtras");
+  if(service.extras.length){
+    wrap.classList.remove("hidden");
+    extras.innerHTML=service.extras.map((item,index)=>`
+      <label>
+        <input type="checkbox" value="${escapeHtml(item)}">
+        <span>${escapeHtml(item)}</span>
+      </label>
+    `).join("");
+  }else{
+    wrap.classList.add("hidden");
+    extras.innerHTML="";
+  }
+
+  document.getElementById("promotionOrderModal").classList.remove("hidden");
+}
+
+function closePromotionOrder(){
+  document.getElementById("promotionOrderModal")?.classList.add("hidden");
+}
+
 function openShowcaseRequest(type) {
   if(type==="profile"){
     setPanelTab("profile");
     return;
   }
+  openPromotionDetail(type);
+}
 
-  const config={
-    location:{subject:"Konum Videosu hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu hizmeti hakkında bilgi almak istiyorum. Çekim / hazırlama süreci, kullanım alanları ve fiyat bilgisi paylaşabilir misiniz?"},
-    tour:{subject:"360° Sanal Tur hakkında bilgi almak istiyorum",message:"Kurumum için 360° Sanal Tur hizmeti hakkında bilgi almak istiyorum. Çekim süreci, kurum sayfasında yayınlama ve fiyat bilgisi paylaşabilir misiniz?"},
-    reels:{subject:"Reels Tanıtım Videosu hakkında bilgi almak istiyorum",message:"Kurumum için Reels / kısa tanıtım videosu hazırlatmak istiyorum. İçerik kapsamı, seslendirme seçenekleri ve fiyat bilgisi paylaşabilir misiniz?"},
-    bannerDesign:{subject:"Reklam Banner Tasarımı hakkında bilgi almak istiyorum",message:"Kurumum için Dijiyer reklam alanlarında ve sosyal medyada kullanabileceğim reklam bannerı hazırlatmak istiyorum. Tasarım ve fiyat bilgisi paylaşabilir misiniz?"},
-    homepage:{subject:"Ana Sayfa Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumumun Dijiyer Ana Sayfa Vitrini alanında sponsorlu olarak görünmesi hakkında bilgi almak istiyorum. Yayın süresi, gösterim alanı ve fiyat bilgisi paylaşabilir misiniz?"},
-    regionalAd:{subject:"Şehir / İlçe Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumum için şehir / ilçe bazlı sponsorlu görünürlük istiyorum. Uygun bölgesel reklam seçeneklerini ve fiyat bilgisini paylaşabilir misiniz?"},
-    categoryAd:{subject:"Kategori Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumumun kendi kategorisinde sponsorlu vitrin alanında görünmesi hakkında bilgi almak istiyorum. Yayın süresi ve fiyat bilgisi paylaşabilir misiniz?"},
-    bannerAd:{subject:"Dijiyer Banner Reklamı hakkında bilgi almak istiyorum",message:"Kurumum veya kampanyam için Dijiyer banner reklamı vermek istiyorum. Uygun reklam alanları, yayın süresi ve fiyat bilgisi paylaşabilir misiniz?"},
-    campaign:{subject:"Kampanya Duyurusu hakkında bilgi almak istiyorum",message:"Kurumumun kampanya / kayıt / indirim duyurusunu Dijiyer üzerinden yayınlamak istiyorum. Kullanılabilecek alanları ve fiyat bilgisini paylaşabilir misiniz?"},
-    videoAd:{subject:"Video Vitrin Reklamı hakkında bilgi almak istiyorum",message:"Kurumum için Dijiyer'de sponsorlu video vitrini kullanmak istiyorum. Video hazırlama ve yayın seçenekleri hakkında bilgi paylaşabilir misiniz?"},
-    packageStarter:{subject:"Başlangıç Görünürlüğü paketi hakkında bilgi almak istiyorum",message:"Başlangıç Görünürlüğü paketi (banner tasarımı + kategori vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
-    packageRegional:{subject:"Bölgesel Görünürlük paketi hakkında bilgi almak istiyorum",message:"Bölgesel Görünürlük paketi (banner + şehir/ilçe vitrini + kampanya duyurusu) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
-    combo:{subject:"Dijiyer Mekan Tanıtım Paketi hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu + 360° Sanal Tur paketini değerlendirmek istiyorum. Paket kapsamı, süreç ve fiyat bilgisi paylaşabilir misiniz?"},
-    packagePlus:{subject:"Görünürlük Plus paketi hakkında bilgi almak istiyorum",message:"Görünürlük Plus paketi (Konum Videosu + banner + Ana Sayfa Vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
-    packagePremium:{subject:"Premium Tanıtım paketi hakkında bilgi almak istiyorum",message:"Premium Tanıtım paketi (Konum Videosu + 360° Tur + Ana Sayfa + Kategori + Şehir Vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
-    consultation:{subject:"Kurumuma uygun tanıtım paketini öğrenmek istiyorum",message:"Kurumum için hangi Dijiyer tanıtım ve reklam hizmetinin daha uygun olacağını öğrenmek istiyorum. Profilime ve hizmet bölgeme göre seçenekleri paylaşabilir misiniz?"}
-  };
+function setupShowcaseSalesActions(){
+  document.querySelectorAll(
+    ".showcase-service-card [data-showcase-request], .showcase-ad-card [data-showcase-request], .showcase-package-card [data-showcase-request]"
+  ).forEach(button=>{
+    const type=button.dataset.showcaseRequest||"consultation";
+    if(button.closest(".showcase-sales-actions"))return;
 
-  const selected=config[type] || config.consultation;
-  setPanelTab("support");
+    const actions=document.createElement("div");
+    actions.className="showcase-sales-actions";
+    actions.innerHTML=`
+      <button type="button" class="showcase-detail-btn" data-promotion-detail="${escapeHtml(type)}">Detaylı Bilgi</button>
+      <button type="button" class="showcase-order-btn" data-promotion-order="${escapeHtml(type)}">Sipariş Ver</button>
+    `;
+    button.replaceWith(actions);
+  });
 
-  setTimeout(()=>{
-    const category=document.getElementById("supportCategory");
-    const subject=document.getElementById("supportSubject");
-    const message=document.getElementById("supportMessage");
+  const finalCta=document.querySelector(".showcase-final-cta [data-showcase-request]");
+  if(finalCta){
+    finalCta.textContent="Detaylı Bilgi";
+    finalCta.dataset.promotionDetail=finalCta.dataset.showcaseRequest||"consultation";
+    delete finalCta.dataset.showcaseRequest;
+  }
+}
 
-    if(category)category.value="Tanıtım Hizmeti";
-    if(subject)subject.value=selected.subject;
-    if(message)message.value=selected.message;
+async function submitPromotionOrder(event){
+  event.preventDefault();
+  if(!currentUser||!currentAccount?.institutionId||!currentInstitution)return;
 
-    if(typeof populateSupportQuoteReferences==="function")populateSupportQuoteReferences();
+  const service=getPromotionConfig(activePromotionServiceKey);
+  const contact=String(document.getElementById("promotionOrderContact").value||"").trim();
+  const phone=String(document.getElementById("promotionOrderPhone").value||"").trim();
+  const note=String(document.getElementById("promotionOrderNote").value||"").trim();
+  const extras=[...document.querySelectorAll("#promotionOrderExtras input:checked")]
+    .map(input=>input.value);
 
-    document.getElementById("supportTicketForm")?.scrollIntoView({behavior:"smooth",block:"start"});
-    subject?.focus();
-  },100);
+  if(!contact){
+    document.getElementById("promotionOrderMessage").textContent="Yetkili kişi adını yazın.";
+    return;
+  }
+  if(String(phone).replace(/\D/g,"").length<10){
+    document.getElementById("promotionOrderMessage").textContent="Geçerli bir telefon numarası yazın.";
+    return;
+  }
+
+  const submit=document.getElementById("promotionOrderSubmit");
+  const oldText=submit.textContent;
+  submit.disabled=true;
+  submit.textContent="Sipariş oluşturuluyor...";
+
+  const now=new Date().toISOString();
+  const orderCode=makePromotionOrderCode();
+
+  try{
+    await db.collection("promotionOrders").add({
+      orderCode,
+      institutionId:String(currentAccount.institutionId),
+      userId:String(currentUser.uid),
+      institutionName:String(currentInstitution.name||currentAccount.institutionName||"Kurum"),
+      serviceId:String(service.id),
+      serviceKey:String(activePromotionServiceKey),
+      serviceName:String(service.name),
+      price:Number(service.price||0),
+      priceLabel:String(service.priceLabel||""),
+      contactName:contact,
+      phone,
+      note,
+      extras,
+      status:"new",
+      paymentStatus:"pending",
+      createdAt:now,
+      updatedAt:now
+    });
+
+    document.getElementById("promotionOrderFormView").classList.add("hidden");
+    document.getElementById("promotionOrderSuccess").classList.remove("hidden");
+    document.getElementById("promotionOrderSuccessCode").textContent=orderCode;
+    event.target.reset();
+  }catch(error){
+    console.error("Tanıtım siparişi oluşturulamadı:",error);
+    document.getElementById("promotionOrderMessage").textContent=
+      String(error?.code||"").includes("permission-denied")
+        ? "Sipariş kaydedilemedi. promotionOrders Firestore kuralını yayınlayın."
+        : "Sipariş kaydedilemedi. Lütfen tekrar deneyin.";
+  }finally{
+    submit.disabled=false;
+    submit.textContent=oldText;
+  }
+}
+
+function renderPromotionOrders(){
+  const root=document.getElementById("promotionOrdersList");
+  const count=document.getElementById("promotionOrderCount");
+  if(!root)return;
+
+  if(count)count.textContent=promotionOrderRecords.length+" sipariş";
+
+  if(!promotionOrderRecords.length){
+    root.innerHTML='<div class="promotion-orders-empty">Henüz tanıtım siparişiniz yok. Yukarıdaki hizmetlerden doğrudan sipariş verebilirsiniz.</div>';
+    return;
+  }
+
+  root.innerHTML=promotionOrderRecords.map(order=>{
+    const step=promotionStatusStep(order.status);
+    return `
+      <article class="promotion-order-row">
+        <div class="promotion-order-row-head">
+          <div>
+            <span class="promotion-order-code">${escapeHtml(order.orderCode||"-")}</span>
+            <strong>${escapeHtml(order.serviceName||"Tanıtım Hizmeti")}</strong>
+            <small>${formatDate(order.createdAt)}</small>
+          </div>
+          <span class="promotion-order-state state-${escapeHtml(order.status||"new")}">${escapeHtml(promotionStatusLabel(order.status))}</span>
+        </div>
+        <div class="promotion-order-progress" aria-label="Sipariş ilerleme durumu">
+          ${["Yeni","Görüşülüyor","Hazırlanıyor","Onay","Tamamlandı"].map((label,index)=>`
+            <span class="${index+1<=step?"active":""}"><i></i><b>${label}</b></span>
+          `).join("")}
+        </div>
+        <div class="promotion-order-row-meta">
+          <span>Fiyat <b>${escapeHtml(order.priceLabel|| (order.price ? new Intl.NumberFormat("tr-TR").format(order.price)+" TL" : "Netleştirilecek"))}</b></span>
+          <span>Ödeme <b>${order.paymentStatus==="paid"?"Ödendi":"Bekliyor"}</b></span>
+          ${order.note?'<span class="promotion-order-note">Not <b>'+escapeHtml(order.note)+'</b></span>':""}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function startPromotionOrdersWatcher(){
+  if(!currentUser||!currentAccount?.institutionId)return;
+  if(promotionOrdersUnsubscribe)promotionOrdersUnsubscribe();
+
+  promotionOrdersUnsubscribe=db.collection("promotionOrders")
+    .where("institutionId","==",String(currentAccount.institutionId))
+    .onSnapshot(snapshot=>{
+      promotionOrderRecords=snapshot.docs
+        .map(doc=>({id:doc.id,...doc.data()}))
+        .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      renderPromotionOrders();
+    },error=>{
+      console.error("Tanıtım siparişleri yüklenemedi:",error);
+      const root=document.getElementById("promotionOrdersList");
+      if(root)root.innerHTML='<div class="promotion-orders-empty">Siparişler yüklenemedi.</div>';
+    });
 }
 
 function renderInstitutionHeader() {
@@ -1411,9 +1675,36 @@ async function saveQuoteResponse(quoteId, status) {
 document.getElementById("openShowcaseServicesBtn")?.addEventListener("click",()=>setPanelTab("showcase"));
 document.getElementById("showcasePreviewBtn")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
 document.getElementById("showcasePreviewBtn2")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
-document.querySelectorAll("[data-showcase-request]").forEach(button=>{
-  button.addEventListener("click",()=>openShowcaseRequest(button.dataset.showcaseRequest || "combo"));
+
+setupShowcaseSalesActions();
+
+document.addEventListener("click",event=>{
+  const detail=event.target.closest("[data-promotion-detail]");
+  if(detail){
+    openPromotionDetail(detail.dataset.promotionDetail||"consultation");
+    return;
+  }
+
+  const order=event.target.closest("[data-promotion-order]");
+  if(order){
+    openPromotionOrder(order.dataset.promotionOrder||"consultation");
+  }
 });
+
+document.getElementById("promotionDetailClose")?.addEventListener("click",closePromotionDetail);
+document.getElementById("promotionOrderClose")?.addEventListener("click",closePromotionOrder);
+document.getElementById("promotionDetailModal")?.addEventListener("click",event=>{
+  if(event.target.id==="promotionDetailModal")closePromotionDetail();
+});
+document.getElementById("promotionOrderModal")?.addEventListener("click",event=>{
+  if(event.target.id==="promotionOrderModal")closePromotionOrder();
+});
+document.getElementById("promotionDetailOrderBtn")?.addEventListener("click",()=>openPromotionOrder(activePromotionServiceKey));
+document.getElementById("promotionOrderSuccessClose")?.addEventListener("click",()=>{
+  closePromotionOrder();
+  document.getElementById("promotionOrdersSection")?.scrollIntoView({behavior:"smooth",block:"start"});
+});
+document.getElementById("promotionOrderForm")?.addEventListener("submit",submitPromotionOrder);
 
 document.querySelectorAll("[data-showcase-section-target]").forEach(button=>{
   button.addEventListener("click",()=>{
@@ -1425,7 +1716,9 @@ document.querySelectorAll("[data-showcase-section-target]").forEach(button=>{
 document.getElementById("showcaseRecommendationList")?.addEventListener("click",event=>{
   const button=event.target.closest("[data-recommendation-action]");
   if(!button)return;
-  openShowcaseRequest(button.dataset.recommendationAction);
+  const action=button.dataset.recommendationAction;
+  if(action==="profile") setPanelTab("profile");
+  else openPromotionDetail(action||"consultation");
 });
 
 quotePanelFilter.addEventListener("change", () => {
@@ -2473,6 +2766,7 @@ auth.onAuthStateChanged(async user => {
     updateSupportBrowserNotificationUi();
     startLiveQuoteWatcher();
     startLiveSupportWatcher();
+    startPromotionOrdersWatcher();
 
   } catch (error) {
     console.error(error);
@@ -2506,6 +2800,11 @@ document.getElementById("institutionLogoutBtn").addEventListener("click", async 
     liveSupportUnsubscribe = null;
   }
   liveSupportWatcherReady = false;
+
+  if (promotionOrdersUnsubscribe) {
+    promotionOrdersUnsubscribe();
+    promotionOrdersUnsubscribe = null;
+  }
 
   await auth.signOut();
   window.location.replace("index.html");
