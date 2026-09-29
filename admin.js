@@ -921,7 +921,10 @@ function renderManagedInstitutions() {
         <div class="institution-select-slot"></div>
 
         <div class="manage-title">
-          <h3>${escapeHtml(data.name || "-")}</h3>
+          <div class="institution-name-row">
+            <h3>${escapeHtml(data.name || "-")}</h3>
+            <button class="institution-detail-btn" type="button" aria-expanded="false">Kurum Bilgileri</button>
+          </div>
           <div class="institution-summary-line">
             <span>📍 ${escapeHtml([data.city, data.district].filter(Boolean).join(" / ") || "-")}</span>
             <span>☎ ${escapeHtml(data.phone || "Telefon yok")}</span>
@@ -940,7 +943,6 @@ function renderManagedInstitutions() {
 
         <div class="manage-actions compact">
           <button class="edit-institution-btn">✏ Düzenle</button>
-          <button class="institution-detail-btn" type="button" aria-expanded="false">Detay</button>
         </div>
       </div>
 
@@ -1089,7 +1091,7 @@ function renderManagedInstitutions() {
         const otherButton = otherCard.querySelector(".institution-detail-btn");
         if (otherButton) {
           otherButton.setAttribute("aria-expanded","false");
-          otherButton.textContent = "Detay";
+          otherButton.textContent = "Kurum Bilgileri";
         }
         otherCard.classList.remove("expanded");
       });
@@ -1097,7 +1099,7 @@ function renderManagedInstitutions() {
       if (panel) panel.classList.toggle("hidden", !opening);
       if (button) {
         button.setAttribute("aria-expanded", opening ? "true" : "false");
-        button.textContent = opening ? "Kapat" : "Detay";
+        button.textContent = opening ? "Bilgileri Kapat" : "Kurum Bilgileri";
       }
       card.classList.toggle("expanded", opening);
     });
