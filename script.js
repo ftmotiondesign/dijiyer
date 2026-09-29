@@ -6879,6 +6879,7 @@ const brandDirectoryData = [
 let brandDirectoryBrand='all';
 let brandDirectoryType='all';
 let brandDirectoryQuery='';
+let brandDirectoryShowAllResults=false;
 
 function brandDirectoryMatchesType(row,type){
   if(type==='all')return true;
@@ -6928,6 +6929,41 @@ function brandDirectoryCardHtml(row){
         <a class="source" href="${escapeHtml(row.source)}" target="_blank" rel="noopener" aria-label="Resmi marka kaynağını aç" title="Resmi kaynak">↗</a>
       </div>
     </article>
+  `;
+}
+
+function brandDirectoryGroupHtml(brand,rows){
+  const serviceCount=rows.filter(row=>brandDirectoryMatchesType(row,'service')).length;
+  const dealerCount=rows.filter(row=>brandDirectoryMatchesType(row,'dealer')).length;
+  const districts=[...new Set(rows.map(row=>row.district).filter(Boolean))];
+  const districtText=districts.slice(0,3).join(' · ')+(districts.length>3?' +'+(districts.length-3):'');
+
+  return `
+    <button type="button" class="brand-directory-group" data-brand-directory-open-brand="${escapeHtml(brand)}">
+      <span class="brand-directory-group-logo">${escapeHtml(brand.slice(0,2).toUpperCase())}</span>
+      <span class="brand-directory-group-copy">
+        <strong>${escapeHtml(brand)}</strong>
+        <small>${escapeHtml(districtText||'Bölgedeki yetkili noktalar')}</small>
+        <em>
+          ${serviceCount?'<i>🔧 '+serviceCount+' servis</i>':''}
+          ${dealerCount?'<i>🏪 '+dealerCount+' bayi</i>':''}
+        </em>
+      </span>
+      <span class="brand-directory-group-count">${rows.length}<small>nokta</small></span>
+      <b>›</b>
+    </button>
+  `;
+}
+
+function brandDirectoryMoreButtonHtml(total,visible){
+  if(total<=visible)return '';
+  const remaining=Math.max(0,total-visible);
+  return `
+    <button type="button" class="brand-directory-more-btn" id="brandDirectoryMoreBtn">
+      ${brandDirectoryShowAllResults
+        ? 'Daralt ↑'
+        : 'Daha Fazla Göster <span>+'+remaining+'</span> ↓'}
+    </button>
   `;
 }
 
@@ -7024,9 +7060,10 @@ function renderBrandDirectory(){
           : 'Resmi marka kaynaklarından derlenen iletişim bilgileri');
   }
 
-  results.innerHTML=filtered.length
-    ? filtered.slice(0,12).map(brandDirectoryCardHtml).join('')
-    : `
+  const groupedMode=brandDirectoryBrand==='all' && !query;
+
+  if(!filtered.length){
+    results.innerHTML=`
       <div class="brand-directory-empty">
         <strong>Bu filtreye uygun kayıt bulunamadı.</strong>
         <span>${activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
@@ -7034,10 +7071,49 @@ function renderBrandDirectory(){
           : 'Marka veya tür filtresini değiştirerek tekrar deneyin.'}</span>
       </div>
     `;
+  }else if(groupedMode){
+    const grouped=[...new Set(filtered.map(row=>row.brand))]
+      .map(brand=>({
+        brand,
+        rows:filtered.filter(row=>row.brand===brand)
+      }))
+      .sort((a,b)=>b.rows.length-a.rows.length || a.brand.localeCompare(b.brand,'tr'));
+
+    results.innerHTML=`
+      <div class="brand-directory-group-list">
+        ${grouped.map(group=>brandDirectoryGroupHtml(group.brand,group.rows)).join('')}
+      </div>
+      <div class="brand-directory-group-note">Markaya dokunarak yetkili noktaları açabilirsin.</div>
+    `;
+
+    results.querySelectorAll('[data-brand-directory-open-brand]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        brandDirectoryBrand=button.dataset.brandDirectoryOpenBrand||'all';
+        brandDirectoryShowAllResults=false;
+        renderBrandDirectory();
+        root.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    });
+  }else{
+    const firstLimit=query ? 6 : 4;
+    const visibleCount=brandDirectoryShowAllResults ? filtered.length : firstLimit;
+    results.innerHTML=
+      filtered.slice(0,visibleCount).map(brandDirectoryCardHtml).join('')+
+      brandDirectoryMoreButtonHtml(filtered.length,firstLimit);
+
+    document.getElementById('brandDirectoryMoreBtn')?.addEventListener('click',()=>{
+      brandDirectoryShowAllResults=!brandDirectoryShowAllResults;
+      renderBrandDirectory();
+      if(!brandDirectoryShowAllResults){
+        root.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    });
+  }
 
   brandsRoot.querySelectorAll('[data-brand-directory-brand]').forEach(button=>{
     button.addEventListener('click',()=>{
       brandDirectoryBrand=button.dataset.brandDirectoryBrand||'all';
+      brandDirectoryShowAllResults=false;
       renderBrandDirectory();
     });
   });
@@ -7052,6 +7128,7 @@ window.__brandDirectoryReady=true;
 
   search?.addEventListener('input',()=>{
     brandDirectoryQuery=search.value||'';
+    brandDirectoryShowAllResults=false;
 
     /* Serbest arama marka çipine takılmasın. Örn. daha önce Arçelik seçiliyken
        "Beko" yazıldığında da Beko sonuçları gelebilsin. */
@@ -7065,6 +7142,7 @@ window.__brandDirectoryReady=true;
 
   clear?.addEventListener('click',()=>{
     brandDirectoryQuery='';
+    brandDirectoryShowAllResults=false;
     if(search)search.value='';
     clear.classList.add('hidden');
     renderBrandDirectory();
@@ -7074,6 +7152,7 @@ window.__brandDirectoryReady=true;
   document.querySelectorAll('[data-brand-directory-type]').forEach(button=>{
     button.addEventListener('click',()=>{
       brandDirectoryType=button.dataset.brandDirectoryType||'all';
+      brandDirectoryShowAllResults=false;
       document.querySelectorAll('[data-brand-directory-type]').forEach(item=>{
         item.classList.toggle('active',item===button);
       });
