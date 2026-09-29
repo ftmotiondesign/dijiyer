@@ -2175,10 +2175,9 @@ document.getElementById("publicProfilePreviewBtn")?.addEventListener("click", ()
     return;
   }
 
-  const url=new URL("index.html",window.location.href);
-  url.searchParams.set("kurum",institutionId);
+  const url=new URL("kurum.html",window.location.href);
+  url.searchParams.set("id",institutionId);
   url.searchParams.set("onizleme","1");
-  url.hash="kurum-profili";
 
   window.open(url.toString(),"_blank","noopener");
 });
