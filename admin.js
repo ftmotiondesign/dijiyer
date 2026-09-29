@@ -30,6 +30,9 @@ const offerReportSection = document.getElementById("offerReportSection");
 const issuesSection = document.getElementById("issuesSection");
 const accountsSection = document.getElementById("accountsSection");
 const overviewTabBtn = document.getElementById("overviewTabBtn");
+const dailyStatsVisibilityToggle = document.getElementById("dailyStatsVisibilityToggle");
+const dailyStatsVisibilityState = document.getElementById("dailyStatsVisibilityState");
+
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
@@ -261,6 +264,55 @@ loginForm.addEventListener("submit", async (e) => {
   }
 });
 
+function paintDailyStatsVisibilityState(visible){
+  if(dailyStatsVisibilityToggle){
+    dailyStatsVisibilityToggle.checked=Boolean(visible);
+  }
+
+  if(dailyStatsVisibilityState){
+    dailyStatsVisibilityState.textContent=visible
+      ? "Aktif · Görünüyor"
+      : "Pasif · Gizli";
+
+    dailyStatsVisibilityState.classList.toggle("active",Boolean(visible));
+    dailyStatsVisibilityState.classList.toggle("passive",!visible);
+  }
+}
+
+async function loadDailyStatsVisibilitySetting(){
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    const visible=snap.exists && snap.data()?.dailyStatsVisible === true;
+    paintDailyStatsVisibilityState(visible);
+  }catch(error){
+    console.error("Günlük istatistik görünürlük ayarı okunamadı:",error);
+    paintDailyStatsVisibilityState(false);
+  }
+}
+
+async function saveDailyStatsVisibilitySetting(visible){
+  if(dailyStatsVisibilityToggle) dailyStatsVisibilityToggle.disabled=true;
+
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      dailyStatsVisible:Boolean(visible),
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+
+    paintDailyStatsVisibilityState(Boolean(visible));
+  }catch(error){
+    console.error("Günlük istatistik görünürlük ayarı kaydedilemedi:",error);
+    paintDailyStatsVisibilityState(!visible);
+    alert("Günlük istatistik görünürlük ayarı kaydedilemedi. Firestore Rules ayarını kontrol edin.");
+  }finally{
+    if(dailyStatsVisibilityToggle) dailyStatsVisibilityToggle.disabled=false;
+  }
+}
+
+dailyStatsVisibilityToggle?.addEventListener("change",()=>{
+  saveDailyStatsVisibilitySetting(dailyStatsVisibilityToggle.checked);
+});
+
 auth.onAuthStateChanged(async (user) => {
   if (user && user.uid === ADMIN_UID) {
     loginSection.hidden = true;
@@ -270,6 +322,7 @@ auth.onAuthStateChanged(async (user) => {
     await loadInstitutions();
     await loadQuoteRequests();
     await loadInstitutionAccounts();
+    await loadDailyStatsVisibilitySetting();
     refreshAdminOverview();
     renderIssueCenter();
     setTimeout(restoreSimpleAdminNavigation, 120);
