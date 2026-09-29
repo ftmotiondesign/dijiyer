@@ -934,6 +934,8 @@ function renderManagedInstitutions() {
             ${data.offer !== false ? '<span class="badge-offer">Teklif Açık</span>' : '<span class="badge-offer-off">Teklif Kapalı</span>'}
             ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
             ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
+            ${data.locationVideoUrl ? '<span class="badge-video">Konum Videosu</span>' : ''}
+            ${data.virtualTourUrl ? '<span class="badge-tour">360° Tur</span>' : ''}
             <span class="badge-ad badge-ad-${adState.className}">
               ${escapeHtml(adState.label)}
               ${currentAdPackage ? " · "+escapeHtml(currentAdPackage.name) : ""}
@@ -1330,6 +1332,10 @@ function openInstitutionEdit(id, data) {
   document.getElementById("editAddress").value = data.address || "";
   document.getElementById("editPhone").value = data.phone || "";
   document.getElementById("editWebsite").value = data.website || "";
+  document.getElementById("editLocationVideoUrl").value =
+    data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
+  document.getElementById("editVirtualTourUrl").value =
+    data.virtualTourUrl || data.tour360Url || data.tourUrl || "";
   document.getElementById("editLat").value =
     data.lat === null || data.lat === undefined || data.lat === "" ? "" : data.lat;
   document.getElementById("editLng").value =
@@ -1374,6 +1380,8 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const district=String(document.getElementById("editDistrict").value||"").trim();
   const latValue=String(document.getElementById("editLat").value||"").trim();
   const lngValue=String(document.getElementById("editLng").value||"").trim();
+  const locationVideoUrl=String(document.getElementById("editLocationVideoUrl").value||"").trim();
+  const virtualTourUrl=String(document.getElementById("editVirtualTourUrl").value||"").trim();
 
   const showSaveMessage=(text,state="")=>{
     if(!saveMessage)return;
@@ -1399,6 +1407,27 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const lat=latValue==="" ? null : Number(latValue);
   const lng=lngValue==="" ? null : Number(lngValue);
 
+  const isValidHttpUrl=value=>{
+    if(!value)return true;
+    try{
+      const url=new URL(value);
+      return url.protocol==="http:" || url.protocol==="https:";
+    }catch(_){
+      return false;
+    }
+  };
+
+  if(!isValidHttpUrl(locationVideoUrl)){
+    showSaveMessage("Konum Videosu bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("editLocationVideoUrl").focus();
+    return;
+  }
+  if(!isValidHttpUrl(virtualTourUrl)){
+    showSaveMessage("360° Sanal Tur bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("editVirtualTourUrl").focus();
+    return;
+  }
+
   if(lat!==null && (!Number.isFinite(lat) || lat < -90 || lat > 90)){
     showSaveMessage("Enlem (lat) -90 ile 90 arasında olmalıdır.","error");
     document.getElementById("editLat").focus();
@@ -1419,6 +1448,8 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     address:String(document.getElementById("editAddress").value||"").trim(),
     phone:String(document.getElementById("editPhone").value||"").trim(),
     website:String(document.getElementById("editWebsite").value||"").trim(),
+    locationVideoUrl,
+    virtualTourUrl,
     lat,
     lng,
     vip:document.getElementById("editVip").checked,
