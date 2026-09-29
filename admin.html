@@ -7,7 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=24">
-  <link rel="stylesheet" href="admin-advanced.css?v=11">
+  <link rel="stylesheet" href="admin-advanced.css?v=12">
 </head>
 
 <body>
@@ -508,10 +508,43 @@
               </label>
             </div>
 
-            <label>Banner Görsel URL
-              <input id="bannerAdImageUrl" type="url" placeholder="Boş bırakılırsa kurum kapak görseli kullanılır">
-              <small>Kurum seçildiğinde varsa kapak görseli otomatik gelir.</small>
-            </label>
+            <div class="banner-media-upload">
+              <div class="banner-media-upload-head">
+                <div>
+                  <strong>Banner Medyası</strong>
+                  <small>Görsel veya kısa video yükleyebilirsiniz.</small>
+                </div>
+                <span id="bannerAdMediaTypeBadge">Görsel</span>
+              </div>
+
+              <div class="banner-media-upload-actions">
+                <button type="button" id="bannerAdImageUploadBtn">🖼 Görsel Yükle</button>
+                <button type="button" id="bannerAdVideoUploadBtn">🎬 Video Yükle</button>
+                <button type="button" id="bannerAdMediaClearBtn" class="danger-lite">Medyayı Temizle</button>
+              </div>
+
+              <input id="bannerAdImageFile" class="hidden" type="file" accept="image/jpeg,image/png,image/webp">
+              <input id="bannerAdVideoFile" class="hidden" type="file" accept="video/mp4,video/webm">
+              <input id="bannerAdMediaType" type="hidden" value="image">
+              <input id="bannerAdVideoUrl" type="hidden">
+
+              <div id="bannerAdUploadProgress" class="banner-upload-progress hidden">
+                <div><i id="bannerAdUploadProgressBar"></i></div>
+                <span id="bannerAdUploadProgressText">Yükleniyor...</span>
+              </div>
+
+              <p id="bannerAdUploadMessage" class="banner-upload-message"></p>
+
+              <details class="banner-url-details">
+                <summary>Gelişmiş: URL ile ekle</summary>
+                <label>Banner Görsel URL
+                  <input id="bannerAdImageUrl" type="url" placeholder="https://...">
+                </label>
+                <label>Banner Video URL
+                  <input id="bannerAdVideoUrlManual" type="url" placeholder="https://...mp4">
+                </label>
+              </details>
+            </div>
 
             <div class="banner-target-box">
               <div class="banner-target-head">
@@ -1237,10 +1270,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 
-  <script src="admin.js?v=35"></script>
-  <script src="admin-advanced.js?v=13"></script>
+  <script src="admin.js?v=36"></script>
+  <script src="admin-advanced.js?v=14"></script>
 
 </body>
 </html>
