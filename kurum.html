@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="kurum.css?v=2">
+  <link rel="stylesheet" href="kurum.css?v=3">
   <link rel="stylesheet" href="kurum-premium.css?v=1">
 </head>
 <body>
@@ -39,6 +39,72 @@
     <div id="institutionProfile" class="hidden"></div>
   </main>
 
+  <div id="directQuoteModal" class="kp-modal hidden">
+    <div class="kp-modal-card kp-direct-card">
+      <button type="button" id="directQuoteClose" class="kp-modal-close">×</button>
+
+      <div id="directQuoteFormView">
+        <span class="eyebrow">DOĞRUDAN KURUMA TEKLİF İSTEĞİ</span>
+        <h2 id="directQuoteTitle">Bu kurumdan teklif al</h2>
+
+        <div class="kp-direct-target">
+          <span class="kp-direct-target-icon">🏢</span>
+          <div>
+            <strong id="directQuoteInstitutionName">Kurum</strong>
+            <small>Talebiniz yalnızca bu kuruma gönderilecek.</small>
+          </div>
+          <span class="kp-direct-only">1 Kurum</span>
+        </div>
+
+        <form id="directQuoteForm" class="kp-direct-form">
+          <label>
+            <span>Talep / Hizmet</span>
+            <input id="directQuoteService" type="text" maxlength="120" required placeholder="Hangi hizmet için fiyat istiyorsunuz?">
+          </label>
+
+          <div class="kp-direct-two">
+            <label>
+              <span>Ad Soyad</span>
+              <input id="directQuoteName" type="text" maxlength="100" required placeholder="Adınız">
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input id="directQuotePhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+            </label>
+          </div>
+
+          <label>
+            <span>Talep Detayı <small>(isteğe bağlı)</small></span>
+            <textarea id="directQuoteNote" rows="4" maxlength="1000" placeholder="İhtiyacınızı, istediğiniz hizmeti veya özel notunuzu yazın..."></textarea>
+          </label>
+
+          <div class="kp-direct-assurance">
+            <span>✓</span>
+            <div>
+              <strong>Doğrudan bu kuruma gider</strong>
+              <small>Talebiniz toplu teklif havuzuna gönderilmez.</small>
+            </div>
+          </div>
+
+          <button type="submit" class="kp-submit" id="directQuoteSubmit">Teklif İsteğini Gönder</button>
+          <p id="directQuoteMessage" class="kp-form-message"></p>
+        </form>
+      </div>
+
+      <div id="directQuoteSuccess" class="kp-direct-success hidden">
+        <span class="kp-direct-success-icon">✓</span>
+        <h2>Talebiniz kuruma gönderildi</h2>
+        <p id="directQuoteSuccessText"></p>
+        <div class="kp-tracking-box">
+          <small>TEKLİF TAKİP KODUNUZ</small>
+          <strong id="directTrackingCode">-</strong>
+        </div>
+        <a id="directTrackingLink" class="kp-submit kp-tracking-link" href="#">Gelen Teklifi Takip Et</a>
+        <button type="button" class="kp-direct-secondary" id="directQuoteDone">Kurum Sayfasına Dön</button>
+      </div>
+    </div>
+  </div>
+
   <div id="reviewModal" class="kp-modal hidden">
     <div class="kp-modal-card">
       <button type="button" id="reviewModalClose" class="kp-modal-close">×</button>
@@ -64,7 +130,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="kurum.js?v=2"></script>
+  <script src="kurum.js?v=3"></script>
   <script src="kurum-premium.js?v=1"></script>
 </body>
 </html>
