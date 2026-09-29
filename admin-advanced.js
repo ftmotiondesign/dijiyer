@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["promotionOrdersSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["promotionPackagesSection","promotionOrdersSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["promotionPackagesTabBtn","promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -15,6 +15,7 @@
   let announcementSelectedIds = [];
   let supportAdminRecords = [];
   let promotionAdminRecords = [];
+  let promotionPackageRecords = [];
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -129,6 +130,12 @@
 
   baseTabIds.forEach(id => {
     $(id)?.addEventListener("click", hideAdvancedSections);
+  });
+
+  $("promotionPackagesTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("promotionPackagesSection","promotionPackagesTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionPackagesTabBtn");
+    await renderPromotionPackageAdmin(true);
   });
 
   $("promotionOrdersTabBtn")?.addEventListener("click", async () => {
@@ -400,6 +407,300 @@
     }
   });
 
+  const DEFAULT_PROMOTION_PACKAGES = [
+    {
+      serviceKey:"packageStarter",name:"Başlangıç Görünürlüğü",badge:"BAŞLANGIÇ",
+      description:"İlk kez Dijiyer reklamı deneyecek kurumlar için.",
+      benefit:"Banner tasarımı ile kategori görünürlüğünü tek pakette kullanarak reklam çalışmalarına hızlı başlangıç sağlar.",
+      includes:["Reklam banner tasarımı","Kategori vitrini"],
+      basePrice:0,priceLabel:"Paket fiyatı planlamada netleşir",duration:"",
+      delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",
+      extras:[{name:"Ek yayın süresi",price:0}],featured:false,active:true,sortOrder:10
+    },
+    {
+      serviceKey:"packageRegional",name:"Bölgesel Görünürlük",badge:"BÖLGESEL",
+      description:"Şehir ve ilçe bazında müşteri arayan kurumlar için.",
+      benefit:"Şehir/ilçe hedeflemesiyle reklamı yerel ve daha ilgili kullanıcılara ulaştırır.",
+      includes:["Banner tasarımı","Şehir / ilçe vitrini","Kampanya duyurusu"],
+      basePrice:0,priceLabel:"Bölge ve süreye göre paket fiyatı",duration:"",
+      delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",
+      extras:[{name:"Kategori vitrini",price:0}],featured:false,active:true,sortOrder:20
+    },
+    {
+      serviceKey:"combo",name:"Dijiyer Mekan Tanıtım",badge:"MEKAN TANITIM",
+      description:"Kurumunuzu hem konum hem mekan deneyimiyle anlatın.",
+      benefit:"Müşteriye hem size nasıl ulaşacağını hem de mekanda ne göreceğini tek kurum profilinde gösterir.",
+      includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],
+      basePrice:0,priceLabel:"Mekan ve çekim kapsamına göre fiyatlandırılır",duration:"",
+      delivery:"5–10 iş günü",revision:"1 düzenleme turu",
+      extras:[{name:"Reels tanıtım videosu",price:0},{name:"QR/NFC yönlendirme",price:0}],
+      featured:true,active:true,sortOrder:30
+    },
+    {
+      serviceKey:"packagePlus",name:"Görünürlük Plus",badge:"GÖRÜNÜRLÜK PLUS",
+      description:"İçerik üretimiyle ana sayfa görünürlüğünü birleştirin.",
+      benefit:"Hazırlanan tanıtım içeriğini ana sayfa sponsorlu görünürlüğüyle destekler.",
+      includes:["Konum Videosu","Banner tasarımı","Ana Sayfa Vitrini"],
+      basePrice:0,priceLabel:"Paket kapsamına göre fiyatlandırılır",duration:"",
+      delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",
+      extras:[{name:"Kategori vitrini",price:0}],featured:false,active:true,sortOrder:40
+    },
+    {
+      serviceKey:"packagePremium",name:"Premium Tanıtım",badge:"PREMIUM",
+      description:"İçerik ve Dijiyer görünürlüğünü tek pakette toplayın.",
+      benefit:"Güçlü tanıtım içeriği ile ana sayfa, kategori ve bölgesel sponsorlu görünürlüğü tek planda birleştirir.",
+      includes:["Konum Videosu + 360° Tur","Ana Sayfa Vitrini","Kategori Vitrini","Şehir / İlçe Vitrini"],
+      basePrice:0,priceLabel:"Kapsama özel paket fiyatı",duration:"",
+      delivery:"Kapsama göre planlanır",revision:"İçeriklerde 1 revizyon",
+      extras:[{name:"Reels video",price:0},{name:"Kampanya duyurusu",price:0}],
+      featured:false,active:true,sortOrder:50
+    }
+  ];
+
+  function packageLines(value){
+    return String(value||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  }
+
+  function addPromotionPackageExtraRow(item = {}) {
+    const root = $("promotionPackageExtras");
+    if (!root) return;
+    const row = document.createElement("div");
+    row.className = "promotion-package-extra-row";
+    row.innerHTML = `
+      <input type="text" data-package-extra-name maxlength="100" placeholder="Ek hizmet adı" value="${escapeHtml(item.name||"")}">
+      <input type="number" data-package-extra-price min="0" step="1" placeholder="Fiyat" value="${Number(item.price||0)}">
+      <button type="button" title="Kaldır">×</button>
+    `;
+    row.querySelector("button")?.addEventListener("click",()=>row.remove());
+    root.appendChild(row);
+  }
+
+  function promotionPackageExtrasFromForm(){
+    return [...document.querySelectorAll("#promotionPackageExtras .promotion-package-extra-row")]
+      .map(row=>({
+        name:String(row.querySelector("[data-package-extra-name]")?.value||"").trim(),
+        price:Math.max(0,Number(row.querySelector("[data-package-extra-price]")?.value||0))
+      }))
+      .filter(item=>item.name);
+  }
+
+  function resetPromotionPackageForm(){
+    $("promotionPackageForm")?.reset();
+    if ($("promotionPackageEditId")) $("promotionPackageEditId").value="";
+    if ($("promotionPackageFormTitle")) $("promotionPackageFormTitle").textContent="Yeni Reklam Paketi";
+    if ($("promotionPackageActive")) $("promotionPackageActive").checked=true;
+    if ($("promotionPackageSort")) $("promotionPackageSort").value="50";
+    if ($("promotionPackagePrice")) $("promotionPackagePrice").value="0";
+    if ($("promotionPackageExtras")) $("promotionPackageExtras").innerHTML="";
+    if ($("promotionPackageMessage")) $("promotionPackageMessage").textContent="";
+  }
+
+  async function loadPromotionPackagesAdmin(){
+    try{
+      const snapshot=await db.collection("promotionPackages").get();
+      promotionPackageRecords=snapshot.docs
+        .map(doc=>({id:doc.id,...doc.data()}))
+        .sort((a,b)=>(Number(a.sortOrder||50)-Number(b.sortOrder||50)) || String(a.name||"").localeCompare(String(b.name||""),"tr"));
+    }catch(error){
+      console.error("Reklam paketleri yüklenemedi:",error);
+      promotionPackageRecords=[];
+    }
+    return promotionPackageRecords;
+  }
+
+  function editPromotionPackage(id){
+    const item=promotionPackageRecords.find(x=>x.id===id);
+    if(!item)return;
+
+    $("promotionPackageEditId").value=item.id;
+    $("promotionPackageFormTitle").textContent="Paketi Düzenle";
+    $("promotionPackageName").value=item.name||"";
+    $("promotionPackageBadge").value=item.badge||"";
+    $("promotionPackagePrice").value=Number(item.basePrice||0);
+    $("promotionPackagePriceLabel").value=item.priceLabel||"";
+    $("promotionPackageDuration").value=item.duration||"";
+    $("promotionPackageSort").value=Number(item.sortOrder||50);
+    $("promotionPackageDescription").value=item.description||"";
+    $("promotionPackageBenefit").value=item.benefit||"";
+    $("promotionPackageDelivery").value=item.delivery||"";
+    $("promotionPackageRevision").value=item.revision||"";
+    $("promotionPackageIncludes").value=(Array.isArray(item.includes)?item.includes:[]).join("\n");
+    $("promotionPackageProcess").value=item.process||"";
+    $("promotionPackageRequired").value=item.required||"";
+    $("promotionPackageExample").value=item.example||"";
+    $("promotionPackageFeatured").checked=Boolean(item.featured);
+    $("promotionPackageActive").checked=item.active!==false;
+    $("promotionPackageExtras").innerHTML="";
+    (Array.isArray(item.extras)?item.extras:[]).forEach(addPromotionPackageExtraRow);
+    $("promotionPackageForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function savePromotionPackage(event){
+    event.preventDefault();
+    const editId=String($("promotionPackageEditId")?.value||"").trim();
+    const collection=db.collection("promotionPackages");
+    const ref=editId ? collection.doc(editId) : collection.doc();
+    const existing=promotionPackageRecords.find(x=>x.id===editId);
+    const now=new Date().toISOString();
+    const name=String($("promotionPackageName")?.value||"").trim();
+
+    if(!name){
+      $("promotionPackageMessage").textContent="Paket adını yazın.";
+      return;
+    }
+
+    const basePrice=Math.max(0,Number($("promotionPackagePrice")?.value||0));
+    const data={
+      serviceKey: existing?.serviceKey || ("pkg_"+ref.id),
+      name,
+      badge:String($("promotionPackageBadge")?.value||"").trim(),
+      description:String($("promotionPackageDescription")?.value||"").trim(),
+      benefit:String($("promotionPackageBenefit")?.value||"").trim(),
+      includes:packageLines($("promotionPackageIncludes")?.value),
+      basePrice,
+      priceLabel:String($("promotionPackagePriceLabel")?.value||"").trim() ||
+        (basePrice>0 ? money(basePrice) : "Fiyat planlamada netleşir"),
+      duration:String($("promotionPackageDuration")?.value||"").trim(),
+      delivery:String($("promotionPackageDelivery")?.value||"").trim(),
+      revision:String($("promotionPackageRevision")?.value||"").trim(),
+      process:String($("promotionPackageProcess")?.value||"").trim(),
+      required:String($("promotionPackageRequired")?.value||"").trim(),
+      example:String($("promotionPackageExample")?.value||"").trim(),
+      extras:promotionPackageExtrasFromForm(),
+      featured:Boolean($("promotionPackageFeatured")?.checked),
+      active:Boolean($("promotionPackageActive")?.checked),
+      sortOrder:Math.max(0,Number($("promotionPackageSort")?.value||50)),
+      updatedAt:now
+    };
+    if(!existing)data.createdAt=now;
+
+    try{
+      await ref.set(data,{merge:true});
+      addAudit(editId?"Reklam paketi güncellendi":"Reklam paketi oluşturuldu",name);
+      $("promotionPackageMessage").textContent="Paket kaydedildi.";
+      resetPromotionPackageForm();
+      await renderPromotionPackageAdmin(true);
+    }catch(error){
+      console.error("Reklam paketi kaydedilemedi:",error);
+      $("promotionPackageMessage").textContent="Paket kaydedilemedi. Firestore kuralını kontrol edin.";
+    }
+  }
+
+  async function togglePromotionPackage(id){
+    const item=promotionPackageRecords.find(x=>x.id===id);
+    if(!item)return;
+    try{
+      await db.collection("promotionPackages").doc(id).update({
+        active:item.active===false,
+        updatedAt:new Date().toISOString()
+      });
+      await renderPromotionPackageAdmin(true);
+    }catch(error){
+      console.error(error);
+      alert("Paket durumu değiştirilemedi.");
+    }
+  }
+
+  async function deletePromotionPackage(id){
+    const item=promotionPackageRecords.find(x=>x.id===id);
+    if(!item)return;
+    if(!confirm('"'+(item.name||"Paket")+'" silinsin mi?'))return;
+    try{
+      await db.collection("promotionPackages").doc(id).delete();
+      addAudit("Reklam paketi silindi",item.name||id);
+      await renderPromotionPackageAdmin(true);
+    }catch(error){
+      console.error(error);
+      alert("Paket silinemedi.");
+    }
+  }
+
+  async function seedPromotionPackages(){
+    try{
+      await loadPromotionPackagesAdmin();
+      const byKey=new Map(promotionPackageRecords.map(x=>[x.serviceKey,x]));
+      const batch=db.batch();
+      const now=new Date().toISOString();
+      let added=0;
+
+      DEFAULT_PROMOTION_PACKAGES.forEach(item=>{
+        if(byKey.has(item.serviceKey))return;
+        const ref=db.collection("promotionPackages").doc();
+        batch.set(ref,{...item,createdAt:now,updatedAt:now});
+        added++;
+      });
+
+      if(!added){
+        alert("Mevcut 5 paket zaten Paket Yönetimi'nde bulunuyor.");
+        return;
+      }
+
+      await batch.commit();
+      addAudit("Varsayılan reklam paketleri aktarıldı",added+" paket");
+      await renderPromotionPackageAdmin(true);
+    }catch(error){
+      console.error(error);
+      alert("Paketler aktarılamadı. Firestore kuralını kontrol edin.");
+    }
+  }
+
+  async function renderPromotionPackageAdmin(reload=false){
+    const root=$("promotionPackageAdminList");
+    if(!root)return;
+    if(reload || !promotionPackageRecords.length)await loadPromotionPackagesAdmin();
+
+    const query=normalize($("promotionPackageSearch")?.value||"");
+    const rows=promotionPackageRecords.filter(item=>
+      !query || normalize([item.name,item.badge,item.description,...(item.includes||[])].join(" ")).includes(query)
+    );
+
+    const activeCount=promotionPackageRecords.filter(x=>x.active!==false).length;
+    if($("promotionPackageAdminCount")){
+      $("promotionPackageAdminCount").textContent=
+        promotionPackageRecords.length+" paket · "+activeCount+" yayında · "+
+        (promotionPackageRecords.length-activeCount)+" pasif";
+    }
+
+    root.innerHTML=rows.length ? rows.map(item=>`
+      <article class="promotion-package-admin-card ${item.active===false?"is-passive":""}">
+        <div class="promotion-package-admin-card-head">
+          <div>
+            <span>${escapeHtml(item.badge||"PAKET")}</span>
+            <strong>${escapeHtml(item.name||"Reklam Paketi")}</strong>
+            <small>${escapeHtml(item.description||"")}</small>
+          </div>
+          <div class="promotion-package-card-state">
+            ${item.featured?'<b>★ Önerilen</b>':""}
+            <i class="${item.active===false?"passive":"active"}">${item.active===false?"Pasif":"Yayında"}</i>
+          </div>
+        </div>
+        <div class="promotion-package-admin-price">
+          <strong>${Number(item.basePrice||0)>0?money(item.basePrice):escapeHtml(item.priceLabel||"Fiyat netleştirilecek")}</strong>
+          ${item.duration?'<span>'+escapeHtml(item.duration)+'</span>':""}
+        </div>
+        <div class="promotion-package-admin-includes">
+          ${(item.includes||[]).slice(0,5).map(x=>'<span>✓ '+escapeHtml(x)+'</span>').join("") || '<span>İçerik eklenmemiş.</span>'}
+        </div>
+        <div class="promotion-package-admin-card-actions">
+          <button type="button" data-package-edit="${escapeHtml(item.id)}">Düzenle</button>
+          <button type="button" data-package-toggle="${escapeHtml(item.id)}">${item.active===false?"Yayına Al":"Pasife Al"}</button>
+          <button type="button" class="danger" data-package-delete="${escapeHtml(item.id)}">Sil</button>
+        </div>
+      </article>
+    `).join("") : '<div class="advanced-empty">Paket bulunamadı.</div>';
+
+    root.querySelectorAll("[data-package-edit]").forEach(btn=>btn.addEventListener("click",()=>editPromotionPackage(btn.dataset.packageEdit)));
+    root.querySelectorAll("[data-package-toggle]").forEach(btn=>btn.addEventListener("click",()=>togglePromotionPackage(btn.dataset.packageToggle)));
+    root.querySelectorAll("[data-package-delete]").forEach(btn=>btn.addEventListener("click",()=>deletePromotionPackage(btn.dataset.packageDelete)));
+  }
+
+  $("promotionPackageForm")?.addEventListener("submit",savePromotionPackage);
+  $("promotionPackageNewBtn")?.addEventListener("click",resetPromotionPackageForm);
+  $("promotionPackageCancelBtn")?.addEventListener("click",resetPromotionPackageForm);
+  $("promotionPackageAddExtra")?.addEventListener("click",()=>addPromotionPackageExtraRow());
+  $("promotionPackageSeedBtn")?.addEventListener("click",seedPromotionPackages);
+  $("promotionPackageSearch")?.addEventListener("input",()=>renderPromotionPackageAdmin(false));
+
   function promotionOrderStatusLabel(status) {
     return {
       new:"Yeni Sipariş",
@@ -469,6 +770,18 @@
   };
 
   function promotionCatalogFor(order){
+    const dynamicPackage=promotionPackageRecords.find(item=>item.serviceKey===order.serviceKey);
+    if(dynamicPackage){
+      return {
+        title:dynamicPackage.name||order.serviceName||"Tanıtım Paketi",
+        lead:dynamicPackage.description||"",
+        benefit:dynamicPackage.benefit||"",
+        includes:Array.isArray(dynamicPackage.includes)?dynamicPackage.includes:[],
+        delivery:dynamicPackage.delivery||dynamicPackage.duration||"Planlamada netleşir",
+        revision:dynamicPackage.revision||"Planlamada netleşir",
+        extras:Array.isArray(dynamicPackage.extras)?dynamicPackage.extras:[]
+      };
+    }
     return PROMOTION_ADMIN_CATALOG[order.serviceKey] || {
       title:order.serviceName || "Tanıtım Hizmeti",
       lead:"Bu sipariş için hizmet kapsamı yönetim tarafından netleştirilebilir.",
@@ -485,9 +798,17 @@
     const selected=Array.isArray(order.extras) ? order.extras : [];
     const merged=[...existingItems];
 
+    const catalog=promotionCatalogFor(order);
+    const catalogExtras=Array.isArray(catalog.extras)?catalog.extras:[];
+
     selected.forEach(name=>{
       if(!merged.some(item=>normalize(item.name)===normalize(name))){
-        merged.push({name,price:0,source:"selected"});
+        const match=catalogExtras.find(item=>normalize(item.name||item)===normalize(name));
+        merged.push({
+          name,
+          price:Number(match?.price||0),
+          source:"selected"
+        });
       }
     });
 
@@ -649,6 +970,10 @@
   async function renderPromotionOrdersAdmin(reload = false) {
     const root = $("promotionAdminList");
     if (!root) return;
+
+    if (!promotionPackageRecords.length) {
+      await loadPromotionPackagesAdmin();
+    }
 
     if (reload || !promotionAdminRecords.length) {
       root.innerHTML = '<div class="advanced-empty">Tanıtım siparişleri yükleniyor...</div>';
