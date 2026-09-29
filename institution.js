@@ -1289,8 +1289,15 @@ function renderPromotionOrders(){
 
   root.innerHTML=promotionOrderRecords.map(order=>{
     const step=promotionStatusStep(order.status);
+    const config=getPromotionConfig(order.serviceKey||"consultation");
+    const breakdown=order.priceBreakdown||{};
+    const total=Number(breakdown.total ?? order.price ?? 0);
+    const extraItems=Array.isArray(breakdown.extraItems)?breakdown.extraItems:[];
+    const scope=order.scopeDescription||config.lead||"";
+    const publicNote=order.publicNote||order.adminNote||"";
+
     return `
-      <article class="promotion-order-row">
+      <article class="promotion-order-row promotion-order-row-v2">
         <div class="promotion-order-row-head">
           <div>
             <span class="promotion-order-code">${escapeHtml(order.orderCode||"-")}</span>
@@ -1299,16 +1306,38 @@ function renderPromotionOrders(){
           </div>
           <span class="promotion-order-state state-${escapeHtml(order.status||"new")}">${escapeHtml(promotionStatusLabel(order.status))}</span>
         </div>
+
         <div class="promotion-order-progress" aria-label="Sipariş ilerleme durumu">
           ${["Yeni","Görüşülüyor","Hazırlanıyor","Onay","Tamamlandı"].map((label,index)=>`
             <span class="${index+1<=step?"active":""}"><i></i><b>${label}</b></span>
           `).join("")}
         </div>
+
+        <div class="promotion-order-scope">
+          <span>SİPARİŞ KAPSAMI</span>
+          <p>${escapeHtml(scope)}</p>
+          ${Array.isArray(config.includes)&&config.includes.length ? `
+            <div>${config.includes.map(item=>'<small>✓ '+escapeHtml(item)+'</small>').join("")}</div>
+          `:""}
+        </div>
+
+        ${total>0 ? `
+          <div class="promotion-customer-pricing">
+            <div><span>Ana Hizmet</span><b>${new Intl.NumberFormat("tr-TR").format(Number(breakdown.basePrice||0))} TL</b></div>
+            ${extraItems.map(item=>`
+              <div><span>${escapeHtml(item.name||"Ek Hizmet")}</span><b>${new Intl.NumberFormat("tr-TR").format(Number(item.price||0))} TL</b></div>
+            `).join("")}
+            ${Number(breakdown.discount||0)>0 ? `<div class="discount"><span>İndirim</span><b>-${new Intl.NumberFormat("tr-TR").format(Number(breakdown.discount))} TL</b></div>`:""}
+            <div class="total"><span>Toplam</span><strong>${new Intl.NumberFormat("tr-TR").format(total)} TL</strong></div>
+          </div>
+        ` : `
+          <div class="promotion-price-pending">Fiyat yönetim tarafından netleştiriliyor.</div>
+        `}
+
         <div class="promotion-order-row-meta">
-          <span>Fiyat <b>${escapeHtml(Number(order.price||0)>0 ? new Intl.NumberFormat("tr-TR").format(Number(order.price))+" TL" : (order.priceLabel||"Netleştirilecek"))}</b></span>
           <span>Ödeme <b>${order.paymentStatus==="paid"?"Ödendi":"Bekliyor"}</b></span>
           ${order.note?'<span class="promotion-order-note">Sipariş Notu <b>'+escapeHtml(order.note)+'</b></span>':""}
-          ${order.adminNote?'<span class="promotion-order-note admin-update">Dijiyer Notu <b>'+escapeHtml(order.adminNote)+'</b></span>':""}
+          ${publicNote?'<span class="promotion-order-note admin-update">Dijiyer Açıklaması <b>'+escapeHtml(publicNote)+'</b></span>':""}
         </div>
       </article>
     `;
