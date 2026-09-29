@@ -142,6 +142,7 @@ const ADMIN_TAB_META = {
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
   promotionOrdersTabBtn:["ads","Tanıtım Siparişleri","Kurumların Konum Videosu, 360° Sanal Tur ve reklam siparişlerini yönetin."],
+  promotionPackagesTabBtn:["ads","Paket Yönetimi","Kurumlara sunulan reklam ve tanıtım paketlerini oluşturun, fiyatlandırın ve yayına alın."],
   supportTabBtn:["support","Destek Merkezi","Kurumların destek taleplerini takip edin ve yanıtlayın."],
   announcementsTabBtn:["support","Duyurular","Kurumlara yönetim duyuruları gönderin."],
   systemTabBtn:["system","Sistem","Sistem kontrollerini, ayarları ve yönetim işlem geçmişini görüntüleyin."]
