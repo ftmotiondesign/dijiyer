@@ -1313,6 +1313,7 @@ function bindDijiyerEarningsActions(){
     button.addEventListener('click',event=>{
       event.preventDefault();
       event.stopPropagation();
+      if(followManagedSectionLink(button))return;
       openDijiyerEarningsModal('invite');
     });
   });
@@ -1323,6 +1324,7 @@ function bindDijiyerEarningsActions(){
     button.addEventListener('click',event=>{
       event.preventDefault();
       event.stopPropagation();
+      if(followManagedSectionLink(button))return;
       openDijiyerEarningsModal('wallet');
     });
   });
@@ -1348,6 +1350,200 @@ function renderDijiyerEarningsBottom(){
 
 captureDijiyerReferralSource();
 renderDijiyerEarningsBottom();
+
+
+const HOME_EDITABLE_CONTENT_DEFAULTS = {
+  dailyStats:{
+    eyebrow:"BUGÜN DİJİYER'DE",
+    title:'Günlük teklif hareketleri',
+    liveLabel:'Canlı',
+    requestLabel:'Teklif İstendi',
+    offerLabel:'Teklif Verildi',
+    acceptedLabel:'Kabul Edildi',
+    topLabel:'En Çok Teklif Alınan'
+  },
+  bottomQuote:{
+    kicker:'İŞLETMELER İÇİN',
+    title:'Yeni müşteriler seni arasın, sen teklifini ver.',
+    description:"İşletmeni Dijiyer'e ücretsiz ekle. Bölgen ve sektörünle eşleşen talepleri gör, teklif ver ve kurum panelinden süreci takip et.",
+    benefits:'Üyelik ücretsiz\nTeklif vermek ücretsiz\nAylık zorunlu ücret yok\nKazandığın işten %0 komisyon',
+    primaryLabel:'İşletmeni Ücretsiz Ekle',
+    primaryUrl:'',
+    secondaryLabel:'Kurum Paneline Gir',
+    secondaryUrl:'',
+    cardLabel:'İŞLETME MALİYETİ',
+    cardValue:'0 TL',
+    cardDescription:'Başlangıçta kayıt ücreti, teklif verme ücreti veya satış komisyonu yok.',
+    cardItems:'Ücretsiz|Kurum profili\nÜcretsiz|Teklif verme\n%0|İş / satış komisyonu'
+  },
+  earnings:{
+    sectionEyebrow:'DAHA FAZLA',
+    sectionTitle:'Dijiyer Kazanç',
+    sectionSubtitle:'Pilot özellik · detayları geliştirme aşamasında',
+    kicker:'DİJİYER KAZANÇ',
+    badge:'PİLOT',
+    title:'İşletme tavsiye et, kazanç fırsatı yakala',
+    description:'Davet ettiğin işletme ilk ücretli Dijiyer hizmetini onayladığında Dijiyer bakiyesi kazan.',
+    primaryLabel:'İşletme Davet Et',
+    primaryUrl:'',
+    secondaryLabel:'Kazancım',
+    secondaryUrl:''
+  },
+  homeFooter:{
+    brandTitle:'Dijiyer',
+    brandTagline:'Bul. Karşılaştır. Teklif Al.',
+    title:'Yerel işletmeler ve müşteriler tek yerde.',
+    description:'Ücretsiz teklif al, ücretsiz teklif ver, komisyonsuz ilerle.',
+    primaryLabel:'Teklif Al',
+    primaryUrl:'',
+    secondaryLabel:'İşletme Ekle',
+    secondaryUrl:'',
+    thirdLabel:'Kurumları İncele',
+    thirdUrl:'#resultsSection'
+  }
+};
+
+function managedContentValue(saved,defaults,key){
+  return saved && Object.prototype.hasOwnProperty.call(saved,key)
+    ? String(saved[key] ?? '')
+    : String(defaults[key] ?? '');
+}
+
+function safeManagedContentLink(value){
+  const raw=String(value||'').trim();
+  if(!raw)return '';
+  if(raw.startsWith('#'))return raw;
+  try{
+    const url=new URL(raw,window.location.href);
+    return ['http:','https:'].includes(url.protocol) ? url.href : '';
+  }catch(_){
+    return '';
+  }
+}
+
+function setManagedText(element,value){
+  if(element)element.textContent=String(value ?? '');
+}
+
+function setManagedButtonLink(element,value){
+  if(!element)return;
+  const link=safeManagedContentLink(value);
+  if(link)element.dataset.customSectionLink=link;
+  else delete element.dataset.customSectionLink;
+}
+
+function applyHomeEditableContent(data={}){
+  const dailySaved=data.dailyStatsContent || {};
+  const dailyDefaults=HOME_EDITABLE_CONTENT_DEFAULTS.dailyStats;
+  const dailyRoot=document.getElementById('mobileDailyStats');
+  if(dailyRoot){
+    setManagedText(dailyRoot.querySelector('.mobile-daily-stats-head span'),managedContentValue(dailySaved,dailyDefaults,'eyebrow'));
+    setManagedText(dailyRoot.querySelector('.mobile-daily-stats-head strong'),managedContentValue(dailySaved,dailyDefaults,'title'));
+    const live=dailyRoot.querySelector('.mobile-daily-stats-head > small');
+    if(live){
+      const label=managedContentValue(dailySaved,dailyDefaults,'liveLabel');
+      live.innerHTML='<i></i> '+String(label).replace(/</g,'&lt;');
+    }
+    setManagedText(dailyRoot.querySelector('#dailyQuoteRequestCount + small'),managedContentValue(dailySaved,dailyDefaults,'requestLabel'));
+    setManagedText(dailyRoot.querySelector('#dailyOfferCount + small'),managedContentValue(dailySaved,dailyDefaults,'offerLabel'));
+    setManagedText(dailyRoot.querySelector('#dailyAcceptedCount + small'),managedContentValue(dailySaved,dailyDefaults,'acceptedLabel'));
+    setManagedText(dailyRoot.querySelector('#dailyTopService + small'),managedContentValue(dailySaved,dailyDefaults,'topLabel'));
+  }
+
+  const quoteSaved=data.bottomQuoteContent || {};
+  const quoteDefaults=HOME_EDITABLE_CONTENT_DEFAULTS.bottomQuote;
+  const quoteRoot=document.querySelector('.business-cta-section');
+  if(quoteRoot){
+    setManagedText(quoteRoot.querySelector('.business-cta-copy > span'),managedContentValue(quoteSaved,quoteDefaults,'kicker'));
+    setManagedText(quoteRoot.querySelector('.business-cta-copy > h2'),managedContentValue(quoteSaved,quoteDefaults,'title'));
+    setManagedText(quoteRoot.querySelector('.business-cta-copy > p'),managedContentValue(quoteSaved,quoteDefaults,'description'));
+
+    const benefits=managedContentValue(quoteSaved,quoteDefaults,'benefits').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const benefitsRoot=quoteRoot.querySelector('.business-benefits');
+    if(benefitsRoot){
+      benefitsRoot.innerHTML='';
+      benefits.forEach(item=>{
+        const span=document.createElement('span');
+        span.textContent='✓ '+item;
+        benefitsRoot.appendChild(span);
+      });
+    }
+
+    const primary=quoteRoot.querySelector('#businessAddBtn');
+    const secondary=quoteRoot.querySelector('#businessPanelBtn');
+    setManagedText(primary,managedContentValue(quoteSaved,quoteDefaults,'primaryLabel'));
+    setManagedText(secondary,managedContentValue(quoteSaved,quoteDefaults,'secondaryLabel'));
+    setManagedButtonLink(primary,managedContentValue(quoteSaved,quoteDefaults,'primaryUrl'));
+    setManagedButtonLink(secondary,managedContentValue(quoteSaved,quoteDefaults,'secondaryUrl'));
+
+    setManagedText(quoteRoot.querySelector('.business-card-label'),managedContentValue(quoteSaved,quoteDefaults,'cardLabel'));
+    setManagedText(quoteRoot.querySelector('.business-cta-card > strong'),managedContentValue(quoteSaved,quoteDefaults,'cardValue'));
+    setManagedText(quoteRoot.querySelector('.business-cta-card > p'),managedContentValue(quoteSaved,quoteDefaults,'cardDescription'));
+
+    const items=managedContentValue(quoteSaved,quoteDefaults,'cardItems').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const list=quoteRoot.querySelector('.business-card-list');
+    if(list){
+      list.innerHTML='';
+      items.forEach(row=>{
+        const [value,...rest]=row.split('|');
+        const div=document.createElement('div');
+        const b=document.createElement('b');
+        const span=document.createElement('span');
+        b.textContent=(value||'').trim();
+        span.textContent=rest.join('|').trim();
+        div.append(b,span);
+        list.appendChild(div);
+      });
+    }
+  }
+
+  const earningsSaved=data.earningsContent || {};
+  const earningsDefaults=HOME_EDITABLE_CONTENT_DEFAULTS.earnings;
+  const earningsRoot=document.getElementById('dijiyerEarningsBottom');
+  if(earningsRoot){
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-bottom-head > span'),managedContentValue(earningsSaved,earningsDefaults,'sectionEyebrow'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-bottom-head > strong'),managedContentValue(earningsSaved,earningsDefaults,'sectionTitle'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-bottom-head > small'),managedContentValue(earningsSaved,earningsDefaults,'sectionSubtitle'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-kicker > span'),managedContentValue(earningsSaved,earningsDefaults,'kicker'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-kicker > b'),managedContentValue(earningsSaved,earningsDefaults,'badge'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-copy > strong'),managedContentValue(earningsSaved,earningsDefaults,'title'));
+    setManagedText(earningsRoot.querySelector('.dijiyer-earnings-copy > p'),managedContentValue(earningsSaved,earningsDefaults,'description'));
+
+    const primary=earningsRoot.querySelector('[data-dijiyer-invite]');
+    const secondary=earningsRoot.querySelector('[data-dijiyer-earnings]');
+    setManagedText(primary,managedContentValue(earningsSaved,earningsDefaults,'primaryLabel'));
+    setManagedText(secondary,managedContentValue(earningsSaved,earningsDefaults,'secondaryLabel'));
+    setManagedButtonLink(primary,managedContentValue(earningsSaved,earningsDefaults,'primaryUrl'));
+    setManagedButtonLink(secondary,managedContentValue(earningsSaved,earningsDefaults,'secondaryUrl'));
+  }
+
+  const footerSaved=data.homeFooterContent || {};
+  const footerDefaults=HOME_EDITABLE_CONTENT_DEFAULTS.homeFooter;
+  const footer=document.getElementById('homeFooterSection') || document.querySelector('.home-footer');
+  if(footer){
+    setManagedText(footer.querySelector('.home-footer-brand strong'),managedContentValue(footerSaved,footerDefaults,'brandTitle'));
+    setManagedText(footer.querySelector('.home-footer-brand span'),managedContentValue(footerSaved,footerDefaults,'brandTagline'));
+    setManagedText(footer.querySelector('.home-footer-copy strong'),managedContentValue(footerSaved,footerDefaults,'title'));
+    setManagedText(footer.querySelector('.home-footer-copy span'),managedContentValue(footerSaved,footerDefaults,'description'));
+
+    const primary=footer.querySelector('#footerQuoteBtn');
+    const secondary=footer.querySelector('#footerInstitutionBtn');
+    const third=footer.querySelector('.home-footer-actions a');
+    setManagedText(primary,managedContentValue(footerSaved,footerDefaults,'primaryLabel'));
+    setManagedText(secondary,managedContentValue(footerSaved,footerDefaults,'secondaryLabel'));
+    setManagedText(third,managedContentValue(footerSaved,footerDefaults,'thirdLabel'));
+    setManagedButtonLink(primary,managedContentValue(footerSaved,footerDefaults,'primaryUrl'));
+    setManagedButtonLink(secondary,managedContentValue(footerSaved,footerDefaults,'secondaryUrl'));
+    if(third)third.href=safeManagedContentLink(managedContentValue(footerSaved,footerDefaults,'thirdUrl')) || '#resultsSection';
+  }
+}
+
+function followManagedSectionLink(element){
+  const link=element?.dataset?.customSectionLink || '';
+  if(!link)return false;
+  window.location.href=link;
+  return true;
+}
 
 function applyHomeBottomSectionVisibility(data={}){
   const bottomQuote=document.querySelector('.business-cta-section');
@@ -1380,14 +1576,18 @@ function applyHomeBottomSectionVisibility(data={}){
 function watchHomeBottomSectionVisibility(){
   try{
     return db.collection('siteSettings').doc('home').onSnapshot(snap=>{
-      applyHomeBottomSectionVisibility(snap.exists ? (snap.data() || {}) : {});
+      const data=snap.exists ? (snap.data() || {}) : {};
+      applyHomeBottomSectionVisibility(data);
+      applyHomeEditableContent(data);
     },error=>{
       console.warn('Ana sayfa alt bölüm görünürlük ayarları dinlenemedi:',error);
       applyHomeBottomSectionVisibility({earningsVisible:false,homeFooterVisible:false});
+      applyHomeEditableContent({});
     });
   }catch(error){
     console.warn('Ana sayfa alt bölüm görünürlük ayarı başlatılamadı:',error);
-    applyHomeBottomSectionVisibility({earningsVisible:false});
+    applyHomeBottomSectionVisibility({earningsVisible:false,homeFooterVisible:false});
+    applyHomeEditableContent({});
     return null;
   }
 }
@@ -6960,18 +7160,24 @@ document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
 });
 
 ['howQuoteBtn', 'trustQuoteBtn', 'footerQuoteBtn'].forEach(id => {
-  document.getElementById(id)?.addEventListener('click', () => {
+  const button=document.getElementById(id);
+  button?.addEventListener('click', () => {
+    if(followManagedSectionLink(button))return;
     openModal('quoteModal');
   });
 });
 
 ['businessAddBtn', 'footerInstitutionBtn'].forEach(id => {
-  document.getElementById(id)?.addEventListener('click', () => {
+  const button=document.getElementById(id);
+  button?.addEventListener('click', () => {
+    if(followManagedSectionLink(button))return;
     document.getElementById('institutionAddBtn')?.click();
   });
 });
 
-document.getElementById('businessPanelBtn')?.addEventListener('click', () => {
+document.getElementById('businessPanelBtn')?.addEventListener('click', event => {
+  const button=event.currentTarget;
+  if(followManagedSectionLink(button))return;
   document.getElementById('institutionLoginBtn')?.click();
 });
 
