@@ -9187,3 +9187,34 @@ button{cursor:pointer}
     width:100%;
   }
 }
+
+
+/* =========================================================
+   BANNER YAYIN ALANLARI ORTAK MEDYA
+   ========================================================= */
+.banner-placement-card{
+  color:inherit;
+  text-decoration:none;
+}
+
+.sponsored-media video,
+.mobile-sponsored-media video,
+.sidebar-sponsored-cover video,
+.premium-showcase-media video{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.sidebar-sponsored-card.banner-placement-card{
+  display:block;
+}
+
+.mobile-sponsored-card.banner-placement-card{
+  text-decoration:none;
+}
+
+.premium-showcase-card.banner-placement-card{
+  text-decoration:none;
+}
