@@ -854,38 +854,124 @@
     $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
+  async function syncSourcePromotionFromBanner(item,nextData,nextActive) {
+    const sourceOrderId=String(item?.sourceOrderId || "");
+    if(!sourceOrderId)return;
+
+    const order=promotionAdminRecords.find(x=>String(x.id)===sourceOrderId) || null;
+    const institutionId=String(nextData?.institutionId || item?.institutionId || order?.institutionId || "");
+    const now=new Date().toISOString();
+
+    const orderUpdate={
+      status:nextActive ? "completed" : "preparing",
+      adPlacement:String(nextData?.placement || item?.placement || order?.adPlacement || ""),
+      adStartAt:String(nextData?.startAt || item?.startAt || order?.adStartAt || ""),
+      adEndAt:String(nextData?.endAt || item?.endAt || order?.adEndAt || ""),
+      updatedAt:now
+    };
+
+    if(nextActive && !order?.adPublishedAt){
+      orderUpdate.adPublishedAt=now;
+    }
+
+    const updates=[
+      db.collection("promotionOrders").doc(sourceOrderId).update(orderUpdate)
+    ];
+
+    if(institutionId){
+      const packageId=adPackageForPromotionOrder(order || {});
+      const total=Number(order?.priceBreakdown?.total ?? order?.price ?? 0);
+      updates.push(
+        db.collection("institutions").doc(institutionId).update({
+          adStatus:nextActive ? "active" : "paused",
+          adPackage:packageId,
+          adStartAt:String(nextData?.startAt || item?.startAt || ""),
+          adEndAt:String(nextData?.endAt || item?.endAt || ""),
+          adPrice:total,
+          adPaymentStatus:"paid",
+          adUpdatedAt:now,
+          updatedAt:now
+        })
+      );
+    }
+
+    await Promise.all(updates);
+  }
+
   async function saveBannerAd(event){
     event.preventDefault();
+
     const editId=String($("bannerAdEditId")?.value||"");
     const inst=selectedBannerInstitution();
-    if(!inst){$("bannerAdMessage").textContent="Önce reklam veren kurumu seçin.";return;}
-    const ref=editId?db.collection("bannerAds").doc(editId):db.collection("bannerAds").doc();
+
+    if(!inst){
+      $("bannerAdMessage").textContent="Önce reklam veren kurumu seçin.";
+      return;
+    }
+
+    const ref=editId
+      ? db.collection("bannerAds").doc(editId)
+      : db.collection("bannerAds").doc();
+
     const existing=bannerAdRecords.find(x=>x.id===editId);
     const now=new Date().toISOString();
     const headline=String($("bannerAdHeadline")?.value||"").trim()||inst.name||"Sponsorlu Kurum";
+
     const data={
       adCode:existing?.adCode||uid("BNR"),
-      institutionId:String(inst.id),institutionName:String(inst.name||"Kurum"),logoUrl:String(inst.logoUrl||""),
-      headline,text:String($("bannerAdText")?.value||"").trim(),
-      mediaType:$("bannerAdMediaType")?.value==="video"&&String($("bannerAdVideoUrl")?.value||"").trim()?"video":"image",
+      institutionId:String(inst.id),
+      institutionName:String(inst.name||"Kurum"),
+      logoUrl:String(inst.logoUrl||""),
+      headline,
+      text:String($("bannerAdText")?.value||"").trim(),
+      mediaType:$("bannerAdMediaType")?.value==="video"&&String($("bannerAdVideoUrl")?.value||"").trim()
+        ? "video"
+        : "image",
       imageUrl:String($("bannerAdImageUrl")?.value||"").trim()||String(inst.coverUrl||inst.logoUrl||""),
       videoUrl:String($("bannerAdVideoUrl")?.value||"").trim(),
-      city:String($("bannerAdCity")?.value||""),district:String($("bannerAdDistrict")?.value||""),
-      category:String($("bannerAdCategory")?.value||""),categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
+      city:String($("bannerAdCity")?.value||""),
+      district:String($("bannerAdDistrict")?.value||""),
+      category:String($("bannerAdCategory")?.value||""),
+      categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
       durationSeconds:[3,5,7].includes(Number($("bannerAdDuration")?.value))
         ? Number($("bannerAdDuration")?.value)
         : 7,
       placement:normalizeBannerPlacement($("bannerAdPlacement")?.value),
-      startAt:String($("bannerAdStartAt")?.value||""),endAt:String($("bannerAdEndAt")?.value||""),
-      active:Boolean($("bannerAdActive")?.checked),updatedAt:now
+      startAt:String($("bannerAdStartAt")?.value||""),
+      endAt:String($("bannerAdEndAt")?.value||""),
+      active:Boolean($("bannerAdActive")?.checked),
+      updatedAt:now
     };
+
+    if(existing?.sourceOrderId){
+      data.sourceOrderId=String(existing.sourceOrderId);
+      data.sourceOrderCode=String(existing.sourceOrderCode||"");
+    }
+
     if(!existing)data.createdAt=now;
+
     try{
       await ref.set(data,{merge:true});
-      addAudit(editId?"Banner reklamı güncellendi":"Banner reklama kurum eklendi",inst.name||headline);
-      $("bannerAdMessage").textContent="Banner reklamı kaydedildi.";
-      resetBannerAdForm();
+
+      if(existing?.sourceOrderId){
+        await syncSourcePromotionFromBanner(existing,data,data.active);
+        await loadPromotionAdminRecords();
+      }
+
+      addAudit(
+        editId ? "Banner reklamı güncellendi" : "Banner reklama kurum eklendi",
+        (inst.name||headline) + " · " + (data.active ? "Yayında" : "Taslak / Pasif")
+      );
+
+      $("bannerAdMessage").textContent=data.active
+        ? "Banner reklamı kaydedildi ve yayına alındı."
+        : "Banner reklamı taslak / pasif olarak kaydedildi.";
+
       await renderBannerAdsAdmin(true);
+      renderManagedInstitutions();
+      renderTodayTasks();
+
+      setTimeout(resetBannerAdForm,350);
     }catch(error){
       console.error("Banner reklamı kaydedilemedi:",error);
       $("bannerAdMessage").textContent="Banner kaydedilemedi. Firestore kuralını kontrol edin.";
@@ -893,16 +979,82 @@
   }
 
   async function toggleBannerAd(id){
-    const item=bannerAdRecords.find(x=>x.id===id);if(!item)return;
-    try{await db.collection("bannerAds").doc(id).update({active:item.active===false,updatedAt:new Date().toISOString()});await renderBannerAdsAdmin(true);}
-    catch(error){console.error(error);alert("Banner durumu değiştirilemedi.");}
+    const item=bannerAdRecords.find(x=>x.id===id);
+    if(!item)return;
+
+    const nextActive=item.active===false;
+    const now=new Date().toISOString();
+
+    try{
+      await db.collection("bannerAds").doc(id).update({
+        active:nextActive,
+        updatedAt:now
+      });
+
+      if(item.sourceOrderId){
+        await syncSourcePromotionFromBanner(
+          item,
+          {
+            ...item,
+            active:nextActive,
+            updatedAt:now
+          },
+          nextActive
+        );
+        await loadPromotionAdminRecords();
+      }
+
+      addAudit(
+        nextActive ? "Banner yayına alındı" : "Banner duraklatıldı",
+        item.institutionName || item.headline || id
+      );
+
+      await renderBannerAdsAdmin(true);
+      renderManagedInstitutions();
+      renderTodayTasks();
+    }catch(error){
+      console.error(error);
+      alert("Banner durumu değiştirilemedi.");
+    }
   }
 
   async function deleteBannerAd(id){
-    const item=bannerAdRecords.find(x=>x.id===id);if(!item)return;
+    const item=bannerAdRecords.find(x=>x.id===id);
+    if(!item)return;
+
     if(!confirm('"'+(item.institutionName||"Banner")+'" reklamdan kaldırılsın mı?'))return;
-    try{await db.collection("bannerAds").doc(id).delete();addAudit("Banner reklamı kaldırıldı",item.institutionName||id);await renderBannerAdsAdmin(true);}
-    catch(error){console.error(error);alert("Banner reklamı silinemedi.");}
+
+    try{
+      await db.collection("bannerAds").doc(id).delete();
+
+      if(item.sourceOrderId){
+        const now=new Date().toISOString();
+        await db.collection("promotionOrders").doc(String(item.sourceOrderId)).update({
+          convertedToAd:false,
+          bannerAdId:"",
+          status:"preparing",
+          updatedAt:now
+        });
+
+        if(item.institutionId){
+          await db.collection("institutions").doc(String(item.institutionId)).update({
+            adStatus:"paused",
+            adUpdatedAt:now,
+            updatedAt:now
+          });
+        }
+
+        await loadPromotionAdminRecords();
+      }
+
+      addAudit("Banner reklamı kaldırıldı",item.institutionName||id);
+      await renderBannerAdsAdmin(true);
+      renderManagedInstitutions();
+      renderTodayTasks();
+    }catch(error){
+      console.error(error);
+      alert("Banner reklamı silinemedi.");
+    }
   }
 
   async function renderBannerAdsAdmin(reload=false){
