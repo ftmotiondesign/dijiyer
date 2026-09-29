@@ -2376,7 +2376,8 @@ function renderRegionalBannerCarousel(reset=false){
   const href="kurum.html?id="+encodeURIComponent(ad.institutionId||"");
   const regionText=[ad.city,ad.district].filter(Boolean).join(" / ");
   const sectorText=ad.categoryLabel||bannerCategoryLabel(ad.category);
-  const duration=Number(ad.durationSeconds)===3?3:5;
+  const savedDuration=Number(ad.durationSeconds);
+  const duration=[3,5,7].includes(savedDuration)?savedDuration:7;
 
   stage.innerHTML=
     '<a class="regional-banner-card '+((image||isVideo)?"has-image":"")+'" href="'+href+'">'+
