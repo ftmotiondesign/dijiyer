@@ -1221,6 +1221,7 @@ let activeMobileJobCategory = 'all';
 let mobileJobCategoryShowAll = false;
 let mobileJobSearchQuery = '';
 let mobileJobSearchTimer = null;
+let mobileJobSearchShowAll = false;
 
 let activeMobileJobLocationMode = 'local';
 let activeMobileJobCity = activeLocationCity || 'Çanakkale';
@@ -1863,6 +1864,86 @@ function mobileJobCardHtml(post){
   `;
 }
 
+function mobileJobSearchResultHtml(post){
+  const category=mobileJobCategoryMeta(inferMobileJobCategory(post));
+  const wage=String(post.wage||'').trim()||'Ücret görüşülür';
+
+  return `
+    <article class="mobile-job-search-result-row">
+      <div class="mobile-job-search-result-main">
+        <div class="mobile-job-search-result-badges">
+          <span class="${post.type==='work'?'worker':'employer'}">
+            ${mobileJobTypeIcon(post)} ${mobileJobTypeLabel(post)}
+          </span>
+          <span>${category.icon} ${escapeHtml(category.label)}</span>
+        </div>
+        <strong>${escapeHtml(String(post.title||'İş fırsatı'))}</strong>
+        <small>${escapeHtml(mobileJobLocationLabel(post))} · ${escapeHtml(String(post.workMode||'Esnek'))}</small>
+      </div>
+      <div class="mobile-job-search-result-side">
+        <b>${escapeHtml(wage)}</b>
+        <button type="button" data-job-contact="${escapeHtml(String(post.id||''))}">
+          ${post.type==='work'?'İletişim':'Başvur'}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderMobileJobSearchResults(){
+  const panel=document.getElementById('mobileJobsSearchResults');
+  const list=document.getElementById('mobileJobsSearchResultsList');
+  const count=document.getElementById('mobileJobsSearchResultCount');
+  if(!panel||!list)return;
+
+  const query=String(mobileJobSearchQuery||'').trim();
+
+  if(!query){
+    panel.classList.add('hidden');
+    list.innerHTML='';
+    if(count)count.textContent='0';
+    return;
+  }
+
+  const rows=mobileJobFacetRows();
+  if(count)count.textContent=String(rows.length);
+  panel.classList.remove('hidden');
+
+  if(!rows.length){
+    list.innerHTML=`
+      <div class="mobile-job-search-no-result">
+        <span>⌕</span>
+        <div>
+          <strong>“${escapeHtml(query)}” için ilan bulunamadı</strong>
+          <small>Farklı bir kelime deneyin veya konum filtresini genişletin.</small>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const visible=mobileJobSearchShowAll ? rows : rows.slice(0,4);
+
+  list.innerHTML=
+    visible.map(mobileJobSearchResultHtml).join('')+
+    (rows.length>4
+      ? `
+        <button type="button" class="mobile-job-search-more" data-job-search-more>
+          ${mobileJobSearchShowAll
+            ? 'Daha az göster'
+            : 'Tüm '+rows.length+' sonucu burada göster'}
+        </button>
+      `
+      : '');
+
+  bindMobileJobContactButtons(list);
+
+  list.querySelector('[data-job-search-more]')?.addEventListener('click',()=>{
+    mobileJobSearchShowAll=!mobileJobSearchShowAll;
+    renderMobileJobSearchResults();
+  });
+}
+
 function bindMobileJobContactButtons(scope=document){
   scope.querySelectorAll('[data-job-contact]').forEach(button=>{
     if(button.dataset.jobContactBound==='1')return;
@@ -1901,6 +1982,7 @@ function renderMobileJobs(){
 
   renderMobileJobCategories();
   updateMobileJobsUi(filtered);
+  renderMobileJobSearchResults();
 
   resultsHead?.classList.toggle('hidden',inlineCategoryActive);
   list.classList.toggle('hidden',inlineCategoryActive);
@@ -2017,16 +2099,27 @@ document.querySelectorAll('[data-job-quick]').forEach(button=>{
 
 document.getElementById('mobileJobsSearchInput')?.addEventListener('input',event=>{
   clearTimeout(mobileJobSearchTimer);
+  mobileJobSearchShowAll=false;
   mobileJobSearchTimer=setTimeout(()=>{
     mobileJobSearchQuery=String(event.target.value||'').trim();
     renderMobileJobs();
-  },140);
+  },80);
 });
 
 document.getElementById('mobileJobsSearchClear')?.addEventListener('click',()=>{
   const input=document.getElementById('mobileJobsSearchInput');
   if(input)input.value='';
   mobileJobSearchQuery='';
+  mobileJobSearchShowAll=false;
+  renderMobileJobs();
+  input?.focus();
+});
+
+document.getElementById('mobileJobsSearchResultsClose')?.addEventListener('click',()=>{
+  const input=document.getElementById('mobileJobsSearchInput');
+  if(input)input.value='';
+  mobileJobSearchQuery='';
+  mobileJobSearchShowAll=false;
   renderMobileJobs();
   input?.focus();
 });
@@ -2036,6 +2129,7 @@ document.getElementById('mobileJobsClearFilters')?.addEventListener('click',()=>
   activeMobileJobQuick='all';
   activeMobileJobCategory='all';
   mobileJobSearchQuery='';
+  mobileJobSearchShowAll=false;
   const input=document.getElementById('mobileJobsSearchInput');
   if(input)input.value='';
   renderMobileJobs();
