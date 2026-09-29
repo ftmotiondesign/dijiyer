@@ -865,7 +865,23 @@ function getShowcaseServiceState() {
   const institution=currentInstitution || {};
   const locationVideo=String(institution.locationVideoUrl || institution.profileVideoUrl || institution.videoUrl || "").trim();
   const virtualTour=String(institution.virtualTourUrl || institution.tour360Url || institution.tourUrl || "").trim();
-  return { locationVideo, virtualTour, hasLocationVideo:Boolean(locationVideo), hasVirtualTour:Boolean(virtualTour) };
+  const adStatus=String(institution.adStatus || "none");
+  const adEndAt=String(institution.adEndAt || "");
+  const adEnd=adEndAt ? new Date(adEndAt.length<=10 ? adEndAt+"T23:59:59" : adEndAt) : null;
+  const adExpired=Boolean(adEnd && !Number.isNaN(adEnd.getTime()) && adEnd.getTime()<Date.now());
+  const adActive=adStatus==="active" && !adExpired;
+
+  return {
+    locationVideo,
+    virtualTour,
+    hasLocationVideo:Boolean(locationVideo),
+    hasVirtualTour:Boolean(virtualTour),
+    adStatus,
+    adActive,
+    adExpired,
+    adPackage:String(institution.adPackage || ""),
+    hasBanner:Boolean(institution.adBannerUrl || institution.bannerUrl || institution.campaignBannerUrl)
+  };
 }
 
 function updateShowcaseServiceStatus() {
@@ -877,28 +893,171 @@ function updateShowcaseServiceStatus() {
     node.classList.toggle("active",active);
     node.classList.toggle("missing",!active);
   };
+
   setStatus("showcaseLocationStatus",state.hasLocationVideo,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
   setStatus("showcaseTourStatus",state.hasVirtualTour,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
   setStatus("summaryLocationStatus",state.hasLocationVideo,"▶ Konum Videosu · Aktif","▶ Konum Videosu · Henüz yok");
   setStatus("summaryTourStatus",state.hasVirtualTour,"◉ 360° Tur · Aktif","◉ 360° Tur · Henüz yok");
+
+  const adNode=document.getElementById("showcaseAdStatus");
+  if(adNode){
+    adNode.classList.remove("active","missing");
+    if(state.adActive){
+      const packageLabels={
+        starter:"Başlangıç Görünürlüğü",
+        regional:"Bölgesel Vitrin",
+        video:"Video Tanıtım",
+        premium:"Premium Tanıtım"
+      };
+      adNode.textContent="✓ Aktif"+(state.adPackage ? " · "+(packageLabels[state.adPackage]||state.adPackage) : "");
+      adNode.classList.add("active");
+    }else if(state.adExpired){
+      adNode.textContent="Süresi doldu";
+      adNode.classList.add("missing");
+    }else if(state.adStatus==="paused"){
+      adNode.textContent="Duraklatıldı";
+      adNode.classList.add("missing");
+    }else{
+      adNode.textContent="Aktif reklam yok";
+      adNode.classList.add("missing");
+    }
+  }
+
+  renderShowcaseRecommendations(state);
+}
+
+function renderShowcaseRecommendations(state=getShowcaseServiceState()) {
+  const list=document.getElementById("showcaseRecommendationList");
+  const score=document.getElementById("showcaseRecommendationScore");
+  if(!list)return;
+
+  const institution=currentInstitution || {};
+  const profileReady=[
+    institution.name,
+    institution.phone,
+    institution.address,
+    institution.description,
+    institution.logoUrl,
+    institution.coverUrl
+  ].filter(value=>String(value||"").trim()).length;
+
+  const rows=[];
+
+  if(!state.hasLocationVideo){
+    rows.push({
+      status:"missing",
+      icon:"▶",
+      title:"Konum Videosu ekleyin",
+      text:"Müşteriye işletmenize nasıl ulaşacağını görsel olarak anlatın.",
+      action:"location",
+      button:"Konum Videosu"
+    });
+  }else{
+    rows.push({status:"done",icon:"✓",title:"Konum Videosu aktif",text:"Kurum sayfanızda müşterilere gösteriliyor."});
+  }
+
+  if(!state.hasVirtualTour){
+    rows.push({
+      status:"missing",
+      icon:"360°",
+      title:"360° Sanal Tur ekleyin",
+      text:"Müşterinin mekana gelmeden önce içeriyi gezmesini sağlayın.",
+      action:"tour",
+      button:"360° Tur"
+    });
+  }else{
+    rows.push({status:"done",icon:"✓",title:"360° Sanal Tur aktif",text:"Kurum sayfanızda mekan deneyimi sunuluyor."});
+  }
+
+  if(!state.adActive){
+    rows.push({
+      status:"opportunity",
+      icon:"⌂",
+      title:"Dijiyer içi görünürlüğünüzü artırın",
+      text:"Ana sayfa, şehir veya kategori vitrinlerinden birini değerlendirebilirsiniz.",
+      action:"homepage",
+      button:"Reklam Seçenekleri"
+    });
+  }else{
+    rows.push({status:"done",icon:"✓",title:"Dijiyer reklamınız aktif",text:"Sponsorlu görünürlük alanınız şu anda yayında."});
+  }
+
+  if(!state.hasBanner){
+    rows.push({
+      status:"opportunity",
+      icon:"▣",
+      title:"Reklam bannerı hazırlatın",
+      text:"Kampanyanız veya kurumunuz için Dijiyer reklam alanlarına uygun tasarım hazırlatabilirsiniz.",
+      action:"bannerDesign",
+      button:"Banner Tasarımı"
+    });
+  }
+
+  if(profileReady<5){
+    rows.push({
+      status:"profile",
+      icon:"🏢",
+      title:"Kurum profilinizi tamamlayın",
+      text:"Logo, kapak, açıklama ve iletişim bilgileri reklamdan gelen ziyaretin daha verimli olmasına yardımcı olur.",
+      action:"profile",
+      button:"Profili Tamamla"
+    });
+  }
+
+  const completed=[state.hasLocationVideo,state.hasVirtualTour,state.adActive,state.hasBanner,profileReady>=5].filter(Boolean).length;
+  if(score) score.textContent=completed+"/5 alan aktif";
+
+  list.innerHTML=rows.map(row=>`
+    <article class="showcase-recommendation-item ${row.status}">
+      <span class="recommendation-icon">${row.icon}</span>
+      <div>
+        <strong>${escapeHtml(row.title)}</strong>
+        <small>${escapeHtml(row.text)}</small>
+      </div>
+      ${row.action ? '<button type="button" data-recommendation-action="'+escapeHtml(row.action)+'">'+escapeHtml(row.button)+'</button>' : '<span class="recommendation-done">Aktif</span>'}
+    </article>
+  `).join("");
 }
 
 function openShowcaseRequest(type) {
+  if(type==="profile"){
+    setPanelTab("profile");
+    return;
+  }
+
   const config={
     location:{subject:"Konum Videosu hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu hizmeti hakkında bilgi almak istiyorum. Çekim / hazırlama süreci, kullanım alanları ve fiyat bilgisi paylaşabilir misiniz?"},
     tour:{subject:"360° Sanal Tur hakkında bilgi almak istiyorum",message:"Kurumum için 360° Sanal Tur hizmeti hakkında bilgi almak istiyorum. Çekim süreci, kurum sayfasında yayınlama ve fiyat bilgisi paylaşabilir misiniz?"},
-    combo:{subject:"Dijiyer Mekan Tanıtım Paketi hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu + 360° Sanal Tur paketini değerlendirmek istiyorum. Paket kapsamı, süreç ve fiyat bilgisi paylaşabilir misiniz?"}
+    reels:{subject:"Reels Tanıtım Videosu hakkında bilgi almak istiyorum",message:"Kurumum için Reels / kısa tanıtım videosu hazırlatmak istiyorum. İçerik kapsamı, seslendirme seçenekleri ve fiyat bilgisi paylaşabilir misiniz?"},
+    bannerDesign:{subject:"Reklam Banner Tasarımı hakkında bilgi almak istiyorum",message:"Kurumum için Dijiyer reklam alanlarında ve sosyal medyada kullanabileceğim reklam bannerı hazırlatmak istiyorum. Tasarım ve fiyat bilgisi paylaşabilir misiniz?"},
+    homepage:{subject:"Ana Sayfa Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumumun Dijiyer Ana Sayfa Vitrini alanında sponsorlu olarak görünmesi hakkında bilgi almak istiyorum. Yayın süresi, gösterim alanı ve fiyat bilgisi paylaşabilir misiniz?"},
+    regionalAd:{subject:"Şehir / İlçe Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumum için şehir / ilçe bazlı sponsorlu görünürlük istiyorum. Uygun bölgesel reklam seçeneklerini ve fiyat bilgisini paylaşabilir misiniz?"},
+    categoryAd:{subject:"Kategori Vitrini reklamı hakkında bilgi almak istiyorum",message:"Kurumumun kendi kategorisinde sponsorlu vitrin alanında görünmesi hakkında bilgi almak istiyorum. Yayın süresi ve fiyat bilgisi paylaşabilir misiniz?"},
+    bannerAd:{subject:"Dijiyer Banner Reklamı hakkında bilgi almak istiyorum",message:"Kurumum veya kampanyam için Dijiyer banner reklamı vermek istiyorum. Uygun reklam alanları, yayın süresi ve fiyat bilgisi paylaşabilir misiniz?"},
+    campaign:{subject:"Kampanya Duyurusu hakkında bilgi almak istiyorum",message:"Kurumumun kampanya / kayıt / indirim duyurusunu Dijiyer üzerinden yayınlamak istiyorum. Kullanılabilecek alanları ve fiyat bilgisini paylaşabilir misiniz?"},
+    videoAd:{subject:"Video Vitrin Reklamı hakkında bilgi almak istiyorum",message:"Kurumum için Dijiyer'de sponsorlu video vitrini kullanmak istiyorum. Video hazırlama ve yayın seçenekleri hakkında bilgi paylaşabilir misiniz?"},
+    packageStarter:{subject:"Başlangıç Görünürlüğü paketi hakkında bilgi almak istiyorum",message:"Başlangıç Görünürlüğü paketi (banner tasarımı + kategori vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
+    packageRegional:{subject:"Bölgesel Görünürlük paketi hakkında bilgi almak istiyorum",message:"Bölgesel Görünürlük paketi (banner + şehir/ilçe vitrini + kampanya duyurusu) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
+    combo:{subject:"Dijiyer Mekan Tanıtım Paketi hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu + 360° Sanal Tur paketini değerlendirmek istiyorum. Paket kapsamı, süreç ve fiyat bilgisi paylaşabilir misiniz?"},
+    packagePlus:{subject:"Görünürlük Plus paketi hakkında bilgi almak istiyorum",message:"Görünürlük Plus paketi (Konum Videosu + banner + Ana Sayfa Vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
+    packagePremium:{subject:"Premium Tanıtım paketi hakkında bilgi almak istiyorum",message:"Premium Tanıtım paketi (Konum Videosu + 360° Tur + Ana Sayfa + Kategori + Şehir Vitrini) hakkında kapsam, yayın süresi ve fiyat bilgisi almak istiyorum."},
+    consultation:{subject:"Kurumuma uygun tanıtım paketini öğrenmek istiyorum",message:"Kurumum için hangi Dijiyer tanıtım ve reklam hizmetinin daha uygun olacağını öğrenmek istiyorum. Profilime ve hizmet bölgeme göre seçenekleri paylaşabilir misiniz?"}
   };
-  const selected=config[type] || config.combo;
+
+  const selected=config[type] || config.consultation;
   setPanelTab("support");
+
   setTimeout(()=>{
     const category=document.getElementById("supportCategory");
     const subject=document.getElementById("supportSubject");
     const message=document.getElementById("supportMessage");
+
     if(category)category.value="Tanıtım Hizmeti";
     if(subject)subject.value=selected.subject;
     if(message)message.value=selected.message;
+
     if(typeof populateSupportQuoteReferences==="function")populateSupportQuoteReferences();
+
     document.getElementById("supportTicketForm")?.scrollIntoView({behavior:"smooth",block:"start"});
     subject?.focus();
   },100);
@@ -1254,6 +1413,19 @@ document.getElementById("showcasePreviewBtn")?.addEventListener("click",()=>docu
 document.getElementById("showcasePreviewBtn2")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
 document.querySelectorAll("[data-showcase-request]").forEach(button=>{
   button.addEventListener("click",()=>openShowcaseRequest(button.dataset.showcaseRequest || "combo"));
+});
+
+document.querySelectorAll("[data-showcase-section-target]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    document.getElementById(button.dataset.showcaseSectionTarget)
+      ?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+
+document.getElementById("showcaseRecommendationList")?.addEventListener("click",event=>{
+  const button=event.target.closest("[data-recommendation-action]");
+  if(!button)return;
+  openShowcaseRequest(button.dataset.recommendationAction);
 });
 
 quotePanelFilter.addEventListener("change", () => {
