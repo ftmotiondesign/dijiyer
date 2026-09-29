@@ -1227,6 +1227,7 @@ async function saveQuoteResponse(quoteId, status) {
 
 document.getElementById("openShowcaseServicesBtn")?.addEventListener("click",()=>setPanelTab("showcase"));
 document.getElementById("showcasePreviewBtn")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
+document.getElementById("showcasePreviewBtn2")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
 document.querySelectorAll("[data-showcase-request]").forEach(button=>{
   button.addEventListener("click",()=>openShowcaseRequest(button.dataset.showcaseRequest || "combo"));
 });
