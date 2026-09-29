@@ -70,11 +70,19 @@ function renderProfile(){
     <section class="kp-hero">
       <div class="kp-cover">
         ${video?`<video controls playsinline preload="metadata" ${cover?'poster="'+escapeHtml(cover)+'"':""}><source src="${escapeHtml(video)}"></video>`:cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(x.name)} kapak">`:`<div class="kp-cover-empty">${escapeHtml(x.emoji||"🏢")}</div>`}
-        <div class="kp-badges"><span class="kp-badge ok">✓ Onaylı Kurum</span>${x.offer!==false?'<span class="kp-badge offer">₺ Teklif Veriyor</span>':""}${x.video||video?'<span class="kp-badge video">▶ Videolu Kurum</span>':""}${x.vip?'<span class="kp-badge">★ Öne Çıkan</span>':""}</div>
       </div>
       <div class="kp-identity">
         <div class="kp-logo">${logo?'<img src="'+escapeHtml(logo)+'" alt="'+escapeHtml(x.name)+' logosu">':escapeHtml(x.emoji||"🏢")}</div>
-        <div class="kp-title"><h1>${escapeHtml(x.name||"Kurum")}</h1><div class="kp-meta"><span>🏷️ ${escapeHtml(categoryLabel(x))}</span><span>📍 ${escapeHtml(locationLabel(x))}</span><span class="rating"><b>★</b> ${ratingText(x.rating)} ${Number(x.reviewCount||0)?"("+Number(x.reviewCount||0)+" değerlendirme)":""}</span></div></div>
+        <div class="kp-title">
+          <h1>${escapeHtml(x.name||"Kurum")}</h1>
+          <div class="kp-status-badges">
+            <span class="kp-status-badge verified">✓ Onaylı Kurum</span>
+            ${x.offer!==false?'<span class="kp-status-badge offer">₺ Teklif Veriyor</span>':""}
+            ${x.video||video?'<span class="kp-status-badge video">▶ Videolu Kurum</span>':""}
+            ${x.vip?'<span class="kp-status-badge vip">★ Öne Çıkan</span>':""}
+          </div>
+          <div class="kp-meta"><span>🏷️ ${escapeHtml(categoryLabel(x))}</span><span>📍 ${escapeHtml(locationLabel(x))}</span><span class="rating"><b>★</b> ${ratingText(x.rating)} ${Number(x.reviewCount||0)?"("+Number(x.reviewCount||0)+" değerlendirme)":""}</span></div>
+        </div>
         <div class="kp-actions">${x.offer!==false?'<button type="button" class="kp-btn primary" data-direct-quote>📄 Bu Kurumdan Teklif Al</button>':""}${whatsapp?'<button id="kpWhatsapp" class="kp-btn wa">💬 WhatsApp</button>':""}${phone?'<a class="kp-btn call" href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎ Ara</a>':""}<a id="kpRouteTop" class="kp-btn" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a></div>
       </div>
     </section>
