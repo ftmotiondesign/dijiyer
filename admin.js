@@ -38,6 +38,13 @@ const earningsVisibilityToggle = document.getElementById("earningsVisibilityTogg
 const earningsVisibilityState = document.getElementById("earningsVisibilityState");
 const homeFooterVisibilityToggle = document.getElementById("homeFooterVisibilityToggle");
 const homeFooterVisibilityState = document.getElementById("homeFooterVisibilityState");
+const homeSectionEditModal = document.getElementById("homeSectionEditModal");
+const homeSectionEditForm = document.getElementById("homeSectionEditForm");
+const homeSectionEditKey = document.getElementById("homeSectionEditKey");
+const homeSectionEditFields = document.getElementById("homeSectionEditFields");
+const homeSectionEditTitle = document.getElementById("homeSectionEditTitle");
+const homeSectionEditHelp = document.getElementById("homeSectionEditHelp");
+const homeSectionEditMessage = document.getElementById("homeSectionEditMessage");
 
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
@@ -403,6 +410,179 @@ homeFooterVisibilityToggle?.addEventListener("change",()=>{
     homeFooterVisibilityState,
     homeFooterVisibilityToggle.checked
   );
+});
+
+
+const HOME_SECTION_EDITOR_CONFIG = {
+  dailyStats:{
+    title:'“Bugün Dijiyer’de” Alanı',
+    help:'Günlük istatistik kutusundaki başlık ve açıklamaları düzenleyin.',
+    storageField:'dailyStatsContent',
+    fields:[
+      {key:'eyebrow',label:'Üst Başlık',default:"BUGÜN DİJİYER'DE"},
+      {key:'title',label:'Ana Başlık',default:'Günlük teklif hareketleri'},
+      {key:'liveLabel',label:'Canlı Etiketi',default:'Canlı'},
+      {key:'requestLabel',label:'Teklif İstendi Yazısı',default:'Teklif İstendi'},
+      {key:'offerLabel',label:'Teklif Verildi Yazısı',default:'Teklif Verildi'},
+      {key:'acceptedLabel',label:'Kabul Edildi Yazısı',default:'Kabul Edildi'},
+      {key:'topLabel',label:'En Çok Teklif Alınan Yazısı',default:'En Çok Teklif Alınan'}
+    ]
+  },
+  bottomQuote:{
+    title:'Alt Teklif / İşletme Alanı',
+    help:'İşletme çağrı alanındaki metinleri, faydaları, butonları ve bağlantıları düzenleyin.',
+    storageField:'bottomQuoteContent',
+    fields:[
+      {key:'kicker',label:'Üst Başlık',default:'İŞLETMELER İÇİN'},
+      {key:'title',label:'Ana Başlık',default:'Yeni müşteriler seni arasın, sen teklifini ver.',full:true},
+      {key:'description',label:'Açıklama',default:"İşletmeni Dijiyer'e ücretsiz ekle. Bölgen ve sektörünle eşleşen talepleri gör, teklif ver ve kurum panelinden süreci takip et.",type:'textarea',full:true},
+      {key:'benefits',label:'Avantajlar · Her satıra bir madde',default:'Üyelik ücretsiz\nTeklif vermek ücretsiz\nAylık zorunlu ücret yok\nKazandığın işten %0 komisyon',type:'textarea',full:true},
+      {key:'primaryLabel',label:'1. Buton Yazısı',default:'İşletmeni Ücretsiz Ekle'},
+      {key:'primaryUrl',label:'1. Buton Linki',default:'',type:'url',note:'Boşsa mevcut İşletme Ekle penceresi açılır.'},
+      {key:'secondaryLabel',label:'2. Buton Yazısı',default:'Kurum Paneline Gir'},
+      {key:'secondaryUrl',label:'2. Buton Linki',default:'',type:'url',note:'Boşsa mevcut Kurum Paneli açılır.'},
+      {key:'cardLabel',label:'Sağ Kart Üst Başlık',default:'İŞLETME MALİYETİ'},
+      {key:'cardValue',label:'Sağ Kart Büyük Değer',default:'0 TL'},
+      {key:'cardDescription',label:'Sağ Kart Açıklaması',default:'Başlangıçta kayıt ücreti, teklif verme ücreti veya satış komisyonu yok.',type:'textarea',full:true},
+      {key:'cardItems',label:'Sağ Kart Maddeleri · Değer|Açıklama',default:'Ücretsiz|Kurum profili\nÜcretsiz|Teklif verme\n%0|İş / satış komisyonu',type:'textarea',full:true}
+    ]
+  },
+  earnings:{
+    title:'Dijiyer Kazanç Alanı',
+    help:'Kazanç kartının başlıklarını ve butonlarını düzenleyin. Link boşsa mevcut pilot pencere açılır.',
+    storageField:'earningsContent',
+    fields:[
+      {key:'sectionEyebrow',label:'Bölüm Üst Başlık',default:'DAHA FAZLA'},
+      {key:'sectionTitle',label:'Bölüm Başlığı',default:'Dijiyer Kazanç'},
+      {key:'sectionSubtitle',label:'Bölüm Alt Yazısı',default:'Pilot özellik · detayları geliştirme aşamasında',full:true},
+      {key:'kicker',label:'Kart Üst Başlık',default:'DİJİYER KAZANÇ'},
+      {key:'badge',label:'Kart Etiketi',default:'PİLOT'},
+      {key:'title',label:'Kart Ana Başlığı',default:'İşletme tavsiye et, kazanç fırsatı yakala',full:true},
+      {key:'description',label:'Kart Açıklaması',default:'Davet ettiğin işletme ilk ücretli Dijiyer hizmetini onayladığında Dijiyer bakiyesi kazan.',type:'textarea',full:true},
+      {key:'primaryLabel',label:'1. Buton Yazısı',default:'İşletme Davet Et'},
+      {key:'primaryUrl',label:'1. Buton Linki',default:'',type:'url',note:'Boşsa davet penceresi açılır.'},
+      {key:'secondaryLabel',label:'2. Buton Yazısı',default:'Kazancım'},
+      {key:'secondaryUrl',label:'2. Buton Linki',default:'',type:'url',note:'Boşsa kazanç penceresi açılır.'}
+    ]
+  },
+  homeFooter:{
+    title:'Yerel İşletmeler ve Müşteriler Alt Bölümü',
+    help:'Alt bölümdeki marka yazılarını, açıklamayı ve üç bağlantıyı düzenleyin.',
+    storageField:'homeFooterContent',
+    fields:[
+      {key:'brandTitle',label:'Marka Adı',default:'Dijiyer'},
+      {key:'brandTagline',label:'Marka Sloganı',default:'Bul. Karşılaştır. Teklif Al.'},
+      {key:'title',label:'Ana Başlık',default:'Yerel işletmeler ve müşteriler tek yerde.',full:true},
+      {key:'description',label:'Açıklama',default:'Ücretsiz teklif al, ücretsiz teklif ver, komisyonsuz ilerle.',type:'textarea',full:true},
+      {key:'primaryLabel',label:'1. Buton Yazısı',default:'Teklif Al'},
+      {key:'primaryUrl',label:'1. Buton Linki',default:'',type:'url',note:'Boşsa teklif penceresi açılır.'},
+      {key:'secondaryLabel',label:'2. Buton Yazısı',default:'İşletme Ekle'},
+      {key:'secondaryUrl',label:'2. Buton Linki',default:'',type:'url',note:'Boşsa İşletme Ekle penceresi açılır.'},
+      {key:'thirdLabel',label:'3. Link Yazısı',default:'Kurumları İncele'},
+      {key:'thirdUrl',label:'3. Link Adresi',default:'#resultsSection',type:'url'}
+    ]
+  }
+};
+
+function homeSectionEditorFieldHtml(field,value){
+  const type=field.type || 'text';
+  const safeValue=String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const safeLabel=String(field.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const note=field.note ? '<span class="home-section-editor-field-note">'+String(field.note).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span>' : '';
+  if(type==='textarea'){
+    return '<label class="'+(field.full?'full':'')+'">'+safeLabel+
+      '<textarea data-home-content-field="'+field.key+'">'+safeValue+'</textarea>'+note+'</label>';
+  }
+  return '<label class="'+(field.full?'full':'')+'">'+safeLabel+
+    '<input type="'+type+'" data-home-content-field="'+field.key+'" value="'+safeValue+'">'+note+'</label>';
+}
+
+async function openHomeSectionEditor(sectionKey){
+  const config=HOME_SECTION_EDITOR_CONFIG[sectionKey];
+  if(!config || !homeSectionEditModal || !homeSectionEditFields)return;
+
+  if(homeSectionEditKey)homeSectionEditKey.value=sectionKey;
+  if(homeSectionEditTitle)homeSectionEditTitle.textContent=config.title;
+  if(homeSectionEditHelp)homeSectionEditHelp.textContent=config.help;
+  if(homeSectionEditMessage){
+    homeSectionEditMessage.textContent='';
+    homeSectionEditMessage.classList.remove('error');
+  }
+
+  let saved={};
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    saved=snap.exists ? (snap.data()?.[config.storageField] || {}) : {};
+  }catch(error){
+    console.warn('Bölüm içeriği okunamadı:',sectionKey,error);
+  }
+
+  homeSectionEditFields.innerHTML=config.fields.map(field=>
+    homeSectionEditorFieldHtml(field,Object.prototype.hasOwnProperty.call(saved,field.key) ? saved[field.key] : field.default)
+  ).join('');
+
+  homeSectionEditModal.classList.remove('hidden');
+}
+
+document.querySelectorAll('[data-home-section-edit]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    openHomeSectionEditor(button.dataset.homeSectionEdit);
+  });
+});
+
+document.getElementById('closeHomeSectionEditModal')?.addEventListener('click',()=>{
+  homeSectionEditModal?.classList.add('hidden');
+});
+
+homeSectionEditModal?.addEventListener('click',event=>{
+  if(event.target===homeSectionEditModal)homeSectionEditModal.classList.add('hidden');
+});
+
+document.getElementById('homeSectionEditReset')?.addEventListener('click',()=>{
+  const key=homeSectionEditKey?.value;
+  const config=HOME_SECTION_EDITOR_CONFIG[key];
+  if(!config || !homeSectionEditFields)return;
+  homeSectionEditFields.innerHTML=config.fields.map(field=>homeSectionEditorFieldHtml(field,field.default)).join('');
+  if(homeSectionEditMessage){
+    homeSectionEditMessage.textContent='Varsayılan değerler forma getirildi. Kaydettiğinizde uygulanır.';
+    homeSectionEditMessage.classList.remove('error');
+  }
+});
+
+homeSectionEditForm?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const key=homeSectionEditKey?.value;
+  const config=HOME_SECTION_EDITOR_CONFIG[key];
+  if(!config || !homeSectionEditFields)return;
+
+  const values={};
+  config.fields.forEach(field=>{
+    const input=homeSectionEditFields.querySelector('[data-home-content-field="'+field.key+'"]');
+    values[field.key]=String(input?.value ?? '').trim();
+  });
+
+  const saveButton=document.getElementById('homeSectionEditSave');
+  if(saveButton)saveButton.disabled=true;
+  if(homeSectionEditMessage){
+    homeSectionEditMessage.textContent='Kaydediliyor...';
+    homeSectionEditMessage.classList.remove('error');
+  }
+
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      [config.storageField]:values,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+    if(homeSectionEditMessage)homeSectionEditMessage.textContent='Kaydedildi. Ana sayfaya otomatik yansıyacak.';
+  }catch(error){
+    console.error('Bölüm içeriği kaydedilemedi:',key,error);
+    if(homeSectionEditMessage){
+      homeSectionEditMessage.textContent='Kaydedilemedi. Firestore Rules ayarını kontrol edin.';
+      homeSectionEditMessage.classList.add('error');
+    }
+  }finally{
+    if(saveButton)saveButton.disabled=false;
+  }
 });
 
 auth.onAuthStateChanged(async (user) => {
