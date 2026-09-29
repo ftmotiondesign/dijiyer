@@ -7,7 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=24">
-  <link rel="stylesheet" href="admin-advanced.css?v=5">
+  <link rel="stylesheet" href="admin-advanced.css?v=6">
 </head>
 
 <body>
@@ -100,6 +100,9 @@
         <button type="button" class="admin-main-nav-btn" data-admin-main="institutions">
           <span>Kurumlar</span>
         </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="ads">
+          <span>Reklam</span>
+        </button>
         <button type="button" class="admin-main-nav-btn" data-admin-main="support">
           <span>İletişim</span>
         </button>
@@ -118,6 +121,8 @@
         <button class="admin-tab" id="institutionsTabBtn" data-admin-group="institutions">Kurumlar</button>
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
+
+        <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
 
         <button class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</button>
@@ -142,6 +147,9 @@
         </button>
         <button type="button" data-admin-open="issues">
           <span>Açık Sorunlar</span><b id="quickIssueCount">0</b>
+        </button>
+        <button type="button" data-admin-open="promotionOrders">
+          <span>Tanıtım Siparişleri</span><b id="quickPromotionOrderCount">0</b>
         </button>
         <button type="button" data-admin-open="support">
           <span>Destek</span><b id="quickSupportCount">0</b>
@@ -457,6 +465,49 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+      <section id="promotionOrdersSection" hidden>
+        <div class="section-title promotion-admin-title">
+          <div>
+            <h3>🛍️ Tanıtım Siparişleri</h3>
+            <p id="promotionAdminCount">Siparişler yükleniyor...</p>
+          </div>
+          <button type="button" class="support-refresh-btn" id="promotionAdminRefresh">Yenile</button>
+        </div>
+
+        <div class="promotion-admin-kpis">
+          <button type="button" data-promotion-kpi="new"><span>Yeni Sipariş</span><strong id="promotionKpiNew">0</strong></button>
+          <button type="button" data-promotion-kpi="contacting"><span>Görüşülüyor</span><strong id="promotionKpiContacting">0</strong></button>
+          <button type="button" data-promotion-kpi="preparing"><span>Hazırlanıyor</span><strong id="promotionKpiPreparing">0</strong></button>
+          <button type="button" data-promotion-kpi="approval"><span>Onay Bekliyor</span><strong id="promotionKpiApproval">0</strong></button>
+          <button type="button" data-promotion-kpi="completed"><span>Tamamlandı</span><strong id="promotionKpiCompleted">0</strong></button>
+        </div>
+
+        <div class="advanced-toolbar promotion-admin-toolbar">
+          <input type="search" id="promotionAdminSearch" placeholder="Sipariş no, kurum, hizmet, telefon veya not ara...">
+          <select id="promotionAdminStatus">
+            <option value="">Tüm durumlar</option>
+            <option value="new">Yeni Sipariş</option>
+            <option value="contacting">Görüşülüyor</option>
+            <option value="preparing">Hazırlanıyor</option>
+            <option value="approval">Onay Bekliyor</option>
+            <option value="completed">Tamamlandı</option>
+          </select>
+          <select id="promotionAdminPayment">
+            <option value="">Tüm ödeme durumları</option>
+            <option value="pending">Ödeme Bekliyor</option>
+            <option value="paid">Ödendi</option>
+          </select>
+          <select id="promotionAdminSort">
+            <option value="newest">En yeni</option>
+            <option value="oldest">En eski</option>
+            <option value="active">Önce açık siparişler</option>
+          </select>
+        </div>
+
+        <div class="support-filter-summary" id="promotionFilterSummary"></div>
+        <div id="promotionAdminList" class="promotion-admin-list"></div>
       </section>
 
       <section id="supportSection" hidden>
@@ -975,8 +1026,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=31"></script>
-  <script src="admin-advanced.js?v=8"></script>
+  <script src="admin.js?v=32"></script>
+  <script src="admin-advanced.js?v=9"></script>
 
 </body>
 </html>
