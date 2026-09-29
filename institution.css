@@ -5369,3 +5369,19 @@ body[data-panel-current="showcase"] .panel-heading-action{
   color:#1268da;
 }
 .promotion-order-note.admin-update b{color:#344257}
+
+
+/* Tanıtım popup görünürlük güvenliği */
+.promotion-modal.hidden,
+.promotion-order-success.hidden,
+.promotion-extra-fieldset.hidden{
+  display:none !important;
+}
+
+.promotion-modal:not(.hidden){
+  display:grid;
+}
+
+#promotionOrderFormView.hidden{
+  display:none !important;
+}
