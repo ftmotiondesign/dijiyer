@@ -3301,6 +3301,12 @@ locationBtn?.addEventListener('click', (event) => {
   setLocationPopover(locationPopover.classList.contains('hidden'));
 });
 
+document.getElementById('mobileSearchLocationBtn')?.addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+  setLocationPopover(true);
+});
+
 locationCloseBtn?.addEventListener('click', () => setLocationPopover(false));
 
 document.addEventListener('click', (event) => {
@@ -3314,20 +3320,38 @@ locationPopover?.addEventListener('click', event => event.stopPropagation());
 
 function updateMainLocationButton() {
   const exploreLocationText = document.getElementById('exploreLocationText');
+  const mobileSearchLocationText = document.getElementById('mobileSearchLocationText');
+  const mobileSearchLocationHint = document.getElementById('mobileSearchLocationHint');
+  const mobileSearchLocationBtn = document.getElementById('mobileSearchLocationBtn');
 
   if (!activeLocationCity) {
     locationBtnText.textContent = 'Tüm Türkiye';
     if (exploreLocationText) exploreLocationText.textContent = 'Tüm Türkiye';
+    if (mobileSearchLocationText) mobileSearchLocationText.textContent = 'Tüm Türkiye';
+    if (mobileSearchLocationHint) {
+      mobileSearchLocationHint.textContent = 'İstersen şehir ve ilçe seçerek sonuçları daralt';
+    }
+    mobileSearchLocationBtn?.classList.add('all-turkey');
     syncExploreQuickFilterState();
     return;
   }
 
   const label = activeLocationDistrict
+    ? activeLocationCity + ' / ' + activeLocationDistrict
+    : activeLocationCity;
+
+  locationBtnText.textContent = activeLocationDistrict
     ? activeLocationCity + ', ' + activeLocationDistrict
     : activeLocationCity;
 
-  locationBtnText.textContent = label;
-  if (exploreLocationText) exploreLocationText.textContent = label;
+  if (exploreLocationText) exploreLocationText.textContent = locationBtnText.textContent;
+  if (mobileSearchLocationText) mobileSearchLocationText.textContent = label;
+  if (mobileSearchLocationHint) {
+    mobileSearchLocationHint.textContent = activeLocationDistrict
+      ? 'Kurumlar bu ilçe içinde aranıyor'
+      : 'Kurumlar bu şehir genelinde aranıyor';
+  }
+  mobileSearchLocationBtn?.classList.remove('all-turkey');
   syncExploreQuickFilterState();
 }
 
@@ -3429,7 +3453,9 @@ applyMainLocationBtn?.addEventListener('click', () => {
 
   updateMainLocationButton();
   setLocationPopover(false);
+  renderMobileCategories();
   renderList();
+  updateMobileCategoryResult();
 
   const filtered = getFilteredInstitutions();
   const firstWithCoords = filtered.find(inst =>
@@ -3458,7 +3484,9 @@ clearMainLocationBtn?.addEventListener('click', () => {
 
   updateMainLocationButton();
   setLocationPopover(false);
+  renderMobileCategories();
   renderList();
+  updateMobileCategoryResult();
   map.setView([39.0, 35.0], 6);
   showToast('Tüm Türkiye gösteriliyor.');
 });
