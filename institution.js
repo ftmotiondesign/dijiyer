@@ -606,19 +606,36 @@ function playNewQuoteSound() {
 }
 
 function getInstitutionQuoteQueries() {
-  if (!currentInstitution?.category || !currentInstitution?.city) return [];
+  if (!currentInstitution) return [];
 
   const collection = db.collection("quoteRequests");
-  const district = String(currentInstitution.district || "").trim();
+  const queries = [];
 
-  const districts = district ? ["", district] : [""];
+  if (currentInstitution.category && currentInstitution.city) {
+    const district = String(currentInstitution.district || "").trim();
+    const districts = district ? ["", district] : [""];
 
-  return districts.map(value =>
-    collection
-      .where("category", "==", currentInstitution.category)
-      .where("city", "==", currentInstitution.city)
-      .where("district", "==", value)
-  );
+    districts.forEach(value => {
+      queries.push(
+        collection
+          .where("category", "==", currentInstitution.category)
+          .where("city", "==", currentInstitution.city)
+          .where("district", "==", value)
+      );
+    });
+  }
+
+  if (currentAccount?.institutionId) {
+    queries.push(
+      collection.where(
+        "targetInstitutionId",
+        "==",
+        String(currentAccount.institutionId)
+      )
+    );
+  }
+
+  return queries;
 }
 
 async function fetchInstitutionMatchedQuotes() {
@@ -1039,8 +1056,15 @@ function renderSummary() {
 function quoteCardHtml(quote, compact = false) {
   const response = responseMap.get(quote.id);
   const state = response?.status || "new";
+  const isDirect =
+    Boolean(quote.targetInstitutionId) &&
+    String(quote.targetInstitutionId) === String(currentAccount?.institutionId || "");
+
+  const displayCity = isDirect ? currentInstitution.city : quote.city;
+  const displayDistrict = isDirect ? currentInstitution.district : quote.district;
+
   const sameDistrict =
-    String(quote.district || "").toLocaleLowerCase("tr-TR") ===
+    String(displayDistrict || "").toLocaleLowerCase("tr-TR") ===
     String(currentInstitution.district || "").toLocaleLowerCase("tr-TR");
 
   const statusText = state === "interested"
@@ -1054,7 +1078,7 @@ function quoteCardHtml(quote, compact = false) {
       <button class="recent-quote" data-open-quotes>
         <span>
           <strong>${escapeHtml(quote.service || "Teklif Talebi")}</strong>
-          <small>${escapeHtml(quote.district || quote.city || "-")} · ${formatDate(quote.date)}</small>
+          <small>${isDirect ? "🎯 Doğrudan Profil Talebi · " : ""}${escapeHtml(displayDistrict || displayCity || "-")} · ${formatDate(quote.date)}</small>
         </span>
         <span class="quote-status status-${state}">${statusText}</span>
       </button>
@@ -1075,9 +1099,12 @@ function quoteCardHtml(quote, compact = false) {
       <div class="quote-card-head">
         <div>
           <div class="quote-service">${escapeHtml(quote.service || "Teklif Talebi")}</div>
+          ${isDirect ? '<div class="direct-profile-request-badge">🎯 Doğrudan Profil Talebi</div>' : ""}
           <div class="quote-location">
-            📍 ${escapeHtml([quote.city, quote.district].filter(Boolean).join(" / "))}
-            ${sameDistrict ? '<span class="district-badge">Aynı ilçe</span>' : '<span class="city-badge">Aynı şehir</span>'}
+            📍 ${escapeHtml([displayCity, displayDistrict].filter(Boolean).join(" / "))}
+            ${isDirect
+              ? '<span class="district-badge">Sadece size gönderildi</span>'
+              : (sameDistrict ? '<span class="district-badge">Aynı ilçe</span>' : '<span class="city-badge">Aynı şehir</span>')}
           </div>
         </div>
 
