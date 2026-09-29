@@ -1322,7 +1322,7 @@
     $("externalAdForm")?.reset();
     if($("externalAdEditId"))$("externalAdEditId").value="";
     if($("externalAdActive"))$("externalAdActive").checked=true;
-    if($("externalAdRotationSeconds"))$("externalAdRotationSeconds").value="10";
+    if($("externalAdRotationSeconds"))$("externalAdRotationSeconds").value="5";
     if($("externalAdMediaType"))$("externalAdMediaType").value="image";
     if($("externalAdFormTitle"))$("externalAdFormTitle").textContent="Yeni Harici Reklam";
     if($("externalAdUploadMessage"))$("externalAdUploadMessage").textContent="";
@@ -1365,7 +1365,7 @@
           '<div class="external-ad-admin-row-head"><strong>'+escapeHtml(item.brandName||"Marka")+'</strong><span class="external-ad-status '+status.key+'">'+escapeHtml(status.label)+'</span></div>'+
           '<small>'+escapeHtml(item.headline||"")+'</small>'+
           '<p>'+escapeHtml(item.targetUrl||"")+'</p>'+
-          '<div class="external-ad-admin-meta"><span>'+Number(item.rotationSeconds||10)+' sn</span><span>'+escapeHtml(type==="video"?"Video":"Görsel")+'</span></div>'+
+          '<div class="external-ad-admin-meta"><span>'+Number(item.rotationSeconds||5)+' sn</span><span>'+escapeHtml(type==="video"?"Video":"Görsel")+'</span></div>'+
         '</div>'+
         '<div class="external-ad-admin-actions">'+
           '<button type="button" data-external-edit="'+escapeHtml(item.id)+'">Düzenle</button>'+
@@ -1403,7 +1403,7 @@
     $("externalAdVideoUrl").value=item.videoUrl||"";
     $("externalAdStartAt").value=externalAdDateTimeLocal(item.startAt);
     $("externalAdEndAt").value=externalAdDateTimeLocal(item.endAt);
-    $("externalAdRotationSeconds").value=String(item.rotationSeconds||10);
+    $("externalAdRotationSeconds").value=String(item.rotationSeconds||5);
     $("externalAdActive").checked=item.active!==false;
     $("externalAdRightsConfirmed").checked=Boolean(item.rightsConfirmed);
     $("externalAdFormTitle").textContent="Reklamı Düzenle";
@@ -1439,7 +1439,7 @@
     const ref=id ? db.collection("externalAds").doc(id) : db.collection("externalAds").doc();
     const data={
       brandName,headline,targetUrl,mediaType,imageUrl,videoUrl,
-      rotationSeconds:Math.max(5,Math.min(60,Number($("externalAdRotationSeconds")?.value||10))),
+      rotationSeconds:Math.max(5,Math.min(60,Number($("externalAdRotationSeconds")?.value||5))),
       startAt,endAt,
       active:Boolean($("externalAdActive")?.checked),
       rightsConfirmed:true,
