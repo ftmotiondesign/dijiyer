@@ -3379,6 +3379,48 @@ function homepageSponsoredCardHtml(inst) {
   `;
 }
 
+function homepageSponsoredMobileHtml(inst) {
+  const cover = safePublicProfileUrl(inst.coverUrl || '');
+  const logo = safePublicProfileUrl(inst.logoUrl || '');
+  const location = inst.location || [inst.city, inst.district].filter(Boolean).join(', ') || 'Konum bilgisi';
+
+  return `
+    <article
+      class="mobile-sponsored-card"
+      data-sponsored-id="${escapeHtml(String(inst.id))}"
+      role="link"
+      tabindex="0"
+      aria-label="${escapeHtml(inst.name || 'Sponsorlu kurum')} profilini aç"
+    >
+      <div class="mobile-sponsored-media">
+        ${cover
+          ? '<img src="' + cover + '" alt="' + escapeHtml(inst.name || 'Sponsorlu kurum') + '">'
+          : '<div class="mobile-sponsored-media-fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
+        <span class="mobile-sponsored-label">SPONSORLU</span>
+      </div>
+
+      <div class="mobile-sponsored-body">
+        <div class="mobile-sponsored-title">
+          <div class="mobile-sponsored-logo">
+            ${logo
+              ? '<img src="' + logo + '" alt="">'
+              : escapeHtml(inst.emoji || '🏢')}
+          </div>
+          <div>
+            <strong>${escapeHtml(inst.name || 'Kurum')}</strong>
+            <small>📍 ${escapeHtml(location)}</small>
+          </div>
+        </div>
+
+        <div class="mobile-sponsored-footer">
+          <span>${escapeHtml(getHomepageAdPackageLabel(inst.adPackage))}</span>
+          <b>Profili Gör →</b>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 function homepageSponsoredSidebarHtml(inst) {
   const cover = safePublicProfileUrl(inst.coverUrl || '');
   return `
@@ -3526,8 +3568,9 @@ function bindHomepageAdvertiseButtons() {
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
+  const mobileSlot = document.getElementById('mobileSponsoredSlot');
   const premiumStage = document.getElementById('premiumShowcaseStage');
-  if (!rail && !sidebar && !premiumStage) return;
+  if (!rail && !sidebar && !mobileSlot && !premiumStage) return;
 
   renderPremiumShowcase();
 
@@ -3551,6 +3594,25 @@ function renderSponsoredAds() {
           <span>SPONSORLU ALAN</span>
           <strong>İşletmeni burada göster</strong>
           <small>Ana sayfada görünürlüğünü artır.</small>
+          <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+        </div>
+      `;
+    }
+  }
+
+  if (mobileSlot) {
+    if (sponsored.length) {
+      mobileSlot.innerHTML = homepageSponsoredMobileHtml(sponsored[0]);
+      bindHomepageSponsoredCards(mobileSlot);
+    } else {
+      mobileSlot.innerHTML = `
+        <div class="mobile-sponsored-placeholder">
+          <div class="mobile-sponsored-placeholder-icon">📣</div>
+          <div class="mobile-sponsored-placeholder-copy">
+            <span>SPONSORLU ALAN</span>
+            <strong>İşletmeni burada göster</strong>
+            <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
+          </div>
           <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
         </div>
       `;
