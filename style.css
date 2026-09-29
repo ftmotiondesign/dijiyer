@@ -12563,3 +12563,267 @@ to{opacity:1;transform:none}
     grid-column:1!important;
   }
 }
+
+
+/* =========================================================
+   DİJİYER PC SON RÖTUŞ V2
+   Harita + günlük istatistik, sponsor başlığı, kompakt kurum
+   listesi, daha güçlü iş kategorileri ve kurum detayı geçişi.
+   ========================================================= */
+.pc-sponsored-heading,
+.desktop-detail-heading{
+  display:none;
+}
+
+@media(min-width:821px){
+  /* Ana akışın geniş ekranda daha dengeli yayılması */
+  .mobile-discovery,
+  .mobile-sponsored-slot,
+  .premium-home-showcase{
+    width:min(1480px,calc(100% - 32px))!important;
+  }
+
+  .app-layout{
+    width:min(1512px,100%)!important;
+  }
+
+  /* Arama / kategori merkezini PC'de biraz daha kompakt yap */
+  .mobile-discovery{
+    margin-top:16px!important;
+    padding:12px!important;
+    border-radius:15px!important;
+  }
+
+  .mobile-search-location{
+    min-height:56px!important;
+    grid-template-columns:36px minmax(0,1fr) auto!important;
+    gap:9px!important;
+    padding:8px 10px!important;
+  }
+
+  .mobile-search-location-icon{
+    width:36px!important;
+    height:36px!important;
+    border-radius:10px!important;
+    font-size:16px!important;
+  }
+
+  .mobile-search-quick-filters{
+    margin-top:7px!important;
+    gap:6px!important;
+  }
+
+  .mobile-search-quick-filters button{
+    min-height:36px!important;
+  }
+
+  .mobile-discovery-head{
+    margin-top:11px!important;
+  }
+
+  .mobile-category-scroll{
+    margin-top:7px!important;
+    gap:7px!important;
+  }
+
+  .mobile-category-btn{
+    min-height:64px!important;
+    padding:6px!important;
+  }
+
+  .mobile-category-icon{
+    width:28px!important;
+    height:28px!important;
+  }
+
+  /* Sponsor alanının reklam olduğu PC'de daha net anlaşılsın */
+  .pc-sponsored-heading{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    margin:0 2px 7px!important;
+  }
+
+  .pc-sponsored-heading>div{
+    display:grid!important;
+    gap:1px!important;
+  }
+
+  .pc-sponsored-heading span{
+    color:#1677ff!important;
+    font-size:7px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  .pc-sponsored-heading strong{
+    color:#2d4058!important;
+    font-size:11px!important;
+  }
+
+  .pc-sponsored-heading small{
+    color:#8794a5!important;
+    font-size:7.5px!important;
+  }
+
+  /* Harita solda, Bugün Dijiyer'de sağda. İstatistik kapalıysa harita tam genişlik. */
+  .workspace{
+    grid-template-columns:minmax(360px,.78fr) minmax(0,1.22fr)!important;
+  }
+
+  .workspace>.map-card{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+
+  .workspace>.mobile-daily-stats:not(.stats-disabled){
+    grid-column:2!important;
+    grid-row:1!important;
+  }
+
+  .workspace.daily-stats-off>.map-card{
+    grid-column:1/-1!important;
+  }
+
+  .workspace.daily-stats-off{
+    grid-template-columns:1fr!important;
+  }
+
+  .workspace.daily-stats-off #map{
+    height:265px!important;
+  }
+
+  .mobile-daily-stats-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+
+  .mobile-daily-stat{
+    min-height:76px!important;
+    grid-template-columns:32px minmax(0,1fr)!important;
+  }
+
+  /* Kurum listesinde daha fazla sonuç aynı anda görülsün */
+  .list-panel{
+    max-height:720px!important;
+  }
+
+  .institution-list{
+    gap:7px!important;
+  }
+
+  .institution-card{
+    grid-template-columns:78px minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:7px!important;
+  }
+
+  .institution-card .thumb{
+    min-height:84px!important;
+  }
+
+  .institution-card .card-body h3{
+    font-size:12.5px!important;
+  }
+
+  .institution-card .card-body .rating{
+    font-size:10px!important;
+  }
+
+  .institution-card .card-body .meta{
+    font-size:8.2px!important;
+  }
+
+  .institution-card .chip{
+    font-size:6.6px!important;
+    padding:3px 5px!important;
+  }
+
+  .institution-card .small-btn,
+  .institution-card .compare-mini-btn{
+    min-height:28px!important;
+    padding:5px 7px!important;
+    font-size:7px!important;
+  }
+
+  .institution-list-sponsored-media{
+    height:92px!important;
+  }
+
+  .institution-list-sponsored-body{
+    padding:8px 9px 9px!important;
+  }
+
+  .institution-list-sponsored-body>p{
+    margin:3px 0 6px!important;
+    -webkit-line-clamp:1!important;
+  }
+
+  /* İş Fırsatları kategori kartlarını PC'de daha okunur yap */
+  #mobileJobsBoard .mobile-jobs-categories>button{
+    min-height:62px!important;
+    font-size:7.5px!important;
+    gap:4px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button>span{
+    font-size:16px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button>small{
+    font-size:6.3px!important;
+  }
+
+  /* Seçili kurum detay alanı */
+  .desktop-detail-heading{
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+    margin:-2px 0 10px!important;
+    padding-bottom:9px!important;
+    border-bottom:1px solid #e7edf4!important;
+  }
+
+  .desktop-detail-heading>div{
+    display:grid!important;
+    gap:2px!important;
+  }
+
+  .desktop-detail-heading span{
+    color:#1677ff!important;
+    font-size:7px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  .desktop-detail-heading strong{
+    color:#263b55!important;
+    font-size:15px!important;
+  }
+
+  .desktop-detail-heading small{
+    color:#8491a2!important;
+    font-size:8px!important;
+  }
+
+  .detail-panel{
+    scroll-margin-top:14px!important;
+  }
+}
+
+@media(min-width:821px) and (max-width:1120px){
+  .workspace{
+    grid-template-columns:1fr!important;
+  }
+
+  .workspace>.map-card,
+  .workspace>.mobile-daily-stats:not(.stats-disabled){
+    grid-column:1!important;
+    grid-row:auto!important;
+  }
+
+  .mobile-daily-stats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
