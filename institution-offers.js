@@ -478,6 +478,7 @@ async function saveRealOffer(form){
       updatedAt:new Date().toISOString()
     },{merge:true});
     await batch.commit();
+    await recordPublicOfferEvent(quoteId,currentAccount.institutionId,data.createdAt);
 
     institutionOfferMap.set(quoteId,{id:currentAccount.institutionId,...data});
     if(responseMap.get(quoteId)?.status==="not_interested"){
@@ -489,6 +490,22 @@ async function saveRealOffer(form){
     alert("Teklif kaydedilemedi. Firestore kurallarını kontrol edin.");
   }finally{
     submit.disabled=false; submit.textContent=oldText;
+  }
+}
+
+async function recordPublicOfferEvent(quoteId,institutionId,date){
+  try{
+    const eventId=String(quoteId)+"__"+String(institutionId);
+    const ref=db.collection("publicOfferEvents").doc(eventId);
+    const existing=await ref.get();
+    if(existing.exists)return;
+    await ref.set({
+      quoteId:String(quoteId),
+      institutionId:String(institutionId),
+      date:String(date||"")
+    });
+  }catch(error){
+    console.warn("Günlük teklif istatistiği kaydedilemedi:",error);
   }
 }
 
