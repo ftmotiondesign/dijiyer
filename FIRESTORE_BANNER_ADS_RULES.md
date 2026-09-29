@@ -12,15 +12,9 @@ match /bannerAds/{bannerId} {
 
   // Yönetim bütün kayıtları görebilir.
   // Ziyaretçiler sadece aktif reklamları okuyabilir.
-  allow get: if isAdmin() || resource.data.active == true;
-
-  allow list: if
+  allow read: if
     isAdmin()
-    ||
-    (
-      resource.data.active == true
-      && request.query.limit <= 100
-    );
+    || resource.data.active == true;
 }
 ```
 
