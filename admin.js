@@ -1976,6 +1976,17 @@ document.getElementById("editVirtualTourPreviewBtn")?.addEventListener("click", 
   }
 });
 
+document.getElementById("editVirtualTourClearBtn")?.addEventListener("click", () => {
+  const input = document.getElementById("editVirtualTourUrl");
+  if (!input || !String(input.value || "").trim()) return;
+
+  const ok = confirm("360° Sanal Tur bağlantısı temizlensin mi? Değişikliği kalıcı yapmak için ardından Değişiklikleri Kaydet'e basın.");
+  if (!ok) return;
+
+  input.value = "";
+  input.focus();
+});
+
 document.getElementById("institutionEditForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
