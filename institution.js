@@ -1068,7 +1068,7 @@ const PROMOTION_SERVICES = {
     extras:["Ek sosyal medya ölçüsü","Hareketli banner versiyonu"],
     example:"Kurum logosu, kampanya mesajı ve çağrı butonuyla hazırlanmış sponsorlu banner."
   },
-  homepage:{id:"homepage_showcase",name:"Ana Sayfa Vitrini",icon:"⌂",lead:"Kurumunuzu Dijiyer'in en görünür sponsorlu alanlarından birinde yayınlayın.",benefit:"Daha fazla profil ziyareti ve marka görünürlüğü sağlar.",includes:["Sponsorlu ana sayfa alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],process:"Kurum ve kampanya içeriği kontrol edilir, uygun vitrin alanı planlanır.",required:"Logo, kısa tanıtım metni ve varsa banner.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 içerik kontrolü",price:0,priceLabel:"Yayın süresine göre fiyatlandırılır",extras:["Banner tasarımı","Video içerik"],example:"Ana sayfada 'Sponsorlu' etiketiyle kurum kartı veya banner gösterimi."},
+  homepage:{id:"homepage_showcase",name:"Premium Ana Sayfa Vitrini",icon:"◆",lead:"Markanızı Dijiyer ana sayfasının en görünür ve en büyük sponsorlu alanında yayınlayın.",benefit:"Ana sayfaya gelen ziyaretçilerin ilk gördüğü reklam alanlarından birinde güçlü marka görünürlüğü ve doğrudan kurum profilinize trafik sağlar.",includes:["Büyük Premium Ana Sayfa Vitrini","Sponsorlu marka görünürlüğü","Kurum sayfasına doğrudan yönlendirme","Yayın süresi ve gösterim takibi"],process:"Yayın süresi ve kampanya amacı alınır; görsel/banner kontrol edilir, yayın planı hazırlanır ve onayınız sonrası vitrine alınır.",required:"Logo, kampanya başlığı, kısa tanıtım metni ve varsa reklam görseli/banner.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 içerik kontrolü",price:0,priceLabel:"Yayın süresi ve kampanyaya göre fiyatlandırılır",extras:["Banner tasarımı","Video içerik"],example:"Dijiyer ana sayfasında geniş Premium Sponsorlu alan içinde marka görseli, kampanya mesajı ve 'İncele' çağrısı."},
   regionalAd:{id:"regional_showcase",name:"Şehir / İlçe Vitrini",icon:"📍",lead:"Belirli şehir veya ilçede kurum arayan müşterilere sponsorlu olarak görünün.",benefit:"Reklamı hizmet verdiğiniz bölgeyle sınırlandırarak daha ilgili kullanıcıya ulaşmanızı sağlar.",includes:["Şehir/ilçe sponsorlu alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],process:"Hedef bölge ve yayın süresi seçilir; uygun reklam alanı planlanır.",required:"Hedef şehir/ilçe, logo ve kısa tanıtım metni.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi içerik kontrolü",price:0,priceLabel:"Bölge ve süreye göre fiyatlandırılır",extras:["Banner tasarımı","Kampanya duyurusu"],example:"Çanakkale / Merkez aramalarında sponsorlu kurum görünümü."},
   categoryAd:{id:"category_showcase",name:"Kategori Vitrini",icon:"🏷️",lead:"Hizmetinizi arayan kullanıcıların karşısına sponsorlu kurum olarak çıkın.",benefit:"Reklamınızı genel kitle yerine doğrudan sektörünüzü inceleyen kullanıcılara gösterir.",includes:["Kategori sponsorlu alanı","Kurum sayfasına yönlendirme","Sponsorlu etiketi"],process:"Kurum kategorisi doğrulanır ve uygun yayın dönemi belirlenir.",required:"Logo ve kısa kurum tanıtımı.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi içerik kontrolü",price:0,priceLabel:"Kategori ve süreye göre fiyatlandırılır",extras:["Banner tasarımı"],example:"Sürücü kursları kategorisinde sponsorlu kurum kartı."},
   bannerAd:{id:"banner_ad",name:"Dijiyer Banner Reklamı",icon:"▰",lead:"Kampanyanızı Dijiyer içindeki banner alanlarında yayınlayın.",benefit:"Kayıt, indirim ve dönemsel kampanyalarınıza ek görünürlük sağlar.",includes:["Dijiyer banner alanı","Tıklamada kurum profiline yönlendirme","Yayın süresi takibi"],process:"Banner kontrol edilir veya tasarlanır, alan ve tarih planlanır.",required:"Hazır banner veya tasarım için logo ve kampanya bilgisi.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 kontrol",price:0,priceLabel:"Alan ve süreye göre fiyatlandırılır",extras:["Banner tasarımı","Hareketli banner"],example:"Dijiyer sayfasında kampanya görselinin sponsorlu banner olarak yayınlanması."},
@@ -1114,6 +1114,115 @@ function normalizePromotionExtras(service){
       price:Math.max(0,Number(item?.price||0))
     })
     .filter(item=>item.name);
+}
+
+const PROMOTION_AD_SERVICE_KEYS = new Set([
+  "homepage","regionalAd","categoryAd","bannerAd","campaign"
+]);
+
+function isPromotionAdvertisingService(key){
+  return PROMOTION_AD_SERVICE_KEYS.has(String(key||""));
+}
+
+function promotionInstitutionLocation(){
+  return [currentInstitution?.city,currentInstitution?.district]
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function promotionInstitutionCategory(){
+  return String(
+    currentInstitution?.categoryLabel ||
+    currentInstitution?.subCategory ||
+    currentInstitution?.category ||
+    currentInstitution?.mainCategory ||
+    ""
+  ).trim();
+}
+
+function setPromotionOrderPlanDefaults(serviceKey){
+  const section=document.getElementById("promotionAdPlanSection");
+  const targetInput=document.getElementById("promotionOrderAdTarget");
+  const targetLabel=document.getElementById("promotionOrderTargetLabel");
+  const objective=document.getElementById("promotionOrderObjective");
+  const duration=document.getElementById("promotionOrderDuration");
+  const startDate=document.getElementById("promotionOrderStartDate");
+  const campaignTitle=document.getElementById("promotionOrderCampaignTitle");
+
+  const isAd=isPromotionAdvertisingService(serviceKey);
+  section?.classList.toggle("hidden",!isAd);
+
+  if(!isAd)return;
+
+  if(objective)objective.value="Kurum görünürlüğü";
+  if(duration)duration.value="30 gün";
+  if(startDate)startDate.value="";
+  if(campaignTitle)campaignTitle.value="";
+
+  let target="";
+  let label="Hedef Bölge / Kitle";
+
+  if(serviceKey==="homepage"){
+    target="Tüm Dijiyer ana sayfa ziyaretçileri";
+    label="Hedef Kitle";
+  }else if(serviceKey==="categoryAd"){
+    target=promotionInstitutionCategory();
+    label="Hedef Kategori";
+  }else{
+    target=promotionInstitutionLocation();
+    label="Hedef Bölge";
+  }
+
+  if(targetInput)targetInput.value=target;
+  if(targetLabel){
+    const input=targetLabel.querySelector("input");
+    targetLabel.childNodes[0].nodeValue=label+" ";
+    if(input)targetLabel.appendChild(input);
+  }
+}
+
+function promotionOrderPlanExtras(){
+  if(!isPromotionAdvertisingService(activePromotionServiceKey))return [];
+
+  const values=[
+    ["Reklam amacı",document.getElementById("promotionOrderObjective")?.value],
+    ["Yayın süresi",document.getElementById("promotionOrderDuration")?.value],
+    ["Tercih edilen başlangıç",document.getElementById("promotionOrderStartDate")?.value],
+    ["Hedef",document.getElementById("promotionOrderAdTarget")?.value],
+    ["Kampanya başlığı",document.getElementById("promotionOrderCampaignTitle")?.value]
+  ];
+
+  return values
+    .map(([label,value])=>[label,String(value||"").trim()])
+    .filter(([,value])=>value)
+    .map(([label,value])=>label+": "+value);
+}
+
+function updatePromotionOrderPricePreview(service){
+  const price=document.getElementById("promotionOrderPrice");
+  const label=document.getElementById("promotionOrderPriceLabel");
+  const hint=document.getElementById("promotionOrderPriceHint");
+  if(!price||!label||!hint)return;
+
+  const base=Math.max(0,Number(service?.price||0));
+  const selectedExtraTotal=[...document.querySelectorAll("#promotionOrderExtras input:checked")]
+    .reduce((sum,input)=>sum+Math.max(0,Number(input.dataset.extraPrice||0)),0);
+
+  if(base>0){
+    const total=base+selectedExtraTotal;
+    label.textContent=selectedExtraTotal>0 ? "Tahmini toplam" : "Paket fiyatı";
+    price.textContent=new Intl.NumberFormat("tr-TR").format(total)+" TL";
+    hint.textContent=selectedExtraTotal>0
+      ? "Seçtiğiniz ücretli ek hizmetler dahil."
+      : "Ek hizmet seçerseniz toplam güncellenir.";
+    return;
+  }
+
+  label.textContent="Fiyatlandırma";
+  price.textContent=service?.priceLabel||"Planlamada netleşir";
+  hint.textContent=isPromotionAdvertisingService(activePromotionServiceKey)
+    ? "Yayın süresi, hedef ve reklam içeriğine göre netleştirilir."
+    : "Kapsam netleştirildikten sonra kesin fiyat paylaşılır.";
 }
 
 function getPromotionConfig(type){
@@ -1240,34 +1349,63 @@ function openPromotionOrder(type){
   const formView=document.getElementById("promotionOrderFormView");
   const successView=document.getElementById("promotionOrderSuccess");
   const modal=document.getElementById("promotionOrderModal");
+  const card=modal?.querySelector(".promotion-order-card");
+  const isAd=isPromotionAdvertisingService(activePromotionServiceKey);
 
   formView?.classList.remove("hidden");
   successView?.classList.add("hidden");
+  card?.classList.toggle("advertising-order",isAd);
+
   document.getElementById("promotionOrderMessage").textContent="";
+  document.getElementById("promotionOrderBadge").textContent=
+    isAd ? "REKLAM SİPARİŞİ" : "DOĞRUDAN SİPARİŞ";
   document.getElementById("promotionOrderTitle").textContent=service.name+" Siparişi";
+  document.getElementById("promotionOrderLead").textContent=
+    isAd
+      ? "Yayın tercihinizi belirleyin. Siparişiniz reklam planlaması için doğrudan Dijiyer yönetimine ulaşsın."
+      : "Hizmet bilgilerinizi tamamlayın; siparişiniz yönetim paneline düşsün.";
+  document.getElementById("promotionOrderTargetIcon").textContent=
+    isAd ? service.icon || "📣" : "🏢";
   document.getElementById("promotionOrderInstitution").textContent=
     currentInstitution?.name || currentAccount?.institutionName || "Kurum";
   document.getElementById("promotionOrderService").textContent=service.name;
   document.getElementById("promotionOrderPhone").value=
     currentInstitution?.phone || currentInstitution?.whatsapp || "";
-  document.getElementById("promotionOrderPrice").textContent=service.priceLabel;
+
+  document.getElementById("promotionOrderSubmit").textContent=
+    isAd ? "Reklam Siparişini Oluştur" : "Siparişi Oluştur";
+  document.getElementById("promotionOrderInfoNote").textContent=
+    isAd
+      ? "Sipariş oluşturmak anında ödeme alındığı anlamına gelmez. Yayın süresi, fiyat ve reklam içeriği netleştirildikten sonra onayınızla yayına alınır."
+      : "Sipariş oluşturmak anında ödeme alındığı anlamına gelmez. Fiyat ve kapsam netleştikten sonra süreç başlatılır.";
+
+  setPromotionOrderPlanDefaults(activePromotionServiceKey);
 
   const wrap=document.getElementById("promotionOrderExtrasWrap");
   const extras=document.getElementById("promotionOrderExtras");
   const serviceExtras=normalizePromotionExtras(service);
+
   if(serviceExtras.length){
     wrap.classList.remove("hidden");
     extras.innerHTML=serviceExtras.map(item=>`
       <label>
         <input type="checkbox" value="${escapeHtml(item.name)}" data-extra-price="${Number(item.price||0)}">
-        <span>${escapeHtml(item.name)}${item.price>0?" · +"+new Intl.NumberFormat("tr-TR").format(item.price)+" TL":""}</span>
+        <span>
+          <b>${escapeHtml(item.name)}</b>
+          ${item.price>0?'<small>+'+new Intl.NumberFormat("tr-TR").format(item.price)+' TL</small>':""}
+        </span>
       </label>
     `).join("");
+
+    extras.querySelectorAll("input").forEach(input=>{
+      input.addEventListener("change",()=>updatePromotionOrderPricePreview(service));
+    });
   }else{
     wrap.classList.add("hidden");
     extras.innerHTML="";
   }
 
+  updatePromotionOrderPricePreview(service);
   modal?.classList.remove("hidden");
 }
 
@@ -1315,8 +1453,12 @@ async function submitPromotionOrder(event){
   const contact=String(document.getElementById("promotionOrderContact").value||"").trim();
   const phone=String(document.getElementById("promotionOrderPhone").value||"").trim();
   const note=String(document.getElementById("promotionOrderNote").value||"").trim();
-  const extras=[...document.querySelectorAll("#promotionOrderExtras input:checked")]
+  const selectedExtras=[...document.querySelectorAll("#promotionOrderExtras input:checked")]
     .map(input=>input.value);
+  const extras=[
+    ...promotionOrderPlanExtras(),
+    ...selectedExtras
+  ];
 
   if(!contact){
     document.getElementById("promotionOrderMessage").textContent="Yetkili kişi adını yazın.";
