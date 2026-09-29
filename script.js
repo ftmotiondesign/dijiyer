@@ -7485,13 +7485,10 @@ function positionMobileSponsoredSlotNearJobs(){
   const isMobile=window.matchMedia('(max-width: 820px)').matches;
   const isHomePage=document.body.classList.contains('home-page');
 
-  /* Ana sayfada İş Fırsatları ayrı sayfaya taşındı.
-     Sponsor alanını artık gizli iş bölümünün yanına taşımıyoruz;
-     mevcut sponsor akışındaki yerinde bırakıyoruz. */
-  if(isHomePage && sponsoredSection?.parentNode){
-    if(slot.nextElementSibling!==sponsoredSection){
-      sponsoredSection.parentNode.insertBefore(slot,sponsoredSection);
-    }
+  /* Ana sayfada sponsor alanının konumu HTML sırasıyla yönetilir.
+     Güvenli Teklif Sistemi ile reklam alanı yer değiştirdiğinde
+     JavaScript bu sıralamayı geri bozmasın. */
+  if(isHomePage){
     slot.classList.remove('moved-near-jobs');
     return;
   }
