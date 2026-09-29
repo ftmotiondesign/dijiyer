@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=30" />
+  <link rel="stylesheet" href="style.css?v=23" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -213,6 +213,18 @@
 
     <input type="checkbox" id="videoOnly" hidden>
     <input type="checkbox" id="offerOnly" hidden>
+  </section>
+
+  <section class="mobile-sponsored-slot" id="mobileSponsoredSlot" aria-label="Mobil sponsorlu işletme">
+    <div class="mobile-sponsored-placeholder">
+      <div class="mobile-sponsored-placeholder-icon">📣</div>
+      <div class="mobile-sponsored-placeholder-copy">
+        <span>SPONSORLU ALAN</span>
+        <strong>İşletmeni burada göster</strong>
+        <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
+      </div>
+      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+    </div>
   </section>
 
   <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
@@ -795,7 +807,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=44"></script>
+<script src="script.js?v=33"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
