@@ -1349,6 +1349,29 @@ function renderDijiyerEarningsBottom(){
 captureDijiyerReferralSource();
 renderDijiyerEarningsBottom();
 
+async function loadHomeBottomSectionVisibility(){
+  const bottomQuote=document.querySelector('.business-cta-section');
+  const earnings=document.getElementById('dijiyerEarningsBottom');
+
+  // Alanlar tanımlı değilse eski görünümü koru.
+  let bottomQuoteVisible=true;
+  let earningsVisible=true;
+
+  try{
+    const snap=await db.collection('siteSettings').doc('home').get();
+    const data=snap.exists ? (snap.data() || {}) : {};
+    bottomQuoteVisible=data.bottomQuoteVisible !== false;
+    earningsVisible=data.earningsVisible !== false;
+  }catch(error){
+    console.warn('Ana sayfa alt bölüm görünürlük ayarları okunamadı:',error);
+  }
+
+  if(bottomQuote) bottomQuote.hidden=!bottomQuoteVisible;
+  if(earnings) earnings.hidden=!earningsVisible;
+}
+
+loadHomeBottomSectionVisibility();
+
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
 
