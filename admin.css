@@ -3262,3 +3262,47 @@ button{
 .admin-showcase-edit-head{display:grid;gap:2px}.admin-showcase-edit-head span{color:#1677ff;font-size:8px;font-weight:900;letter-spacing:.08em}.admin-showcase-edit-head strong{font-size:11px;color:#172033}.admin-showcase-edit-head small{font-size:8.5px;color:#64748b}
 .admin-showcase-edit label{display:grid;gap:5px;color:#475569;font-size:9px;font-weight:850}.admin-showcase-edit input{min-height:36px;width:100%;border:1px solid #d8e1ec;border-radius:8px;background:#fff;padding:7px 9px;font-size:9px}
 .manage-badges .badge-tour{background:#f4f0ff;color:#6d28d9}
+
+
+/* ===== KURUM LİSTESİ BANNER KONUM BİLGİSİ ===== */
+.banner-list-placement-note{
+  display:grid;
+  gap:4px;
+  margin:0 0 12px;
+  padding:12px 14px;
+  border:1px solid #bfdbfe;
+  border-radius:12px;
+  background:#f8fbff;
+}
+
+.banner-list-placement-note span{
+  color:#2563eb;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+
+.banner-list-placement-note strong{
+  color:#172033;
+  font-size:13px;
+}
+
+.banner-list-placement-note small{
+  color:#64748b;
+  font-size:10px;
+  line-height:1.45;
+}
+
+@media(max-width:700px){
+  .banner-list-placement-note{
+    padding:10px 11px;
+  }
+
+  .banner-list-placement-note strong{
+    font-size:12px;
+  }
+
+  .banner-list-placement-note small{
+    font-size:9px;
+  }
+}
