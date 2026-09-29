@@ -10836,3 +10836,71 @@ to{opacity:1;transform:none}
     flex:0 0 min(84vw,340px);
   }
 }
+
+
+/* =========================================================
+   MOBİL SPONSOR · 2 REKLAMLIK CAROUSEL
+   Premium vitrinin hemen altında görünür.
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-sponsored-slot{
+    overflow:hidden;
+  }
+
+  .mobile-sponsored-carousel{
+    width:100%;
+  }
+
+  .mobile-sponsored-track{
+    width:100%;
+    display:flex;
+    gap:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .mobile-sponsored-track::-webkit-scrollbar{
+    display:none;
+  }
+
+  .mobile-sponsored-slide{
+    flex:0 0 100%;
+    min-width:100%;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+
+  .mobile-sponsored-slide > .mobile-sponsored-card,
+  .mobile-sponsored-slide > .mobile-sponsored-placeholder{
+    width:100%;
+  }
+
+  .mobile-sponsored-dots{
+    height:14px;
+    margin-top:4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+  }
+
+  .mobile-sponsored-dots button{
+    width:6px;
+    height:6px;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:#cbd5e1;
+    transition:width .18s ease,background .18s ease;
+  }
+
+  .mobile-sponsored-dots button.active{
+    width:18px;
+    background:#1677ff;
+  }
+}
