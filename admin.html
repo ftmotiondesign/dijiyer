@@ -7,7 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=24">
-  <link rel="stylesheet" href="admin-advanced.css?v=8">
+  <link rel="stylesheet" href="admin-advanced.css?v=9">
 </head>
 
 <body>
@@ -123,6 +123,7 @@
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
         <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paket Yönetimi</button>
 
         <button class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</button>
@@ -465,6 +466,117 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+      <section id="promotionPackagesSection" hidden>
+        <div class="section-title promotion-package-admin-title">
+          <div>
+            <h3>📦 Reklam Paketleri</h3>
+            <p id="promotionPackageAdminCount">Paketler yükleniyor...</p>
+          </div>
+          <div class="promotion-package-title-actions">
+            <button type="button" class="support-refresh-btn" id="promotionPackageSeedBtn">Mevcut 5 Paketi Aktar</button>
+            <button type="button" class="advanced-primary-btn" id="promotionPackageNewBtn">+ Yeni Paket</button>
+          </div>
+        </div>
+
+        <div class="promotion-package-admin-layout">
+          <form id="promotionPackageForm" class="promotion-package-editor">
+            <input type="hidden" id="promotionPackageEditId">
+
+            <div class="promotion-package-editor-head">
+              <div>
+                <span>PAKET OLUŞTUR / DÜZENLE</span>
+                <strong id="promotionPackageFormTitle">Yeni Reklam Paketi</strong>
+              </div>
+              <label class="promotion-package-active-toggle">
+                <input type="checkbox" id="promotionPackageActive" checked>
+                <span>Yayında</span>
+              </label>
+            </div>
+
+            <div class="promotion-package-form-grid">
+              <label>Paket Adı
+                <input id="promotionPackageName" required maxlength="100" placeholder="Örn. Bölgesel Görünürlük">
+              </label>
+              <label>Etiket
+                <input id="promotionPackageBadge" maxlength="40" placeholder="Örn. ÖNERİLEN / PREMIUM">
+              </label>
+              <label>Başlangıç Fiyatı (TL)
+                <input id="promotionPackagePrice" type="number" min="0" step="1" value="0">
+              </label>
+              <label>Fiyat Açıklaması
+                <input id="promotionPackagePriceLabel" maxlength="100" placeholder="Örn. 1.500 TL'den başlayan">
+              </label>
+              <label>Yayın / Hizmet Süresi
+                <input id="promotionPackageDuration" maxlength="100" placeholder="Örn. 30 gün">
+              </label>
+              <label>Sıralama
+                <input id="promotionPackageSort" type="number" min="0" step="1" value="50">
+              </label>
+            </div>
+
+            <label>Kısa Açıklama
+              <textarea id="promotionPackageDescription" rows="2" maxlength="350" required placeholder="Paket kartında görünecek kısa açıklama..."></textarea>
+            </label>
+
+            <label>Bu paket kuruma ne kazandırır?
+              <textarea id="promotionPackageBenefit" rows="2" maxlength="500" placeholder="Satın alma kararını destekleyen fayda açıklaması..."></textarea>
+            </label>
+
+            <div class="promotion-package-form-grid">
+              <label>Teslim / Başlangıç
+                <input id="promotionPackageDelivery" maxlength="100" placeholder="Örn. Onay sonrası 2 iş günü">
+              </label>
+              <label>Revizyon
+                <input id="promotionPackageRevision" maxlength="100" placeholder="Örn. 1 revizyon">
+              </label>
+            </div>
+
+            <label>Pakete Dahil Hizmetler
+              <textarea id="promotionPackageIncludes" rows="5" placeholder="Her satıra bir hizmet yazın.&#10;Banner tasarımı&#10;Kategori vitrini&#10;Kampanya duyurusu"></textarea>
+            </label>
+
+            <div class="promotion-package-extras-editor">
+              <div class="promotion-package-extras-head">
+                <div><strong>Ek Hizmetler</strong><small>Kuruma sipariş sırasında seçenek olarak gösterilir.</small></div>
+                <button type="button" id="promotionPackageAddExtra">+ Ek Hizmet</button>
+              </div>
+              <div id="promotionPackageExtras"></div>
+            </div>
+
+            <details class="promotion-package-more">
+              <summary>Detaylı satış bilgileri</summary>
+              <label>Nasıl hazırlanıyor?
+                <textarea id="promotionPackageProcess" rows="3" maxlength="700"></textarea>
+              </label>
+              <label>Kurumdan gerekenler
+                <textarea id="promotionPackageRequired" rows="3" maxlength="700"></textarea>
+              </label>
+              <label>Örnek çalışma / kullanım
+                <textarea id="promotionPackageExample" rows="3" maxlength="700"></textarea>
+              </label>
+            </details>
+
+            <div class="promotion-package-form-options">
+              <label><input type="checkbox" id="promotionPackageFeatured"> Önerilen / öne çıkan paket</label>
+            </div>
+
+            <div class="promotion-package-form-actions">
+              <button type="button" id="promotionPackageCancelBtn">Temizle</button>
+              <button type="submit" class="advanced-primary-btn">Paketi Kaydet</button>
+            </div>
+            <p id="promotionPackageMessage" class="advanced-message"></p>
+          </form>
+
+          <section class="promotion-package-list-panel">
+            <div class="promotion-package-list-head">
+              <div><strong>Yayındaki Paketler</strong><small>Buradaki aktif paketler kurum panelinde otomatik görünür.</small></div>
+              <input type="search" id="promotionPackageSearch" placeholder="Paket ara...">
+            </div>
+            <div id="promotionPackageAdminList" class="promotion-package-admin-list"></div>
+          </section>
+        </div>
       </section>
 
       <section id="promotionOrdersSection" hidden>
@@ -1032,8 +1144,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=32"></script>
-  <script src="admin-advanced.js?v=10"></script>
+  <script src="admin.js?v=33"></script>
+  <script src="admin-advanced.js?v=11"></script>
 
 </body>
 </html>
