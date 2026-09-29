@@ -571,10 +571,13 @@ function renderMobileCategories() {
 
   const activeMain = getSelectedMainCategory();
   const entries = getSortedMainCategories();
+  const categoryColumns = window.innerWidth > 820 ? 6 : 3;
   const activeIndex = entries.findIndex(([key]) => key === activeMain);
-  const activeRowStart = activeIndex >= 0 ? Math.floor(activeIndex / 3) * 3 : -1;
+  const activeRowStart = activeIndex >= 0
+    ? Math.floor(activeIndex / categoryColumns) * categoryColumns
+    : -1;
   const activeRowEnd = activeRowStart >= 0
-    ? Math.min(activeRowStart + 2, entries.length - 1)
+    ? Math.min(activeRowStart + categoryColumns - 1, entries.length - 1)
     : -1;
 
   const htmlParts = [];
@@ -1654,9 +1657,13 @@ function renderMobileJobCategories(){
   ];
 
   const selectedIndex=items.findIndex(item=>item.key===activeMobileJobCategory);
+  const jobCategoryColumns=window.innerWidth>820 ? 5 : 3;
   const rowEndIndex=activeMobileJobCategory==='all'
     ? -1
-    : Math.min(items.length,Math.ceil((selectedIndex+1)/3)*3);
+    : Math.min(
+        items.length,
+        Math.ceil((selectedIndex+1)/jobCategoryColumns)*jobCategoryColumns
+      );
 
   const selectedRows=activeMobileJobCategory==='all'
     ? []
@@ -6412,3 +6419,16 @@ startRegionalBannerAds();
 
 
 loadTodayPublicStats().catch(()=>{});
+
+
+let dijiyerResponsiveCategoryMode = window.innerWidth > 820 ? "desktop" : "mobile";
+window.addEventListener("resize",()=>{
+  window.clearTimeout(window._dijiyerResponsiveCategoryTimer);
+  window._dijiyerResponsiveCategoryTimer=window.setTimeout(()=>{
+    const nextMode=window.innerWidth > 820 ? "desktop" : "mobile";
+    if(nextMode===dijiyerResponsiveCategoryMode)return;
+    dijiyerResponsiveCategoryMode=nextMode;
+    try{ renderMobileCategories(); }catch(_){}
+    try{ renderMobileJobs(); }catch(_){}
+  },120);
+});
