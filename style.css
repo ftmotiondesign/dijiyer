@@ -15479,3 +15479,15 @@ to{opacity:1;transform:none}
     font-size:8px;
   }
 }
+
+
+/* =========================================================
+   ANA SAYFA AYRI SAYFALARA TAŞINAN BÖLÜMLER V1
+   Teklif arama, bayi-servis ve iş fırsatları artık kendi
+   sayfalarında. Ana sayfada yalnızca büyük giriş kartları kalır.
+   ========================================================= */
+.home-page .mobile-discovery,
+.home-page #brandDirectoryMobile,
+.home-page #mobileJobsBoard{
+  display:none !important;
+}
