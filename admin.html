@@ -1668,11 +1668,39 @@
             <small>Bu alanlar sadece yönetim panelinden düzenlenir.</small>
           </div>
           <label>Konum Videosu URL
-            <input type="url" id="editLocationVideoUrl" placeholder="https://.../konum-video.mp4 veya YouTube bağlantısı">
+            <input type="url" id="editLocationVideoUrl" placeholder="Firebase Storage yüklemesi sonrası otomatik dolar veya harici MP4 URL yapıştırın">
           </label>
+
+          <div class="admin-media-upload-box" style="margin:-4px 0 14px;padding:14px;border:1px solid #dfe4ee;border-radius:14px;background:#f8faff;">
+            <input type="file" id="editLocationVideoFile" accept="video/mp4,video/webm,video/quicktime" hidden>
+            <input type="hidden" id="editLocationVideoStoragePath">
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" id="editLocationVideoUploadBtn">🎬 Video Seç ve Yükle</button>
+              <button type="button" id="editLocationVideoPreviewBtn">▶ Önizle</button>
+              <button type="button" id="editLocationVideoRemoveBtn">🗑 Videoyu Kaldır</button>
+            </div>
+
+            <small id="editLocationVideoUploadStatus" style="display:block;margin-top:9px;color:#667085;">
+              MP4 / WebM / MOV yükleyebilirsiniz. Video Firebase Storage'a yüklenir ve kuruma otomatik bağlanır.
+            </small>
+
+            <video
+              id="editLocationVideoPreview"
+              controls
+              playsinline
+              hidden
+              style="width:100%;max-height:280px;margin-top:12px;border-radius:12px;background:#111;"
+            ></video>
+          </div>
+
           <label>360° Sanal Tur URL
             <input type="url" id="editVirtualTourUrl" placeholder="https://... 3DVista / Kuula / Matterport bağlantısı">
           </label>
+
+          <div style="display:flex;gap:8px;margin:-4px 0 14px;flex-wrap:wrap;">
+            <button type="button" id="editVirtualTourPreviewBtn">🌐 360° Turu Önizle</button>
+          </div>
 
           <label>Kampanya Videosu URL
             <input type="url" id="editCampaignVideoUrl" placeholder="https://.../kampanya-video.mp4 veya YouTube bağlantısı">
@@ -1720,7 +1748,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="admin.js?v=47"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="admin.js?v=48"></script>
   <script src="admin-advanced.js?v=27"></script>
 
 </body>
