@@ -5424,3 +5424,282 @@ body[data-panel-current="showcase"] .panel-heading-action{
   font-size:10px;
   font-weight:900;
 }
+
+
+/* =========================================================
+   REKLAM SİPARİŞİ · GELİŞMİŞ FORM
+   ========================================================= */
+.promotion-order-heading{
+  padding-right:42px;
+}
+.promotion-order-heading h2{
+  margin:4px 0 5px;
+  color:#16243b;
+  font-size:22px;
+  line-height:1.15;
+  letter-spacing:-.02em;
+}
+.promotion-order-heading p{
+  margin:0 0 13px;
+  max-width:520px;
+  color:#6c7a8e;
+  font-size:10.5px;
+  line-height:1.5;
+}
+
+.promotion-order-assurance{
+  margin-top:9px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+.promotion-order-assurance span{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:7px 8px;
+  border:1px solid #dfe7f0;
+  border-radius:9px;
+  background:#fbfcfe;
+  color:#526175;
+  font-size:8.5px;
+  font-weight:800;
+  text-align:center;
+}
+
+.promotion-order-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.promotion-order-form label{
+  min-width:0;
+}
+.promotion-order-form select{
+  width:100%;
+  min-height:38px;
+  padding:9px 10px;
+  border:1px solid #d7e0ea;
+  border-radius:9px;
+  background:#fff;
+  color:#26364d;
+  outline:none;
+  font-size:10px;
+}
+.promotion-order-form select:focus{
+  border-color:#8dbaf8;
+  box-shadow:0 0 0 3px rgba(22,119,255,.07);
+}
+.promotion-order-form label>small{
+  color:#8b98a9;
+  font-size:8.2px;
+  font-weight:600;
+  line-height:1.4;
+}
+
+.promotion-ad-plan{
+  padding:12px;
+  border:1px solid #cfe0f7;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(22,119,255,.08),transparent 28%),
+    #f8fbff;
+}
+.promotion-ad-plan-head{
+  margin-bottom:10px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.promotion-ad-plan-head>div{
+  display:grid;
+  gap:2px;
+}
+.promotion-ad-plan-head span{
+  color:#1677ff;
+  font-size:7.6px;
+  font-weight:950;
+  letter-spacing:.09em;
+}
+.promotion-ad-plan-head strong{
+  color:#26364d;
+  font-size:11px;
+}
+.promotion-ad-plan-head>small{
+  max-width:220px;
+  color:#8794a6;
+  font-size:7.8px;
+  line-height:1.4;
+  text-align:right;
+}
+.promotion-ad-plan .promotion-order-form-grid + .promotion-order-form-grid{
+  margin-top:8px;
+}
+.promotion-ad-plan>label{
+  margin-top:8px;
+}
+
+.promotion-extra-fieldset{
+  background:#fff;
+}
+.promotion-extra-options label{
+  min-height:39px;
+  padding:7px 9px;
+  border:1px solid #e2e8f0;
+  border-radius:9px;
+  background:#fbfcfe;
+  cursor:pointer;
+  transition:border-color .15s ease,background .15s ease;
+}
+.promotion-extra-options label:hover{
+  border-color:#bad3f5;
+  background:#f5f9ff;
+}
+.promotion-extra-options label:has(input:checked){
+  border-color:#8cbaf7;
+  background:#eef6ff;
+}
+.promotion-extra-options label span{
+  min-width:0;
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.promotion-extra-options label b{
+  color:#45566d;
+  font-size:9.3px;
+}
+.promotion-extra-options label small{
+  color:#1268da;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.promotion-order-price-row{
+  align-items:center;
+  padding:11px 12px;
+  background:#f5f9ff;
+  border-color:#cfe0f7;
+}
+.promotion-order-price-row>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.promotion-order-price-row>div>span{
+  color:#6f7f94;
+  font-size:8.5px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+.promotion-order-price-row>div>small{
+  color:#8a98aa;
+  font-size:7.8px;
+  line-height:1.35;
+}
+.promotion-order-price-row strong{
+  max-width:48%;
+  color:#1268da;
+  font-size:12px;
+  line-height:1.3;
+}
+
+.promotion-order-info-note{
+  padding:9px 10px;
+  border:1px solid #e6eaf0;
+  border-radius:9px;
+  background:#fafbfc;
+  color:#7a8798;
+  font-size:8.3px;
+  line-height:1.5;
+}
+
+.promotion-order-card.advertising-order{
+  width:min(620px,96vw);
+  border-top:4px solid #1677ff;
+}
+.promotion-order-card.advertising-order .promotion-order-heading .showcase-eyebrow{
+  color:#1268da;
+}
+.promotion-order-card.advertising-order .promotion-order-target{
+  background:linear-gradient(135deg,#eff6ff,#f8fbff);
+  border-color:#c9ddf8;
+}
+.promotion-order-card.advertising-order .promotion-order-target>span{
+  background:#1677ff;
+  color:#fff;
+  font-size:17px;
+}
+.promotion-order-card.advertising-order .promotion-order-primary{
+  min-height:43px;
+  background:#1677ff;
+  font-size:11px;
+  box-shadow:0 8px 18px rgba(22,119,255,.18);
+}
+.promotion-order-card.advertising-order .promotion-order-primary:hover{
+  background:#0f66dc;
+}
+
+@media(max-width:650px){
+  .promotion-order-card{
+    width:100%;
+    max-height:94vh;
+    padding:14px;
+  }
+  .promotion-order-heading{
+    padding-right:36px;
+  }
+  .promotion-order-heading h2{
+    font-size:19px;
+  }
+  .promotion-order-heading p{
+    margin-bottom:10px;
+    font-size:9.5px;
+  }
+  .promotion-order-assurance{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+  .promotion-order-assurance span{
+    min-height:29px;
+    justify-content:flex-start;
+    padding:6px 8px;
+    font-size:8px;
+    text-align:left;
+  }
+  .promotion-order-form-grid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .promotion-ad-plan{
+    padding:10px;
+  }
+  .promotion-ad-plan-head{
+    display:block;
+  }
+  .promotion-ad-plan-head>small{
+    display:block;
+    max-width:none;
+    margin-top:4px;
+    text-align:left;
+  }
+  .promotion-order-price-row{
+    align-items:flex-start;
+  }
+  .promotion-order-price-row strong{
+    max-width:54%;
+    font-size:10.5px;
+  }
+  .promotion-contact-grid{
+    grid-template-columns:1fr;
+  }
+  .promotion-order-card.advertising-order .promotion-order-primary{
+    min-height:44px;
+    font-size:10.5px;
+  }
+}
