@@ -442,6 +442,50 @@
           <div id="institutionList" class="institution-list"></div>
         </section>
 
+        <section class="brand-directory-mobile" id="brandDirectoryMobile" aria-label="Marka bayi ve servis rehberi">
+          <div class="brand-directory-head">
+            <div>
+              <span>MARKA BAYİ &amp; SERVİS REHBERİ</span>
+              <h2>Yetkili bayi ve servisi hızlı bul</h2>
+              <p>Büyük markaların adres, telefon ve resmi iletişim bilgilerine tek yerden ulaş.</p>
+            </div>
+            <div class="brand-directory-location">
+              <small>📍 Bölge</small>
+              <strong id="brandDirectoryLocation">Çanakkale / Merkez</strong>
+              <button type="button" id="brandDirectoryChangeLocation">Değiştir</button>
+            </div>
+          </div>
+
+          <div class="brand-directory-search">
+            <span>⌕</span>
+            <input id="brandDirectorySearch" type="search" autocomplete="off" placeholder="Marka, bayi, servis veya adres ara..." aria-label="Marka bayi ve servis ara">
+            <button type="button" id="brandDirectorySearchClear" class="hidden" aria-label="Aramayı temizle">×</button>
+          </div>
+
+          <div class="brand-directory-brand-row" id="brandDirectoryBrands" aria-label="Markalar"></div>
+
+          <div class="brand-directory-type-row" aria-label="Bayi servis türü">
+            <button type="button" class="active" data-brand-directory-type="all">Tümü</button>
+            <button type="button" data-brand-directory-type="service">🔧 Yetkili Servis</button>
+            <button type="button" data-brand-directory-type="dealer">🏪 Bayi / Mağaza</button>
+          </div>
+
+          <div class="brand-directory-result-head">
+            <div>
+              <strong id="brandDirectoryResultTitle">Yakındaki noktalar</strong>
+              <span id="brandDirectoryResultHint">Resmi marka kaynaklarından derlenen iletişim bilgileri</span>
+            </div>
+            <b id="brandDirectoryResultCount">0</b>
+          </div>
+
+          <div class="brand-directory-results" id="brandDirectoryResults"></div>
+
+          <div class="brand-directory-note">
+            <span>ⓘ</span>
+            <p>Bayi ve servis bilgileri zamanla değişebilir. Gitmeden önce telefonla doğrulamanızı öneririz.</p>
+          </div>
+        </section>
+
         <section class="mobile-jobs-board" id="mobileJobsBoard" aria-label="Dijiyer İş Fırsatları">
           <div class="mobile-jobs-head">
             <div>
@@ -1137,7 +1181,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=45"></script>
+<script src="script.js?v=43"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
