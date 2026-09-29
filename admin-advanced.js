@@ -1669,6 +1669,8 @@
       const scope=order.scopeDescription || catalog.lead;
       const publicNote=order.publicNote || order.adminNote || "";
       const internalNote=order.adminInternalNote || "";
+      const adCreated=Boolean(order.convertedToAd || order.bannerAdId);
+      const adLive=Boolean(order.adPublishedAt && order.status==="completed");
 
       return `
         <details class="promotion-admin-row promotion-admin-order-v2" data-promotion-id="${escapeHtml(order.id)}">
@@ -1785,21 +1787,29 @@
             ${promotionOrderWorkflowHtml(order,breakdown)}
 
             ${adOrderServiceIsAdvertising(order) ? `
-              <section class="promotion-ad-publish-box ${order.convertedToAd || order.bannerAdId ? "published" : ""}">
+              <section class="promotion-ad-publish-box ${adLive ? "published" : adCreated ? "draft" : ""}">
                 <div>
                   <span>REKLAM YAYIN AKIŞI</span>
-                  <strong>${order.convertedToAd || order.bannerAdId ? "Reklam oluşturuldu" : "Siparişten doğrudan reklam oluştur"}</strong>
+                  <strong>${
+                    adLive
+                      ? "Reklam yayında"
+                      : adCreated
+                        ? "Reklam taslağı hazır"
+                        : "Siparişten reklam taslağı oluştur"
+                  }</strong>
                   <small>${
-                    order.convertedToAd || order.bannerAdId
-                      ? "Bu sipariş bir reklam kaydına dönüştürüldü ve yayın planına eklendi."
-                      : "Fiyat ve ödeme tamamlandıktan sonra kurum, hedefleme ve tarih bilgileri otomatik aktarılır."
+                    adLive
+                      ? "Reklam yayın alanında aktif. Takvim ve gelir merkezi üzerinden süresini takip edebilirsiniz."
+                      : adCreated
+                        ? "Taslağı açın, görsel/video ve yayın alanını kontrol edin; ardından 'Yayında' seçip kaydedin."
+                        : "Fiyat ve ödeme tamamlandıktan sonra kurum, hedefleme ve tarih bilgileri otomatik aktarılır."
                   }</small>
                 </div>
                 <button
                   type="button"
                   data-promotion-publish="${escapeHtml(order.id)}"
-                  ${order.convertedToAd || order.bannerAdId ? "disabled" : ""}
-                >${order.convertedToAd || order.bannerAdId ? "✓ Yayına Alındı" : "Reklamı Oluştur →"}</button>
+                  ${adLive ? "disabled" : ""}
+                >${adLive ? "✓ Yayında" : adCreated ? "Taslağı Aç →" : "Reklamı Oluştur →"}</button>
               </section>
             ` : ""}
 
@@ -2692,8 +2702,10 @@
     const order = promotionAdminRecords.find(item => String(item.id) === String(orderId));
     if (!order || !adOrderServiceIsAdvertising(order)) return;
 
-    if (order.convertedToAd || order.bannerAdId) {
-      alert("Bu siparişten daha önce reklam oluşturulmuş.");
+    if (order.bannerAdId) {
+      $("bannerAdsTabBtn")?.click();
+      await loadBannerAdsAdmin();
+      setTimeout(() => editBannerAd(String(order.bannerAdId)),120);
       return;
     }
 
@@ -2706,7 +2718,7 @@
     }
 
     if (String(order.paymentStatus || "pending") !== "paid") {
-      alert("Reklamı oluşturmadan önce ödeme durumunu 'Ödendi' yapın ve siparişi kaydedin.");
+      alert("Reklam taslağını oluşturmadan önce ödeme durumunu 'Ödendi' yapın ve siparişi kaydedin.");
       return;
     }
 
@@ -2752,7 +2764,7 @@
       placement,
       startAt:schedule.startAt,
       endAt:schedule.endAt,
-      active:true,
+      active:false,
       sourceOrderId:String(order.id),
       sourceOrderCode:String(order.orderCode || ""),
       createdAt:now,
@@ -2761,39 +2773,42 @@
 
     const oldHistory = Array.isArray(inst.adHistory) ? inst.adHistory : [];
     const historyEntry = {
-      status:"active",
+      status:"paused",
       packageId,
       price:total,
       paymentStatus:"paid",
       startAt:schedule.startAt,
       endAt:schedule.endAt,
-      note:"Siparişten otomatik oluşturuldu · " + (order.orderCode || order.id),
+      note:"Siparişten reklam taslağı oluşturuldu · " + (order.orderCode || order.id),
       date:now
     };
 
     try {
       const batch = db.batch();
+
       batch.set(bannerRef,bannerData);
+
       batch.update(db.collection("institutions").doc(String(inst.id)),{
-        adStatus:"active",
+        adStatus:"paused",
         adPackage:packageId,
         adStartAt:schedule.startAt,
         adEndAt:schedule.endAt,
         adPrice:total,
         adPaymentStatus:"paid",
-        adNote:"Siparişten yayına alındı · " + (order.orderCode || order.id),
+        adNote:"Siparişten reklam taslağı oluşturuldu · " + (order.orderCode || order.id),
         adUpdatedAt:now,
         adHistory:[...oldHistory,historyEntry].slice(-20),
         updatedAt:now
       });
+
       batch.update(db.collection("promotionOrders").doc(String(order.id)),{
         convertedToAd:true,
         bannerAdId:bannerRef.id,
         adPlacement:placement,
         adStartAt:schedule.startAt,
         adEndAt:schedule.endAt,
-        adPublishedAt:now,
-        status:"completed",
+        adDraftCreatedAt:now,
+        status:"preparing",
         updatedAt:now
       });
 
@@ -2802,7 +2817,7 @@
       const localInst = institutionRecords.find(x => String(x.id) === String(inst.id));
       if (localInst) {
         Object.assign(localInst,{
-          adStatus:"active",
+          adStatus:"paused",
           adPackage:packageId,
           adStartAt:schedule.startAt,
           adEndAt:schedule.endAt,
@@ -2813,7 +2828,7 @@
       }
 
       addAudit(
-        "Siparişten reklam oluşturuldu",
+        "Siparişten reklam taslağı oluşturuldu",
         (order.orderCode || order.id) + " · " + (inst.name || "Kurum") + " · " + adPlacementLabel(placement)
       );
 
@@ -2821,13 +2836,15 @@
         loadPromotionAdminRecords(),
         loadBannerAdsAdmin()
       ]);
-      await renderPromotionOrdersAdmin(false);
+
       renderManagedInstitutions();
       renderTodayTasks();
-      alert("Reklam oluşturuldu ve yayına alındı.");
+
+      $("bannerAdsTabBtn")?.click();
+      setTimeout(() => editBannerAd(bannerRef.id),120);
     } catch (error) {
-      console.error("Siparişten reklam oluşturulamadı:",error);
-      alert("Reklam oluşturulamadı. Firestore yazma izinlerini kontrol edin.");
+      console.error("Siparişten reklam taslağı oluşturulamadı:",error);
+      alert("Reklam taslağı oluşturulamadı. Firestore yazma izinlerini kontrol edin.");
     }
   }
 
