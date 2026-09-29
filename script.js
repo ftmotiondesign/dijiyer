@@ -750,6 +750,7 @@ function renderList() {
   }
 
   syncExploreQuickFilterState();
+  renderSponsoredAds();
 
   list.innerHTML = data.map(inst => `
     <article class="institution-card ${String(inst.id) === String(selectedId) ? 'active' : ''}" data-id="${inst.id}">
@@ -2400,6 +2401,10 @@ async function loadApprovedInstitutions() {
         video: Boolean(data.video),
         offer: data.offer !== false,
         vip: Boolean(data.vip),
+        adStatus: String(data.adStatus || 'none'),
+        adPackage: String(data.adPackage || ''),
+        adStartAt: data.adStartAt || '',
+        adEndAt: data.adEndAt || '',
         lat: Number.isFinite(data.lat) ? data.lat : null,
         lng: Number.isFinite(data.lng) ? data.lng : null,
         emoji: data.emoji || '🏢'
@@ -2416,6 +2421,281 @@ async function loadApprovedInstitutions() {
   }
 }
 
+
+
+/* =========================================================
+   ANA SAYFA SPONSORLU ALANLAR
+   Reklamlar organik kurum sıralamasına karışmaz.
+   ========================================================= */
+
+function getHomepageAdPackageLabel(packageId) {
+  const labels = {
+    starter: 'Başlangıç Görünürlüğü',
+    regional: 'Bölgesel Vitrin',
+    video: 'Video Tanıtım',
+    premium: 'Premium Tanıtım'
+  };
+  return labels[String(packageId || '')] || 'Dijiyer Vitrini';
+}
+
+function parseHomepageAdDate(value, endOfDay = false) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const date = new Date(
+    raw.length <= 10
+      ? raw + (endOfDay ? 'T23:59:59' : 'T00:00:00')
+      : raw
+  );
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isHomepageAdActive(inst) {
+  if (!inst || inst.source !== 'firestore') return false;
+  if (String(inst.adStatus || 'none') !== 'active') return false;
+
+  const now = Date.now();
+  const start = parseHomepageAdDate(inst.adStartAt, false);
+  const end = parseHomepageAdDate(inst.adEndAt, true);
+
+  if (start && now < start.getTime()) return false;
+  if (end && now > end.getTime()) return false;
+
+  return true;
+}
+
+function matchesHomepageAdLocation(inst) {
+  if (String(inst.adPackage || '') !== 'regional') return true;
+
+  const city = normalizeQuoteSearch(inst.city || String(inst.location || '').split(',')[0] || '');
+  const district = normalizeQuoteSearch(inst.district || String(inst.location || '').split(',')[1] || '');
+  const activeCity = normalizeQuoteSearch(activeLocationCity || '');
+  const activeDistrict = normalizeQuoteSearch(activeLocationDistrict || '');
+
+  if (activeCity && city !== activeCity) return false;
+  if (activeDistrict && district !== activeDistrict) return false;
+  return true;
+}
+
+function getHomepageSponsoredInstitutions() {
+  const priority = { premium: 4, video: 3, regional: 2, starter: 1 };
+
+  return institutions
+    .filter(isHomepageAdActive)
+    .filter(matchesHomepageAdLocation)
+    .sort((a, b) => {
+      const packageDiff =
+        (priority[String(b.adPackage || '')] || 0) -
+        (priority[String(a.adPackage || '')] || 0);
+
+      if (packageDiff) return packageDiff;
+
+      return String(a.name || '').localeCompare(String(b.name || ''), 'tr');
+    })
+    .slice(0, 3);
+}
+
+function homepageSponsoredCardHtml(inst) {
+  const cover = safePublicProfileUrl(inst.coverUrl || '');
+  const logo = safePublicProfileUrl(inst.logoUrl || '');
+  const description = String(inst.description || '').trim() ||
+    'Kurum profilini, hizmetlerini ve iletişim bilgilerini inceleyin.';
+  const ratingText = Number(inst.reviewCount || 0) > 0
+    ? '⭐ ' + Number(inst.rating || 0).toFixed(1) + ' · ' + Number(inst.reviewCount || 0) + ' değerlendirme'
+    : 'Yeni sponsorlu kurum';
+
+  return `
+    <article
+      class="sponsored-card"
+      data-sponsored-id="${escapeHtml(String(inst.id))}"
+      role="link"
+      tabindex="0"
+      aria-label="${escapeHtml(inst.name || 'Sponsorlu kurum')} profilini aç"
+    >
+      <div class="sponsored-media">
+        ${cover
+          ? '<img src="' + cover + '" alt="' + escapeHtml(inst.name || 'Kurum') + '">'
+          : '<div class="sponsored-media-fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
+        <span class="sponsored-label">SPONSORLU</span>
+        <span class="sponsored-package">${escapeHtml(getHomepageAdPackageLabel(inst.adPackage))}</span>
+      </div>
+
+      <div class="sponsored-body">
+        <div class="sponsored-title-row">
+          <div class="sponsored-logo">
+            ${logo
+              ? '<img src="' + logo + '" alt="">'
+              : escapeHtml(inst.emoji || '🏢')}
+          </div>
+          <div class="sponsored-title-copy">
+            <strong>${escapeHtml(inst.name || 'Kurum')}</strong>
+            <small>📍 ${escapeHtml(inst.location || [inst.city, inst.district].filter(Boolean).join(', ') || 'Konum bilgisi')}</small>
+          </div>
+        </div>
+
+        <p class="sponsored-description">${escapeHtml(description)}</p>
+
+        <div class="sponsored-meta">
+          <span class="sponsored-rating">${escapeHtml(ratingText)}</span>
+          <span class="sponsored-profile-link">Profili Gör →</span>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function homepageSponsoredSidebarHtml(inst) {
+  const cover = safePublicProfileUrl(inst.coverUrl || '');
+  return `
+    <article class="sidebar-sponsored-card" data-sponsored-id="${escapeHtml(String(inst.id))}" role="link" tabindex="0">
+      <div class="sidebar-sponsored-cover">
+        ${cover
+          ? '<img src="' + cover + '" alt="' + escapeHtml(inst.name || 'Sponsorlu kurum') + '">'
+          : '<div class="sponsored-media-fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
+        <span class="sponsored-label">SPONSORLU</span>
+      </div>
+      <div class="sidebar-sponsored-copy">
+        <strong>${escapeHtml(inst.name || 'Kurum')}</strong>
+        <small>📍 ${escapeHtml(inst.location || [inst.city, inst.district].filter(Boolean).join(', ') || '')}</small>
+        <button type="button" tabindex="-1">Profili Gör</button>
+      </div>
+    </article>
+  `;
+}
+
+function homepageAdSalesHtml() {
+  return `
+    <div class="sponsored-self-promo">
+      <span class="sponsored-self-promo-icon">📣</span>
+      <div>
+        <strong>İşletmenizi ana sayfada öne çıkarın</strong>
+        <small>Sponsorlu vitrin, şehir / ilçe görünürlüğü ve banner seçeneklerini inceleyin.</small>
+      </div>
+      <button type="button" data-advertise-home>Reklam Seçeneklerini Gör</button>
+    </div>
+  `;
+}
+
+function trackHomepageAdImpression(inst) {
+  if (!inst || inst.source !== 'firestore') return;
+
+  const day = new Date().toISOString().slice(0, 10);
+  const key = 'dijiyer_ad_impression_' + day + '_' + String(inst.id);
+
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, '1');
+
+  trackInstitutionEvent(inst, 'ad_impression');
+}
+
+function openSponsoredInstitution(inst) {
+  if (!inst) return;
+
+  trackInstitutionEvent(inst, 'ad_click');
+  window.location.href = 'kurum.html?id=' + encodeURIComponent(inst.id);
+}
+
+function bindHomepageSponsoredCards(container) {
+  if (!container) return;
+
+  container.querySelectorAll('[data-sponsored-id]').forEach(card => {
+    const open = () => {
+      const inst = institutions.find(
+        item => String(item.id) === String(card.dataset.sponsoredId)
+      );
+      openSponsoredInstitution(inst);
+    };
+
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      open();
+    });
+  });
+}
+
+function institutionPanelDestination() {
+  const showcaseIntent =
+    sessionStorage.getItem('dijiyerInstitutionIntent') === 'showcase';
+
+  return 'institution.html?session=institution' +
+    (showcaseIntent ? '&tab=showcase' : '');
+}
+
+async function openAdvertisingCenter() {
+  sessionStorage.setItem('dijiyerInstitutionIntent', 'showcase');
+
+  if (institutionSessionUser) {
+    try {
+      const accountDoc =
+        await institutionDb.collection('institutionUsers')
+          .doc(institutionSessionUser.uid)
+          .get();
+
+      if (accountDoc.exists && accountDoc.data().status === 'approved') {
+        window.location.replace(institutionPanelDestination());
+        return;
+      }
+    } catch (error) {
+      console.error('Reklam merkezi için kurum oturumu kontrol edilemedi:', error);
+    }
+  }
+
+  setInstitutionAccessMode('login');
+  openModal('institutionAccessModal');
+
+  if (institutionLoginMessage) {
+    institutionLoginMessage.textContent =
+      'Reklam seçeneklerini görmek için kurum hesabınızla giriş yapın.';
+  }
+}
+
+function bindHomepageAdvertiseButtons() {
+  document.querySelectorAll('[data-advertise-home]').forEach(button => {
+    if (button.dataset.advertiseBound === '1') return;
+    button.dataset.advertiseBound = '1';
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openAdvertisingCenter();
+    });
+  });
+}
+
+function renderSponsoredAds() {
+  const rail = document.getElementById('homeSponsoredRail');
+  const sidebar = document.getElementById('sidebarSponsoredSlot');
+  if (!rail && !sidebar) return;
+
+  const sponsored = getHomepageSponsoredInstitutions();
+
+  if (rail) {
+    rail.innerHTML = sponsored.length
+      ? sponsored.map(homepageSponsoredCardHtml).join('')
+      : homepageAdSalesHtml();
+
+    bindHomepageSponsoredCards(rail);
+  }
+
+  if (sidebar) {
+    if (sponsored.length) {
+      sidebar.innerHTML = homepageSponsoredSidebarHtml(sponsored[0]);
+      bindHomepageSponsoredCards(sidebar);
+    } else {
+      sidebar.innerHTML = `
+        <div class="sidebar-sponsored-placeholder">
+          <span>SPONSORLU ALAN</span>
+          <strong>İşletmeni burada göster</strong>
+          <small>Ana sayfada görünürlüğünü artır.</small>
+          <button type="button" data-advertise-home>Reklam Ver</button>
+        </div>
+      `;
+    }
+  }
+
+  sponsored.forEach(trackHomepageAdImpression);
+  bindHomepageAdvertiseButtons();
+}
 
 const institutionLoginBtn = document.getElementById('institutionLoginBtn');
 const institutionLoginTab = document.getElementById('institutionLoginTab');
@@ -2454,6 +2734,7 @@ institutionAuth.onAuthStateChanged(user => {
 });
 
 institutionLoginBtn.addEventListener('click', async () => {
+  sessionStorage.removeItem('dijiyerInstitutionIntent');
   setInstitutionActionsMenu(false);
 
   if (institutionSessionUser) {
@@ -2464,7 +2745,7 @@ institutionLoginBtn.addEventListener('click', async () => {
           .get();
 
       if (accountDoc.exists && accountDoc.data().status === 'approved') {
-        window.location.replace('institution.html?session=institution');
+        window.location.replace(institutionPanelDestination());
         return;
       }
 
@@ -2630,7 +2911,7 @@ institutionLoginForm.addEventListener('submit', async e => {
       return;
     }
 
-    window.location.replace('institution.html?session=institution');
+    window.location.replace(institutionPanelDestination());
   } catch (error) {
     console.error('Kurum hesabı Firestore kontrolü başarısız:', error);
     await institutionAuth.signOut();
@@ -2694,6 +2975,8 @@ document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
 document.getElementById('businessPanelBtn')?.addEventListener('click', () => {
   document.getElementById('institutionLoginBtn')?.click();
 });
+
+bindHomepageAdvertiseButtons();
 
 document.getElementById('exploreScrollBtn')?.addEventListener('click', () => {
   document.getElementById('exploreSection')?.scrollIntoView({

@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=22" />
+  <link rel="stylesheet" href="style.css?v=23" />
   <link rel="stylesheet" href="offers.css?v=2" />
 </head>
 <body>
@@ -198,6 +198,23 @@
     <input type="checkbox" id="offerOnly" hidden>
   </section>
 
+  <section class="home-sponsored-section" id="sponsoredSection" aria-label="Sponsorlu işletmeler">
+    <div class="sponsored-section-head">
+      <div>
+        <span class="sponsored-kicker">SPONSORLU</span>
+        <h2>Öne çıkan işletmeler</h2>
+        <p>Bulunduğun bölgedeki sponsorlu işletmeleri keşfet. Reklamlar organik kurum sıralamasını değiştirmez.</p>
+      </div>
+      <button type="button" class="sponsored-sales-btn" data-advertise-home>
+        İşletmeni Burada Göster
+      </button>
+    </div>
+
+    <div class="sponsored-rail" id="homeSponsoredRail">
+      <div class="sponsored-loading">Sponsorlu alan hazırlanıyor...</div>
+    </div>
+  </section>
+
   <section class="explore-intro explore-control-center" id="exploreSection">
     <div class="explore-copy">
       <div class="explore-topline">
@@ -257,6 +274,15 @@
         <h3>Ana Kategori</h3>
         <div id="sidebarCategories" class="sidebar-categories"></div>
       </section>
+
+      <div class="sidebar-sponsored-slot" id="sidebarSponsoredSlot" aria-label="Sponsorlu alan">
+        <div class="sidebar-sponsored-placeholder">
+          <span>SPONSORLU</span>
+          <strong>İşletmeni burada göster</strong>
+          <small>Ana sayfada görünürlüğünü artır.</small>
+          <button type="button" data-advertise-home>Reklam Ver</button>
+        </div>
+      </div>
 
       <div class="sidebar-note">
   <strong>Dijiyer</strong>
@@ -728,7 +754,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=41"></script>
+<script src="script.js?v=42"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
