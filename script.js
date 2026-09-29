@@ -464,10 +464,28 @@ function showMobileInstitutionResults(shouldScroll = true) {
   document.getElementById('mobileCategoryResultBtn')?.setAttribute('aria-expanded','true');
 
   if (shouldScroll) {
-    requestAnimationFrame(() => {
-      const top = root.getBoundingClientRect().top + window.scrollY - 10;
-      window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
-    });
+    /* Mobil klavye kapanırken viewport yüksekliği değişebiliyor.
+       Eski davranış doğrudan mutlak konuma kaydırdığı için ilk kartlar
+       ekranın üstünde kalabiliyordu. Artık yalnızca gerektiği kadar kaydır. */
+    try { document.activeElement?.blur?.(); } catch (_) {}
+
+    setTimeout(() => {
+      const rect = root.getBoundingClientRect();
+      const stickyOffset = 72;
+      const comfortableTop = Math.max(stickyOffset, Math.round(window.innerHeight * .28));
+
+      if (rect.top < stickyOffset) {
+        window.scrollBy({
+          top: rect.top - stickyOffset,
+          behavior:'smooth'
+        });
+      } else if (rect.top > window.innerHeight - 120) {
+        window.scrollBy({
+          top: rect.top - comfortableTop,
+          behavior:'smooth'
+        });
+      }
+    }, 180);
   }
 }
 
