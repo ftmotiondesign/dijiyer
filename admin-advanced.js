@@ -3074,8 +3074,14 @@
 
   function getAdminAdCalendarEvents() {
     const events = [];
+    const convertedInstitutionIds=new Set(
+      bannerAdRecords
+        .filter(ad=>ad.sourceOrderId && ad.institutionId)
+        .map(ad=>String(ad.institutionId))
+    );
 
     institutionRecords.forEach(inst => {
+      if(convertedInstitutionIds.has(String(inst.id)))return;
       if (!["active","paused"].includes(String(inst.adStatus || ""))) return;
       if (!inst.adStartAt && !inst.adEndAt) return;
       const pkg = typeof ADMIN_AD_PACKAGES !== "undefined"
@@ -3369,8 +3375,14 @@
 
   function expiringAdvertisingRows(days = 7) {
     const rows = [];
+    const convertedInstitutionIds=new Set(
+      bannerAdRecords
+        .filter(ad=>ad.sourceOrderId && ad.institutionId)
+        .map(ad=>String(ad.institutionId))
+    );
 
     institutionRecords.forEach(inst => {
+      if(convertedInstitutionIds.has(String(inst.id)))return;
       if (!adminInstitutionAdIsActive(inst)) return;
       const left = adminDaysUntil(inst.adEndAt);
       if (left === null || left < 0 || left > days) return;
@@ -3466,7 +3478,14 @@
     const revenueRows = revenueBusinessRows();
     const paid = revenueRows.filter(x=>x.paid).reduce((sum,x)=>sum+x.amount,0);
     const pending = revenueRows.filter(x=>x.pending).reduce((sum,x)=>sum+x.amount,0);
-    const activeInstitutionAds = institutionRecords.filter(adminInstitutionAdIsActive);
+    const convertedInstitutionIds=new Set(
+      bannerAdRecords
+        .filter(ad=>ad.sourceOrderId && ad.institutionId)
+        .map(ad=>String(ad.institutionId))
+    );
+    const activeInstitutionAds = institutionRecords
+      .filter(adminInstitutionAdIsActive)
+      .filter(inst=>!convertedInstitutionIds.has(String(inst.id)));
     const activeBanners = bannerAdRecords.filter(adminBannerIsActive);
     const activeAds = activeInstitutionAds.length + activeBanners.length;
     const expiring = expiringAdvertisingRows(7);
@@ -3597,10 +3616,16 @@
     ).length;
     const overdueSupport = supportAdminRecords.filter(supportTicketIsOverdue).length;
     const expiring3 = expiringAdvertisingRows(3);
-    const unpaidAds = institutionRecords.filter(item =>
+    const unpaidInstitutionAds = institutionRecords.filter(item =>
       ["active","paused"].includes(String(item.adStatus || "")) &&
       String(item.adPaymentStatus || "unpaid") !== "paid"
     ).length;
+    const unpaidBannerAds = bannerAdRecords.filter(item =>
+      !item.sourceOrderId &&
+      Math.max(0,Number(item.salePrice||0))>0 &&
+      String(item.paymentStatus||"unpaid")!=="paid"
+    ).length;
+    const unpaidAds=unpaidInstitutionAds+unpaidBannerAds;
 
     if (pendingApps) tasks.push({
       level:"normal",count:pendingApps,title:"Yeni kurum başvurusu",
