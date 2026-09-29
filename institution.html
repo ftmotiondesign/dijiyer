@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=36">
+  <link rel="stylesheet" href="institution.css?v=37">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -1367,21 +1367,80 @@
       <button type="button" class="promotion-modal-close" id="promotionOrderClose" aria-label="Kapat">×</button>
 
       <div id="promotionOrderFormView">
-        <span class="showcase-eyebrow">DOĞRUDAN SİPARİŞ</span>
-        <h2 id="promotionOrderTitle">Tanıtım Hizmeti Siparişi</h2>
+        <div class="promotion-order-heading">
+          <div>
+            <span class="showcase-eyebrow" id="promotionOrderBadge">DOĞRUDAN SİPARİŞ</span>
+            <h2 id="promotionOrderTitle">Tanıtım Hizmeti Siparişi</h2>
+            <p id="promotionOrderLead">Hizmet bilgilerinizi tamamlayın; siparişiniz yönetim paneline düşsün.</p>
+          </div>
+        </div>
+
         <div class="promotion-order-target">
-          <span>🏢</span>
+          <span id="promotionOrderTargetIcon">🏢</span>
           <div><small>Kurum</small><strong id="promotionOrderInstitution">-</strong></div>
           <div><small>Hizmet</small><strong id="promotionOrderService">-</strong></div>
         </div>
 
+        <div class="promotion-order-assurance" id="promotionOrderAssurance">
+          <span>✓ Talebiniz kayıt altına alınır</span>
+          <span>✓ Yayın planı sizinle netleştirilir</span>
+          <span>✓ Onayınızla yayına alınır</span>
+        </div>
+
         <form id="promotionOrderForm" class="promotion-order-form">
-          <label>Yetkili Kişi
-            <input id="promotionOrderContact" type="text" maxlength="100" required placeholder="Ad Soyad">
-          </label>
-          <label>Telefon
-            <input id="promotionOrderPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
-          </label>
+          <section class="promotion-ad-plan hidden" id="promotionAdPlanSection">
+            <div class="promotion-ad-plan-head">
+              <div>
+                <span>REKLAM PLANI</span>
+                <strong>Nasıl görünmek istediğinizi belirtin</strong>
+              </div>
+              <small>Zorunlu olmayan alanları daha sonra da netleştirebilirsiniz.</small>
+            </div>
+
+            <div class="promotion-order-form-grid">
+              <label>Reklam Amacı
+                <select id="promotionOrderObjective">
+                  <option value="Kurum görünürlüğü">Kurum görünürlüğünü artırmak</option>
+                  <option value="Kampanya / indirim">Kampanya veya indirim duyurmak</option>
+                  <option value="Kayıt / başvuru">Kayıt / başvuru toplamak</option>
+                  <option value="Yeni hizmet">Yeni hizmet tanıtmak</option>
+                </select>
+              </label>
+
+              <label>Yayın Süresi Tercihi
+                <select id="promotionOrderDuration">
+                  <option value="7 gün">7 gün</option>
+                  <option value="15 gün">15 gün</option>
+                  <option value="30 gün" selected>30 gün</option>
+                  <option value="Yönetimle birlikte belirlensin">Birlikte belirleyelim</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="promotion-order-form-grid">
+              <label>Tercih Edilen Başlangıç
+                <input id="promotionOrderStartDate" type="date">
+              </label>
+
+              <label id="promotionOrderTargetLabel">Hedef Bölge / Kitle
+                <input id="promotionOrderAdTarget" type="text" maxlength="160" placeholder="Örn. Çanakkale / Merkez">
+              </label>
+            </div>
+
+            <label>Kampanya Başlığı
+              <input id="promotionOrderCampaignTitle" type="text" maxlength="120" placeholder="Örn. Yeni dönem kayıtları başladı">
+              <small>İsterseniz boş bırakabilirsiniz; yayın öncesi birlikte hazırlanabilir.</small>
+            </label>
+          </section>
+
+          <div class="promotion-order-form-grid promotion-contact-grid">
+            <label>Yetkili Kişi
+              <input id="promotionOrderContact" type="text" maxlength="100" required placeholder="Ad Soyad">
+            </label>
+            <label>Telefon
+              <input id="promotionOrderPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+            </label>
+          </div>
 
           <fieldset id="promotionOrderExtrasWrap" class="promotion-extra-fieldset hidden">
             <legend>Ek Hizmetler</legend>
@@ -1389,15 +1448,22 @@
           </fieldset>
 
           <label>Sipariş Notu
-            <textarea id="promotionOrderNote" rows="4" maxlength="1200" placeholder="Çekim, içerik veya yayınla ilgili özel isteğinizi yazabilirsiniz."></textarea>
+            <textarea id="promotionOrderNote" rows="4" maxlength="1200" placeholder="Yayın, içerik, kampanya veya tasarımla ilgili özel isteğinizi yazabilirsiniz."></textarea>
           </label>
 
           <div class="promotion-order-price-row">
-            <span>Başlangıç fiyatı</span>
+            <div>
+              <span id="promotionOrderPriceLabel">Başlangıç fiyatı</span>
+              <small id="promotionOrderPriceHint"></small>
+            </div>
             <strong id="promotionOrderPrice">-</strong>
           </div>
 
-          <button type="submit" class="promotion-order-primary" id="promotionOrderSubmit">Siparişi Onayla</button>
+          <div class="promotion-order-info-note" id="promotionOrderInfoNote">
+            Sipariş oluşturmak anında ödeme alındığı anlamına gelmez. Fiyat ve yayın planı netleştikten sonra süreç başlatılır.
+          </div>
+
+          <button type="submit" class="promotion-order-primary" id="promotionOrderSubmit">Siparişi Oluştur</button>
           <p class="form-message" id="promotionOrderMessage"></p>
         </form>
       </div>
@@ -1453,7 +1519,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=23"></script>
+  <script src="institution.js?v=24"></script>
   <script src="institution-layout.js?v=3"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
