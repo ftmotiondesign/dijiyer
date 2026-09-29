@@ -5136,3 +5136,228 @@ body[data-panel-current="showcase"] .panel-heading-action{
     grid-column:1/-1;
   }
 }
+
+
+/* =========================================================
+   Tanıtım Hizmetleri - Doğrudan satış ve sipariş takibi
+   ========================================================= */
+.showcase-sales-actions{
+  margin-top:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+.showcase-sales-actions button{
+  min-height:38px;
+  border-radius:9px;
+  font-size:10px;
+  font-weight:900;
+  cursor:pointer;
+}
+.showcase-detail-btn{
+  border:1px solid #d7e0ea!important;
+  background:#fff!important;
+  color:#475569!important;
+}
+.showcase-order-btn{
+  border:1px solid #1677ff!important;
+  background:#1677ff!important;
+  color:#fff!important;
+}
+.showcase-order-btn:hover{background:#0b5fd2!important}
+
+.promotion-modal{
+  position:fixed;inset:0;z-index:5000;
+  padding:18px;
+  display:grid;place-items:center;
+  background:rgba(9,20,38,.62);
+}
+.promotion-modal-card{
+  position:relative;
+  width:min(720px,96vw);
+  max-height:92vh;
+  overflow:auto;
+  padding:22px;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 24px 80px rgba(0,0,0,.26);
+}
+.promotion-modal-close{
+  position:absolute;right:12px;top:12px;
+  width:34px;height:34px;
+  border:0;border-radius:50%;
+  background:#f1f5f9;color:#64748b;
+  font-size:20px;cursor:pointer;
+}
+.promotion-detail-hero{
+  padding-right:38px;
+  display:grid;
+  grid-template-columns:58px 1fr;
+  gap:13px;align-items:center;
+}
+.promotion-detail-icon{
+  width:58px;height:58px;border-radius:16px;
+  display:grid;place-items:center;
+  background:#eef5ff;color:#1268da;
+  font-size:20px;font-weight:900;
+}
+.promotion-detail-hero h2{margin:3px 0 5px;font-size:22px}
+.promotion-detail-hero p{margin:0;color:#64748b;font-size:11px;line-height:1.5}
+.promotion-detail-grid{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.promotion-detail-grid section{
+  padding:11px;
+  border:1px solid #e4eaf2;
+  border-radius:11px;
+  background:#fbfcfe;
+}
+.promotion-detail-grid section>span,
+.promotion-detail-price span,
+.promotion-detail-example>span{
+  display:block;margin-bottom:5px;
+  color:#8491a2;font-size:8px;font-weight:900;letter-spacing:.06em;
+}
+.promotion-detail-grid p,.promotion-detail-grid li{
+  margin:0;color:#526175;font-size:10px;line-height:1.55;
+}
+.promotion-detail-grid ul{margin:0;padding-left:16px;display:grid;gap:3px}
+.promotion-detail-grid strong{font-size:10.5px;color:#334155}
+.promotion-detail-price{
+  margin-top:9px;padding:12px;
+  display:grid;grid-template-columns:1fr 1.4fr;gap:12px;
+  border-radius:11px;background:#f5f9ff;border:1px solid #cfe0f7;
+}
+.promotion-detail-price strong{font-size:15px;color:#1268da}
+.promotion-detail-price p{margin:0;color:#526175;font-size:9.5px;line-height:1.5}
+.promotion-detail-example{
+  margin-top:9px;padding:11px;border-radius:10px;background:#f8fafc;border:1px solid #e6ebf1;
+}
+.promotion-detail-example p{margin:0;color:#526175;font-size:10px;line-height:1.5}
+.promotion-order-primary{
+  width:100%;margin-top:12px;
+  border:0;border-radius:10px;
+  padding:11px 13px;
+  background:#1677ff;color:#fff;
+  font-size:10.5px;font-weight:900;cursor:pointer;
+}
+.promotion-order-primary:hover{background:#0b5fd2}
+
+.promotion-order-card{width:min(560px,96vw)}
+.promotion-order-card h2{margin:4px 0 13px}
+.promotion-order-target{
+  padding:10px;
+  display:grid;
+  grid-template-columns:38px 1fr 1fr;
+  gap:9px;align-items:center;
+  border-radius:11px;background:#f5f9ff;border:1px solid #d4e4f8;
+}
+.promotion-order-target>span{
+  width:38px;height:38px;border-radius:10px;
+  display:grid;place-items:center;background:#e7f1ff;
+}
+.promotion-order-target>div{display:grid;gap:2px;min-width:0}
+.promotion-order-target small{font-size:8px;color:#8491a2;font-weight:900}
+.promotion-order-target strong{font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.promotion-order-form{display:grid;gap:9px;margin-top:12px}
+.promotion-order-form>label{display:grid;gap:5px;color:#536276;font-size:9px;font-weight:850}
+.promotion-order-form input,.promotion-order-form textarea{
+  width:100%;padding:10px;
+  border:1px solid #d7e0ea;border-radius:9px;
+  color:#26364d;outline:none;font-size:10px;
+}
+.promotion-order-form input:focus,.promotion-order-form textarea:focus{border-color:#8dbaf8;box-shadow:0 0 0 3px rgba(22,119,255,.07)}
+.promotion-extra-fieldset{
+  margin:0;padding:10px;
+  border:1px solid #dfe6ef;border-radius:10px;
+}
+.promotion-extra-fieldset legend{padding:0 5px;font-size:9px;font-weight:900;color:#536276}
+.promotion-extra-options{display:grid;gap:6px}
+.promotion-extra-options label{display:flex;align-items:center;gap:7px;font-size:9.5px;color:#526175}
+.promotion-extra-options input{width:auto}
+.promotion-order-price-row{
+  padding:9px 10px;border-radius:9px;
+  display:flex;justify-content:space-between;gap:10px;
+  background:#f8fafc;border:1px solid #e5eaf0;
+}
+.promotion-order-price-row span{font-size:9px;color:#8491a2}
+.promotion-order-price-row strong{font-size:10px;color:#1d4ed8;text-align:right}
+
+.promotion-order-success{text-align:center;padding:12px 2px}
+.promotion-success-icon{
+  width:52px;height:52px;margin:0 auto 10px;border-radius:50%;
+  display:grid;place-items:center;background:#dcfce7;color:#15803d;
+  font-size:23px;font-weight:900;
+}
+.promotion-order-success h2{margin:0 0 5px}
+.promotion-order-success>p{margin:0 auto 12px;max-width:410px;color:#64748b;font-size:10px}
+.promotion-order-success>div{
+  padding:11px;border-radius:10px;background:#f5f9ff;border:1px solid #cfe0f7;
+  display:grid;gap:3px;
+}
+.promotion-order-success small{font-size:8px;color:#8491a2;font-weight:900}
+.promotion-order-success strong{font-size:18px;color:#1268da}
+
+.promotion-orders-section{border-top:3px solid #1677ff}
+.promotion-order-count{
+  padding:6px 9px;border-radius:999px;
+  background:#eef5ff;color:#1268da;
+  font-size:9px;font-weight:900;
+}
+.promotion-orders-list{display:grid;gap:8px}
+.promotion-orders-empty{
+  padding:15px;border:1px dashed #cbd5e1;border-radius:10px;
+  color:#7a8798;font-size:10px;text-align:center;
+}
+.promotion-order-row{
+  padding:12px;border:1px solid #e2e8f0;border-radius:11px;background:#fff;
+}
+.promotion-order-row-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.promotion-order-row-head>div{display:grid;gap:2px}
+.promotion-order-code{font-size:8px;color:#1268da;font-weight:900}
+.promotion-order-row-head strong{font-size:11px}
+.promotion-order-row-head small{font-size:8.5px;color:#94a3b8}
+.promotion-order-state{
+  padding:5px 7px;border-radius:999px;
+  background:#eef2f7;color:#526175;font-size:8px;font-weight:900;white-space:nowrap;
+}
+.promotion-order-state.state-preparing{background:#fff7e6;color:#b45309}
+.promotion-order-state.state-approval{background:#f5f3ff;color:#7c3aed}
+.promotion-order-state.state-completed{background:#dcfce7;color:#15803d}
+.promotion-order-progress{
+  margin-top:11px;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:3px;
+}
+.promotion-order-progress span{position:relative;display:grid;justify-items:center;gap:3px;color:#a0aaba;font-size:7.5px;text-align:center}
+.promotion-order-progress span:before{
+  content:"";position:absolute;top:5px;left:-50%;right:50%;height:2px;background:#e4e9ef;
+}
+.promotion-order-progress span:first-child:before{display:none}
+.promotion-order-progress i{
+  position:relative;z-index:2;width:11px;height:11px;border-radius:50%;
+  background:#e4e9ef;border:2px solid #fff;box-shadow:0 0 0 1px #d5dce5;
+}
+.promotion-order-progress span.active{color:#1268da;font-weight:800}
+.promotion-order-progress span.active i{background:#1677ff;box-shadow:0 0 0 1px #1677ff}
+.promotion-order-progress span.active:before{background:#8ebcf8}
+.promotion-order-row-meta{
+  margin-top:10px;padding-top:8px;border-top:1px solid #eef2f6;
+  display:flex;gap:8px 15px;flex-wrap:wrap;
+}
+.promotion-order-row-meta span{font-size:8.5px;color:#8491a2}
+.promotion-order-row-meta b{color:#46566b}
+.promotion-order-note{flex:1 1 100%}
+
+@media(max-width:650px){
+  .showcase-sales-actions{grid-template-columns:1fr}
+  .promotion-modal{padding:8px}
+  .promotion-modal-card{padding:16px;border-radius:14px}
+  .promotion-detail-grid{grid-template-columns:1fr}
+  .promotion-detail-price{grid-template-columns:1fr}
+  .promotion-order-target{grid-template-columns:34px 1fr}
+  .promotion-order-target>div:last-child{grid-column:2}
+  .promotion-order-progress span b{font-size:6.8px}
+}
