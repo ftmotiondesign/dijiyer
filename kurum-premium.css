@@ -716,3 +716,392 @@ body{
     font-size:7px;
   }
 }
+
+
+/* =========================================================
+   KURUM SAYFASI · ALT BİLGİ KARTLARI V4
+   Sade, profesyonel ve daha az parçalı görünüm
+   ========================================================= */
+
+.kp-profile-layout{
+  grid-template-columns:minmax(0,1.6fr) minmax(300px,.62fr);
+  gap:14px;
+  align-items:start;
+}
+
+.kp-profile-summary-card{
+  padding:18px;
+}
+
+.kp-summary-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.kp-summary-top h2{
+  margin:3px 0 2px;
+  color:#172033;
+  font-size:18px;
+  letter-spacing:-.2px;
+}
+
+.kp-summary-top p{
+  margin:0;
+  color:#8a96a6;
+  font-size:9px;
+}
+
+.kp-summary-rating{
+  flex:0 0 auto;
+  min-height:32px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 10px;
+  border:1px solid #f1dfad;
+  border-radius:9px;
+  background:#fffaf0;
+  color:#9a6a00;
+  font-size:10px;
+  font-weight:900;
+}
+
+.kp-profile-summary-card .kp-about{
+  margin-top:13px;
+  color:#596879;
+  font-size:11px;
+  line-height:1.72;
+}
+
+.kp-summary-divider,
+.kp-side-divider{
+  height:1px;
+  background:#edf0f4;
+}
+
+.kp-summary-divider{
+  margin:15px 0 13px;
+}
+
+.kp-compact-head{
+  margin-bottom:8px;
+}
+
+.kp-compact-head h2{
+  margin-top:2px;
+  font-size:13px;
+}
+
+.kp-services-clean{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.kp-services-clean .kp-service{
+  min-height:29px;
+  padding:0 9px;
+  display:inline-flex;
+  align-items:center;
+  border:1px solid #e1e8ef;
+  border-radius:8px;
+  background:#f7f9fb;
+  color:#526174;
+  font-size:8.5px;
+  font-weight:750;
+}
+
+.kp-works-card,
+.kp-reviews-card,
+.kp-similar-card-wrap{
+  padding:16px;
+}
+
+.kp-works-card .kp-head p{
+  max-width:none;
+}
+
+.kp-review-action{
+  margin-top:10px!important;
+  border-color:#dce3eb!important;
+  background:#fff!important;
+  color:#526174!important;
+}
+
+.kp-side{
+  gap:10px;
+}
+
+.kp-side>.kp-card{
+  padding:14px;
+}
+
+.kp-trust-compact{
+  border:1px solid #dbe7f4;
+  background:#f8fbff;
+}
+
+.kp-trust-compact .kp-trust-title{
+  align-items:flex-start;
+}
+
+.kp-trust-points{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+
+.kp-trust-points span{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  padding:6px 7px;
+  border:1px solid #e5edf5;
+  border-radius:8px;
+  background:#fff;
+  color:#607086;
+  font-size:7.8px;
+  line-height:1.35;
+}
+
+.kp-full-btn{
+  width:100%;
+  margin-top:10px;
+}
+
+.kp-contact-card{
+  padding:14px!important;
+}
+
+.kp-info-clean{
+  display:grid;
+  gap:0;
+}
+
+.kp-info-clean .kp-info-row{
+  min-height:48px;
+  padding:8px 0;
+  border-bottom:1px solid #edf0f4;
+}
+
+.kp-info-clean .kp-info-row:last-child{
+  border-bottom:0;
+}
+
+.kp-info-clean .kp-info-icon{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#f3f6f9;
+  font-style:normal;
+  font-size:13px;
+}
+
+.kp-info-clean .kp-info-row>div{
+  min-width:0;
+}
+
+.kp-info-clean .kp-info-row span{
+  color:#8a96a6;
+  font-size:7.5px;
+}
+
+.kp-info-clean .kp-info-row strong{
+  margin-top:2px;
+  display:block;
+  color:#35465b;
+  font-size:9px;
+  line-height:1.42;
+  overflow-wrap:anywhere;
+}
+
+.kp-info-clean .kp-info-row a{
+  color:#1677ff;
+  text-decoration:none;
+}
+
+.kp-side-divider{
+  margin:12px 0;
+}
+
+.kp-hours-head{
+  margin-bottom:4px;
+}
+
+.kp-hours-clean{
+  display:grid;
+  gap:0;
+}
+
+.kp-hours-clean .kp-hour{
+  min-height:37px;
+  padding:7px 0;
+  border:0;
+  border-bottom:1px solid #edf0f4;
+  border-radius:0;
+  background:transparent;
+}
+
+.kp-hours-clean .kp-hour:last-child{
+  border-bottom:0;
+}
+
+.kp-hours-clean .kp-hour span{
+  color:#7c8999;
+  font-size:8px;
+}
+
+.kp-hours-clean .kp-hour b{
+  color:#35465b;
+  font-size:8.5px;
+}
+
+.kp-location-card{
+  overflow:hidden;
+}
+
+.kp-location-card .kp-head{
+  margin-bottom:9px;
+}
+
+.kp-location-card #kpMap{
+  height:210px;
+  border:1px solid #e0e6ed;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.kp-map-actions-clean{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:8px;
+}
+
+.kp-map-actions-clean a{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #dde4ec;
+  border-radius:8px;
+  background:#f8fafc;
+  color:#536276;
+  font-size:8px;
+  font-weight:850;
+  text-decoration:none;
+}
+
+.kp-map-actions-clean a.primary{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+
+@media(max-width:900px){
+  .kp-profile-layout{
+    grid-template-columns:1fr;
+  }
+
+  .kp-side{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    align-items:start;
+  }
+
+  .kp-side>.kp-trust-compact{
+    grid-column:1/-1;
+  }
+}
+
+@media(max-width:640px){
+  .kp-profile-layout{
+    margin-top:8px;
+    gap:8px;
+  }
+
+  .kp-main,
+  .kp-side{
+    gap:8px;
+  }
+
+  .kp-side{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .kp-profile-summary-card,
+  .kp-works-card,
+  .kp-reviews-card,
+  .kp-similar-card-wrap,
+  .kp-side>.kp-card{
+    padding:11px!important;
+    border-radius:11px;
+  }
+
+  .kp-summary-top h2{
+    font-size:15px;
+  }
+
+  .kp-profile-summary-card .kp-about{
+    margin-top:9px;
+    font-size:9px;
+    line-height:1.58;
+  }
+
+  .kp-summary-divider{
+    margin:11px 0 9px;
+  }
+
+  .kp-services-clean{
+    gap:5px;
+  }
+
+  .kp-services-clean .kp-service{
+    min-height:26px;
+    padding:0 7px;
+    font-size:7.5px;
+  }
+
+  .kp-trust-points{
+    grid-template-columns:1fr 1fr;
+    gap:5px;
+  }
+
+  .kp-trust-points span{
+    min-height:29px;
+    font-size:7px;
+  }
+
+  .kp-contact-card{
+    order:1;
+  }
+
+  .kp-location-card{
+    order:2;
+  }
+
+  .kp-trust-compact{
+    order:0;
+  }
+
+  .kp-location-card #kpMap{
+    height:185px;
+  }
+}
+
+@media(max-width:390px){
+  .kp-summary-rating{
+    min-height:28px;
+    padding:0 8px;
+    font-size:8.5px;
+  }
+
+  .kp-trust-points{
+    grid-template-columns:1fr;
+  }
+}
