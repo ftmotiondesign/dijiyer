@@ -3425,3 +3425,98 @@ body[data-panel-current="stats"] .persistent-performance{
     font-size:10px;
   }
 }
+
+
+/* =========================================================
+   Destek yanıtı bildirimleri
+   ========================================================= */
+.support-reply-alert{
+  border-color:#bbf7d0;
+  background:linear-gradient(135deg,#f0fdf4,#ffffff);
+}
+
+.support-reply-alert.hidden{
+  display:none !important;
+}
+
+.support-tab-count.has-unread,
+.side-nav-badge.has-unread{
+  background:#dc2626 !important;
+  color:#fff !important;
+  animation:djyMessagePulse 1.5s infinite;
+}
+
+.support-history-head{
+  align-items:center;
+}
+
+.support-history-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.support-notification-btn{
+  border:1px solid #bfdbfe;
+  border-radius:8px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  padding:7px 9px;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.support-notification-btn:disabled{
+  cursor:default;
+  opacity:.75;
+}
+
+.support-notification-note{
+  margin:-5px 0 10px;
+  color:#64748b;
+  font-size:9.5px;
+}
+
+.support-ticket-card.has-unread-reply{
+  border-color:#86efac;
+  box-shadow:0 0 0 2px rgba(34,197,94,.08);
+}
+
+.support-ticket-card.has-unread-reply::before{
+  content:"Yeni destek yanıtı";
+  display:inline-flex;
+  margin-bottom:8px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#15803d;
+  font-size:9px;
+  font-weight:900;
+}
+
+.support-ticket-card.support-reply-focus{
+  animation:supportReplyFocus 1.8s ease;
+}
+
+@keyframes supportReplyFocus{
+  0%,100%{box-shadow:0 0 0 0 rgba(22,119,255,0)}
+  35%{box-shadow:0 0 0 5px rgba(22,119,255,.14)}
+}
+
+@media(max-width:640px){
+  .support-history-head{
+    align-items:flex-start;
+  }
+
+  .support-history-actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+
+  .support-notification-btn{
+    flex:1 1 auto;
+  }
+}
