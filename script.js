@@ -7406,3 +7406,35 @@ window.__brandDirectoryReady=true;
 
   renderBrandDirectory();
 })();
+
+
+/* Mobilde iki reklamlık sponsor alanını Marka Bayi & Servis bölümünden
+   sonra, İş Fırsatları bölümünün hemen üstüne taşı. Masaüstünde eski
+   konumuna geri dönsün. */
+function positionMobileSponsoredSlotNearJobs(){
+  const slot=document.getElementById('mobileSponsoredSlot');
+  const jobs=document.getElementById('mobileJobsBoard');
+  const sponsoredSection=document.getElementById('sponsoredSection');
+  if(!slot)return;
+
+  const isMobile=window.matchMedia('(max-width: 820px)').matches;
+
+  if(isMobile && jobs?.parentNode){
+    if(slot.nextElementSibling!==jobs){
+      jobs.parentNode.insertBefore(slot,jobs);
+    }
+    slot.classList.add('moved-near-jobs');
+    return;
+  }
+
+  if(!isMobile && sponsoredSection?.parentNode){
+    if(slot.nextElementSibling!==sponsoredSection){
+      sponsoredSection.parentNode.insertBefore(slot,sponsoredSection);
+    }
+    slot.classList.remove('moved-near-jobs');
+  }
+}
+
+window.addEventListener('resize',positionMobileSponsoredSlotNearJobs);
+document.addEventListener('DOMContentLoaded',positionMobileSponsoredSlotNearJobs);
+window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
