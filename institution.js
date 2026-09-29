@@ -1586,6 +1586,7 @@ function startLiveSupportWatcher() {
     liveSupportUnsubscribe = null;
   }
 
+  liveSupportWatcherReady = false;
   const knownReplies = new Map();
 
   liveSupportUnsubscribe = db.collection("supportTickets")
