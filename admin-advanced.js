@@ -484,16 +484,31 @@
   }
 
   const CLOUDINARY_BANNER_SETTINGS_KEY="dijiyer_cloudinary_banner";
+  const CLOUDINARY_BANNER_DEFAULTS={
+    cloudName:"okefpzsy",
+    uploadPreset:"dijiyer_upload"
+  };
 
   function loadCloudinaryBannerSettings(){
     try{
       const parsed=JSON.parse(localStorage.getItem(CLOUDINARY_BANNER_SETTINGS_KEY)||"{}");
-      return {
-        cloudName:String(parsed.cloudName||"").trim(),
-        uploadPreset:String(parsed.uploadPreset||"").trim()
-      };
+      const cloudName=String(parsed.cloudName||CLOUDINARY_BANNER_DEFAULTS.cloudName||"").trim();
+      const uploadPreset=String(parsed.uploadPreset||CLOUDINARY_BANNER_DEFAULTS.uploadPreset||"").trim();
+
+      if(
+        cloudName &&
+        uploadPreset &&
+        (!parsed.cloudName || !parsed.uploadPreset)
+      ){
+        localStorage.setItem(
+          CLOUDINARY_BANNER_SETTINGS_KEY,
+          JSON.stringify({cloudName,uploadPreset})
+        );
+      }
+
+      return {cloudName,uploadPreset};
     }catch(_){
-      return {cloudName:"",uploadPreset:""};
+      return {...CLOUDINARY_BANNER_DEFAULTS};
     }
   }
 
@@ -510,7 +525,7 @@
     const summary=$("cloudinaryConfigSummary");
     if(summary){
       summary.textContent=settings.cloudName&&settings.uploadPreset
-        ? "Bağlı · "+settings.cloudName
+        ? "Bağlı · "+settings.cloudName+" · "+settings.uploadPreset
         : "Kurulum gerekli";
       summary.classList.toggle("ready",Boolean(settings.cloudName&&settings.uploadPreset));
     }
@@ -531,7 +546,7 @@
       JSON.stringify({cloudName,uploadPreset})
     );
 
-    if(message)message.textContent="Ayar kaydedildi. Görsel ve video yükleyebilirsiniz.";
+    if(message)message.textContent="Cloudinary bağlantısı hazır. Görsel ve video doğrudan yüklenebilir.";
     fillCloudinaryBannerSettings();
   }
 
