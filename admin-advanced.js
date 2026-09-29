@@ -766,7 +766,7 @@
     $("bannerAdCity").value=item.city||"";
     $("bannerAdDistrict").value=item.district||"";
     $("bannerAdCategory").value=item.category||"";
-    $("bannerAdDuration").value=String(Number(item.durationSeconds)===3?3:5);
+    $("bannerAdDuration").value=String([3,5,7].includes(Number(item.durationSeconds))?Number(item.durationSeconds):7);
     if($("bannerAdPlacement"))$("bannerAdPlacement").value=item.placement==="sponsor"?"sponsor":"search";
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
@@ -793,7 +793,9 @@
       videoUrl:String($("bannerAdVideoUrl")?.value||"").trim(),
       city:String($("bannerAdCity")?.value||""),district:String($("bannerAdDistrict")?.value||""),
       category:String($("bannerAdCategory")?.value||""),categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
-      durationSeconds:Number($("bannerAdDuration")?.value)===3?3:5,
+      durationSeconds:[3,5,7].includes(Number($("bannerAdDuration")?.value))
+        ? Number($("bannerAdDuration")?.value)
+        : 7,
       placement:$("bannerAdPlacement")?.value==="sponsor"?"sponsor":"search",
       startAt:String($("bannerAdStartAt")?.value||""),endAt:String($("bannerAdEndAt")?.value||""),
       active:Boolean($("bannerAdActive")?.checked),updatedAt:now
@@ -850,7 +852,7 @@
           '<div><span>Bölge</span><strong>'+escapeHtml([item.city,item.district].filter(Boolean).join(" / ")||"Tüm Bölgeler")+'</strong></div>'+
           '<div><span>Sektör</span><strong>'+escapeHtml(item.categoryLabel||bannerCategoryLabel(item.category)||"Tüm Sektörler")+'</strong></div>'+
           '<div><span>Gösterim</span><strong>'+(item.placement==="sponsor"?"Sponsor Bannerı":"Arama Bannerı")+'</strong></div>'+
-          '<div><span>Dönüş</span><strong>'+(Number(item.durationSeconds)===3?"3":"5")+' sn</strong></div>'+
+          '<div><span>Dönüş</span><strong>'+([3,5,7].includes(Number(item.durationSeconds))?Number(item.durationSeconds):7)+' sn</strong></div>'+
         '</div>'+
         '<div class="banner-admin-card-actions">'+
           '<span class="banner-state '+(item.active===false?"passive":"active")+'">'+(item.active===false?"Pasif":"Yayında")+'</span>'+
