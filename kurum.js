@@ -87,20 +87,137 @@ function renderProfile(){
       </div>
     </section>
 
-    <div class="kp-grid">
+    <div class="kp-grid kp-profile-layout">
       <div class="kp-main">
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">KURUM HAKKINDA</span><h2>${escapeHtml(x.name||"Kurum")}</h2><p>${escapeHtml(locationLabel(x))}</p></div></div><p class="kp-about">${escapeHtml(x.description||"Kurum henüz detaylı açıklama eklemedi.")}</p></section>
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">HİZMETLER</span><h2>Sunulan Hizmetler</h2><p>Kurum profilinde belirtilen hizmetler.</p></div></div><div class="kp-services">${serviceRows.map(s=>'<span class="kp-service">✓ '+escapeHtml(s)+'</span>').join("")}</div></section>
-        <section class="kp-card kp-works-card"><div class="kp-head"><div><span class="eyebrow">PORTFÖY</span><h2>Yapılan İşler</h2><p>Kurumun tamamladığı işlerden ve hizmetlerden örnekler.</p></div></div><div class="kp-media kp-works-grid">${gallery.length?gallery.map((u,i)=>'<div class="kp-photo kp-work-item"><img src="'+escapeHtml(u)+'" alt="Yapılan iş '+(i+1)+'"></div>').join(""):'<div class="kp-empty">Kurum henüz yapılan iş görseli eklemedi.</div>'}</div>${tour?'<div class="kp-special"><a href="'+escapeHtml(tour)+'" target="_blank" rel="noopener">◉ 360° Sanal Turu Aç</a></div>':""}</section>
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">DEĞERLENDİRMELER</span><h2>Müşteri Yorumları</h2><p>Kurum hakkında yapılan değerlendirmeler.</p></div><div class="kp-review-score"><strong id="reviewScore">${ratingText(x.rating)}</strong><span id="reviewCount">${Number(x.reviewCount||0)} değerlendirme</span></div></div><div id="reviewsList" class="kp-review-list"><div class="kp-empty">Yorumlar yükleniyor...</div></div><button id="reviewOpenBtn" class="kp-btn" style="margin-top:9px">★ Yorum Yap / Puan Ver</button></section>
-        ${!x.vip?'<section class="kp-card"><div class="kp-head"><div><span class="eyebrow">BENZER KURUMLAR</span><h2>Yakındaki Benzer Kurumlar</h2><p>Aynı kategori ve bölgedeki kurumlar.</p></div></div><div id="similarList" class="kp-similar"><div class="kp-empty">Benzer kurumlar yükleniyor...</div></div></section>':""}
+
+        <section class="kp-card kp-profile-summary-card">
+          <div class="kp-summary-top">
+            <div>
+              <span class="eyebrow">KURUM PROFİLİ</span>
+              <h2>${escapeHtml(x.name||"Kurum")}</h2>
+              <p>${escapeHtml(locationLabel(x))}</p>
+            </div>
+            <span class="kp-summary-rating">★ ${ratingText(x.rating)}</span>
+          </div>
+
+          <p class="kp-about">${escapeHtml(x.description||"Kurum henüz detaylı açıklama eklemedi.")}</p>
+
+          <div class="kp-summary-divider"></div>
+
+          <div class="kp-head kp-compact-head">
+            <div>
+              <span class="eyebrow">HİZMETLER</span>
+              <h2>Sunulan Hizmetler</h2>
+            </div>
+          </div>
+
+          <div class="kp-services kp-services-clean">
+            ${serviceRows.map(s=>'<span class="kp-service">✓ '+escapeHtml(s)+'</span>').join("")}
+          </div>
+        </section>
+
+        <section class="kp-card kp-works-card">
+          <div class="kp-head">
+            <div>
+              <span class="eyebrow">PORTFÖY</span>
+              <h2>Yapılan İşler</h2>
+              <p>Kurumun çalışmalarından örnekler.</p>
+            </div>
+          </div>
+          <div class="kp-media kp-works-grid">
+            ${gallery.length?gallery.map((u,i)=>'<div class="kp-photo kp-work-item"><img src="'+escapeHtml(u)+'" alt="Yapılan iş '+(i+1)+'"></div>').join(""):'<div class="kp-empty">Kurum henüz yapılan iş görseli eklemedi.</div>'}
+          </div>
+          ${tour?'<div class="kp-special"><a href="'+escapeHtml(tour)+'" target="_blank" rel="noopener">◉ 360° Sanal Turu Aç</a></div>':""}
+        </section>
+
+        <section class="kp-card kp-reviews-card">
+          <div class="kp-head">
+            <div>
+              <span class="eyebrow">DEĞERLENDİRMELER</span>
+              <h2>Müşteri Yorumları</h2>
+            </div>
+            <div class="kp-review-score">
+              <strong id="reviewScore">${ratingText(x.rating)}</strong>
+              <span id="reviewCount">${Number(x.reviewCount||0)} değerlendirme</span>
+            </div>
+          </div>
+
+          <div id="reviewsList" class="kp-review-list">
+            <div class="kp-empty">Yorumlar yükleniyor...</div>
+          </div>
+
+          <button id="reviewOpenBtn" class="kp-btn kp-review-action">★ Yorum Yap / Puan Ver</button>
+        </section>
+
+        ${!x.vip?'<section class="kp-card kp-similar-card-wrap"><div class="kp-head"><div><span class="eyebrow">BENZER KURUMLAR</span><h2>Yakındaki Benzer Kurumlar</h2></div></div><div id="similarList" class="kp-similar"><div class="kp-empty">Benzer kurumlar yükleniyor...</div></div></section>':""}
       </div>
 
       <aside class="kp-side">
-        ${x.offer!==false?`<section class="kp-card kp-trust"><div class="kp-trust-title"><span>🛡️</span><div><h3>Dijiyer Güvencesi</h3><p>Teklif süreci kayıt altında.</p></div></div><div class="kp-trust-list"><span>Teklif fiyatı ve süresi görünür</span><span>Seçilen fiyat kilitlenebilir</span><span>Teklif koduyla doğrulama yapılabilir</span><span>Sorunda Dijiyer Destek kullanılabilir</span></div><button type="button" class="kp-btn primary" data-direct-quote style="margin-top:11px">Bu Kurumdan Teklif Al</button></section>`:""}
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">İLETİŞİM</span><h2>Kurum Bilgileri</h2></div></div><div class="kp-info"><div class="kp-info-row"><i class="kp-info-icon">📍</i><div><span>Adres</span><strong>${escapeHtml(x.address||locationLabel(x))}</strong></div></div>${phone?`<div class="kp-info-row"><i class="kp-info-icon">☎</i><div><span>Telefon</span><strong>${escapeHtml(phone)}</strong></div></div>`:""}${website?`<div class="kp-info-row"><i class="kp-info-icon">🌐</i><div><span>Web Sitesi</span><strong><a href="${escapeHtml(website)}" target="_blank" rel="noopener">Siteyi Aç</a></strong></div></div>`:""}${instagram?`<div class="kp-info-row"><i class="kp-info-icon">◎</i><div><span>Instagram</span><strong><a href="${escapeHtml(instagram)}" target="_blank" rel="noopener">Instagram'a Git</a></strong></div></div>`:""}<div class="kp-info-row"><i class="kp-info-icon">🧭</i><div><span>Hizmet Bölgesi</span><strong>${escapeHtml(x.serviceAreas||locationLabel(x))}</strong></div></div></div></section>
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">ÇALIŞMA SAATLERİ</span><h2>Ne zaman açık?</h2></div></div><div class="kp-hours"><div class="kp-hour"><span>Hafta içi</span><b>${escapeHtml(x.weekdayHours||"Belirtilmedi")}</b></div><div class="kp-hour"><span>Cumartesi</span><b>${escapeHtml(x.saturdayHours||"Belirtilmedi")}</b></div><div class="kp-hour"><span>Pazar</span><b>${escapeHtml(x.sundayHours||"Belirtilmedi")}</b></div></div></section>
-        <section class="kp-card"><div class="kp-head"><div><span class="eyebrow">KONUM</span><h2>Haritada Gör</h2><p>${escapeHtml(locationLabel(x))}</p></div></div><div id="kpMap"></div><div class="kp-map-actions"><a id="kpRoute" class="primary" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">Yol Tarifi Al</a><a href="index.html">Dijiyer Haritası</a></div></section>
+
+        ${x.offer!==false?`<section class="kp-card kp-trust kp-trust-compact"><div class="kp-trust-title"><span>🛡️</span><div><h3>Dijiyer Güvencesi</h3><p>Teklif süreci kayıt altında.</p></div></div><div class="kp-trust-points"><span>✓ Fiyat ve süre görünür</span><span>✓ Seçilen fiyat kilitlenebilir</span><span>✓ Teklif koduyla doğrulama</span><span>✓ Destek kaydı oluşturulabilir</span></div><button type="button" class="kp-btn primary kp-full-btn" data-direct-quote>Bu Kurumdan Teklif Al</button></section>`:""}
+
+        <section class="kp-card kp-contact-card">
+          <div class="kp-head kp-compact-head">
+            <div>
+              <span class="eyebrow">İLETİŞİM</span>
+              <h2>Kurum Bilgileri</h2>
+            </div>
+          </div>
+
+          <div class="kp-info kp-info-clean">
+            <div class="kp-info-row">
+              <i class="kp-info-icon">📍</i>
+              <div>
+                <span>Adres</span>
+                <strong>${escapeHtml(x.address||locationLabel(x))}</strong>
+              </div>
+            </div>
+
+            ${phone?`<div class="kp-info-row"><i class="kp-info-icon">☎</i><div><span>Telefon</span><strong>${escapeHtml(phone)}</strong></div></div>`:""}
+            ${website?`<div class="kp-info-row"><i class="kp-info-icon">🌐</i><div><span>Web Sitesi</span><strong><a href="${escapeHtml(website)}" target="_blank" rel="noopener">Siteyi Aç</a></strong></div></div>`:""}
+            ${instagram?`<div class="kp-info-row"><i class="kp-info-icon">◎</i><div><span>Instagram</span><strong><a href="${escapeHtml(instagram)}" target="_blank" rel="noopener">Instagram\'a Git</a></strong></div></div>`:""}
+
+            <div class="kp-info-row">
+              <i class="kp-info-icon">🧭</i>
+              <div>
+                <span>Hizmet Bölgesi</span>
+                <strong>${escapeHtml(x.serviceAreas||locationLabel(x))}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="kp-side-divider"></div>
+
+          <div class="kp-head kp-compact-head kp-hours-head">
+            <div>
+              <span class="eyebrow">ÇALIŞMA SAATLERİ</span>
+              <h2>Ne zaman açık?</h2>
+            </div>
+          </div>
+
+          <div class="kp-hours kp-hours-clean">
+            <div class="kp-hour"><span>Hafta içi</span><b>${escapeHtml(x.weekdayHours||"Belirtilmedi")}</b></div>
+            <div class="kp-hour"><span>Cumartesi</span><b>${escapeHtml(x.saturdayHours||"Belirtilmedi")}</b></div>
+            <div class="kp-hour"><span>Pazar</span><b>${escapeHtml(x.sundayHours||"Belirtilmedi")}</b></div>
+          </div>
+        </section>
+
+        <section class="kp-card kp-location-card">
+          <div class="kp-head kp-compact-head">
+            <div>
+              <span class="eyebrow">KONUM</span>
+              <h2>Haritada Gör</h2>
+              <p>${escapeHtml(locationLabel(x))}</p>
+            </div>
+          </div>
+
+          <div id="kpMap"></div>
+
+          <div class="kp-map-actions kp-map-actions-clean">
+            <a id="kpRoute" class="primary" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a>
+            <a href="index.html">Haritada Keşfet</a>
+          </div>
+        </section>
       </aside>
     </div>
 
