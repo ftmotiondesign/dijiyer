@@ -6953,32 +6953,36 @@ function renderBrandDirectory(){
   let filtered=brandDirectoryData.filter(row=>matchesCommonFilters(row) && matchesExactLocation(row));
   let usedSearchFallback=false;
 
-  /* Arama yapıldığında seçili il/ilçede sonuç yoksa kullanıcıyı boş ekranda
-     bırakma. Önce aynı ilde, sonra rehberin tamamında eşleşme göster. */
-  if(query && !filtered.length){
-    if(activeCityNorm){
-      filtered=brandDirectoryData.filter(row=>
-        matchesCommonFilters(row) &&
-        normalizeQuoteSearch(row.city)===activeCityNorm
-      );
-    }
+  /* Seçili ilçede kayıt yoksa kullanıcıya 0 göstermeyelim.
+     Önce aynı ilde, sonra rehberdeki tüm eşleşen kayıtları göster. */
+  if(!filtered.length && activeCityNorm){
+    filtered=brandDirectoryData.filter(row=>
+      matchesCommonFilters(row) &&
+      normalizeQuoteSearch(row.city)===activeCityNorm
+    );
+    usedSearchFallback=filtered.length>0;
+  }
 
-    if(!filtered.length){
-      filtered=brandDirectoryData.filter(matchesCommonFilters);
-    }
-
+  if(!filtered.length){
+    filtered=brandDirectoryData.filter(matchesCommonFilters);
     usedSearchFallback=filtered.length>0;
   }
 
   if(countEl)countEl.textContent=String(filtered.length);
   if(titleEl){
-    titleEl.textContent=brandDirectoryBrand==='all'
-      ? 'Yakındaki bayi ve servisler'
-      : brandDirectoryBrand+' noktaları';
+    if(usedSearchFallback){
+      titleEl.textContent=brandDirectoryBrand==='all'
+        ? 'Bölgedeki bayi ve servisler'
+        : brandDirectoryBrand+' noktaları';
+    }else{
+      titleEl.textContent=brandDirectoryBrand==='all'
+        ? 'Yakındaki bayi ve servisler'
+        : brandDirectoryBrand+' noktaları';
+    }
   }
   if(hintEl){
     hintEl.textContent=usedSearchFallback
-      ? 'Seçili bölgede sonuç bulunamadı; diğer eşleşen noktalar gösteriliyor'
+      ? 'Seçili ilçede kayıt yok; en yakın eşleşen kayıtlar gösteriliyor'
       : (activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
           ? 'Bu il için rehber kayıtları henüz ekleniyor'
           : 'Resmi marka kaynaklarından derlenen iletişim bilgileri');
