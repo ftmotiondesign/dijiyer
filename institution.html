@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=37">
+  <link rel="stylesheet" href="institution.css?v=38">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -854,11 +854,16 @@
     </section>
     <section class="panel-view" data-panel-view="profile">
       <article class="panel-card profile-card">
-        <div class="card-head">
+        <div class="card-head firm-profile-card-head">
           <div>
             <h2>Kurum Bilgileri</h2>
             <p>Buradaki bilgiler Dijiyer'deki kurum profilinizde kullanılır.</p>
           </div>
+          <button type="button" class="firm-profile-visual-shortcut" id="profileVisualShortcut">
+            <span>🖼️</span>
+            <span><strong>Görsel Kimlik</strong><small>Logo & Kapak</small></span>
+            <b>↓</b>
+          </button>
         </div>
 
         <form id="institutionProfileForm" class="profile-form firm-profile-form" novalidate>
@@ -924,7 +929,7 @@
             </div>
           </section>
 
-          <section class="firm-profile-section">
+          <section class="firm-profile-section firm-profile-visual-section" id="profileVisualSection">
             <div class="firm-profile-section-head">
               <div>
                 <span class="eyebrow">GÖRSEL KİMLİK</span>
@@ -1519,7 +1524,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=24"></script>
+  <script src="institution.js?v=10"></script>
   <script src="institution-layout.js?v=3"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
