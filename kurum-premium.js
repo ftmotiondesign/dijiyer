@@ -270,15 +270,26 @@
     enhanced = true;
   }
 
-  const root = document.getElementById("institutionProfile");
-  if (root) {
-    const observer = new MutationObserver(() => {
+  const originalRender =
+    typeof renderProfile === "function" ? renderProfile : null;
+
+  if (originalRender) {
+    renderProfile = function(...args) {
+      const result = originalRender.apply(this, args);
       enhanced = false;
-      requestAnimationFrame(enhance);
-    });
-    observer.observe(root, { childList:true, subtree:false });
+      setTimeout(enhance, 0);
+      return result;
+    };
   }
 
+  let attempts = 0;
+  const timer = setInterval(() => {
+    attempts += 1;
+    enhance();
+    if (enhanced || attempts >= 30) {
+      clearInterval(timer);
+    }
+  }, 300);
+
   window.addEventListener("load", () => setTimeout(enhance, 100));
-  setTimeout(enhance, 500);
 })();
