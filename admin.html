@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=24">
+  <link rel="stylesheet" href="admin.css?v=25">
   <link rel="stylesheet" href="admin-advanced.css?v=14">
 </head>
 
@@ -122,7 +122,7 @@
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
-        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Banner Reklamları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Kurum Listesi / Banner Reklamları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paket Yönetimi</button>
 
@@ -472,10 +472,16 @@
       <section id="bannerAdsSection" hidden>
         <div class="section-title banner-admin-title">
           <div>
-            <h3>🖼️ Bölgesel Banner Reklamları</h3>
+            <h3>🖼️ Kurum Listesi / Banner Reklamları</h3>
             <p id="bannerAdAdminCount">Reklamlar yükleniyor...</p>
           </div>
           <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Banner Reklama Ekle</button>
+        </div>
+
+        <div class="banner-list-placement-note">
+          <span>📍 GÖSTERİM YERİ</span>
+          <strong>Kurum listesinde 2. kurumdan sonra gösterilir</strong>
+          <small>Burada oluşturduğunuz aktif görsel veya video reklamlar, uygun bölge ve sektör eşleşmesinde kurum listesinin içine sponsorlu reklam olarak yerleşir.</small>
         </div>
 
         <div class="banner-admin-guide">
@@ -613,7 +619,7 @@
 
           <section class="banner-ad-list-panel">
             <div class="promotion-package-list-head">
-              <div><strong>Banner Reklamları</strong><small>Aktif reklamlar ana sayfadaki kurum detaylarında döner.</small></div>
+              <div><strong>Banner Reklamları</strong><small>Aktif reklamlar kurum listesinde 2. kurumdan sonra ve uygun banner alanlarında gösterilir.</small></div>
               <input type="search" id="bannerAdSearch" placeholder="Kurum, bölge veya sektör ara...">
             </div>
             <div id="bannerAdAdminList" class="banner-ad-admin-list"></div>
