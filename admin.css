@@ -3181,3 +3181,36 @@ button{
     width:100%;
   }
 }
+
+
+/* Kurum düzenleme kayıt durumu */
+.institution-edit-save-message{
+  min-height:18px;
+  margin-top:2px;
+  padding:0 2px;
+  color:#64748b;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.45;
+}
+.institution-edit-save-message.saving{
+  color:#1d4ed8;
+}
+.institution-edit-save-message.success{
+  padding:8px 10px;
+  border:1px solid #bbf7d0;
+  border-radius:8px;
+  background:#f0fdf4;
+  color:#15803d;
+}
+.institution-edit-save-message.error{
+  padding:8px 10px;
+  border:1px solid #fecaca;
+  border-radius:8px;
+  background:#fff7f7;
+  color:#b91c1c;
+}
+#institutionEditSaveBtn:disabled{
+  cursor:wait;
+  opacity:.68;
+}
