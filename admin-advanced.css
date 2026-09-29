@@ -1445,3 +1445,76 @@
   .banner-media-upload-actions{grid-template-columns:1fr 1fr}
   .banner-media-upload-actions .danger-lite{grid-column:1/-1}
 }
+
+
+/* Cloudinary ücretsiz medya ayarı */
+.cloudinary-config{
+  margin-top:8px;
+  border:1px solid #d9e5f5;
+  border-radius:9px;
+  background:#fff;
+}
+.cloudinary-config summary{
+  padding:8px 9px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  cursor:pointer;
+  list-style:none;
+}
+.cloudinary-config summary::-webkit-details-marker{display:none}
+.cloudinary-config summary>span{
+  color:#334155;
+  font-size:8.7px;
+  font-weight:900;
+}
+.cloudinary-config summary>small{
+  padding:3px 6px;
+  border-radius:999px;
+  background:#fff7e6;
+  color:#a16207;
+  font-size:7.3px;
+  font-weight:900;
+}
+.cloudinary-config summary>small.ready{
+  background:#dcfce7;
+  color:#15803d;
+}
+.cloudinary-config-body{
+  padding:9px;
+  border-top:1px solid #edf1f5;
+}
+.cloudinary-config-actions{
+  margin-top:7px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.cloudinary-config-actions>div{display:grid;gap:2px}
+.cloudinary-config-actions strong{font-size:8.5px;color:#475569}
+.cloudinary-config-actions small{font-size:7.5px;color:#94a3b8}
+.cloudinary-config-actions button{
+  min-width:100px;
+  min-height:32px;
+  padding:0 9px;
+  border:1px solid #1677ff;
+  border-radius:8px;
+  background:#1677ff;
+  color:#fff;
+  font-size:8.3px;
+  font-weight:900;
+  cursor:pointer;
+}
+#cloudinaryConfigMessage{
+  min-height:13px;
+  margin:6px 0 0;
+  color:#526175;
+  font-size:8px;
+}
+@media(max-width:650px){
+  .cloudinary-config summary,
+  .cloudinary-config-actions{align-items:stretch;flex-direction:column}
+  .cloudinary-config-actions button{width:100%}
+}
