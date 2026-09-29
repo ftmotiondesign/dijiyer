@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=35" />
+  <link rel="stylesheet" href="style.css?v=36" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -400,6 +400,17 @@
               aria-label="İş ilanlarında ara"
             >
             <button type="button" class="hidden" id="mobileJobsSearchClear" aria-label="Aramayı temizle">×</button>
+          </div>
+
+          <div class="mobile-jobs-search-results hidden" id="mobileJobsSearchResults" aria-live="polite">
+            <div class="mobile-jobs-search-results-head">
+              <div>
+                <span>ARAMA SONUÇLARI</span>
+                <strong><b id="mobileJobsSearchResultCount">0</b> ilan bulundu</strong>
+              </div>
+              <button type="button" id="mobileJobsSearchResultsClose" aria-label="Arama sonuçlarını kapat">×</button>
+            </div>
+            <div class="mobile-jobs-search-results-list" id="mobileJobsSearchResultsList"></div>
           </div>
 
           <div class="mobile-jobs-location-box">
@@ -1062,7 +1073,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=53"></script>
+<script src="script.js?v=54"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
