@@ -364,19 +364,45 @@ function getSelectedMainCategory() {
 }
 
 function scrollToMobileResults() {
-  if (!window.matchMedia('(max-width: 820px)').matches) return;
+  const resultsSection = document.getElementById('resultsSection');
+  if (!resultsSection) return;
 
-  const target = document.getElementById('resultsSection');
-  if (!target) return;
+  if (window.matchMedia('(max-width: 820px)').matches) {
+    const discovery = document.querySelector('.mobile-discovery');
 
-  const top =
-    target.getBoundingClientRect().top +
-    window.scrollY -
-    76;
+    if (discovery && discovery.nextElementSibling !== resultsSection) {
+      discovery.insertAdjacentElement('afterend', resultsSection);
+    }
 
-  window.scrollTo({
-    top: Math.max(0, top),
-    behavior: 'smooth'
+    resultsSection.classList.add('mobile-results-direct');
+
+    renderList();
+
+    requestAnimationFrame(() => {
+      const listPanel = resultsSection.querySelector('.list-panel');
+      const target = listPanel || resultsSection;
+
+      const top =
+        target.getBoundingClientRect().top +
+        window.scrollY -
+        12;
+
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior:'smooth'
+      });
+
+      setTimeout(() => {
+        try { map.invalidateSize(); } catch (_) {}
+      }, 300);
+    });
+
+    return;
+  }
+
+  resultsSection.scrollIntoView({
+    behavior:'smooth',
+    block:'start'
   });
 }
 
@@ -4576,7 +4602,10 @@ function setupTrackingAdSafeMode() {
 setupTrackingAdSafeMode();
 
 document.getElementById('exploreScrollBtn')?.addEventListener('click', () => {
-  document.getElementById('exploreSection')?.scrollIntoView({
+  const target = document.getElementById('resultsSection');
+  if (!target) return;
+
+  target.scrollIntoView({
     behavior:'smooth',
     block:'start'
   });
