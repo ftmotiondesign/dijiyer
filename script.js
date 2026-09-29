@@ -5728,28 +5728,70 @@ function setupHomeSponsoredSlider(){
 
 let mobileSponsorSliderTimer=null;
 
-function mobileSponsorSalesSlideHtml(slotNo,categoryLabel){
+function mobileSponsorSalesCardHtml(slotNo,categoryLabel){
   return `
-    <div class="mobile-sponsored-slide">
-      <div class="mobile-sponsored-placeholder">
-        <div class="mobile-sponsored-placeholder-icon">📣</div>
-        <div class="mobile-sponsored-placeholder-copy">
-          <span>SPONSORLU ALAN · ${slotNo}</span>
-          <strong>Bu alanda öne çıkın</strong>
-          <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
-        </div>
-        <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+    <div class="mobile-sponsor-mini-card mobile-sponsor-mini-sales">
+      <div class="mobile-sponsor-mini-icon">📣</div>
+      <div class="mobile-sponsor-mini-copy">
+        <span>SPONSORLU ALAN · ${slotNo}</span>
+        <strong>Burada öne çıkın</strong>
+        <small>${escapeHtml(categoryLabel)}</small>
       </div>
+      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
     </div>
   `;
 }
 
-function mobileSponsorBannerSlideHtml(ad){
-  return '<div class="mobile-sponsored-slide">'+mobilePlacementBannerHtml(ad)+'</div>';
+function mobileSponsorBannerCardHtml(ad){
+  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const video=safePublicProfileUrl(ad.videoUrl || '');
+  const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
+  const href=bannerPlacementHref(ad);
+  const title=ad.headline || ad.institutionName || 'Sponsorlu Kurum';
+  const sub=[ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Sponsorlu';
+
+  return `
+    <a class="mobile-sponsor-mini-card mobile-sponsor-mini-ad" href="${href}">
+      <div class="mobile-sponsor-mini-media">
+        ${isVideo
+          ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
+          : (image
+              ? '<img src="'+image+'" alt="'+escapeHtml(title)+'">'
+              : '<div class="mobile-sponsor-mini-fallback">📣</div>')}
+        <span>SPONSORLU</span>
+      </div>
+      <div class="mobile-sponsor-mini-copy">
+        <strong>${escapeHtml(title)}</strong>
+        <small>${escapeHtml(sub)}</small>
+      </div>
+    </a>
+  `;
 }
 
-function mobileSponsorInstitutionSlideHtml(inst){
-  return '<div class="mobile-sponsored-slide">'+homepageSponsoredMobileHtml(inst)+'</div>';
+function mobileSponsorInstitutionCardHtml(inst){
+  const cover=safePublicProfileUrl(inst.coverUrl || '');
+  const location=inst.location || [inst.city,inst.district].filter(Boolean).join(', ') || 'Konum bilgisi';
+
+  return `
+    <article
+      class="mobile-sponsor-mini-card mobile-sponsor-mini-ad"
+      data-sponsored-id="${escapeHtml(String(inst.id))}"
+      role="link"
+      tabindex="0"
+      aria-label="${escapeHtml(inst.name || 'Sponsorlu kurum')} profilini aç"
+    >
+      <div class="mobile-sponsor-mini-media">
+        ${cover
+          ? '<img src="'+cover+'" alt="'+escapeHtml(inst.name || 'Sponsorlu kurum')+'">'
+          : '<div class="mobile-sponsor-mini-fallback">'+escapeHtml(inst.emoji || '🏢')+'</div>'}
+        <span>SPONSORLU</span>
+      </div>
+      <div class="mobile-sponsor-mini-copy">
+        <strong>${escapeHtml(inst.name || 'Kurum')}</strong>
+        <small>📍 ${escapeHtml(location)}</small>
+      </div>
+    </article>
+  `;
 }
 
 function stopMobileSponsorSlider(){
@@ -5762,17 +5804,17 @@ function stopMobileSponsorSlider(){
 function setupMobileSponsorSlider(){
   const slot=document.getElementById('mobileSponsoredSlot');
   const track=slot?.querySelector('.mobile-sponsored-track');
-  const dots=slot?.querySelectorAll('[data-mobile-sponsor-dot]') || [];
+  const dots=[...(slot?.querySelectorAll('[data-mobile-sponsor-dot]') || [])];
   if(!slot||!track)return;
 
   stopMobileSponsorSlider();
 
-  const slides=[...track.querySelectorAll('.mobile-sponsored-slide')];
-  if(slides.length<2)return;
+  const pages=[...track.querySelectorAll('.mobile-sponsored-page')];
+  if(pages.length<2)return;
 
   const setActiveDot=()=>{
     const width=track.clientWidth || 1;
-    const index=Math.max(0,Math.min(slides.length-1,Math.round(track.scrollLeft/width)));
+    const index=Math.max(0,Math.min(pages.length-1,Math.round(track.scrollLeft/width)));
     dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));
   };
 
@@ -5791,7 +5833,7 @@ function setupMobileSponsorSlider(){
     if(document.hidden)return;
     const width=track.clientWidth || 1;
     const current=Math.round(track.scrollLeft/width);
-    const next=(current+1)%slides.length;
+    const next=(current+1)%pages.length;
     track.scrollTo({left:next*width,behavior:'smooth'});
   },5000);
 
@@ -5808,48 +5850,58 @@ function renderMobileSponsorCarousel(mobileSlot,sponsored){
   const bannerCandidates=[];
 
   [...mobileBanners,...homeBanners].forEach(ad=>{
-    const key=String(ad.id || ad.institutionId || '')+'|'+String(ad.placement || '');
+    const key=String(ad.id || ad.institutionId || '');
     if(!key||seen.has(key))return;
     seen.add(key);
     bannerCandidates.push(ad);
   });
 
-  const slides=[];
+  const cards=[];
+  const usedInstitutionIds=new Set();
 
-  bannerCandidates.slice(0,2).forEach(ad=>{
-    slides.push(mobileSponsorBannerSlideHtml(ad));
+  bannerCandidates.slice(0,8).forEach(ad=>{
+    cards.push(mobileSponsorBannerCardHtml(ad));
+    if(ad.institutionId)usedInstitutionIds.add(String(ad.institutionId));
   });
 
-  if(slides.length<2){
-    const usedInstitutionIds=new Set(
-      bannerCandidates.map(ad=>String(ad.institutionId||'')).filter(Boolean)
-    );
-
-    sponsored
-      .filter(inst=>!usedInstitutionIds.has(String(inst.id)))
-      .slice(0,2-slides.length)
-      .forEach(inst=>{
-        slides.push(mobileSponsorInstitutionSlideHtml(inst));
-      });
-  }
+  sponsored
+    .filter(inst=>!usedInstitutionIds.has(String(inst.id)))
+    .slice(0,Math.max(0,8-cards.length))
+    .forEach(inst=>{
+      cards.push(mobileSponsorInstitutionCardHtml(inst));
+    });
 
   const activeMain=getSelectedMainCategory();
   const categoryLabel=activeMain
     ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
-    : 'bulunduğun bölgeyi';
+    : 'Bölgenizdeki müşteriler';
 
-  while(slides.length<2){
-    slides.push(mobileSponsorSalesSlideHtml(slides.length+1,categoryLabel));
+  while(cards.length<2){
+    cards.push(mobileSponsorSalesCardHtml(cards.length+1,categoryLabel));
+  }
+
+  const pages=[];
+  for(let i=0;i<cards.length;i+=2){
+    const pair=[cards[i],cards[i+1] || mobileSponsorSalesCardHtml(i+2,categoryLabel)];
+    pages.push(`
+      <div class="mobile-sponsored-page">
+        <div class="mobile-sponsored-pair">
+          ${pair.join('')}
+        </div>
+      </div>
+    `);
   }
 
   mobileSlot.innerHTML=`
     <div class="mobile-sponsored-carousel" aria-label="Sponsorlu reklamlar">
       <div class="mobile-sponsored-track">
-        ${slides.join('')}
+        ${pages.join('')}
       </div>
-      <div class="mobile-sponsored-dots" aria-label="Sponsorlu reklam geçişleri">
-        ${slides.map((_,i)=>'<button type="button" class="'+(i===0?'active':'')+'" data-mobile-sponsor-dot="'+i+'" aria-label="'+(i+1)+'. sponsorlu reklam"></button>').join('')}
-      </div>
+      ${pages.length>1 ? `
+        <div class="mobile-sponsored-dots" aria-label="Sponsorlu reklam geçişleri">
+          ${pages.map((_,i)=>'<button type="button" class="'+(i===0?'active':'')+'" data-mobile-sponsor-dot="'+i+'" aria-label="'+(i+1)+'. sponsorlu reklam grubu"></button>').join('')}
+        </div>
+      ` : ''}
     </div>
   `;
 
