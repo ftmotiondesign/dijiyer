@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["promotionPackagesSection","promotionOrdersSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","promotionPackagesSection","promotionOrdersSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["promotionPackagesTabBtn","promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -16,6 +16,7 @@
   let supportAdminRecords = [];
   let promotionAdminRecords = [];
   let promotionPackageRecords = [];
+  let bannerAdRecords = [];
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -130,6 +131,12 @@
 
   baseTabIds.forEach(id => {
     $(id)?.addEventListener("click", hideAdvancedSections);
+  });
+
+  $("bannerAdsTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
+    await renderBannerAdsAdmin(true);
   });
 
   $("promotionPackagesTabBtn")?.addEventListener("click", async () => {
@@ -406,6 +413,212 @@
       alert("Toplu işlem tamamlanamadı.");
     }
   });
+
+  function bannerCategoryLabel(value){
+    if(!value)return "Tüm Sektörler";
+    if(typeof getReportCategoryLabel==="function"){
+      try{return getReportCategoryLabel(value)||value}catch(_){}
+    }
+    return value;
+  }
+
+  function fillBannerAdTargetOptions(selectedInstitution=null){
+    const institutionSelect=$("bannerAdInstitution");
+    const citySelect=$("bannerAdCity");
+    const districtSelect=$("bannerAdDistrict");
+    const categorySelect=$("bannerAdCategory");
+    if(!institutionSelect||!citySelect||!districtSelect||!categorySelect)return;
+
+    const oldInstitution=institutionSelect.value;
+    institutionSelect.innerHTML='<option value="">Kurum seçin</option>'+
+      [...institutionRecords].sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr")).map(item=>
+        '<option value="'+escapeHtml(item.id)+'">'+escapeHtml(item.name||"Kurum")+' · '+escapeHtml([item.city,item.district].filter(Boolean).join(" / "))+'</option>'
+      ).join("");
+    institutionSelect.value=selectedInstitution?.id || oldInstitution || "";
+
+    const cities=[...new Set(institutionRecords.map(x=>String(x.city||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+    const wantedCity=selectedInstitution?.city || citySelect.dataset.current || citySelect.value || "";
+    citySelect.innerHTML='<option value="">Tüm Bölgeler</option>'+cities.map(city=>'<option value="'+escapeHtml(city)+'">'+escapeHtml(city)+'</option>').join("");
+    citySelect.value=wantedCity;
+
+    const districts=[...new Set(institutionRecords.filter(x=>!citySelect.value||String(x.city||"")===String(citySelect.value)).map(x=>String(x.district||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+    const wantedDistrict=selectedInstitution?.district || districtSelect.dataset.current || "";
+    districtSelect.innerHTML='<option value="">Tüm İlçeler</option>'+districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
+    districtSelect.value=wantedDistrict;
+
+    const categories=[...new Set(institutionRecords.map(x=>String(x.subCategory||x.category||"").trim()).filter(Boolean))].sort((a,b)=>bannerCategoryLabel(a).localeCompare(bannerCategoryLabel(b),"tr"));
+    const wantedCategory=selectedInstitution?.subCategory || selectedInstitution?.category || categorySelect.dataset.current || "";
+    categorySelect.innerHTML='<option value="">Tüm Sektörler</option>'+categories.map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(bannerCategoryLabel(value))+'</option>').join("");
+    categorySelect.value=wantedCategory;
+  }
+
+  function selectedBannerInstitution(){
+    const id=String($("bannerAdInstitution")?.value||"");
+    return institutionRecords.find(item=>String(item.id)===id)||null;
+  }
+
+  function renderBannerAdminPreview(){
+    const root=$("bannerAdPreview");
+    if(!root)return;
+    const inst=selectedBannerInstitution();
+    const headline=String($("bannerAdHeadline")?.value||"").trim()||inst?.name||"Banner önizlemesi";
+    const text=String($("bannerAdText")?.value||"").trim()||[inst?.city,inst?.district].filter(Boolean).join(" / ")||"Reklam metni";
+    const image=String($("bannerAdImageUrl")?.value||"").trim()||inst?.coverUrl||inst?.logoUrl||"";
+    root.style.backgroundImage=image?'linear-gradient(90deg,rgba(10,22,40,.82),rgba(10,22,40,.2)),url("'+String(image).replace(/"/g,"%22")+'")':"";
+    root.innerHTML='<span>SPONSORLU</span><strong>'+escapeHtml(headline)+'</strong><small>'+escapeHtml(text)+'</small>';
+  }
+
+  function resetBannerAdForm(){
+    $("bannerAdForm")?.reset();
+    if($("bannerAdEditId"))$("bannerAdEditId").value="";
+    if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
+    if($("bannerAdActive"))$("bannerAdActive").checked=true;
+    if($("bannerAdDuration"))$("bannerAdDuration").value="5";
+    ["bannerAdCity","bannerAdDistrict","bannerAdCategory"].forEach(id=>{if($(id))delete $(id).dataset.current;});
+    fillBannerAdTargetOptions();
+    if($("bannerAdMessage"))$("bannerAdMessage").textContent="";
+    renderBannerAdminPreview();
+  }
+
+  async function loadBannerAdsAdmin(){
+    try{
+      const snapshot=await db.collection("bannerAds").get();
+      bannerAdRecords=snapshot.docs.map(doc=>({id:doc.id,...doc.data()})).sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+    }catch(error){
+      console.error("Banner reklamları yüklenemedi:",error);
+      bannerAdRecords=[];
+    }
+    return bannerAdRecords;
+  }
+
+  function editBannerAd(id){
+    const item=bannerAdRecords.find(x=>x.id===id);
+    if(!item)return;
+    const inst=institutionRecords.find(x=>String(x.id)===String(item.institutionId))||null;
+    $("bannerAdEditId").value=item.id;
+    $("bannerAdFormTitle").textContent="Banner Reklamını Düzenle";
+    fillBannerAdTargetOptions(inst);
+    $("bannerAdInstitution").value=item.institutionId||"";
+    $("bannerAdHeadline").value=item.headline||"";
+    $("bannerAdText").value=item.text||"";
+    $("bannerAdImageUrl").value=item.imageUrl||"";
+    $("bannerAdCity").dataset.current=item.city||"";
+    $("bannerAdDistrict").dataset.current=item.district||"";
+    $("bannerAdCategory").dataset.current=item.category||"";
+    fillBannerAdTargetOptions();
+    $("bannerAdCity").value=item.city||"";
+    $("bannerAdDistrict").value=item.district||"";
+    $("bannerAdCategory").value=item.category||"";
+    $("bannerAdDuration").value=String(Number(item.durationSeconds)===3?3:5);
+    $("bannerAdStartAt").value=item.startAt||"";
+    $("bannerAdEndAt").value=item.endAt||"";
+    $("bannerAdActive").checked=item.active!==false;
+    renderBannerAdminPreview();
+    $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function saveBannerAd(event){
+    event.preventDefault();
+    const editId=String($("bannerAdEditId")?.value||"");
+    const inst=selectedBannerInstitution();
+    if(!inst){$("bannerAdMessage").textContent="Önce reklam veren kurumu seçin.";return;}
+    const ref=editId?db.collection("bannerAds").doc(editId):db.collection("bannerAds").doc();
+    const existing=bannerAdRecords.find(x=>x.id===editId);
+    const now=new Date().toISOString();
+    const headline=String($("bannerAdHeadline")?.value||"").trim()||inst.name||"Sponsorlu Kurum";
+    const data={
+      adCode:existing?.adCode||uid("BNR"),
+      institutionId:String(inst.id),institutionName:String(inst.name||"Kurum"),logoUrl:String(inst.logoUrl||""),
+      headline,text:String($("bannerAdText")?.value||"").trim(),
+      imageUrl:String($("bannerAdImageUrl")?.value||"").trim()||String(inst.coverUrl||inst.logoUrl||""),
+      city:String($("bannerAdCity")?.value||""),district:String($("bannerAdDistrict")?.value||""),
+      category:String($("bannerAdCategory")?.value||""),categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
+      durationSeconds:Number($("bannerAdDuration")?.value)===3?3:5,
+      startAt:String($("bannerAdStartAt")?.value||""),endAt:String($("bannerAdEndAt")?.value||""),
+      active:Boolean($("bannerAdActive")?.checked),updatedAt:now
+    };
+    if(!existing)data.createdAt=now;
+    try{
+      await ref.set(data,{merge:true});
+      addAudit(editId?"Banner reklamı güncellendi":"Banner reklama kurum eklendi",inst.name||headline);
+      $("bannerAdMessage").textContent="Banner reklamı kaydedildi.";
+      resetBannerAdForm();
+      await renderBannerAdsAdmin(true);
+    }catch(error){
+      console.error("Banner reklamı kaydedilemedi:",error);
+      $("bannerAdMessage").textContent="Banner kaydedilemedi. Firestore kuralını kontrol edin.";
+    }
+  }
+
+  async function toggleBannerAd(id){
+    const item=bannerAdRecords.find(x=>x.id===id);if(!item)return;
+    try{await db.collection("bannerAds").doc(id).update({active:item.active===false,updatedAt:new Date().toISOString()});await renderBannerAdsAdmin(true);}
+    catch(error){console.error(error);alert("Banner durumu değiştirilemedi.");}
+  }
+
+  async function deleteBannerAd(id){
+    const item=bannerAdRecords.find(x=>x.id===id);if(!item)return;
+    if(!confirm('"'+(item.institutionName||"Banner")+'" reklamdan kaldırılsın mı?'))return;
+    try{await db.collection("bannerAds").doc(id).delete();addAudit("Banner reklamı kaldırıldı",item.institutionName||id);await renderBannerAdsAdmin(true);}
+    catch(error){console.error(error);alert("Banner reklamı silinemedi.");}
+  }
+
+  async function renderBannerAdsAdmin(reload=false){
+    const root=$("bannerAdAdminList");if(!root)return;
+    fillBannerAdTargetOptions();
+    if(reload||!bannerAdRecords.length)await loadBannerAdsAdmin();
+    const q=normalize($("bannerAdSearch")?.value||"");
+    const rows=bannerAdRecords.filter(item=>!q||normalize([item.institutionName,item.headline,item.text,item.city,item.district,item.categoryLabel,item.category].join(" ")).includes(q));
+    const activeCount=bannerAdRecords.filter(x=>x.active!==false).length;
+    if($("bannerAdAdminCount"))$("bannerAdAdminCount").textContent=bannerAdRecords.length+" reklam · "+activeCount+" yayında · "+(bannerAdRecords.length-activeCount)+" pasif";
+    if($("bannerAdsTabCount"))$("bannerAdsTabCount").textContent=activeCount;
+
+    root.innerHTML=rows.length?rows.map(item=>{
+      const bg=item.imageUrl?' style="background-image:linear-gradient(90deg,rgba(10,22,40,.76),rgba(10,22,40,.2)),url(\''+escapeHtml(item.imageUrl)+'\')" ':"";
+      return '<article class="banner-admin-card '+(item.active===false?"is-passive":"")+'">'+
+        '<div class="banner-admin-card-visual"'+bg+'>'+
+          '<span>SPONSORLU</span><strong>'+escapeHtml(item.headline||item.institutionName||"Banner Reklamı")+'</strong><small>'+escapeHtml(item.text||item.institutionName||"")+'</small>'+
+        '</div>'+
+        '<div class="banner-admin-card-meta">'+
+          '<div><span>Kurum</span><strong>'+escapeHtml(item.institutionName||"-")+'</strong></div>'+
+          '<div><span>Bölge</span><strong>'+escapeHtml([item.city,item.district].filter(Boolean).join(" / ")||"Tüm Bölgeler")+'</strong></div>'+
+          '<div><span>Sektör</span><strong>'+escapeHtml(item.categoryLabel||bannerCategoryLabel(item.category)||"Tüm Sektörler")+'</strong></div>'+
+          '<div><span>Dönüş</span><strong>'+(Number(item.durationSeconds)===3?"3":"5")+' sn</strong></div>'+
+        '</div>'+
+        '<div class="banner-admin-card-actions">'+
+          '<span class="banner-state '+(item.active===false?"passive":"active")+'">'+(item.active===false?"Pasif":"Yayında")+'</span>'+
+          '<button type="button" data-banner-edit="'+escapeHtml(item.id)+'">Düzenle</button>'+
+          '<button type="button" data-banner-toggle="'+escapeHtml(item.id)+'">'+(item.active===false?"Yayına Al":"Duraklat")+'</button>'+
+          '<button type="button" class="danger" data-banner-delete="'+escapeHtml(item.id)+'">Reklamdan Çıkar</button>'+
+        '</div></article>';
+    }).join(""):'<div class="advanced-empty">Banner reklamı bulunamadı.</div>';
+
+    root.querySelectorAll("[data-banner-edit]").forEach(btn=>btn.addEventListener("click",()=>editBannerAd(btn.dataset.bannerEdit)));
+    root.querySelectorAll("[data-banner-toggle]").forEach(btn=>btn.addEventListener("click",()=>toggleBannerAd(btn.dataset.bannerToggle)));
+    root.querySelectorAll("[data-banner-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteBannerAd(btn.dataset.bannerDelete)));
+  }
+
+  $("bannerAdForm")?.addEventListener("submit",saveBannerAd);
+  $("bannerAdNewBtn")?.addEventListener("click",resetBannerAdForm);
+  $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
+  $("bannerAdSearch")?.addEventListener("input",()=>renderBannerAdsAdmin(false));
+  $("bannerAdInstitution")?.addEventListener("change",()=>{
+    const inst=selectedBannerInstitution();
+    if(inst){
+      $("bannerAdHeadline").value=inst.name||"";
+      $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
+      $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
+      fillBannerAdTargetOptions(inst);
+    }
+    renderBannerAdminPreview();
+  });
+  $("bannerAdCity")?.addEventListener("change",()=>{
+    const city=$("bannerAdCity").value;
+    const districts=[...new Set(institutionRecords.filter(x=>!city||String(x.city||"")===String(city)).map(x=>String(x.district||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+    $("bannerAdDistrict").innerHTML='<option value="">Tüm İlçeler</option>'+districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
+    renderBannerAdminPreview();
+  });
+  ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",renderBannerAdminPreview));
 
   const DEFAULT_PROMOTION_PACKAGES = [
     {
