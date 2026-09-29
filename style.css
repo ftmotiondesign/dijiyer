@@ -11293,3 +11293,1273 @@ to{opacity:1;transform:none}
 .mobile-daily-stats.stats-disabled{
   display:none !important;
 }
+
+
+
+/* =========================================================
+   PC · MOBİL AKIŞLA AYNI DİJİYER DENEYİMİ V1
+   Masaüstünde de mobildeki kategori, sponsor, günlük hareket
+   ve İş Fırsatları akışı kullanılır; geniş ekrana göre yayılır.
+   ========================================================= */
+@media(min-width:821px){
+
+  /* Eski sol filtre paneli yerine mobildeki kategori merkezi */
+  .sidebar{
+    display:none!important;
+  }
+
+  .app-layout{
+    display:block!important;
+    width:min(1440px,100%)!important;
+    margin:14px auto 0!important;
+    padding:0 16px 18px!important;
+  }
+
+  .workspace{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(300px,.58fr) minmax(0,1.42fr)!important;
+    gap:12px!important;
+    align-items:stretch!important;
+  }
+
+  /* Mobil keşif alanını PC'de de kullan */
+  .mobile-discovery{
+    display:block!important;
+    width:min(1408px,calc(100% - 32px))!important;
+    margin:22px auto 0!important;
+    padding:16px!important;
+    border:1px solid #dfe7f0!important;
+    border-radius:18px!important;
+    background:#fff!important;
+    box-shadow:0 8px 24px rgba(16,42,76,.055)!important;
+  }
+
+  .mobile-search-location{
+    width:100%!important;
+    min-height:66px!important;
+    display:grid!important;
+    grid-template-columns:42px minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:11px!important;
+    padding:10px 12px!important;
+    border:1px solid #dbe5ef!important;
+    border-radius:13px!important;
+    background:#f8fbff!important;
+    color:#27384e!important;
+    text-align:left!important;
+    cursor:pointer!important;
+  }
+
+  .mobile-search-location-icon{
+    width:42px!important;
+    height:42px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:11px!important;
+    background:#e9f3ff!important;
+    font-size:18px!important;
+  }
+
+  .mobile-search-location-copy{
+    min-width:0!important;
+    display:grid!important;
+    gap:2px!important;
+  }
+
+  .mobile-search-location-copy small{
+    color:#1677ff!important;
+    font-size:8px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  .mobile-search-location-copy strong{
+    color:#263950!important;
+    font-size:13px!important;
+  }
+
+  .mobile-search-location-copy em{
+    color:#7d8b9d!important;
+    font-size:9px!important;
+    font-style:normal!important;
+  }
+
+  .mobile-search-location-action{
+    color:#1677ff!important;
+    font-size:9px!important;
+    font-weight:900!important;
+  }
+
+  .mobile-search-quick-filters{
+    margin-top:9px!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:7px!important;
+  }
+
+  .mobile-search-quick-filters button{
+    min-height:42px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    border:1px solid #dfe6ef!important;
+    border-radius:10px!important;
+    background:#fff!important;
+    color:#506177!important;
+    font-size:10px!important;
+    font-weight:800!important;
+  }
+
+  .mobile-search-quick-filters button.active{
+    border-color:#a9ccfb!important;
+    background:#edf5ff!important;
+    color:#1267d2!important;
+  }
+
+  .mobile-discovery-head{
+    margin-top:14px!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:space-between!important;
+    gap:10px!important;
+  }
+
+  .mobile-discovery-head>div{
+    display:grid!important;
+    gap:2px!important;
+  }
+
+  .mobile-discovery-head strong{
+    color:#1d314b!important;
+    font-size:15px!important;
+  }
+
+  .mobile-discovery-head span{
+    color:#8491a2!important;
+    font-size:9px!important;
+  }
+
+  #mobileClearCategoriesBtn{
+    min-height:32px!important;
+    padding:0 10px!important;
+    border:1px solid #dce4ed!important;
+    border-radius:8px!important;
+    background:#f8fafc!important;
+    color:#607087!important;
+    font-size:8.5px!important;
+    font-weight:850!important;
+  }
+
+  .mobile-category-scroll{
+    margin-top:9px!important;
+    display:grid!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:8px!important;
+    overflow:visible!important;
+  }
+
+  .mobile-category-btn{
+    min-width:0!important;
+    min-height:74px!important;
+    display:grid!important;
+    place-items:center!important;
+    align-content:center!important;
+    gap:5px!important;
+    padding:8px!important;
+    border:1px solid #e0e6ee!important;
+    border-radius:11px!important;
+    background:#fbfcfe!important;
+    color:#516176!important;
+    font-size:8.5px!important;
+    font-weight:850!important;
+    text-align:center!important;
+  }
+
+  .mobile-category-btn:hover{
+    border-color:#bdd6f6!important;
+    background:#fff!important;
+    transform:translateY(-1px)!important;
+  }
+
+  .mobile-category-btn.active{
+    border-color:#1677ff!important;
+    background:#edf5ff!important;
+    color:#1267d2!important;
+    box-shadow:0 5px 13px rgba(22,119,255,.08)!important;
+  }
+
+  .mobile-category-icon{
+    width:30px!important;
+    height:30px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:9px!important;
+    background:#eef3f8!important;
+    font-size:15px!important;
+  }
+
+  .mobile-category-btn.active .mobile-category-icon{
+    background:#dbeaff!important;
+  }
+
+  .mobile-inline-subcategories{
+    grid-column:1/-1!important;
+    padding:11px!important;
+    border:1px solid #cfe0f5!important;
+    border-radius:12px!important;
+    background:#f7fbff!important;
+  }
+
+  .mobile-inline-subcategories-head{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    margin-bottom:8px!important;
+  }
+
+  .mobile-inline-subcategories-head strong{
+    color:#2c4563!important;
+    font-size:10px!important;
+  }
+
+  .mobile-inline-subcategories-head span{
+    color:#8190a2!important;
+    font-size:8px!important;
+  }
+
+  .mobile-inline-subcategories-grid{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+
+  .mobile-subcategory-btn{
+    min-height:34px!important;
+    padding:0 8px!important;
+    border:1px solid #dce5ef!important;
+    border-radius:8px!important;
+    background:#fff!important;
+    color:#5c6e84!important;
+    font-size:8px!important;
+    font-weight:800!important;
+  }
+
+  .mobile-subcategory-btn.active{
+    border-color:#1677ff!important;
+    background:#1677ff!important;
+    color:#fff!important;
+  }
+
+  .mobile-category-result{
+    grid-column:1/-1!important;
+    margin-top:9px!important;
+    padding:11px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:10px!important;
+    border:1px solid #bfd8fa!important;
+    border-radius:11px!important;
+    background:#f5f9ff!important;
+  }
+
+  .mobile-category-result.hidden{
+    display:none!important;
+  }
+
+  .mobile-category-result-top{
+    min-width:0!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:16px!important;
+  }
+
+  .mobile-category-result-copy span{
+    color:#1677ff!important;
+    font-size:7px!important;
+    font-weight:950!important;
+    letter-spacing:.06em!important;
+  }
+
+  .mobile-category-result-copy strong{
+    display:block!important;
+    margin-top:2px!important;
+    color:#29425f!important;
+    font-size:11px!important;
+  }
+
+  .mobile-category-result-copy small{
+    display:block!important;
+    margin-top:2px!important;
+    color:#8592a3!important;
+    font-size:7.5px!important;
+  }
+
+  .mobile-category-result-location{
+    display:grid!important;
+    grid-template-columns:24px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:6px!important;
+    padding-left:14px!important;
+    border-left:1px solid #dbe6f3!important;
+  }
+
+  .mobile-category-result-location small{
+    display:block!important;
+    color:#8b97a7!important;
+    font-size:6.5px!important;
+  }
+
+  .mobile-category-result-location strong{
+    display:block!important;
+    color:#40556e!important;
+    font-size:8px!important;
+  }
+
+  .mobile-category-result-actions button{
+    min-height:34px!important;
+    padding:0 11px!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:#1677ff!important;
+    color:#fff!important;
+    font-size:8.5px!important;
+    font-weight:900!important;
+  }
+
+  /* Mobil sponsor alanını PC'de de aynı reklam ürünü olarak kullan */
+  .mobile-sponsored-slot{
+    display:block!important;
+    width:min(1408px,calc(100% - 32px))!important;
+    margin:12px auto 0!important;
+  }
+
+  .home-sponsored-section{
+    display:none!important;
+  }
+
+  .mobile-sponsored-carousel{
+    overflow:hidden!important;
+    border:1px solid #dce5ef!important;
+    border-radius:15px!important;
+    background:#fff!important;
+    box-shadow:0 7px 20px rgba(17,44,78,.05)!important;
+  }
+
+  .mobile-sponsored-track{
+    display:flex!important;
+    overflow-x:auto!important;
+    scroll-snap-type:x mandatory!important;
+    scrollbar-width:none!important;
+  }
+
+  .mobile-sponsored-track::-webkit-scrollbar{
+    display:none!important;
+  }
+
+  .mobile-sponsored-page{
+    flex:0 0 100%!important;
+    scroll-snap-align:start!important;
+    padding:9px!important;
+  }
+
+  .mobile-sponsored-pair{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:9px!important;
+  }
+
+  .mobile-sponsor-mini-card{
+    min-width:0!important;
+    min-height:92px!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-columns:112px minmax(0,1fr)!important;
+    align-items:stretch!important;
+    border:1px solid #e0e7ef!important;
+    border-radius:11px!important;
+    background:#fff!important;
+    color:inherit!important;
+    text-decoration:none!important;
+  }
+
+  .mobile-sponsor-mini-media{
+    position:relative!important;
+    min-height:92px!important;
+    overflow:hidden!important;
+    background:#eaf2fb!important;
+  }
+
+  .mobile-sponsor-mini-media img,
+  .mobile-sponsor-mini-media video{
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    object-fit:cover!important;
+  }
+
+  .mobile-sponsor-mini-media>span{
+    position:absolute!important;
+    left:6px!important;
+    top:6px!important;
+    padding:3px 5px!important;
+    border-radius:6px!important;
+    background:rgba(16,35,60,.76)!important;
+    color:#fff!important;
+    font-size:6px!important;
+    font-weight:950!important;
+  }
+
+  .mobile-sponsor-mini-copy{
+    min-width:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    padding:10px!important;
+  }
+
+  .mobile-sponsor-mini-copy>strong{
+    overflow:hidden!important;
+    color:#2b405a!important;
+    font-size:11px!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  .mobile-sponsor-mini-copy>small{
+    margin-top:4px!important;
+    overflow:hidden!important;
+    color:#8190a2!important;
+    font-size:8px!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  .mobile-sponsor-mini-sales{
+    grid-template-columns:42px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    align-items:center!important;
+    padding:10px!important;
+    background:#f8fbff!important;
+  }
+
+  .mobile-sponsor-mini-icon{
+    width:42px!important;
+    height:42px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:10px!important;
+    background:#e7f2ff!important;
+    font-size:18px!important;
+  }
+
+  .mobile-sponsor-mini-sales .mobile-sponsor-mini-copy{
+    padding:0!important;
+  }
+
+  .mobile-sponsor-mini-sales .mobile-sponsor-mini-copy>span{
+    color:#1677ff!important;
+    font-size:6.5px!important;
+    font-weight:950!important;
+  }
+
+  .mobile-sponsor-mini-sales button{
+    min-height:34px!important;
+    padding:0 10px!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:#1677ff!important;
+    color:#fff!important;
+    font-size:8px!important;
+    font-weight:900!important;
+  }
+
+  .mobile-sponsored-dots{
+    display:flex!important;
+    justify-content:center!important;
+    gap:5px!important;
+    padding:0 0 8px!important;
+  }
+
+  .mobile-sponsored-dots button{
+    width:6px!important;
+    height:6px!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:50%!important;
+    background:#cbd5e1!important;
+  }
+
+  .mobile-sponsored-dots button.active{
+    width:18px!important;
+    border-radius:999px!important;
+    background:#1677ff!important;
+  }
+
+  /* Günlük hareketler + harita PC'de yan yana */
+  .mobile-daily-stats{
+    display:block!important;
+    min-height:100%!important;
+    padding:14px!important;
+    border:1px solid #dce6f1!important;
+    border-radius:15px!important;
+    background:#fff!important;
+    box-shadow:0 7px 20px rgba(18,69,126,.055)!important;
+  }
+
+  .mobile-daily-stats-head{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:10px!important;
+  }
+
+  .mobile-daily-stats-head span{
+    display:block!important;
+    color:#1677ff!important;
+    font-size:7px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  .mobile-daily-stats-head strong{
+    display:block!important;
+    margin-top:2px!important;
+    color:#2f435e!important;
+    font-size:11px!important;
+  }
+
+  .mobile-daily-stats-head>small{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    color:#55816a!important;
+    font-size:7px!important;
+    font-weight:850!important;
+  }
+
+  .mobile-daily-stats-head>small i{
+    width:7px!important;
+    height:7px!important;
+    border-radius:50%!important;
+    background:#22c55e!important;
+  }
+
+  .mobile-daily-stats-grid{
+    margin-top:10px!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+  }
+
+  .mobile-daily-stat{
+    min-width:0!important;
+    min-height:70px!important;
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:9px!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:10px!important;
+    background:#fafcfe!important;
+  }
+
+  .mobile-daily-stat-icon{
+    width:34px!important;
+    height:34px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:9px!important;
+    background:#edf5ff!important;
+    font-size:15px!important;
+  }
+
+  .mobile-daily-stat strong{
+    display:block!important;
+    color:#263b56!important;
+    font-size:16px!important;
+  }
+
+  .mobile-daily-stat small{
+    display:block!important;
+    margin-top:2px!important;
+    color:#8390a1!important;
+    font-size:7px!important;
+  }
+
+  .mobile-daily-stat em{
+    display:block!important;
+    margin-top:2px!important;
+    color:#1677ff!important;
+    font-size:6.5px!important;
+    font-style:normal!important;
+  }
+
+  .mobile-daily-stats-note{
+    margin-top:8px!important;
+    color:#8996a6!important;
+    font-size:7px!important;
+    line-height:1.4!important;
+  }
+
+  .map-card{
+    min-height:100%!important;
+    border-radius:15px!important;
+  }
+
+  #map{
+    height:248px!important;
+  }
+
+  .decision-alternatives{
+    grid-column:1/-1!important;
+    margin-top:0!important;
+  }
+
+  /* Kurumlar + İş Fırsatları aynı ana akışta */
+  .content-grid{
+    grid-column:1/-1!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(430px,.95fr)!important;
+    gap:12px!important;
+    margin-top:0!important;
+  }
+
+  .list-panel{
+    max-height:760px!important;
+    padding:12px!important;
+    border-radius:15px!important;
+  }
+
+  .detail-panel{
+    grid-column:1/-1!important;
+    min-height:0!important;
+    margin-top:0!important;
+    border-radius:15px!important;
+  }
+
+  /* İş fırsatları mobildeki tasarımın PC uyarlaması */
+  #mobileJobsBoard{
+    display:block!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:14px!important;
+    border:1px solid #cfe7df!important;
+    border-radius:15px!important;
+    background:linear-gradient(180deg,#f8fdfb,#f4fbf8)!important;
+    box-shadow:0 8px 22px rgba(8,127,107,.065)!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-head{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;
+    align-items:start!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-head>div>span{
+    display:block!important;
+    color:#087f6b!important;
+    font-size:7px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-head h2{
+    margin:4px 0 3px!important;
+    color:#183b35!important;
+    font-size:18px!important;
+    line-height:1.12!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-head p{
+    margin:0!important;
+    color:#6f837e!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-post-btn{
+    min-height:34px!important;
+    padding:0 10px!important;
+    border:0!important;
+    border-radius:9px!important;
+    background:#0b9a78!important;
+    color:#fff!important;
+    font-size:8.5px!important;
+    font-weight:900!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search{
+    position:relative!important;
+    margin-top:10px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-icon{
+    position:absolute!important;
+    left:11px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    z-index:2!important;
+    color:#4d776d!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search input{
+    width:100%!important;
+    min-height:42px!important;
+    padding:0 38px 0 34px!important;
+    border:1px solid #cfe4dd!important;
+    border-radius:10px!important;
+    background:#fff!important;
+    color:#203d37!important;
+    outline:none!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard #mobileJobsSearchClear{
+    position:absolute!important;
+    right:7px!important;
+    top:50%!important;
+    width:27px!important;
+    height:27px!important;
+    transform:translateY(-50%)!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:#edf7f3!important;
+    color:#4d776d!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results{
+    margin-top:7px!important;
+    padding:9px!important;
+    border:1px solid #b9ded2!important;
+    border-radius:11px!important;
+    background:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results.hidden{
+    display:none!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results-head{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    padding-bottom:7px!important;
+    border-bottom:1px solid #e0ece8!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results-head span{
+    display:block!important;
+    color:#0b8d72!important;
+    font-size:6.5px!important;
+    font-weight:950!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results-head strong{
+    display:block!important;
+    margin-top:2px!important;
+    color:#31594f!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results-head>button{
+    width:27px!important;
+    height:27px!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:#e9f4f0!important;
+    color:#58786f!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-search-results-list{
+    margin-top:7px!important;
+    display:grid!important;
+    gap:6px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-row{
+    padding:8px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+    align-items:center!important;
+    border:1px solid #dce9e4!important;
+    border-radius:9px!important;
+    background:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-badges{
+    display:flex!important;
+    gap:4px!important;
+    flex-wrap:wrap!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-badges span{
+    padding:3px 5px!important;
+    border-radius:999px!important;
+    background:#f1f6f4!important;
+    color:#657b75!important;
+    font-size:6px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-main>strong{
+    display:block!important;
+    margin-top:4px!important;
+    color:#294940!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-main>small{
+    display:block!important;
+    margin-top:2px!important;
+    color:#7b8d88!important;
+    font-size:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-side{
+    display:grid!important;
+    justify-items:end!important;
+    gap:5px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-side>b{
+    color:#087f6b!important;
+    font-size:8px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-search-result-side>button{
+    min-height:28px!important;
+    padding:0 8px!important;
+    border:0!important;
+    border-radius:7px!important;
+    background:#087f6b!important;
+    color:#fff!important;
+    font-size:7px!important;
+    font-weight:900!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-box{
+    margin-top:8px!important;
+    padding:9px!important;
+    border:1px solid #cfe4dd!important;
+    border-radius:11px!important;
+    background:#f1f9f6!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-head{
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-head>div>span{
+    display:block!important;
+    color:#0b8b70!important;
+    font-size:6.5px!important;
+    font-weight:950!important;
+    letter-spacing:.08em!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-head>div>strong{
+    display:block!important;
+    margin-top:2px!important;
+    color:#2e554c!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-count{
+    padding:5px 7px!important;
+    border-radius:7px!important;
+    background:#fff!important;
+    color:#74877f!important;
+    font-size:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-count b{
+    color:#087f6b!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-modes{
+    margin-top:7px!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:5px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-modes button{
+    min-height:32px!important;
+    border:1px solid #cfe2dc!important;
+    border-radius:8px!important;
+    background:#fff!important;
+    color:#58756e!important;
+    font-size:7.2px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-modes button.active{
+    border-color:#0b9a78!important;
+    background:#0b9a78!important;
+    color:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-selects{
+    margin-top:6px!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-selects.hidden{
+    display:none!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-selects label{
+    display:grid!important;
+    gap:3px!important;
+    color:#72877f!important;
+    font-size:6.5px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-selects select{
+    min-height:32px!important;
+    width:100%!important;
+    border:1px solid #d5e4df!important;
+    border-radius:8px!important;
+    background:#fff!important;
+    color:#35584f!important;
+    font-size:7.5px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-location-note{
+    margin-top:6px!important;
+    padding:6px 7px!important;
+    border-radius:7px!important;
+    background:#fff!important;
+    color:#748981!important;
+    font-size:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-switch{
+    margin-top:8px!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:4px!important;
+    padding:4px!important;
+    border:1px solid #d8e9e3!important;
+    border-radius:10px!important;
+    background:#edf6f3!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-switch button{
+    min-height:31px!important;
+    border:0!important;
+    border-radius:7px!important;
+    background:transparent!important;
+    color:#607872!important;
+    font-size:7.5px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-switch button.active{
+    background:#087f6b!important;
+    color:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-quick-filters{
+    margin-top:7px!important;
+    display:flex!important;
+    gap:5px!important;
+    flex-wrap:wrap!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-quick-filters button{
+    min-height:29px!important;
+    padding:0 8px!important;
+    border:1px solid #d9e7e2!important;
+    border-radius:999px!important;
+    background:#fff!important;
+    color:#5d756f!important;
+    font-size:6.8px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-quick-filters button.active{
+    border-color:#89cdbb!important;
+    background:#e5f6ef!important;
+    color:#087f6b!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-head,
+  #mobileJobsBoard .mobile-jobs-results-head{
+    margin-top:9px!important;
+    padding-top:8px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    border-top:1px solid #e1eee9!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-head strong,
+  #mobileJobsBoard .mobile-jobs-results-head strong{
+    display:block!important;
+    color:#31584f!important;
+    font-size:9px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-head span,
+  #mobileJobsBoard .mobile-jobs-results-head span{
+    display:block!important;
+    margin-top:2px!important;
+    color:#81958f!important;
+    font-size:6.5px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories{
+    margin-top:7px!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button{
+    min-width:0!important;
+    min-height:57px!important;
+    display:grid!important;
+    place-items:center!important;
+    align-content:center!important;
+    gap:3px!important;
+    padding:6px!important;
+    border:1px solid #dbe9e4!important;
+    border-radius:9px!important;
+    background:#fff!important;
+    color:#4f6b64!important;
+    font-size:6.8px!important;
+    font-weight:850!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button>span{
+    font-size:14px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button>small{
+    padding:2px 5px!important;
+    border-radius:999px!important;
+    background:#eff6f3!important;
+    color:#6f847e!important;
+    font-size:5.8px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button.active{
+    border-color:#0b9a78!important;
+    background:linear-gradient(145deg,#0b9a78,#087f6b)!important;
+    color:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-categories>button.active>small{
+    background:rgba(255,255,255,.18)!important;
+    color:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand{
+    grid-column:1/-1!important;
+    padding:9px!important;
+    border:1px solid #bfe0d6!important;
+    border-radius:10px!important;
+    background:#fff!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-head{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    margin-bottom:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-title{
+    display:flex!important;
+    align-items:center!important;
+    gap:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-title>span{
+    width:30px!important;
+    height:30px!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:8px!important;
+    background:#e3f5ef!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-title strong{
+    display:block!important;
+    color:#25564b!important;
+    font-size:8.5px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-title small{
+    display:block!important;
+    margin-top:2px!important;
+    color:#7a918a!important;
+    font-size:6.5px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-head>button{
+    width:27px!important;
+    height:27px!important;
+    border:0!important;
+    border-radius:8px!important;
+    background:#e9f4f0!important;
+    color:#52756c!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-category-expand-list,
+  #mobileJobsBoard .mobile-jobs-list{
+    margin-top:7px!important;
+    display:grid!important;
+    gap:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-results-head.hidden,
+  #mobileJobsBoard .mobile-jobs-list.hidden{
+    display:none!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card{
+    padding:9px!important;
+    border:1px solid #dfeae6!important;
+    border-radius:10px!important;
+    background:#fff!important;
+    box-shadow:0 3px 10px rgba(8,127,107,.035)!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card.employer{
+    border-left:3px solid #2f80ed!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card.worker{
+    border-left:3px solid #0b9a78!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card-top{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:7px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card h3{
+    margin:7px 0 4px!important;
+    color:#28443e!important;
+    font-size:10px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card>p{
+    margin:0!important;
+    color:#6d807b!important;
+    font-size:7.5px!important;
+    line-height:1.4!important;
+  }
+
+  #mobileJobsBoard .mobile-job-meta{
+    margin-top:6px!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:4px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-meta span,
+  #mobileJobsBoard .mobile-job-type,
+  #mobileJobsBoard .mobile-job-category-badge{
+    padding:3px 5px!important;
+    border-radius:999px!important;
+    background:#f3f7f5!important;
+    color:#657a74!important;
+    font-size:6px!important;
+    font-weight:800!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card-footer{
+    margin-top:7px!important;
+    padding-top:7px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    border-top:1px solid #e5efeb!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card-footer strong{
+    color:#087f6b!important;
+    font-size:8px!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card-footer button{
+    min-height:28px!important;
+    padding:0 8px!important;
+    border:0!important;
+    border-radius:7px!important;
+    background:#2f80ed!important;
+    color:#fff!important;
+    font-size:6.8px!important;
+    font-weight:900!important;
+  }
+
+  #mobileJobsBoard .mobile-job-card.worker .mobile-job-card-footer button{
+    background:#087f6b!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-footer{
+    margin-top:9px!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:6px!important;
+  }
+
+  #mobileJobsBoard .mobile-jobs-footer button{
+    min-height:34px!important;
+    border:1px solid #d8e8e2!important;
+    border-radius:8px!important;
+    background:#f7fbf9!important;
+    color:#3e655c!important;
+    font-size:7.5px!important;
+    font-weight:850!important;
+  }
+}
+
+@media(min-width:821px) and (max-width:1120px){
+  .mobile-category-scroll{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+
+  .workspace{
+    grid-template-columns:1fr!important;
+  }
+
+  .mobile-daily-stats{
+    grid-column:1!important;
+  }
+
+  .map-card{
+    grid-column:1!important;
+  }
+
+  .content-grid{
+    grid-template-columns:1fr!important;
+  }
+
+  #mobileJobsBoard{
+    min-height:0!important;
+  }
+
+  .detail-panel{
+    grid-column:1!important;
+  }
+}
