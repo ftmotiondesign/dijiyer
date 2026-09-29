@@ -107,15 +107,16 @@
     return '<div class="kp-cover-empty">' + html(data.emoji || "🏢") + '</div>';
   }
 
-  function badgeMarkup(data, has360, hasVideo) {
-    return `
-      <div class="kp-badges kp-premium-badges">
-        <span class="kp-badge ok">✓ Onaylı Kurum</span>
-        ${data.offer !== false ? '<span class="kp-badge offer">₺ Teklif Veriyor</span>' : ''}
-        ${has360 ? '<span class="kp-badge tour">360° Mekan</span>' : ''}
-        ${!has360 && hasVideo ? '<span class="kp-badge video">▶ Video</span>' : ''}
-        ${data.vip ? '<span class="kp-badge">★ Öne Çıkan</span>' : ''}
-      </div>
+  function syncIdentityBadges(data, has360, hasVideo) {
+    const root = document.querySelector(".kp-status-badges");
+    if (!root) return;
+
+    root.innerHTML = `
+      <span class="kp-status-badge verified">✓ Onaylı Kurum</span>
+      ${data.offer !== false ? '<span class="kp-status-badge offer">₺ Teklif Veriyor</span>' : ''}
+      ${has360 ? '<span class="kp-status-badge tour">360° Mekan</span>' : ''}
+      ${!has360 && hasVideo ? '<span class="kp-status-badge video">▶ Videolu Kurum</span>' : ''}
+      ${data.vip ? '<span class="kp-status-badge vip">★ Öne Çıkan</span>' : ''}
     `;
   }
 
@@ -354,7 +355,6 @@
         <div class="kp-hero-media-stage">
           ${mediaMarkup}
         </div>
-        ${badgeMarkup(data, has360, hasVideo)}
         ${tabsMarkup}
         ${guideMarkup}
         ${fullscreenMarkup}
@@ -381,6 +381,7 @@
       });
     };
 
+    syncIdentityBadges(data, has360, hasVideo);
     renderHero(currentMode);
 
     const actions = document.querySelector(".kp-actions");
