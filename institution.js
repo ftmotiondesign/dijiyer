@@ -1109,6 +1109,7 @@ function getPromotionConfig(type){
 }
 
 function openPromotionDetail(type){
+  closePromotionOrder();
   const service=getPromotionConfig(type);
   activePromotionServiceKey=type in PROMOTION_SERVICES ? type : "consultation";
 
@@ -1140,8 +1141,12 @@ function openPromotionOrder(type){
 
   closePromotionDetail();
 
-  document.getElementById("promotionOrderFormView").classList.remove("hidden");
-  document.getElementById("promotionOrderSuccess").classList.add("hidden");
+  const formView=document.getElementById("promotionOrderFormView");
+  const successView=document.getElementById("promotionOrderSuccess");
+  const modal=document.getElementById("promotionOrderModal");
+
+  formView?.classList.remove("hidden");
+  successView?.classList.add("hidden");
   document.getElementById("promotionOrderMessage").textContent="";
   document.getElementById("promotionOrderTitle").textContent=service.name+" Siparişi";
   document.getElementById("promotionOrderInstitution").textContent=
@@ -1166,7 +1171,7 @@ function openPromotionOrder(type){
     extras.innerHTML="";
   }
 
-  document.getElementById("promotionOrderModal").classList.remove("hidden");
+  modal?.classList.remove("hidden");
 }
 
 function closePromotionOrder(){
@@ -1676,6 +1681,12 @@ async function saveQuoteResponse(quoteId, status) {
 document.getElementById("openShowcaseServicesBtn")?.addEventListener("click",()=>setPanelTab("showcase"));
 document.getElementById("showcasePreviewBtn")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
 document.getElementById("showcasePreviewBtn2")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
+
+// Sayfa ilk açıldığında hiçbir tanıtım popup'ı kendiliğinden görünmesin.
+document.getElementById("promotionDetailModal")?.classList.add("hidden");
+document.getElementById("promotionOrderModal")?.classList.add("hidden");
+document.getElementById("promotionOrderSuccess")?.classList.add("hidden");
+document.getElementById("promotionOrderFormView")?.classList.remove("hidden");
 
 setupShowcaseSalesActions();
 
