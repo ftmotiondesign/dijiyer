@@ -1508,6 +1508,7 @@
       await db.collection("promotionOrders").doc(orderId).update({
         status,
         paymentStatus,
+        paidAt: paymentStatus === "paid" ? (order.paidAt || now) : "",
         scopeDescription,
         publicNote,
         adminNote:publicNote,
@@ -1743,6 +1744,27 @@
               </label>
             </div>
 
+            ${promotionOrderWorkflowHtml(order,breakdown)}
+
+            ${adOrderServiceIsAdvertising(order) ? `
+              <section class="promotion-ad-publish-box ${order.convertedToAd || order.bannerAdId ? "published" : ""}">
+                <div>
+                  <span>REKLAM YAYIN AKIŞI</span>
+                  <strong>${order.convertedToAd || order.bannerAdId ? "Reklam oluşturuldu" : "Siparişten doğrudan reklam oluştur"}</strong>
+                  <small>${
+                    order.convertedToAd || order.bannerAdId
+                      ? "Bu sipariş bir reklam kaydına dönüştürüldü ve yayın planına eklendi."
+                      : "Fiyat ve ödeme tamamlandıktan sonra kurum, hedefleme ve tarih bilgileri otomatik aktarılır."
+                  }</small>
+                </div>
+                <button
+                  type="button"
+                  data-promotion-publish="${escapeHtml(order.id)}"
+                  ${order.convertedToAd || order.bannerAdId ? "disabled" : ""}
+                >${order.convertedToAd || order.bannerAdId ? "✓ Yayına Alındı" : "Reklamı Oluştur →"}</button>
+              </section>
+            ` : ""}
+
             <div class="promotion-admin-controls promotion-admin-controls-v2">
               <label>Durum
                 <select data-promotion-status>
@@ -1770,6 +1792,10 @@
 
     root.querySelectorAll("[data-promotion-save]").forEach(button => {
       button.addEventListener("click", () => savePromotionOrderAdmin(button.dataset.promotionSave));
+    });
+
+    root.querySelectorAll("[data-promotion-publish]").forEach(button => {
+      button.addEventListener("click", () => publishPromotionOrderAsAd(button.dataset.promotionPublish));
     });
 
     root.querySelectorAll("details.promotion-admin-row").forEach(row => {
