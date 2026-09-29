@@ -666,6 +666,20 @@
               </div>
             </div>
 
+            <div class="banner-form-grid banner-sales-grid">
+              <label>Satış Tutarı (TL)
+                <input id="bannerAdPrice" type="number" min="0" step="1" value="0" placeholder="Örn. 2500">
+                <small>Gelir Merkezi'ne yansır.</small>
+              </label>
+              <label>Ödeme Durumu
+                <select id="bannerAdPaymentStatus">
+                  <option value="unpaid">Ödeme Bekliyor</option>
+                  <option value="partial">Kısmi Ödendi</option>
+                  <option value="paid">Ödendi</option>
+                </select>
+              </label>
+            </div>
+
             <div class="banner-form-grid">
               <label>Yayın Başlangıcı <small>(isteğe bağlı)</small><input id="bannerAdStartAt" type="date"></label>
               <label>Yayın Bitişi <small>(isteğe bağlı)</small><input id="bannerAdEndAt" type="date"></label>
