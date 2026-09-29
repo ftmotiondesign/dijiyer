@@ -950,6 +950,7 @@ function renderList() {
       document.querySelectorAll('.institution-card').forEach(item => {
         item.classList.toggle('active', String(item.dataset.id) === String(id));
       });
+      renderDecisionAlternatives();
       renderDetail();
     });
   });
@@ -958,6 +959,7 @@ function renderList() {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       selectedId = btn.dataset.quickOffer;
+      renderDecisionAlternatives();
       renderDetail();
       openModal('quoteModal');
     });
@@ -971,6 +973,7 @@ function renderList() {
   });
 
   renderCompareBar();
+  renderDecisionAlternatives();
   renderDetail();
 }
 function toggleCompareInstitution(id) {
@@ -1310,50 +1313,121 @@ function institutionFaqItems(inst) {
   ];
 }
 
+function renderDecisionAlternatives() {
+  const root = document.getElementById('decisionAlternativesRail');
+  const section = document.getElementById('decisionAlternatives');
+  const inst = institutions.find(item => String(item.id) === String(selectedId));
+
+  if (!root || !section || !inst) {
+    section?.classList.add('hidden');
+    return;
+  }
+
+  const alternatives = getSimilarInstitutions(inst);
+
+  if (!alternatives.length) {
+    section.classList.add('hidden');
+    root.innerHTML = '';
+    return;
+  }
+
+  section.classList.remove('hidden');
+
+  root.innerHTML = alternatives.map(item => {
+    const compared = compareInstitutionIds.has(String(item.id));
+    return `
+      <article class="decision-alt-card ${compared ? 'is-compared' : ''}" data-alt-select="${escapeHtml(String(item.id))}">
+        <div class="decision-alt-logo">
+          ${item.logoUrl
+            ? '<img src="' + safePublicProfileUrl(item.logoUrl) + '" alt="">'
+            : '<span>' + escapeHtml(item.emoji || '🏢') + '</span>'}
+        </div>
+        <div class="decision-alt-copy">
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>⭐ ${Number(item.rating || 0).toFixed(1)} · ${escapeHtml(item.location || '')}</small>
+          <div>
+            ${item.offer ? '<span>Teklif veriyor</span>' : ''}
+            ${item.video ? '<span>Videolu</span>' : ''}
+          </div>
+        </div>
+        <div class="decision-alt-actions">
+          <button type="button" class="decision-alt-open" data-alt-open="${escapeHtml(String(item.id))}">Önizle</button>
+          <button
+            type="button"
+            class="decision-alt-compare ${compared ? 'selected' : ''}"
+            data-alt-compare="${escapeHtml(String(item.id))}"
+          >${compared ? '✓' : '＋'}</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  root.querySelectorAll('[data-alt-open]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      selectedId = button.dataset.altOpen;
+      renderList();
+
+      const marker = markers.get(String(selectedId));
+      if (marker) map.flyTo(marker.getLatLng(), 15, { duration: .45 });
+    });
+  });
+
+  root.querySelectorAll('[data-alt-compare]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleCompareInstitution(button.dataset.altCompare);
+    });
+  });
+
+  root.querySelectorAll('[data-alt-select]').forEach(card => {
+    card.addEventListener('click', event => {
+      if (event.target.closest('button')) return;
+      selectedId = card.dataset.altSelect;
+      renderList();
+
+      const marker = markers.get(String(selectedId));
+      if (marker) map.flyTo(marker.getLatLng(), 15, { duration: .45 });
+    });
+  });
+}
+
 function renderDetail() {
   const panel = document.getElementById('detailPanel');
-  const inst = institutions.find(i => String(i.id) === String(selectedId));
+  const inst = institutions.find(item => String(item.id) === String(selectedId));
+
+  if (!panel) return;
 
   if (!inst) {
     panel.innerHTML = `
       <div class="empty-detail-state">
-        <strong>Bu filtreye uygun kurum bulunamadı.</strong>
-        <span>Farklı bir alt kategori seçebilir veya filtreyi kaldırabilirsiniz.</span>
+        <strong>Önizlenecek kurum bulunamadı.</strong>
+        <span>Soldaki listeden veya haritadan bir kurum seçin.</span>
       </div>
     `;
     return;
   }
 
-  const savedReviews = inst.source === 'firestore'
-    ? []
-    : JSON.parse(localStorage.getItem(`reviews_${inst.id}`) || '[]');
-
-  const userReviewHtml = inst.source === 'firestore'
-    ? '<div class="review-card" id="reviewsLoading">Yorumlar yükleniyor...</div>'
-    : savedReviews.slice(-2).reverse().map(r => `
-        <div class="review-card">
-          <strong>Kullanıcı</strong><br>
-          <span>${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
-          <div style="margin-top:5px;color:#58677c">${escapeHtml(r.text)}</div>
-        </div>
-      `).join('');
-
-  const signals = [];
-  if (inst.offer) signals.push('<span class="institution-signal positive">✓ Teklif veriyor</span>');
-  if (inst.video) signals.push('<span class="institution-signal">▶ Videolu profil</span>');
-  if (Number(inst.rating || 0) >= 4.5 && Number(inst.reviewCount || 0) > 0) {
-    signals.push('<span class="institution-signal gold">★ Yüksek puan</span>');
-  }
-  if (inst.vip) signals.push('<span class="institution-signal premium">VIP görünürlük</span>');
-
-  const galleryUrls = Array.isArray(inst.galleryUrls)
-    ? inst.galleryUrls.map(safePublicProfileUrl).filter(Boolean).slice(0, 8)
-    : [];
-
   const currentCampaign = getInstitutionCurrentCampaign(inst);
-  const similarInstitutions = getSimilarInstitutions(inst);
-  const profileUpdatedText = formatInstitutionProfileDate(inst.updatedAt);
-  const faqItems = institutionFaqItems(inst);
+  const compared = compareInstitutionIds.has(String(inst.id));
+
+  const primaryFacts = [
+    {
+      label:'Hizmet Bölgesi',
+      value: inst.serviceAreas || inst.location || 'Bilgi yok',
+      icon:'🧭'
+    },
+    {
+      label:'Çalışma Saatleri',
+      value: inst.weekdayHours || 'Bilgi yok',
+      icon:'🕒'
+    },
+    {
+      label:'Hizmet / Sınıf',
+      value: inst.classes || 'Kurumdan bilgi alın',
+      icon:'▦'
+    }
+  ];
 
   panel.innerHTML = `
     ${isInstitutionPreviewMode() ? `
@@ -1364,20 +1438,33 @@ function renderDetail() {
         </div>
         <button type="button" id="closePublicPreviewBtn">Önizlemeyi Kapat</button>
       </div>
-    ` : ""}
+    ` : ''}
 
-    <div class="detail-top professional-detail-top">
-      <div class="video-box profile-cover-box ${inst.coverUrl ? 'has-cover' : ''}">
+    <div class="quick-preview-intro">
+      <div>
+        <span>HIZLI ÖNİZLEME</span>
+        <strong>Kurumu incele, sonra aksiyon al</strong>
+        <small>Temel bilgileri burada gör. Daha fazlası için kurum profilini aç.</small>
+      </div>
+      <button
+        type="button"
+        id="detailCompareBtn"
+        class="${compared ? 'selected' : ''}"
+      >${compared ? '✓ Karşılaştırmada' : '＋ Karşılaştır'}</button>
+    </div>
+
+    <div class="quick-preview-main">
+      <div class="video-box profile-cover-box quick-preview-media ${inst.coverUrl ? 'has-cover' : ''}">
         ${inst.coverUrl
           ? '<img src="' + safePublicProfileUrl(inst.coverUrl) + '" alt="' + escapeHtml(inst.name) + ' kapak görseli">'
           : '<div class="video-scene"></div><div class="play">▶</div><div class="video-title">🎥 Rota & Mekan Videosu</div>'}
-        ${inst.video ? '<span class="detail-media-badge">▶ Tanıtım Videosu</span>' : ''}
+        ${inst.video ? '<span class="detail-media-badge">▶ Videolu Profil</span>' : ''}
       </div>
 
-      <div class="detail-info professional-detail-info">
+      <div class="quick-preview-summary">
         <div class="profile-title-row">
           ${inst.logoUrl
-            ? '<img class="public-profile-logo" src="' + safePublicProfileUrl(inst.logoUrl) + '" alt="' + escapeHtml(inst.name) + ' logosu">'
+            ? '<img class="public-profile-logo" src="' + safePublicProfileUrl(inst.logoUrl) + '" alt="">'
             : '<div class="public-profile-logo fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
           <div class="profile-title-copy">
             <div class="profile-title-meta">SEÇİLİ KURUM</div>
@@ -1386,256 +1473,75 @@ function renderDetail() {
           </div>
         </div>
 
-        <div class="address">📍 ${escapeHtml([inst.address, inst.location].filter(Boolean).join(', '))}</div>
-
-        ${inst.description
-          ? '<div class="public-profile-description">' + escapeHtml(inst.description) + '</div>'
-          : ''}
-
-        <div class="institution-signals">
-          ${signals.length ? signals.join('') : '<span class="institution-signal">Kurum profili</span>'}
+        <div class="quick-preview-address">
+          📍 ${escapeHtml([inst.address,inst.location].filter(Boolean).join(', '))}
         </div>
 
-        <div class="detail-compare-inline">
-          <div>
-            <strong>Karar vermeden önce karşılaştırın</strong>
-            <small>Bu kurumu diğer kurumlarla yan yana inceleyebilirsiniz.</small>
-          </div>
-          <button type="button" id="detailCompareBtn" class="${compareInstitutionIds.has(String(inst.id)) ? 'selected' : ''}">
-            ${compareInstitutionIds.has(String(inst.id)) ? '✓ Karşılaştırmaya Eklendi' : '＋ Karşılaştır'}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="cta-row professional-cta-row">
-      <button class="cta whatsapp" id="whatsappBtn">💬 WhatsApp'tan Fiyat Al</button>
-      <button class="cta route-primary" id="routeBtn">🧭 Yol Tarifi</button>
-      <button class="cta profile-primary" id="profileOpenBtn">Kurum Profilini Aç →</button>
-    </div>
-
-    <div class="profile-tabs" role="tablist" aria-label="Kurum detayları">
-      <button type="button" class="active" data-profile-tab="overview">Genel Bakış</button>
-      <button type="button" data-profile-tab="services">Hizmetler</button>
-      ${galleryUrls.length ? '<button type="button" data-profile-tab="gallery">Galeri <span>' + galleryUrls.length + '</span></button>' : ''}
-      <button type="button" data-profile-tab="reviews">Yorumlar <span>${Number(inst.reviewCount || 0)}</span></button>
-    </div>
-
-    <div class="profile-tab-panels">
-      <section class="profile-tab-panel active" data-profile-panel="overview">
-        <div class="professional-info-grid">
-          <article>
-            <span>HİZMET BÖLGESİ</span>
-            <strong>🧭 ${escapeHtml(inst.serviceAreas || inst.location || '-')}</strong>
-          </article>
-          <article>
-            <span>ÇALIŞMA SAATLERİ</span>
-            <strong>🕒 ${escapeHtml(inst.weekdayHours || 'Bilgi eklenmedi')}</strong>
-            <small>Cumartesi: ${escapeHtml(inst.saturdayHours || '-')} · Pazar: ${escapeHtml(inst.sundayHours || '-')}</small>
-          </article>
-          <article>
-            <span>FİYAT TEKLİFİ</span>
-            <strong>${inst.offer ? '✓ Teklif veriyor' : 'Şu anda kapalı'}</strong>
-          </article>
-          <article>
-            <span>PROFİL DENEYİMİ</span>
-            <strong>${inst.video ? '▶ Video mevcut' : 'Standart kurum profili'}</strong>
-          </article>
+        <div class="quick-preview-badges">
+          ${inst.offer ? '<span class="positive">✓ Teklif veriyor</span>' : '<span>Teklif kapalı</span>'}
+          ${inst.video ? '<span>▶ Video mevcut</span>' : ''}
+          ${inst.website ? '<span>🌐 Web sitesi</span>' : ''}
         </div>
 
-        <div class="why-institution-card">
-          <div>
-            <span>BU KURUM HAKKINDA HIZLI BAKIŞ</span>
-            <strong>Neden incelemeye değer?</strong>
-            ${profileUpdatedText ? '<small class="profile-updated-note">Profil güncelleme: ' + escapeHtml(profileUpdatedText) + '</small>' : ''}
-          </div>
-          <div class="why-institution-items">
-            ${inst.offer ? '<span>✓ Dijiyer üzerinden teklif alabiliyor</span>' : ''}
-            ${inst.video ? '<span>✓ Video ile kurumu önceden görebilirsiniz</span>' : ''}
-            ${Number(inst.rating || 0) >= 4.5 && Number(inst.reviewCount || 0) > 0 ? '<span>✓ Kullanıcı puanı 4.5 ve üzeri</span>' : ''}
-            ${inst.website ? '<span>✓ Web sitesi bağlantısı mevcut</span>' : ''}
-            ${inst.instagram ? '<span>✓ Instagram bağlantısı mevcut</span>' : ''}
-            <span>✓ Konum ve kurum bilgileri tek yerde</span>
-          </div>
-        </div>
-
-        ${currentCampaign ? `
-          <article class="institution-live-campaign">
-            <div class="institution-campaign-media">
-              ${safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '')
-                ? '<img src="' + safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '') + '" alt="">'
-                : '<span>📣</span>'}
-            </div>
-            <div class="institution-campaign-copy">
-              <span>GÜNCEL KAMPANYA</span>
-              <strong>${escapeHtml(currentCampaign.headline || 'Kurumun güncel kampanyası')}</strong>
-              <p>${escapeHtml(currentCampaign.text || 'Kampanya detayları için kurumdan bilgi alabilirsiniz.')}</p>
-              <small>${escapeHtml([
-                currentCampaign.endAt ? 'Son gün ' + currentCampaign.endAt : '',
-                currentCampaign.city || currentCampaign.district
-                  ? [currentCampaign.city,currentCampaign.district].filter(Boolean).join(' / ')
-                  : ''
-              ].filter(Boolean).join(' · '))}</small>
-            </div>
-            <button type="button" id="campaignQuoteBtn">Kampanya İçin Fiyat Al</button>
-          </article>
+        ${inst.description ? `
+          <p class="quick-preview-description">${escapeHtml(inst.description)}</p>
         ` : ''}
 
-        <div class="institution-faq">
-          <div class="institution-faq-head">
-            <div>
-              <span>HIZLI CEVAPLAR</span>
-              <strong>Merak edilenler</strong>
-            </div>
-            <small>Temel bilgileri kuruma sormadan önce hızlıca görün.</small>
-          </div>
-
-          <div class="institution-faq-list">
-            ${faqItems.map((item,index) => `
-              <details ${index === 0 ? 'open' : ''}>
-                <summary>${escapeHtml(item.q)}</summary>
-                <p>${escapeHtml(item.a)}</p>
-              </details>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="secondary-actions professional-secondary-actions">
-          <button id="quoteBtn">📄 Toplu Teklif Al</button>
-          ${inst.website ? '<button id="websiteBtn">🌐 Web Sitesi</button>' : ''}
-          ${inst.instagram ? '<button id="instagramBtn">📷 Instagram</button>' : ''}
-          <button id="favoriteBtn">♡ Favoriye Ekle</button>
-        </div>
-      </section>
-
-      <section class="profile-tab-panel" data-profile-panel="services">
-        <div class="services-summary-grid">
-          <article>
-            <span>Hizmet / Sınıf Bilgisi</span>
-            <strong>${escapeHtml(inst.classes || 'Kurumdan bilgi alın')}</strong>
-          </article>
-          <article>
-            <span>Hizmet Verilen Bölge</span>
-            <strong>${escapeHtml(inst.serviceAreas || inst.location || '-')}</strong>
-          </article>
-          <article>
-            <span>Teklif Durumu</span>
-            <strong>${inst.offer ? 'Aktif · Fiyat isteyebilirsiniz' : 'Şu anda teklif almıyor'}</strong>
-          </article>
-        </div>
-        <button type="button" class="service-quote-cta" id="servicesQuoteBtn">Bu Kurumdan Fiyat İste</button>
-      </section>
-
-      ${galleryUrls.length ? `
-        <section class="profile-tab-panel" data-profile-panel="gallery">
-          <div class="gallery public-profile-gallery professional-gallery">
-            ${galleryUrls.map((url,index) =>
-              '<div class="gallery-item has-image"><img src="' + url + '" alt="Galeri görseli ' + (index + 1) + '"></div>'
-            ).join('')}
-          </div>
-        </section>
-      ` : ''}
-
-      <section class="profile-tab-panel" data-profile-panel="reviews">
-        <div class="reviews professional-reviews">
-          <div class="review-summary">
-            <div id="reviewSummaryText"><strong>Yorumlar</strong> · ${Number(inst.rating || 0).toFixed(1)} / 5</div>
-            <button class="btn btn-light" id="reviewBtn2">Yorum Yap</button>
-          </div>
-          <div id="reviewsContent">
-            ${userReviewHtml || `
-              <div class="review-card">
-                <strong>Henüz yorum eklenmedi.</strong>
-                <div style="margin-top:5px;color:#58677c">İlk değerlendirmeyi siz yapabilirsiniz.</div>
-              </div>
-            `}
-          </div>
-        </div>
-      </section>
-    </div>
-
-    ${similarInstitutions.length ? `
-      <section class="similar-institutions-section">
-        <div class="similar-institutions-head">
-          <div>
-            <span>BENZER KURUMLAR</span>
-            <strong>Aynı alanda başka seçenekler</strong>
-          </div>
-          <small>Karşılaştırmak için bir kuruma dokunun.</small>
-        </div>
-
-        <div class="similar-institutions-grid">
-          ${similarInstitutions.map(item => `
-            <article class="similar-institution-card" data-similar-id="${escapeHtml(String(item.id))}">
-              <div class="similar-institution-logo">
-                ${item.logoUrl
-                  ? '<img src="' + safePublicProfileUrl(item.logoUrl) + '" alt="">'
-                  : '<span>' + escapeHtml(item.emoji || '🏢') + '</span>'}
-              </div>
-              <div class="similar-institution-copy">
-                <strong>${escapeHtml(item.name)}</strong>
-                <small>⭐ ${Number(item.rating || 0).toFixed(1)} · ${escapeHtml(item.location || '')}</small>
-                <div>
-                  ${item.offer ? '<span>Teklif veriyor</span>' : ''}
-                  ${item.video ? '<span>Videolu</span>' : ''}
-                </div>
-              </div>
-              <button type="button" aria-label="${escapeHtml(item.name)} kurumunu görüntüle">→</button>
-            </article>
-          `).join('')}
-        </div>
-      </section>
-    ` : ''}
-
-    <section class="regional-banner-zone hidden professional-sponsored-zone" id="regionalBannerZone">
-      <div class="regional-banner-head">
-        <div>
-          <span>SPONSORLU ÖNERİLER</span>
-          <strong>Bölgenizde öne çıkan kurumlar</strong>
-        </div>
-        <div class="regional-banner-filters">
-          <select id="regionalBannerRegionFilter" aria-label="Reklam bölgesi">
-            <option value="">Tüm Bölgeler</option>
-          </select>
-          <select id="regionalBannerSectorFilter" aria-label="Reklam sektörü">
-            <option value="">Tüm Sektörler</option>
-          </select>
+        <div class="quick-preview-links">
+          ${inst.website ? '<button type="button" id="websiteBtn">Web Sitesi</button>' : ''}
+          ${inst.instagram ? '<button type="button" id="instagramBtn">Instagram</button>' : ''}
+          <button type="button" id="favoriteBtn">♡ Favoriye Ekle</button>
         </div>
       </div>
-      <div id="regionalBannerStage" class="regional-banner-stage"></div>
-    </section>
-  `;
+    </div>
 
-  if (inst.source === 'firestore') {
-    loadInstitutionReviews(inst);
-  }
+    <div class="quick-preview-actions">
+      <button class="quick-action primary" id="whatsappBtn">💬 Fiyat Al</button>
+      <button class="quick-action secondary" id="routeBtn">🧭 Yol Tarifi</button>
+      <button class="quick-action dark" id="profileOpenBtn">Tam Profili Gör →</button>
+    </div>
+
+    <div class="quick-facts-grid">
+      ${primaryFacts.map(fact => `
+        <article>
+          <span>${escapeHtml(fact.label)}</span>
+          <strong>${fact.icon} ${escapeHtml(fact.value)}</strong>
+        </article>
+      `).join('')}
+    </div>
+
+    ${currentCampaign ? `
+      <article class="quick-campaign-card">
+        <div class="quick-campaign-media">
+          ${safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '')
+            ? '<img src="' + safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '') + '" alt="">'
+            : '<span>📣</span>'}
+        </div>
+        <div class="quick-campaign-copy">
+          <span>GÜNCEL KAMPANYA</span>
+          <strong>${escapeHtml(currentCampaign.headline || 'Kurumun güncel kampanyası')}</strong>
+          <small>${escapeHtml(currentCampaign.text || 'Detaylar için kurumdan bilgi alın.')}</small>
+        </div>
+        <button type="button" id="campaignQuoteBtn">Fiyat Al</button>
+      </article>
+    ` : ''}
+
+    <div class="quick-preview-footer">
+      <button type="button" id="quoteBtn">📄 Birden Fazla Kurumdan Teklif Al</button>
+      <small>Kararsızsanız tek form ile birden fazla kurumdan fiyat isteyebilirsiniz.</small>
+    </div>
+  `;
 
   document.getElementById('closePublicPreviewBtn')?.addEventListener('click',()=>{
     const url=new URL(window.location.href);
-    url.searchParams.delete("onizleme");
-    url.searchParams.delete("kurum");
-    url.hash="";
+    url.searchParams.delete('onizleme');
+    url.searchParams.delete('kurum');
+    url.hash='';
     window.location.href=url.toString();
   });
 
-  setupInstitutionDetailTabs();
-
   document.getElementById('quoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
-  document.getElementById('servicesQuoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
   document.getElementById('campaignQuoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
-  document.getElementById('reviewBtn2')?.addEventListener('click', () => openModal('reviewModal'));
-
-  document.querySelectorAll('[data-similar-id]').forEach(card => {
-    card.addEventListener('click', () => {
-      selectedId = card.dataset.similarId;
-      renderList();
-
-      const marker = markers.get(String(selectedId));
-      if (marker) {
-        map.flyTo(marker.getLatLng(), 15, { duration: .45 });
-      }
-    });
-  });
 
   document.getElementById('routeBtn')?.addEventListener('click', () => {
     trackInstitutionEvent(inst, 'route_click');
@@ -1644,11 +1550,14 @@ function renderDetail() {
 
   document.getElementById('whatsappBtn')?.addEventListener('click', () => {
     trackInstitutionEvent(inst, 'whatsapp_click');
-    const msg = encodeURIComponent(`Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`);
+    const msg = encodeURIComponent(
+      `Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`
+    );
     const number = normalizeWhatsappNumber(inst.whatsapp || inst.phone);
-    window.open(number
-      ? `https://wa.me/${number}?text=${msg}`
-      : `https://wa.me/?text=${msg}`, '_blank');
+    window.open(
+      number ? `https://wa.me/${number}?text=${msg}` : `https://wa.me/?text=${msg}`,
+      '_blank'
+    );
   });
 
   document.getElementById('profileOpenBtn')?.addEventListener('click', () => {
@@ -1674,24 +1583,6 @@ function renderDetail() {
 
   document.getElementById('detailCompareBtn')?.addEventListener('click', () => {
     toggleCompareInstitution(inst.id);
-  });
-
-  setupRegionalBannerZone();
-}
-
-function setupInstitutionDetailTabs() {
-  const panel = document.getElementById('detailPanel');
-  if (!panel) return;
-
-  const buttons = [...panel.querySelectorAll('[data-profile-tab]')];
-  const panels = [...panel.querySelectorAll('[data-profile-panel]')];
-
-  buttons.forEach(button => {
-    button.addEventListener('click', () => {
-      const target = button.dataset.profileTab;
-      buttons.forEach(item => item.classList.toggle('active', item === button));
-      panels.forEach(item => item.classList.toggle('active', item.dataset.profilePanel === target));
-    });
   });
 }
 
@@ -1819,14 +1710,8 @@ function startRegionalBannerAds(){
     regionalBannerIndex=0;
 
     if(document.getElementById("detailPanel") && selectedId){
-      const activeTab =
-        document.querySelector('[data-profile-tab].active')?.dataset.profileTab || 'overview';
-
+      renderDecisionAlternatives();
       renderDetail();
-
-      const activeButton =
-        document.querySelector('[data-profile-tab="' + activeTab + '"]');
-      activeButton?.click();
     }
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
