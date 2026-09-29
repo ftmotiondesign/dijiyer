@@ -254,6 +254,13 @@
     hero.classList.add("kp-clean-hero");
     coverRoot.classList.add("kp-cover-experience");
 
+    let toolbar=hero.querySelector(".kp-hero-media-toolbar");
+    if(!toolbar){
+      toolbar=document.createElement("div");
+      toolbar.className="kp-hero-media-toolbar";
+      coverRoot.insertAdjacentElement("afterend",toolbar);
+    }
+
     let currentMode = has360
       ? "tour"
       : hasVideo
@@ -287,7 +294,7 @@
           externalLink = virtualTour;
 
           guideMarkup =
-            '<div class="kp-hero-guide"><span>↔</span><div><strong>360° Mekanı Gezin</strong><small>Görüntüyü parmağınızla veya fareyle sürükleyin</small></div></div>';
+            '<div class="kp-hero-guide"><span>↔</span><div><strong>360° Mekanı Gezin</strong><small>Parmağınızla veya fareyle sürükleyin</small></div></div>';
         } else if (panorama360) {
           mediaMarkup =
             '<div id="kpPanoramaViewer" class="kp-panorama-viewer"></div>';
@@ -295,7 +302,7 @@
           panoramaToInit = panorama360;
 
           guideMarkup =
-            '<div class="kp-hero-guide"><span>↔</span><div><strong>360° Mekanı Gezin</strong><small>Parmağınızla sürükleyin · görüntü yavaşça kendi döner</small></div></div>';
+            '<div class="kp-hero-guide"><span>↔</span><div><strong>360° Mekanı Gezin</strong><small>Sürükleyin · görüntü otomatik de döner</small></div></div>';
         } else if (virtualTour) {
           mediaMarkup = fallbackVisual(data);
           externalLink = virtualTour;
@@ -355,15 +362,26 @@
         <div class="kp-hero-media-stage">
           ${mediaMarkup}
         </div>
-        ${tabsMarkup}
-        ${guideMarkup}
-        ${fullscreenMarkup}
       `;
+
+      const toolbarHasContent=Boolean(tabsMarkup || guideMarkup || fullscreenMarkup);
+      toolbar.classList.toggle("hidden",!toolbarHasContent);
+      toolbar.innerHTML = toolbarHasContent
+        ? `
+          <div class="kp-hero-media-toolbar-left">
+            ${tabsMarkup}
+          </div>
+          <div class="kp-hero-media-toolbar-right">
+            ${guideMarkup}
+            ${fullscreenMarkup}
+          </div>
+        `
+        : "";
 
       if (panoramaToInit) {
         const viewerReady = initPanoramaViewer(panoramaToInit);
 
-        document.getElementById("kpPanoramaFullscreen")
+        toolbar.querySelector("#kpPanoramaFullscreen")
           ?.addEventListener("click", () => {
             if (viewerReady && panoramaViewer?.toggleFullscreen) {
               panoramaViewer.toggleFullscreen();
@@ -373,7 +391,7 @@
           });
       }
 
-      coverRoot.querySelectorAll("[data-kp-media]").forEach(button => {
+      toolbar.querySelectorAll("[data-kp-media]").forEach(button => {
         button.addEventListener("click", () => {
           const next = button.dataset.kpMedia;
           if (next && next !== currentMode) renderHero(next);
