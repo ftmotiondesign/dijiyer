@@ -2505,6 +2505,841 @@
     renderAudit();
   });
 
+
+  /* =========================================================
+     İŞ YÖNETİMİ + REKLAM GELİR MERKEZİ
+     ========================================================= */
+
+  function adminDayKey(value = new Date()) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2,"0");
+    const d = String(date.getDate()).padStart(2,"0");
+    return y + "-" + m + "-" + d;
+  }
+
+  function adminParseDate(value, endOfDay = false) {
+    if (!value) return null;
+    const raw = String(value);
+    const date = new Date(
+      raw.length <= 10
+        ? raw + (endOfDay ? "T23:59:59" : "T00:00:00")
+        : raw
+    );
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function adminDaysUntil(value) {
+    const date = adminParseDate(value, true);
+    if (!date) return null;
+    return Math.ceil((date.getTime() - Date.now()) / 86400000);
+  }
+
+  function adminAddDateDays(value, days) {
+    const date = adminParseDate(value) || new Date();
+    date.setDate(date.getDate() + Number(days || 0));
+    return adminDayKey(date);
+  }
+
+  function adPlacementLabel(value) {
+    const key = normalizeBannerPlacement(value);
+    return {
+      search:"Arama Sonuçları",
+      home_sponsor:"Bölgenizde Öne Çıkanlar",
+      premium_home:"Premium Ana Sayfa Vitrini",
+      mobile_sponsor:"Mobil Sponsor Alanı",
+      sidebar_sponsor:"Masaüstü Yan Sponsor",
+      detail_banner:"Hızlı Önizleme Bannerı"
+    }[key] || "Reklam Alanı";
+  }
+
+  function adOrderServiceIsAdvertising(order) {
+    return new Set([
+      "homepage","regionalAd","categoryAd","bannerAd","campaign","videoAd"
+    ]).has(String(order?.serviceKey || ""));
+  }
+
+  function orderExtraValue(order, label) {
+    const prefix = String(label || "").toLocaleLowerCase("tr-TR") + ":";
+    const row = (Array.isArray(order?.extras) ? order.extras : [])
+      .map(item => String(item || "").trim())
+      .find(item => item.toLocaleLowerCase("tr-TR").startsWith(prefix));
+    return row ? row.slice(row.indexOf(":") + 1).trim() : "";
+  }
+
+  function orderAdSchedule(order) {
+    const preferredStart = orderExtraValue(order,"Tercih edilen başlangıç");
+    const durationText = orderExtraValue(order,"Yayın süresi");
+    const durationMatch = durationText.match(/(\d+)/);
+    const days = durationMatch ? Math.max(1,Number(durationMatch[1])) : 30;
+    const startAt = preferredStart && /^\d{4}-\d{2}-\d{2}$/.test(preferredStart)
+      ? preferredStart
+      : adminDayKey(new Date());
+    const endAt = adminAddDateDays(startAt, days - 1);
+    return {startAt,endAt,days};
+  }
+
+  function adPlacementForPromotionOrder(order) {
+    return {
+      homepage:"premium_home",
+      regionalAd:"home_sponsor",
+      categoryAd:"search",
+      bannerAd:"search",
+      campaign:"detail_banner",
+      videoAd:"detail_banner"
+    }[String(order?.serviceKey || "")] || "search";
+  }
+
+  function adPackageForPromotionOrder(order) {
+    return {
+      homepage:"premium",
+      regionalAd:"regional",
+      categoryAd:"starter",
+      bannerAd:"starter",
+      campaign:"starter",
+      videoAd:"video"
+    }[String(order?.serviceKey || "")] || "starter";
+  }
+
+  function promotionOrderWorkflowHtml(order, breakdown) {
+    if (!adOrderServiceIsAdvertising(order)) return "";
+
+    const priced = Number(breakdown?.total || order?.price || 0) > 0;
+    const paid = String(order?.paymentStatus || "pending") === "paid";
+    const published = Boolean(order?.convertedToAd || order?.bannerAdId || order?.adPublishedAt);
+
+    const step = (ok,label) =>
+      '<span class="' + (ok ? 'done' : '') + '">' +
+        '<i>' + (ok ? '✓' : '•') + '</i>' +
+        '<b>' + escapeHtml(label) + '</b>' +
+      '</span>';
+
+    return '<div class="promotion-ad-workflow">' +
+      step(true,"Sipariş") +
+      step(priced,"Fiyat") +
+      step(paid,"Ödeme") +
+      step(published,"Reklam Oluşturuldu") +
+      step(published && order.status === "completed","Yayında") +
+    '</div>';
+  }
+
+  async function publishPromotionOrderAsAd(orderId) {
+    const order = promotionAdminRecords.find(item => String(item.id) === String(orderId));
+    if (!order || !adOrderServiceIsAdvertising(order)) return;
+
+    if (order.convertedToAd || order.bannerAdId) {
+      alert("Bu siparişten daha önce reklam oluşturulmuş.");
+      return;
+    }
+
+    const breakdown = promotionBreakdownFor(order);
+    const total = Number(breakdown.total || order.price || 0);
+
+    if (total <= 0) {
+      alert("Önce sipariş fiyatını netleştirip kaydedin.");
+      return;
+    }
+
+    if (String(order.paymentStatus || "pending") !== "paid") {
+      alert("Reklamı oluşturmadan önce ödeme durumunu 'Ödendi' yapın ve siparişi kaydedin.");
+      return;
+    }
+
+    const inst = institutionRecords.find(
+      item => String(item.id) === String(order.institutionId)
+    );
+    if (!inst) {
+      alert("Siparişe bağlı kurum bulunamadı.");
+      return;
+    }
+
+    const schedule = orderAdSchedule(order);
+    const placement = adPlacementForPromotionOrder(order);
+    const packageId = adPackageForPromotionOrder(order);
+    const campaignTitle =
+      orderExtraValue(order,"Kampanya başlığı") ||
+      order.serviceName ||
+      inst.name ||
+      "Sponsorlu Kurum";
+
+    const now = new Date().toISOString();
+    const bannerRef = db.collection("bannerAds").doc();
+
+    const bannerData = {
+      adCode:uid("BNR"),
+      institutionId:String(inst.id),
+      institutionName:String(inst.name || order.institutionName || "Kurum"),
+      logoUrl:String(inst.logoUrl || ""),
+      headline:String(campaignTitle),
+      text:String(order.publicNote || order.scopeDescription || order.note || ""),
+      mediaType:"image",
+      imageUrl:String(inst.coverUrl || inst.logoUrl || ""),
+      videoUrl:"",
+      city:order.serviceKey === "homepage" ? "" : String(inst.city || ""),
+      district:order.serviceKey === "regionalAd" ? String(inst.district || "") : "",
+      category:order.serviceKey === "categoryAd"
+        ? String(inst.subCategory || inst.category || "")
+        : "",
+      categoryLabel:order.serviceKey === "categoryAd"
+        ? bannerCategoryLabel(inst.subCategory || inst.category || "")
+        : "",
+      durationSeconds:7,
+      placement,
+      startAt:schedule.startAt,
+      endAt:schedule.endAt,
+      active:true,
+      sourceOrderId:String(order.id),
+      sourceOrderCode:String(order.orderCode || ""),
+      createdAt:now,
+      updatedAt:now
+    };
+
+    const oldHistory = Array.isArray(inst.adHistory) ? inst.adHistory : [];
+    const historyEntry = {
+      status:"active",
+      packageId,
+      price:total,
+      paymentStatus:"paid",
+      startAt:schedule.startAt,
+      endAt:schedule.endAt,
+      note:"Siparişten otomatik oluşturuldu · " + (order.orderCode || order.id),
+      date:now
+    };
+
+    try {
+      const batch = db.batch();
+      batch.set(bannerRef,bannerData);
+      batch.update(db.collection("institutions").doc(String(inst.id)),{
+        adStatus:"active",
+        adPackage:packageId,
+        adStartAt:schedule.startAt,
+        adEndAt:schedule.endAt,
+        adPrice:total,
+        adPaymentStatus:"paid",
+        adNote:"Siparişten yayına alındı · " + (order.orderCode || order.id),
+        adUpdatedAt:now,
+        adHistory:[...oldHistory,historyEntry].slice(-20),
+        updatedAt:now
+      });
+      batch.update(db.collection("promotionOrders").doc(String(order.id)),{
+        convertedToAd:true,
+        bannerAdId:bannerRef.id,
+        adPlacement:placement,
+        adStartAt:schedule.startAt,
+        adEndAt:schedule.endAt,
+        adPublishedAt:now,
+        status:"completed",
+        updatedAt:now
+      });
+
+      await batch.commit();
+
+      const localInst = institutionRecords.find(x => String(x.id) === String(inst.id));
+      if (localInst) {
+        Object.assign(localInst,{
+          adStatus:"active",
+          adPackage:packageId,
+          adStartAt:schedule.startAt,
+          adEndAt:schedule.endAt,
+          adPrice:total,
+          adPaymentStatus:"paid",
+          adUpdatedAt:now
+        });
+      }
+
+      addAudit(
+        "Siparişten reklam oluşturuldu",
+        (order.orderCode || order.id) + " · " + (inst.name || "Kurum") + " · " + adPlacementLabel(placement)
+      );
+
+      await Promise.all([
+        loadPromotionAdminRecords(),
+        loadBannerAdsAdmin()
+      ]);
+      await renderPromotionOrdersAdmin(false);
+      renderManagedInstitutions();
+      renderTodayTasks();
+      alert("Reklam oluşturuldu ve yayına alındı.");
+    } catch (error) {
+      console.error("Siparişten reklam oluşturulamadı:",error);
+      alert("Reklam oluşturulamadı. Firestore yazma izinlerini kontrol edin.");
+    }
+  }
+
+  async function loadAdAnalyticsRecords() {
+    try {
+      const snapshot = await db.collection("institutionAnalytics").get();
+      adAnalyticsRecords = snapshot.docs
+        .map(doc => ({id:doc.id,...doc.data()}))
+        .filter(item => /ad_(impression|click)$/.test(String(item.type || "")));
+    } catch (error) {
+      console.warn("Reklam analitiği yüklenemedi:",error);
+      adAnalyticsRecords = [];
+    }
+    return adAnalyticsRecords;
+  }
+
+  async function ensureAdBusinessData(reload = false) {
+    const jobs = [];
+    if (reload || !bannerAdRecords.length) jobs.push(loadBannerAdsAdmin());
+    if (reload || !promotionAdminRecords.length) jobs.push(loadPromotionAdminRecords());
+    if (reload || !supportAdminRecords.length) jobs.push(loadSupportAdminRecords());
+    if (reload || !adAnalyticsRecords.length) jobs.push(loadAdAnalyticsRecords());
+    await Promise.all(jobs);
+  }
+
+  function adminBannerIsActive(ad) {
+    if (!ad || ad.active === false) return false;
+    const start = adminParseDate(ad.startAt);
+    const end = adminParseDate(ad.endAt,true);
+    const now = Date.now();
+    if (start && start.getTime() > now) return false;
+    if (end && end.getTime() < now) return false;
+    return true;
+  }
+
+  function adminInstitutionAdIsActive(inst) {
+    if (!inst || String(inst.adStatus || "none") !== "active") return false;
+    const start = adminParseDate(inst.adStartAt);
+    const end = adminParseDate(inst.adEndAt,true);
+    const now = Date.now();
+    if (start && start.getTime() > now) return false;
+    if (end && end.getTime() < now) return false;
+    return true;
+  }
+
+  function getAdminAdCalendarEvents() {
+    const events = [];
+
+    institutionRecords.forEach(inst => {
+      if (!["active","paused"].includes(String(inst.adStatus || ""))) return;
+      if (!inst.adStartAt && !inst.adEndAt) return;
+      const pkg = typeof ADMIN_AD_PACKAGES !== "undefined"
+        ? ADMIN_AD_PACKAGES[inst.adPackage]
+        : null;
+
+      events.push({
+        id:"institution-" + inst.id,
+        source:"institution",
+        sourceId:String(inst.id),
+        institutionId:String(inst.id),
+        title:String(inst.name || "Kurum"),
+        subtitle:pkg?.name || "Kurum Reklam Paketi",
+        placement:inst.adPackage === "premium" ? "premium_home" : "home_sponsor",
+        startAt:String(inst.adStartAt || inst.adEndAt || ""),
+        endAt:String(inst.adEndAt || inst.adStartAt || ""),
+        active:String(inst.adStatus || "") === "active",
+        paymentStatus:String(inst.adPaymentStatus || "unpaid"),
+        amount:Number(inst.adPrice || 0)
+      });
+    });
+
+    bannerAdRecords.forEach(ad => {
+      if (!ad.startAt && !ad.endAt) return;
+      events.push({
+        id:"banner-" + ad.id,
+        source:"banner",
+        sourceId:String(ad.id),
+        institutionId:String(ad.institutionId || ""),
+        title:String(ad.headline || ad.institutionName || "Banner Reklamı"),
+        subtitle:adPlacementLabel(ad.placement),
+        placement:normalizeBannerPlacement(ad.placement),
+        startAt:String(ad.startAt || ad.endAt || ""),
+        endAt:String(ad.endAt || ad.startAt || ""),
+        active:ad.active !== false,
+        paymentStatus:"-",
+        amount:0
+      });
+    });
+
+    return events;
+  }
+
+  function adEventOnDay(event,date) {
+    const dayStart = new Date(date.getFullYear(),date.getMonth(),date.getDate());
+    const dayEnd = new Date(date.getFullYear(),date.getMonth(),date.getDate(),23,59,59,999);
+    const start = adminParseDate(event.startAt) || dayStart;
+    const end = adminParseDate(event.endAt,true) || start;
+    return start.getTime() <= dayEnd.getTime() && end.getTime() >= dayStart.getTime();
+  }
+
+  function renderAdCalendarSelectedDay(date,events) {
+    const title = $("adCalendarSelectedTitle");
+    const root = $("adCalendarSelectedList");
+    if (!root) return;
+
+    const label = date.toLocaleDateString("tr-TR",{
+      day:"numeric",month:"long",year:"numeric"
+    });
+    if (title) title.textContent = label + " · " + events.length + " reklam";
+
+    root.innerHTML = events.length ? events.map(event => `
+      <div class="ad-calendar-selected-row">
+        <span class="ad-calendar-event-dot placement-${escapeHtml(event.placement)}"></span>
+        <div>
+          <strong>${escapeHtml(event.title)}</strong>
+          <small>${escapeHtml(event.subtitle)} · ${escapeHtml(event.startAt || "-")} → ${escapeHtml(event.endAt || "-")}</small>
+        </div>
+        <button type="button"
+          data-calendar-source="${escapeHtml(event.source)}"
+          data-calendar-source-id="${escapeHtml(event.sourceId)}"
+          data-calendar-institution-id="${escapeHtml(event.institutionId || "")}"
+        >Yönet</button>
+      </div>
+    `).join("") : '<div class="advanced-empty">Bu gün için kayıtlı reklam bulunmuyor.</div>';
+
+    root.querySelectorAll("[data-calendar-source]").forEach(button => {
+      button.addEventListener("click",() => {
+        if (button.dataset.calendarSource === "banner") {
+          $("bannerAdsTabBtn")?.click();
+          setTimeout(() => {
+            const input = $("bannerAdSearch");
+            if (input) {
+              const ad = bannerAdRecords.find(x => String(x.id) === String(button.dataset.calendarSourceId));
+              input.value = ad?.institutionName || ad?.headline || "";
+              input.dispatchEvent(new Event("input",{bubbles:true}));
+            }
+          },150);
+          return;
+        }
+
+        $("institutionsTabBtn")?.click();
+        setTimeout(() => {
+          const inst = institutionRecords.find(x => String(x.id) === String(button.dataset.calendarInstitutionId));
+          if ($("institutionSearch") && inst) {
+            $("institutionSearch").value = inst.name || "";
+            $("institutionSearch").dispatchEvent(new Event("input",{bubbles:true}));
+          }
+        },150);
+      });
+    });
+  }
+
+  async function renderAdCalendar(reload = false) {
+    const grid = $("adCalendarGrid");
+    if (!grid) return;
+    await ensureAdBusinessData(reload);
+
+    const events = getAdminAdCalendarEvents();
+    const cursor = new Date(adCalendarCursor.getFullYear(),adCalendarCursor.getMonth(),1);
+    const monthTitle = cursor.toLocaleDateString("tr-TR",{month:"long",year:"numeric"});
+    if ($("adCalendarMonthTitle")) $("adCalendarMonthTitle").textContent =
+      monthTitle.charAt(0).toUpperCase() + monthTitle.slice(1);
+
+    const monthStart = new Date(cursor.getFullYear(),cursor.getMonth(),1);
+    const monthEnd = new Date(cursor.getFullYear(),cursor.getMonth()+1,0,23,59,59);
+    const monthEvents = events.filter(event => {
+      const start = adminParseDate(event.startAt) || monthStart;
+      const end = adminParseDate(event.endAt,true) || start;
+      return start <= monthEnd && end >= monthStart;
+    });
+
+    const expiring7 = events.filter(event => {
+      const d = adminDaysUntil(event.endAt);
+      return event.active && d !== null && d >= 0 && d <= 7;
+    }).length;
+
+    if ($("adCalendarTabCount")) $("adCalendarTabCount").textContent = expiring7;
+    if ($("adCalendarMonthHint")) $("adCalendarMonthHint").textContent =
+      monthEvents.length + " reklam dönemi · " + expiring7 + " reklam 7 gün içinde bitiyor";
+
+    const activeToday = events.filter(event => event.active && adEventOnDay(event,new Date()));
+    const premiumToday = activeToday.filter(event => event.placement === "premium_home").length;
+    const bannerToday = activeToday.filter(event => event.source === "banner").length;
+
+    if ($("adCalendarSummary")) {
+      $("adCalendarSummary").innerHTML = `
+        <article><span>Bugün Yayında</span><strong>${activeToday.length}</strong><small>Tüm reklam alanları</small></article>
+        <article><span>Premium Vitrin</span><strong>${premiumToday}</strong><small>Bugünkü premium doluluk</small></article>
+        <article><span>Banner</span><strong>${bannerToday}</strong><small>Bugün aktif banner</small></article>
+        <article class="${expiring7 ? "warning" : ""}"><span>7 Günde Biten</span><strong>${expiring7}</strong><small>Yenileme fırsatı</small></article>
+      `;
+    }
+
+    const firstWeekday = (monthStart.getDay() + 6) % 7;
+    const gridStart = new Date(monthStart);
+    gridStart.setDate(monthStart.getDate() - firstWeekday);
+    const todayKey = adminDayKey(new Date());
+    const selectedKey = adminDayKey(adCalendarSelectedDate);
+
+    const cells = [];
+    for (let index=0; index<42; index++) {
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate()+index);
+      const dayEvents = events.filter(event => adEventOnDay(event,date));
+      const dayKey = adminDayKey(date);
+      const outside = date.getMonth() !== cursor.getMonth();
+
+      cells.push(`
+        <button type="button"
+          class="ad-calendar-day ${outside?"outside":""} ${dayKey===todayKey?"today":""} ${dayKey===selectedKey?"selected":""}"
+          data-calendar-day="${dayKey}">
+          <b>${date.getDate()}</b>
+          <div class="ad-calendar-day-events">
+            ${dayEvents.slice(0,3).map(event =>
+              '<span class="placement-'+escapeHtml(event.placement)+'" title="'+escapeHtml(event.title)+'">'+
+                escapeHtml(event.title)+
+              '</span>'
+            ).join("")}
+            ${dayEvents.length>3?'<em>+'+(dayEvents.length-3)+' daha</em>':""}
+          </div>
+        </button>
+      `);
+    }
+    grid.innerHTML = cells.join("");
+
+    grid.querySelectorAll("[data-calendar-day]").forEach(button => {
+      button.addEventListener("click",() => {
+        const parts = button.dataset.calendarDay.split("-").map(Number);
+        adCalendarSelectedDate = new Date(parts[0],parts[1]-1,parts[2]);
+        renderAdCalendarSelectedDay(
+          adCalendarSelectedDate,
+          events.filter(event => adEventOnDay(event,adCalendarSelectedDate))
+        );
+        grid.querySelectorAll(".ad-calendar-day").forEach(cell => {
+          cell.classList.toggle("selected",cell.dataset.calendarDay === button.dataset.calendarDay);
+        });
+      });
+    });
+
+    renderAdCalendarSelectedDay(
+      adCalendarSelectedDate,
+      events.filter(event => adEventOnDay(event,adCalendarSelectedDate))
+    );
+  }
+
+  $("adCalendarPrev")?.addEventListener("click",() => {
+    adCalendarCursor = new Date(adCalendarCursor.getFullYear(),adCalendarCursor.getMonth()-1,1);
+    adCalendarSelectedDate = new Date(adCalendarCursor);
+    renderAdCalendar(false);
+  });
+  $("adCalendarNext")?.addEventListener("click",() => {
+    adCalendarCursor = new Date(adCalendarCursor.getFullYear(),adCalendarCursor.getMonth()+1,1);
+    adCalendarSelectedDate = new Date(adCalendarCursor);
+    renderAdCalendar(false);
+  });
+  $("adCalendarToday")?.addEventListener("click",() => {
+    adCalendarCursor = new Date();
+    adCalendarSelectedDate = new Date();
+    renderAdCalendar(false);
+  });
+
+  function revenueForPromotionOrder(order) {
+    if (order.convertedToAd) return 0;
+    return Number(order.priceBreakdown?.total ?? order.price ?? 0);
+  }
+
+  function revenueBusinessRows() {
+    const rows = [];
+
+    institutionRecords.forEach(inst => {
+      if (!["active","paused"].includes(String(inst.adStatus || ""))) return;
+      rows.push({
+        source:"Kurum reklam paketi",
+        name:String(inst.name || "Kurum"),
+        amount:Number(inst.adPrice || 0),
+        paid:String(inst.adPaymentStatus || "unpaid") === "paid",
+        pending:String(inst.adPaymentStatus || "unpaid") !== "paid",
+        date:String(inst.adStartAt || inst.adUpdatedAt || inst.updatedAt || ""),
+        packageLabel:typeof ADMIN_AD_PACKAGES !== "undefined"
+          ? (ADMIN_AD_PACKAGES[inst.adPackage]?.name || inst.adPackage || "Reklam")
+          : (inst.adPackage || "Reklam")
+      });
+    });
+
+    promotionAdminRecords.forEach(order => {
+      const amount = revenueForPromotionOrder(order);
+      if (amount <= 0) return;
+      rows.push({
+        source:"Tanıtım / reklam siparişi",
+        name:String(order.institutionName || "Kurum"),
+        amount,
+        paid:String(order.paymentStatus || "pending") === "paid",
+        pending:String(order.paymentStatus || "pending") !== "paid",
+        date:String(order.paidAt || order.updatedAt || order.createdAt || ""),
+        packageLabel:String(order.serviceName || "Sipariş")
+      });
+    });
+
+    return rows;
+  }
+
+  function adAnalyticsSummary() {
+    const impressions = adAnalyticsRecords.filter(x =>
+      String(x.type || "").endsWith("ad_impression")
+    ).length;
+    const clicks = adAnalyticsRecords.filter(x =>
+      String(x.type || "").endsWith("ad_click")
+    ).length;
+    return {
+      impressions,
+      clicks,
+      ctr:impressions ? clicks / impressions * 100 : 0
+    };
+  }
+
+  function expiringAdvertisingRows(days = 7) {
+    const rows = [];
+
+    institutionRecords.forEach(inst => {
+      if (!adminInstitutionAdIsActive(inst)) return;
+      const left = adminDaysUntil(inst.adEndAt);
+      if (left === null || left < 0 || left > days) return;
+      rows.push({
+        kind:"institution",
+        id:String(inst.id),
+        institutionId:String(inst.id),
+        name:String(inst.name || "Kurum"),
+        endAt:String(inst.adEndAt || ""),
+        daysLeft:left,
+        phone:String(inst.phone || ""),
+        label:typeof ADMIN_AD_PACKAGES !== "undefined"
+          ? (ADMIN_AD_PACKAGES[inst.adPackage]?.name || "Reklam Paketi")
+          : "Reklam Paketi"
+      });
+    });
+
+    bannerAdRecords.forEach(ad => {
+      if (!adminBannerIsActive(ad)) return;
+      const left = adminDaysUntil(ad.endAt);
+      if (left === null || left < 0 || left > days) return;
+      const inst = institutionRecords.find(x => String(x.id) === String(ad.institutionId));
+      rows.push({
+        kind:"banner",
+        id:String(ad.id),
+        institutionId:String(ad.institutionId || ""),
+        name:String(ad.institutionName || ad.headline || "Banner"),
+        endAt:String(ad.endAt || ""),
+        daysLeft:left,
+        phone:String(inst?.phone || ""),
+        label:adPlacementLabel(ad.placement)
+      });
+    });
+
+    return rows.sort((a,b)=>a.daysLeft-b.daysLeft);
+  }
+
+  function bindRenewalActions(root) {
+    root?.querySelectorAll("[data-renew-whatsapp]").forEach(button => {
+      button.addEventListener("click",() => {
+        const row = expiringAdvertisingRows(30).find(
+          item => item.kind + ":" + item.id === button.dataset.renewWhatsapp
+        );
+        if (!row) return;
+        const digits = String(row.phone || "").replace(/\D/g,"");
+        if (!digits) {
+          alert("Kurumun telefon bilgisi bulunmuyor.");
+          return;
+        }
+        const normalized = digits.startsWith("0") ? "90"+digits.slice(1) : digits;
+        const message = [
+          "Merhaba " + row.name + ",",
+          "",
+          "Dijiyer reklamınız " + (row.daysLeft===0 ? "bugün" : row.daysLeft+" gün içinde") + " sona eriyor.",
+          "Görünürlüğünüz kesilmeden reklamınızı yenilemek ister misiniz?",
+          "",
+          "Mevcut alan: " + row.label
+        ].join("\n");
+        window.open("https://wa.me/"+normalized+"?text="+encodeURIComponent(message),"_blank");
+      });
+    });
+
+    root?.querySelectorAll("[data-renew-manage]").forEach(button => {
+      button.addEventListener("click",() => {
+        const [kind,id] = String(button.dataset.renewManage || "").split(":");
+        if (kind === "banner") {
+          $("bannerAdsTabBtn")?.click();
+          setTimeout(()=>{
+            const ad=bannerAdRecords.find(x=>String(x.id)===String(id));
+            if($("bannerAdSearch")&&ad){
+              $("bannerAdSearch").value=ad.institutionName || ad.headline || "";
+              $("bannerAdSearch").dispatchEvent(new Event("input",{bubbles:true}));
+            }
+          },120);
+        } else {
+          $("institutionsTabBtn")?.click();
+          setTimeout(()=>{
+            const inst=institutionRecords.find(x=>String(x.id)===String(id));
+            if($("institutionSearch")&&inst){
+              $("institutionSearch").value=inst.name || "";
+              $("institutionSearch").dispatchEvent(new Event("input",{bubbles:true}));
+            }
+          },120);
+        }
+      });
+    });
+  }
+
+  async function renderAdRevenueCenter(reload = false) {
+    if (!$("adRevenueSection")) return;
+    await ensureAdBusinessData(reload);
+
+    const revenueRows = revenueBusinessRows();
+    const paid = revenueRows.filter(x=>x.paid).reduce((sum,x)=>sum+x.amount,0);
+    const pending = revenueRows.filter(x=>x.pending).reduce((sum,x)=>sum+x.amount,0);
+    const activeAds =
+      institutionRecords.filter(adminInstitutionAdIsActive).length +
+      bannerAdRecords.filter(adminBannerIsActive).length;
+    const expiring = expiringAdvertisingRows(7);
+    const analytics = adAnalyticsSummary();
+
+    $("adRevenueActiveCount").textContent = activeAds;
+    $("adRevenuePaid").textContent = money(paid);
+    $("adRevenuePending").textContent = money(pending);
+    $("adRevenueExpiring").textContent = expiring.length;
+    $("adRevenueImpressions").textContent = analytics.impressions;
+    $("adRevenueClicks").textContent = analytics.clicks;
+    $("adRevenueCtr").textContent = "%" + analytics.ctr.toFixed(1) + " CTR";
+
+    const sourceTotals = new Map();
+    revenueRows.forEach(row => {
+      const key = row.source;
+      if (!sourceTotals.has(key)) sourceTotals.set(key,{paid:0,pending:0,count:0});
+      const target=sourceTotals.get(key);
+      target.count++;
+      if(row.paid)target.paid+=row.amount;
+      else target.pending+=row.amount;
+    });
+
+    $("adRevenueBreakdown").innerHTML = sourceTotals.size
+      ? [...sourceTotals.entries()].map(([label,row])=>`
+          <div class="ad-revenue-breakdown-row">
+            <div><strong>${escapeHtml(label)}</strong><small>${row.count} kayıt</small></div>
+            <span><b>${money(row.paid)}</b> tahsil</span>
+            <span class="pending">${money(row.pending)} bekliyor</span>
+          </div>
+        `).join("")
+      : '<div class="advanced-empty">Henüz fiyatlandırılmış reklam kaydı yok.</div>';
+
+    const renewalRoot=$("adRenewalList");
+    renewalRoot.innerHTML=expiring.length ? expiring.map(row=>`
+      <div class="ad-renewal-row urgency-${row.daysLeft<=3?"high":"normal"}">
+        <div>
+          <strong>${escapeHtml(row.name)}</strong>
+          <span>${escapeHtml(row.label)} · ${row.daysLeft===0?"Bugün bitiyor":row.daysLeft+" gün kaldı"}</span>
+          <small>Bitiş: ${escapeHtml(row.endAt)}</small>
+        </div>
+        <div>
+          <button type="button" data-renew-whatsapp="${escapeHtml(row.kind+":"+row.id)}">WhatsApp</button>
+          <button type="button" data-renew-manage="${escapeHtml(row.kind+":"+row.id)}">Yönet</button>
+        </div>
+      </div>
+    `).join("") : '<div class="advanced-empty success">Önümüzdeki 7 gün içinde bitecek reklam yok.</div>';
+    bindRenewalActions(renewalRoot);
+
+    const byInstitution=new Map();
+    adAnalyticsRecords.forEach(item=>{
+      const id=String(item.institutionId||"");
+      if(!id)return;
+      if(!byInstitution.has(id))byInstitution.set(id,{impressions:0,clicks:0});
+      const row=byInstitution.get(id);
+      if(String(item.type||"").endsWith("ad_impression"))row.impressions++;
+      if(String(item.type||"").endsWith("ad_click"))row.clicks++;
+    });
+
+    const performance=[...byInstitution.entries()]
+      .map(([id,row])=>{
+        const inst=institutionRecords.find(x=>String(x.id)===id);
+        return {
+          id,
+          name:inst?.name || "Kurum",
+          impressions:row.impressions,
+          clicks:row.clicks,
+          ctr:row.impressions ? row.clicks/row.impressions*100 : 0
+        };
+      })
+      .sort((a,b)=>b.impressions-a.impressions)
+      .slice(0,20);
+
+    $("adPerformanceList").innerHTML=performance.length ? `
+      <div class="ad-performance-table">
+        <div class="ad-performance-head"><span>Kurum</span><span>Gösterim</span><span>Tıklama</span><span>CTR</span></div>
+        ${performance.map(row=>`
+          <div class="ad-performance-row">
+            <strong>${escapeHtml(row.name)}</strong>
+            <span>${row.impressions}</span>
+            <span>${row.clicks}</span>
+            <span>%${row.ctr.toFixed(1)}</span>
+          </div>
+        `).join("")}
+      </div>
+    ` : '<div class="advanced-empty">Henüz reklam gösterim / tıklama verisi oluşmadı.</div>';
+
+    addAudit;
+  }
+
+  $("adRevenueRefreshBtn")?.addEventListener("click",()=>renderAdRevenueCenter(true));
+
+  async function renderTodayTasks() {
+    const root = $("adminTodayTasks");
+    if (!root) return;
+
+    await ensureAdBusinessData(false);
+
+    const tasks = [];
+    const pendingApps = applicationRecords.filter(
+      item => String(item.status || "pending") === "pending"
+    ).length;
+    const noOffer = quoteRequestRecords.filter(item =>
+      (!Array.isArray(item.liveOffers) || item.liveOffers.length === 0) &&
+      !["done","used"].includes(String(item.currentState || ""))
+    ).length;
+    const newOrders = promotionAdminRecords.filter(
+      item => String(item.status || "new") === "new"
+    ).length;
+    const overdueSupport = supportAdminRecords.filter(supportTicketIsOverdue).length;
+    const expiring3 = expiringAdvertisingRows(3);
+    const unpaidAds = institutionRecords.filter(item =>
+      ["active","paused"].includes(String(item.adStatus || "")) &&
+      String(item.adPaymentStatus || "unpaid") !== "paid"
+    ).length;
+
+    if (pendingApps) tasks.push({
+      level:"normal",count:pendingApps,title:"Yeni kurum başvurusu",
+      text:"İnceleyip onay veya ret kararı verin.",tab:"applicationsTabBtn",button:"Başvurular"
+    });
+    if (noOffer) tasks.push({
+      level:"warning",count:noOffer,title:"Henüz teklif almayan talep",
+      text:"Uygun kurum eşleşmelerini kontrol edin.",tab:"quotesTabBtn",button:"Talepler"
+    });
+    if (newOrders) tasks.push({
+      level:"money",count:newOrders,title:"Yeni tanıtım / reklam siparişi",
+      text:"Fiyatlandırma ve ödeme sürecini başlatın.",tab:"promotionOrdersTabBtn",button:"Siparişler"
+    });
+    if (unpaidAds) tasks.push({
+      level:"money",count:unpaidAds,title:"Ödeme bekleyen aktif reklam",
+      text:"Tahsilat durumunu kontrol edin.",tab:"adRevenueTabBtn",button:"Gelir"
+    });
+    if (expiring3.length) tasks.push({
+      level:"urgent",count:expiring3.length,title:"3 gün içinde bitecek reklam",
+      text:"Yenileme görüşmesini kaçırmayın.",tab:"adRevenueTabBtn",button:"Yenilemeler"
+    });
+    if (overdueSupport) tasks.push({
+      level:"urgent",count:overdueSupport,title:"Geciken destek talebi",
+      text:"SLA süresini aşan taleplere yanıt verin.",tab:"supportTabBtn",button:"Destek"
+    });
+
+    $("adminTodayTaskCount").textContent = tasks.reduce((sum,item)=>sum+item.count,0);
+
+    root.innerHTML = tasks.length ? tasks.map(task=>`
+      <article class="admin-today-task level-${escapeHtml(task.level)}">
+        <span class="admin-today-task-count">${task.count}</span>
+        <div>
+          <strong>${escapeHtml(task.title)}</strong>
+          <small>${escapeHtml(task.text)}</small>
+        </div>
+        <button type="button" data-today-tab="${escapeHtml(task.tab)}">${escapeHtml(task.button)}</button>
+      </article>
+    `).join("") : '<div class="advanced-empty success">Bugün için acil işlem görünmüyor.</div>';
+
+    root.querySelectorAll("[data-today-tab]").forEach(button=>{
+      button.addEventListener("click",()=>$(button.dataset.todayTab)?.click());
+    });
+  }
+
+  $("overviewTabBtn")?.addEventListener("click",()=>setTimeout(renderTodayTasks,80));
+
   function notificationItems() {
     const items = [];
     const pendingApps = applicationRecords.filter(
