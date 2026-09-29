@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -17,6 +17,7 @@
   let promotionAdminRecords = [];
   let promotionPackageRecords = [];
   let bannerAdRecords = [];
+  let externalAdRecords = [];
   let adAnalyticsRecords = [];
   let adCalendarCursor = new Date();
   let adCalendarSelectedDate = new Date();
@@ -140,6 +141,12 @@
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
     await renderBannerAdsAdmin(true);
+  });
+
+  $("externalAdsTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("externalAdsSection","externalAdsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("externalAdsTabBtn");
+    await renderExternalAdsAdmin(true);
   });
 
   $("promotionPackagesTabBtn")?.addEventListener("click", async () => {
@@ -1196,6 +1203,303 @@
     if(id==="bannerAdImageUrl" && String($(id)?.value||"").trim())$("bannerAdMediaType").value="image";
     renderBannerAdminPreview();
   }));
+
+
+  function externalAdDateTimeLocal(value){
+    if(!value)return "";
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return "";
+    const local=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,16);
+  }
+
+  function externalAdIsoFromInput(value){
+    if(!value)return "";
+    const date=new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+  }
+
+  function externalAdStatus(item){
+    if(item.active===false)return {key:"passive",label:"Pasif"};
+    const now=Date.now();
+    const start=item.startAt ? new Date(item.startAt).getTime() : 0;
+    const end=item.endAt ? new Date(item.endAt).getTime() : 0;
+    if(start && start>now)return {key:"planned",label:"Planlandı"};
+    if(end && end<now)return {key:"expired",label:"Süresi Doldu"};
+    return {key:"active",label:"Yayında"};
+  }
+
+  function safeExternalAdminUrl(value){
+    const raw=String(value||"").trim();
+    if(!raw)return "";
+    try{
+      const url=new URL(raw);
+      return ["http:","https:"].includes(url.protocol) ? url.href : "";
+    }catch(_){
+      return "";
+    }
+  }
+
+  function renderExternalAdPreview(){
+    const root=$("externalAdPreview");
+    if(!root)return;
+    const brand=String($("externalAdBrand")?.value||"").trim()||"Marka";
+    const headline=String($("externalAdHeadline")?.value||"").trim()||"Reklam başlığı";
+    const type=String($("externalAdMediaType")?.value||"image");
+    const image=safeExternalAdminUrl($("externalAdImageUrl")?.value);
+    const video=safeExternalAdminUrl($("externalAdVideoUrl")?.value);
+    const media=type==="video" && video
+      ? '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline></video>'
+      : image
+        ? '<img src="'+escapeHtml(image)+'" alt="">'
+        : '<div class="external-ad-preview-empty">Banner medyası ekleyin</div>';
+    root.innerHTML=
+      '<div class="external-ad-preview-media">'+media+'</div>'+
+      '<div class="external-ad-preview-copy"><span>REKLAM</span><strong>'+escapeHtml(brand)+'</strong><small>'+escapeHtml(headline)+'</small></div>';
+  }
+
+  async function uploadExternalAdMedia(file,type){
+    if(!file)return;
+    const message=$("externalAdUploadMessage");
+    const settings=loadCloudinaryBannerSettings();
+    if(!settings.cloudName||!settings.uploadPreset){
+      if(message)message.textContent="Cloudinary bağlantısı hazır değil. Reklam Merkezi içindeki Cloudinary ayarını kontrol edin.";
+      return;
+    }
+
+    const isVideo=type==="video";
+    const valid=isVideo
+      ? ["video/mp4","video/webm"].includes(file.type)
+      : ["image/jpeg","image/png","image/webp"].includes(file.type);
+    const maxBytes=isVideo ? 30*1024*1024 : 8*1024*1024;
+
+    if(!valid){
+      if(message)message.textContent=isVideo ? "MP4 veya WebM seçin." : "JPG, PNG veya WebP seçin.";
+      return;
+    }
+    if(file.size>maxBytes){
+      if(message)message.textContent=isVideo ? "Video en fazla 30 MB olabilir." : "Görsel en fazla 8 MB olabilir.";
+      return;
+    }
+
+    if(message)message.textContent="Cloudinary'ye yükleniyor...";
+    const formData=new FormData();
+    formData.append("file",file);
+    formData.append("upload_preset",settings.uploadPreset);
+    formData.append("folder","dijiyer/externalAds");
+
+    try{
+      const data=await new Promise((resolve,reject)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open("POST","https://api.cloudinary.com/v1_1/"+encodeURIComponent(settings.cloudName)+"/auto/upload",true);
+        xhr.onerror=()=>reject(new Error("Ağ bağlantısı kurulamadı."));
+        xhr.onload=()=>{
+          let parsed={};
+          try{parsed=JSON.parse(xhr.responseText||"{}")}catch(_){}
+          if(xhr.status>=200&&xhr.status<300&&parsed.secure_url)resolve(parsed);
+          else reject(new Error(parsed?.error?.message||"Cloudinary yükleme hatası."));
+        };
+        xhr.send(formData);
+      });
+
+      const url=String(data.secure_url||"");
+      if(isVideo){
+        $("externalAdMediaType").value="video";
+        $("externalAdVideoUrl").value=url;
+      }else{
+        $("externalAdMediaType").value="image";
+        $("externalAdImageUrl").value=url;
+      }
+      if(message)message.textContent="Dosya yüklendi.";
+      renderExternalAdPreview();
+    }catch(error){
+      console.error("Harici reklam medyası yüklenemedi:",error);
+      if(message)message.textContent="Yükleme başarısız: "+String(error?.message||"Bilinmeyen hata");
+    }
+  }
+
+  function resetExternalAdForm(){
+    $("externalAdForm")?.reset();
+    if($("externalAdEditId"))$("externalAdEditId").value="";
+    if($("externalAdActive"))$("externalAdActive").checked=true;
+    if($("externalAdRotationSeconds"))$("externalAdRotationSeconds").value="10";
+    if($("externalAdMediaType"))$("externalAdMediaType").value="image";
+    if($("externalAdFormTitle"))$("externalAdFormTitle").textContent="Yeni Reklam";
+    if($("externalAdUploadMessage"))$("externalAdUploadMessage").textContent="";
+    renderExternalAdPreview();
+  }
+
+  async function loadExternalAdsAdmin(){
+    const snap=await db.collection("externalAds").get();
+    externalAdRecords=snap.docs
+      .map(doc=>({id:doc.id,...doc.data()}))
+      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    return externalAdRecords;
+  }
+
+  function renderExternalAdList(){
+    const root=$("externalAdAdminList");
+    if(!root)return;
+    const q=normalize($("externalAdSearch")?.value||"");
+    const rows=externalAdRecords.filter(item=>
+      !q || normalize([item.brandName,item.headline,item.targetUrl].join(" ")).includes(q)
+    );
+
+    if($("externalAdAdminCount"))$("externalAdAdminCount").textContent=externalAdRecords.length+" harici reklam";
+    if($("externalAdsTabCount"))$("externalAdsTabCount").textContent=String(externalAdRecords.filter(x=>externalAdStatus(x).key==="active").length);
+
+    root.innerHTML=rows.length ? rows.map(item=>{
+      const status=externalAdStatus(item);
+      const type=String(item.mediaType||"image");
+      const image=safeExternalAdminUrl(item.imageUrl);
+      const video=safeExternalAdminUrl(item.videoUrl);
+      const media=type==="video" && video
+        ? '<video src="'+escapeHtml(video)+'" muted playsinline></video>'
+        : image
+          ? '<img src="'+escapeHtml(image)+'" alt="">'
+          : '<div class="external-ad-list-fallback">🌐</div>';
+
+      return '<article class="external-ad-admin-row">'+
+        '<div class="external-ad-admin-media">'+media+'</div>'+
+        '<div class="external-ad-admin-main">'+
+          '<div class="external-ad-admin-row-head"><strong>'+escapeHtml(item.brandName||"Marka")+'</strong><span class="external-ad-status '+status.key+'">'+escapeHtml(status.label)+'</span></div>'+
+          '<small>'+escapeHtml(item.headline||"")+'</small>'+
+          '<p>'+escapeHtml(item.targetUrl||"")+'</p>'+
+          '<div class="external-ad-admin-meta"><span>'+Number(item.rotationSeconds||10)+' sn</span><span>'+escapeHtml(type==="video"?"Video":"Görsel")+'</span></div>'+
+        '</div>'+
+        '<div class="external-ad-admin-actions">'+
+          '<button type="button" data-external-edit="'+escapeHtml(item.id)+'">Düzenle</button>'+
+          '<button type="button" data-external-toggle="'+escapeHtml(item.id)+'">'+(item.active===false?"Aktif Et":"Pasif Et")+'</button>'+
+          '<button type="button" class="danger" data-external-delete="'+escapeHtml(item.id)+'">Sil</button>'+
+        '</div>'+
+      '</article>';
+    }).join("") : '<div class="advanced-empty">Harici reklam bulunamadı.</div>';
+
+    root.querySelectorAll("[data-external-edit]").forEach(btn=>btn.addEventListener("click",()=>editExternalAd(btn.dataset.externalEdit)));
+    root.querySelectorAll("[data-external-toggle]").forEach(btn=>btn.addEventListener("click",()=>toggleExternalAd(btn.dataset.externalToggle)));
+    root.querySelectorAll("[data-external-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteExternalAd(btn.dataset.externalDelete)));
+  }
+
+  async function renderExternalAdsAdmin(force=false){
+    try{
+      if(force || !externalAdRecords.length)await loadExternalAdsAdmin();
+      renderExternalAdList();
+      renderExternalAdPreview();
+    }catch(error){
+      console.error("Harici reklamlar yüklenemedi:",error);
+      if($("externalAdAdminList"))$("externalAdAdminList").innerHTML='<div class="advanced-empty">Harici reklamlar yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+    }
+  }
+
+  function editExternalAd(id){
+    const item=externalAdRecords.find(x=>String(x.id)===String(id));
+    if(!item)return;
+    $("externalAdEditId").value=item.id;
+    $("externalAdBrand").value=item.brandName||"";
+    $("externalAdHeadline").value=item.headline||"";
+    $("externalAdTargetUrl").value=item.targetUrl||"";
+    $("externalAdMediaType").value=item.mediaType==="video"?"video":"image";
+    $("externalAdImageUrl").value=item.imageUrl||"";
+    $("externalAdVideoUrl").value=item.videoUrl||"";
+    $("externalAdStartAt").value=externalAdDateTimeLocal(item.startAt);
+    $("externalAdEndAt").value=externalAdDateTimeLocal(item.endAt);
+    $("externalAdRotationSeconds").value=String(item.rotationSeconds||10);
+    $("externalAdActive").checked=item.active!==false;
+    $("externalAdRightsConfirmed").checked=Boolean(item.rightsConfirmed);
+    $("externalAdFormTitle").textContent="Reklamı Düzenle";
+    renderExternalAdPreview();
+    $("externalAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function saveExternalAd(event){
+    event.preventDefault();
+    const brandName=String($("externalAdBrand")?.value||"").trim();
+    const headline=String($("externalAdHeadline")?.value||"").trim();
+    const targetUrl=safeExternalAdminUrl($("externalAdTargetUrl")?.value);
+    const mediaType=$("externalAdMediaType")?.value==="video"?"video":"image";
+    const imageUrl=safeExternalAdminUrl($("externalAdImageUrl")?.value);
+    const videoUrl=safeExternalAdminUrl($("externalAdVideoUrl")?.value);
+    const rightsConfirmed=Boolean($("externalAdRightsConfirmed")?.checked);
+
+    if(!brandName){alert("Marka adını yazın.");return;}
+    if(!targetUrl){alert("Geçerli bir tıklama / affiliate linki girin.");return;}
+    if(mediaType==="image" && !imageUrl){alert("Görsel URL ekleyin veya görsel yükleyin.");return;}
+    if(mediaType==="video" && !videoUrl){alert("Video URL ekleyin veya video yükleyin.");return;}
+    if(!rightsConfirmed){alert("Bannerı yayınlama / affiliate kullanım iznini onaylayın.");return;}
+
+    const startAt=externalAdIsoFromInput($("externalAdStartAt")?.value);
+    const endAt=externalAdIsoFromInput($("externalAdEndAt")?.value);
+    if(startAt && endAt && new Date(endAt)<=new Date(startAt)){
+      alert("Bitiş tarihi başlangıçtan sonra olmalıdır.");
+      return;
+    }
+
+    const id=String($("externalAdEditId")?.value||"").trim();
+    const existing=id ? externalAdRecords.find(x=>String(x.id)===id) : null;
+    const ref=id ? db.collection("externalAds").doc(id) : db.collection("externalAds").doc();
+    const data={
+      brandName,headline,targetUrl,mediaType,imageUrl,videoUrl,
+      rotationSeconds:Math.max(5,Math.min(60,Number($("externalAdRotationSeconds")?.value||10))),
+      startAt,endAt,
+      active:Boolean($("externalAdActive")?.checked),
+      rightsConfirmed:true,
+      updatedAt:new Date().toISOString(),
+      createdAt:existing?.createdAt || new Date().toISOString()
+    };
+
+    try{
+      await ref.set(data,{merge:true});
+      addAudit(id?"Harici reklam güncellendi":"Harici reklam eklendi",brandName);
+      await loadExternalAdsAdmin();
+      resetExternalAdForm();
+      renderExternalAdList();
+    }catch(error){
+      console.error("Harici reklam kaydedilemedi:",error);
+      alert("Harici reklam kaydedilemedi. Firestore Rules ayarını kontrol edin.");
+    }
+  }
+
+  async function toggleExternalAd(id){
+    const item=externalAdRecords.find(x=>String(x.id)===String(id));
+    if(!item)return;
+    try{
+      await db.collection("externalAds").doc(id).set({active:item.active===false,updatedAt:new Date().toISOString()},{merge:true});
+      await loadExternalAdsAdmin();
+      renderExternalAdList();
+    }catch(error){
+      console.error(error);
+      alert("Reklam durumu değiştirilemedi.");
+    }
+  }
+
+  async function deleteExternalAd(id){
+    const item=externalAdRecords.find(x=>String(x.id)===String(id));
+    if(!item)return;
+    if(!confirm((item.brandName||"Bu reklam")+" silinsin mi?"))return;
+    try{
+      await db.collection("externalAds").doc(id).delete();
+      addAudit("Harici reklam silindi",item.brandName||id);
+      await loadExternalAdsAdmin();
+      renderExternalAdList();
+    }catch(error){
+      console.error(error);
+      alert("Reklam silinemedi.");
+    }
+  }
+
+  $("externalAdForm")?.addEventListener("submit",saveExternalAd);
+  $("externalAdNewBtn")?.addEventListener("click",resetExternalAdForm);
+  $("externalAdCancelBtn")?.addEventListener("click",resetExternalAdForm);
+  $("externalAdSearch")?.addEventListener("input",renderExternalAdList);
+  $("externalAdImageUploadBtn")?.addEventListener("click",()=>$("externalAdImageFile")?.click());
+  $("externalAdVideoUploadBtn")?.addEventListener("click",()=>$("externalAdVideoFile")?.click());
+  $("externalAdImageFile")?.addEventListener("change",event=>uploadExternalAdMedia(event.target.files?.[0],"image"));
+  $("externalAdVideoFile")?.addEventListener("change",event=>uploadExternalAdMedia(event.target.files?.[0],"video"));
+  ["externalAdBrand","externalAdHeadline","externalAdImageUrl","externalAdVideoUrl","externalAdMediaType"].forEach(id=>{
+    $(id)?.addEventListener("input",renderExternalAdPreview);
+    $(id)?.addEventListener("change",renderExternalAdPreview);
+  });
+  resetExternalAdForm();
 
   const DEFAULT_PROMOTION_PACKAGES = [
     {
