@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=31" />
+  <link rel="stylesheet" href="style.css?v=32" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -396,7 +396,7 @@
               id="mobileJobsSearchInput"
               type="search"
               autocomplete="off"
-              placeholder="İş, yetenek veya anahtar kelime ara..."
+              placeholder="İş, meslek veya yetenek ara..."
               aria-label="İş ilanlarında ara"
             >
             <button type="button" class="hidden" id="mobileJobsSearchClear" aria-label="Aramayı temizle">×</button>
@@ -414,7 +414,7 @@
           </div>
 
           <div class="mobile-jobs-quick-filters" aria-label="Hızlı iş filtreleri">
-            <button type="button" class="active" data-job-quick="all">Tüm çalışma türleri</button>
+            <button type="button" class="active" data-job-quick="all">Tüm Türler</button>
             <button type="button" data-job-quick="extra">⚡ Günlük / Ek İş</button>
             <button type="button" data-job-quick="home">🏠 Evden</button>
             <button type="button" data-job-quick="parttime">◷ Part-time</button>
@@ -423,8 +423,8 @@
 
           <div class="mobile-jobs-category-head">
             <div>
-              <strong>Kategoriye göre keşfet</strong>
-              <span>İstersen kategori seç, istersen aramaya devam et.</span>
+              <strong>Kategoriler</strong>
+              <span>Dokunarak ilanları filtrele</span>
             </div>
             <button type="button" class="hidden" id="mobileJobsClearFilters">Temizle</button>
           </div>
@@ -434,7 +434,7 @@
           <div class="mobile-jobs-results-head">
             <div>
               <strong id="mobileJobsResultsTitle">Tüm iş fırsatları</strong>
-              <span id="mobileJobsResultsHint">En yeni ilanlar önce gösteriliyor.</span>
+              <span id="mobileJobsResultsHint">En yeni ilanlar önce</span>
             </div>
           </div>
 
