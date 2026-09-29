@@ -791,6 +791,22 @@ document.getElementById("persistentNewRequestBtn")?.addEventListener("click", ()
 document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
 document.getElementById("completeProfileBtn")?.addEventListener("click", () => setPanelTab("profile"));
 
+document.getElementById("profileVisualShortcut")?.addEventListener("click", () => {
+  setPanelTab("profile");
+
+  requestAnimationFrame(() => {
+    const section = document.getElementById("profileVisualSection");
+    if (!section) return;
+
+    section.scrollIntoView({ behavior:"smooth", block:"start" });
+    section.classList.add("visual-section-focus");
+
+    window.setTimeout(() => {
+      section.classList.remove("visual-section-focus");
+    }, 1800);
+  });
+});
+
 function openFirmDashboardQuotes(filter = "") {
   if (quotePanelFilter) quotePanelFilter.value = filter;
   setPanelTab("quotes");
