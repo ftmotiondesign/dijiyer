@@ -218,13 +218,15 @@ function validateProfileImage(file) {
   }
 }
 
-function profileImageExtension(file) {
+function profileFileExtension(file) {
   const byType = {
     "image/jpeg":"jpg",
     "image/png":"png",
-    "image/webp":"webp"
+    "image/webp":"webp",
+    "video/mp4":"mp4",
+    "video/webm":"webm"
   };
-  return byType[file.type] || "jpg";
+  return byType[file?.type] || "bin";
 }
 
 function profileStoragePath(kind, file) {
@@ -236,7 +238,7 @@ function profileStoragePath(kind, file) {
     userId,
     institutionId,
     kind,
-    Date.now() + "_" + random + "." + profileImageExtension(file)
+    Date.now() + "_" + random + "." + profileFileExtension(file)
   ].join("/");
 }
 
@@ -280,6 +282,187 @@ async function uploadInstitutionProfileImage(file, kind, statusId, label) {
   });
 }
 
+function validateProfilePanorama(file) {
+  if (!file) throw new Error("360° görsel seçilmedi.");
+
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type)) {
+    throw new Error("360° görsel JPG, PNG veya WebP olmalıdır.");
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error("360° görsel boyutu 20 MB'dan büyük olamaz.");
+  }
+}
+
+function validateProfileVideo(file) {
+  if (!file) throw new Error("Video seçilmedi.");
+
+  const allowed = ["video/mp4", "video/webm"];
+  if (!allowed.includes(file.type)) {
+    throw new Error("Video MP4 veya WebM formatında olmalıdır.");
+  }
+
+  if (file.size > 80 * 1024 * 1024) {
+    throw new Error("Video boyutu 80 MB'dan büyük olamaz.");
+  }
+}
+
+async function uploadInstitutionProfileRichMedia(file, kind, statusId, label, mediaType) {
+  if (mediaType === "video") validateProfileVideo(file);
+  else if (mediaType === "panorama") validateProfilePanorama(file);
+  else throw new Error("Geçersiz medya türü.");
+
+  if (!currentUser?.uid || !currentAccount?.institutionId) {
+    throw new Error("Kurum oturumu bulunamadı. Tekrar giriş yapın.");
+  }
+
+  const ref = storage.ref().child(profileStoragePath(kind, file));
+  const task = ref.put(file, {
+    contentType:file.type,
+    customMetadata:{
+      institutionId:String(currentAccount.institutionId),
+      mediaType:String(mediaType)
+    }
+  });
+
+  return await new Promise((resolve, reject) => {
+    task.on(
+      "state_changed",
+      snapshot => {
+        const percent = snapshot.totalBytes
+          ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+          : 0;
+
+        setProfileUploadStatus(
+          statusId,
+          label + " yükleniyor · %" + percent,
+          "is-uploading"
+        );
+      },
+      error => reject(error),
+      async () => {
+        try {
+          resolve(await task.snapshot.ref.getDownloadURL());
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+}
+
+async function saveUploadedProfileMedia({
+  file,
+  kind,
+  fieldName,
+  inputId,
+  statusId,
+  label,
+  mediaType
+}) {
+  if (!file) return;
+
+  const previousUrl=safeProfileUrl(currentInstitution?.[fieldName] || "");
+
+  try {
+    const url=await uploadInstitutionProfileRichMedia(
+      file,
+      kind,
+      statusId,
+      label,
+      mediaType
+    );
+
+    await db.collection("institutions")
+      .doc(currentAccount.institutionId)
+      .update({
+        [fieldName]:url,
+        updatedAt:new Date().toISOString()
+      });
+
+    currentInstitution[fieldName]=url;
+
+    const input=document.getElementById(inputId);
+    if(input)input.value=url;
+
+    renderProfileMediaPreview();
+    updateShowcaseServiceStatus();
+
+    setProfileUploadStatus(
+      statusId,
+      label + " yüklendi ve kurum sayfasına kaydedildi.",
+      "is-success"
+    );
+
+    if(previousUrl && previousUrl !== url){
+      deleteOwnProfileStorageUrl(previousUrl);
+    }
+  } catch (error) {
+    console.error(label + " yüklenemedi:",error);
+    setProfileUploadStatus(
+      statusId,
+      profileUploadErrorText(error),
+      "is-error"
+    );
+  }
+}
+
+async function clearProfileHeroMedia(fieldName) {
+  if(!currentAccount?.institutionId || !fieldName)return;
+
+  const fieldConfig={
+    panorama360Url:{
+      inputId:"profilePanorama360Url",
+      statusId:"profilePanorama360UploadStatus",
+      emptyText:"360° görüntü kaldırıldı."
+    },
+    locationVideoUrl:{
+      inputId:"profileVideoUrl",
+      statusId:"profileVideoUploadStatus",
+      emptyText:"Video kaldırıldı."
+    },
+    virtualTourUrl:{
+      inputId:"profileVirtualTourUrl",
+      statusId:"",
+      emptyText:"360° sanal tur bağlantısı kaldırıldı."
+    }
+  };
+
+  const config=fieldConfig[fieldName];
+  if(!config)return;
+
+  const previous=safeProfileUrl(currentInstitution?.[fieldName] || "");
+
+  try{
+    await db.collection("institutions")
+      .doc(currentAccount.institutionId)
+      .update({
+        [fieldName]:"",
+        updatedAt:new Date().toISOString()
+      });
+
+    currentInstitution[fieldName]="";
+
+    const input=document.getElementById(config.inputId);
+    if(input)input.value="";
+
+    renderProfileMediaPreview();
+    updateShowcaseServiceStatus();
+
+    if(config.statusId){
+      setProfileUploadStatus(config.statusId,config.emptyText,"");
+    }else{
+      showToast(config.emptyText);
+    }
+
+    if(previous)deleteOwnProfileStorageUrl(previous);
+  }catch(error){
+    console.error("Profil medyası kaldırılamadı:",error);
+    showToast("Medya kaldırılamadı.");
+  }
+}
+
 async function deleteOwnProfileStorageUrl(url) {
   const safe = safeProfileUrl(url);
   if (!safe || !safe.includes("firebasestorage.googleapis.com")) return;
@@ -295,7 +478,7 @@ function profileUploadErrorText(error) {
   if (error?.code === "storage/canceled") {
     return "Yükleme iptal edildi.";
   }
-  return error?.message || "Görsel yüklenemedi.";
+  return error?.message || "Medya yüklenemedi.";
 }
 
 async function saveUploadedSingleImage(file, kind, fieldName, inputId, statusId, label) {
@@ -487,6 +670,38 @@ function renderProfileMediaPreview() {
         >×</button>
       </div>
     `).join("");
+  }
+
+  const panoramaUrl=safeProfileUrl(
+    document.getElementById("profilePanorama360Url")?.value
+  );
+  const videoUrl=safeProfileUrl(
+    document.getElementById("profileVideoUrl")?.value
+  );
+  const tourUrl=safeProfileUrl(
+    document.getElementById("profileVirtualTourUrl")?.value
+  );
+
+  const panoramaCurrent=document.getElementById("profilePanorama360Current");
+  const videoCurrent=document.getElementById("profileVideoCurrent");
+  const tourCurrent=document.getElementById("profileVirtualTourCurrent");
+
+  panoramaCurrent?.classList.toggle("hidden",!panoramaUrl);
+  videoCurrent?.classList.toggle("hidden",!videoUrl);
+  tourCurrent?.classList.toggle("hidden",!tourUrl);
+
+  if(panoramaUrl){
+    const status=document.getElementById("profilePanorama360UploadStatus");
+    if(status && !status.classList.contains("is-uploading")){
+      status.textContent="✓ 360° görüntü hazır · kurum sayfasının üstünde kullanılacak.";
+    }
+  }
+
+  if(videoUrl){
+    const status=document.getElementById("profileVideoUploadStatus");
+    if(status && !status.classList.contains("is-uploading")){
+      status.textContent="✓ Video hazır · üst alanda otomatik oynatılacak.";
+    }
   }
 }
 
@@ -880,6 +1095,7 @@ document.querySelectorAll("[data-quote-shortcut]").forEach(btn => {
 function getShowcaseServiceState() {
   const institution=currentInstitution || {};
   const locationVideo=String(institution.locationVideoUrl || institution.profileVideoUrl || institution.videoUrl || "").trim();
+  const panorama360=String(institution.panorama360Url || "").trim();
   const virtualTour=String(institution.virtualTourUrl || institution.tour360Url || institution.tourUrl || "").trim();
   const adStatus=String(institution.adStatus || "none");
   const adEndAt=String(institution.adEndAt || "");
@@ -889,9 +1105,10 @@ function getShowcaseServiceState() {
 
   return {
     locationVideo,
+    panorama360,
     virtualTour,
     hasLocationVideo:Boolean(locationVideo),
-    hasVirtualTour:Boolean(virtualTour),
+    hasVirtualTour:Boolean(panorama360 || virtualTour),
     adStatus,
     adActive,
     adExpired,
@@ -1653,6 +1870,29 @@ function renderInstitutionHeader() {
   document.getElementById("profileInstagram").value = institution.instagram || "";
   document.getElementById("profileLogoUrl").value = institution.logoUrl || "";
   document.getElementById("profileCoverUrl").value = institution.coverUrl || "";
+
+  const profileVideoInput=document.getElementById("profileVideoUrl");
+  const profilePanoramaInput=document.getElementById("profilePanorama360Url");
+  const profileTourInput=document.getElementById("profileVirtualTourUrl");
+
+  if(profileVideoInput){
+    profileVideoInput.value=
+      institution.locationVideoUrl ||
+      institution.profileVideoUrl ||
+      institution.videoUrl ||
+      "";
+  }
+  if(profilePanoramaInput){
+    profilePanoramaInput.value=institution.panorama360Url || "";
+  }
+  if(profileTourInput){
+    profileTourInput.value=
+      institution.virtualTourUrl ||
+      institution.tour360Url ||
+      institution.tourUrl ||
+      "";
+  }
+
   document.getElementById("profileServiceAreas").value = institution.serviceAreas || "";
   document.getElementById("profileWeekdayHours").value = institution.weekdayHours || "";
   document.getElementById("profileSaturdayHours").value = institution.saturdayHours || "";
@@ -2049,9 +2289,15 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
   const website=String(document.getElementById("profileWebsite").value||"").trim();
   const logoRaw=String(document.getElementById("profileLogoUrl").value||"").trim();
   const coverRaw=String(document.getElementById("profileCoverUrl").value||"").trim();
+  const videoRaw=String(document.getElementById("profileVideoUrl")?.value||"").trim();
+  const panoramaRaw=String(document.getElementById("profilePanorama360Url")?.value||"").trim();
+  const virtualTourRaw=String(document.getElementById("profileVirtualTourUrl")?.value||"").trim();
 
   const logoUrl=logoRaw ? safeProfileUrl(logoRaw) : "";
   const coverUrl=coverRaw ? safeProfileUrl(coverRaw) : "";
+  const locationVideoUrl=videoRaw ? safeProfileUrl(videoRaw) : "";
+  const panorama360Url=panoramaRaw ? safeProfileUrl(panoramaRaw) : "";
+  const virtualTourUrl=virtualTourRaw ? safeProfileUrl(virtualTourRaw) : "";
 
   if(logoRaw && !logoUrl){
     showProfileMessage("Logo bağlantısı geçerli bir http/https adresi olmalıdır.","error");
@@ -2061,6 +2307,21 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
   if(coverRaw && !coverUrl){
     showProfileMessage("Kapak görseli bağlantısı geçerli bir http/https adresi olmalıdır.","error");
     document.getElementById("profileCoverUrl").focus();
+    return;
+  }
+  if(videoRaw && !locationVideoUrl){
+    showProfileMessage("Video bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("profileVideoUrl")?.focus();
+    return;
+  }
+  if(panoramaRaw && !panorama360Url){
+    showProfileMessage("360° görsel bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("profilePanorama360Url")?.focus();
+    return;
+  }
+  if(virtualTourRaw && !virtualTourUrl){
+    showProfileMessage("360° sanal tur bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("profileVirtualTourUrl")?.focus();
     return;
   }
 
@@ -2073,6 +2334,9 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
     instagram:String(document.getElementById("profileInstagram").value||"").trim(),
     logoUrl,
     coverUrl,
+    locationVideoUrl,
+    panorama360Url,
+    virtualTourUrl,
     serviceAreas:String(document.getElementById("profileServiceAreas").value||"").trim(),
     weekdayHours:String(document.getElementById("profileWeekdayHours").value||"").trim(),
     saturdayHours:String(document.getElementById("profileSaturdayHours").value||"").trim(),
@@ -2126,7 +2390,14 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
   }
 });
 
-["profileLogoUrl","profileCoverUrl","profileGalleryUrls"].forEach(id => {
+[
+  "profileLogoUrl",
+  "profileCoverUrl",
+  "profileGalleryUrls",
+  "profileVideoUrl",
+  "profilePanorama360Url",
+  "profileVirtualTourUrl"
+].forEach(id => {
   document.getElementById(id)?.addEventListener("input", renderProfileMediaPreview);
 });
 
@@ -2154,6 +2425,44 @@ document.getElementById("profileCoverFile")?.addEventListener("change", async ev
     "Kapak"
   );
   event.target.value = "";
+});
+
+document.getElementById("profilePanorama360File")?.addEventListener("change", async event => {
+  const file=event.target.files?.[0];
+
+  await saveUploadedProfileMedia({
+    file,
+    kind:"panorama360",
+    fieldName:"panorama360Url",
+    inputId:"profilePanorama360Url",
+    statusId:"profilePanorama360UploadStatus",
+    label:"360° görüntü",
+    mediaType:"panorama"
+  });
+
+  event.target.value="";
+});
+
+document.getElementById("profileVideoFile")?.addEventListener("change", async event => {
+  const file=event.target.files?.[0];
+
+  await saveUploadedProfileMedia({
+    file,
+    kind:"video",
+    fieldName:"locationVideoUrl",
+    inputId:"profileVideoUrl",
+    statusId:"profileVideoUploadStatus",
+    label:"Video",
+    mediaType:"video"
+  });
+
+  event.target.value="";
+});
+
+document.querySelector(".firm-profile-showcase-media")?.addEventListener("click",event=>{
+  const button=event.target.closest("[data-clear-profile-media]");
+  if(!button)return;
+  clearProfileHeroMedia(button.dataset.clearProfileMedia);
 });
 
 document.getElementById("profileGalleryFiles")?.addEventListener("change", async event => {
