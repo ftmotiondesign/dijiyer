@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=40" />
+  <link rel="stylesheet" href="style.css?v=41" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -244,9 +244,30 @@
     <div class="mobile-discovery-head">
       <div>
         <strong>Ne arıyorsunuz?</strong>
-        <span>Kategori seçin, uygun kurumları hemen görün</span>
+        <span>Kelimeyle arayın veya aşağıdan kategori seçin</span>
       </div>
       <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
+    </div>
+
+    <div class="mobile-keyword-search" role="search" aria-label="Hizmet veya kurum ara">
+      <span class="mobile-keyword-search-icon">⌕</span>
+      <input
+        id="mobileDiscoverySearchInput"
+        type="search"
+        autocomplete="off"
+        enterkeyhint="search"
+        placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
+        aria-label="Hizmet veya kurum adı yazın"
+      >
+      <button type="button" class="mobile-keyword-clear hidden" id="mobileDiscoverySearchClear" aria-label="Aramayı temizle">×</button>
+      <button type="button" class="mobile-keyword-submit" id="mobileDiscoverySearchBtn">Ara</button>
+    </div>
+
+    <div class="mobile-keyword-hints" aria-label="Örnek aramalar">
+      <button type="button" data-mobile-search-example="ehliyet">Ehliyet</button>
+      <button type="button" data-mobile-search-example="anaokulu">Anaokulu</button>
+      <button type="button" data-mobile-search-example="oto servis">Oto Servis</button>
+      <button type="button" data-mobile-search-example="pizza">Pizza</button>
     </div>
 
     <div class="mobile-category-scroll" id="mobileCategories"></div>
@@ -1181,7 +1202,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=48"></script>
+<script src="script.js?v=49"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
