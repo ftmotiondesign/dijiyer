@@ -5361,3 +5361,11 @@ body[data-panel-current="showcase"] .panel-heading-action{
   .promotion-order-target>div:last-child{grid-column:2}
   .promotion-order-progress span b{font-size:6.8px}
 }
+
+.promotion-order-note.admin-update{
+  padding:7px 9px;
+  border-radius:8px;
+  background:#eef5ff;
+  color:#1268da;
+}
+.promotion-order-note.admin-update b{color:#344257}
