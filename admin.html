@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=30">
+  <link rel="stylesheet" href="admin.css?v=31">
   <link rel="stylesheet" href="admin-advanced.css?v=18">
 </head>
 
@@ -220,6 +220,7 @@
           </div>
 
           <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="dailyStats">Düzenle</button>
             <span class="overview-visibility-state passive" id="dailyStatsVisibilityState">Pasif · Gizli</span>
             <label class="overview-visibility-switch">
               <input type="checkbox" id="dailyStatsVisibilityToggle">
@@ -239,6 +240,7 @@
           </div>
 
           <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="bottomQuote">Düzenle</button>
             <span class="overview-visibility-state active" id="bottomQuoteVisibilityState">Aktif · Görünüyor</span>
             <label class="overview-visibility-switch">
               <input type="checkbox" id="bottomQuoteVisibilityToggle" checked>
@@ -258,6 +260,7 @@
           </div>
 
           <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="earnings">Düzenle</button>
             <span class="overview-visibility-state passive" id="earningsVisibilityState">Pasif · Gizli</span>
             <label class="overview-visibility-switch">
               <input type="checkbox" id="earningsVisibilityToggle">
@@ -277,6 +280,7 @@
           </div>
 
           <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="homeFooter">Düzenle</button>
             <span class="overview-visibility-state passive" id="homeFooterVisibilityState">Pasif · Gizli</span>
             <label class="overview-visibility-switch">
               <input type="checkbox" id="homeFooterVisibilityToggle">
@@ -1687,6 +1691,27 @@
     </div>
   </div>
 
+
+  <div class="admin-modal hidden" id="homeSectionEditModal">
+    <div class="admin-modal-card home-section-editor-card">
+      <button type="button" class="modal-close" id="closeHomeSectionEditModal" aria-label="Kapat">×</button>
+      <span class="home-section-editor-eyebrow">ANA SAYFA BÖLÜMÜ</span>
+      <h2 id="homeSectionEditTitle">Bölümü Düzenle</h2>
+      <p class="home-section-editor-help" id="homeSectionEditHelp">Başlık, açıklama ve bağlantıları düzenleyin.</p>
+
+      <form id="homeSectionEditForm">
+        <input type="hidden" id="homeSectionEditKey">
+        <div class="home-section-editor-fields" id="homeSectionEditFields"></div>
+
+        <div class="home-section-editor-actions">
+          <button type="button" class="home-section-editor-reset" id="homeSectionEditReset">Varsayılanları Getir</button>
+          <button type="submit" class="save-btn" id="homeSectionEditSave">Değişiklikleri Kaydet</button>
+        </div>
+        <p class="home-section-editor-message" id="homeSectionEditMessage" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
   <!-- FIREBASE -->
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1694,7 +1719,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="admin.js?v=46"></script>
+<script src="admin.js?v=47"></script>
   <script src="admin-advanced.js?v=27"></script>
 
 </body>
