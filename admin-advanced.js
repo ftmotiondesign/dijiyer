@@ -425,28 +425,219 @@
     return promotionAdminRecords;
   }
 
+  const PROMOTION_ADMIN_CATALOG = {
+    location:{
+      title:"Konum Tanıtım Videosu",
+      lead:"İşletmenin konumunu harita, rota ve kurum bilgileriyle anlatan profesyonel tanıtım videosu.",
+      benefit:"Müşterinin işletmeye nasıl ulaşacağını hızlıca anlamasını sağlar ve kurum profilini daha açıklayıcı hale getirir.",
+      includes:["Harita ve rota anlatımı","Kurum adı, adres ve ulaşım bilgileri","Dikey Reels uyumlu video","Dijiyer kurum sayfasında kullanım"],
+      delivery:"2–4 iş günü",revision:"1 revizyon"
+    },
+    tour:{
+      title:"360° Sanal Tur",
+      lead:"Müşterinin işletmeye gelmeden önce mekanı çevrimiçi gezmesini sağlayan interaktif tur.",
+      benefit:"Sınıf, oda, salon veya işletme alanlarını önceden göstererek güven ve tanıtım gücü oluşturur.",
+      includes:["Gezilebilir 360° tur","QR / NFC ile açılabilir bağlantı","Kurum sayfasına ekleme desteği","Web sitesinde kullanılabilir bağlantı"],
+      delivery:"3–7 iş günü",revision:"1 düzenleme turu"
+    },
+    reels:{
+      title:"Reels Tanıtım Videosu",
+      lead:"Kurum hizmetini kısa ve dikkat çekici dikey video formatında anlatır.",
+      benefit:"Sosyal medya ve kurum profilinde hizmeti daha hızlı ve anlaşılır sunar.",
+      includes:["1080×1920 video","Kurgu ve hareketli yazılar","Müzik veya seslendirme seçeneği","Kuruma özel çağrı mesajı"],
+      delivery:"2–4 iş günü",revision:"1 revizyon"
+    },
+    bannerDesign:{
+      title:"Reklam Banner Tasarımı",
+      lead:"Dijiyer ve sosyal medya reklam alanları için markaya uygun banner tasarımı.",
+      benefit:"Kampanya ve hizmetlerin daha düzenli, profesyonel ve dikkat çekici görünmesini sağlar.",
+      includes:["Markaya uygun tasarım","Dijiyer reklam ölçüsüne uygun çalışma","Kampanya başlığı ve çağrı mesajı"],
+      delivery:"1–3 iş günü",revision:"1 revizyon"
+    },
+    homepage:{title:"Ana Sayfa Vitrini",lead:"Kurumun Dijiyer ana sayfasındaki sponsorlu alanlarda gösterilmesi.",benefit:"Profil ziyaretini ve marka görünürlüğünü artırmayı hedefler.",includes:["Sponsorlu ana sayfa alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],delivery:"Planlanan yayın tarihinde",revision:"Yayın öncesi içerik kontrolü"},
+    regionalAd:{title:"Şehir / İlçe Vitrini",lead:"Kurumun belirli şehir veya ilçede sponsorlu olarak öne çıkarılması.",benefit:"Reklamı hizmet verilen bölgedeki daha ilgili kullanıcılara yönlendirir.",includes:["Şehir/ilçe sponsorlu alanı","Kurum sayfasına yönlendirme","Yayın süresi takibi"],delivery:"Planlanan yayın tarihinde",revision:"Yayın öncesi içerik kontrolü"},
+    categoryAd:{title:"Kategori Vitrini",lead:"Kurumun kendi hizmet kategorisini inceleyen kullanıcılara sponsorlu gösterilmesi.",benefit:"Genel trafik yerine hizmetle doğrudan ilgilenen kullanıcıya görünürlük sağlar.",includes:["Kategori sponsorlu alanı","Kurum sayfasına yönlendirme","Sponsorlu etiketi"],delivery:"Planlanan yayın tarihinde",revision:"Yayın öncesi içerik kontrolü"},
+    bannerAd:{title:"Dijiyer Banner Reklamı",lead:"Kampanya görselinin Dijiyer banner alanlarında yayınlanması.",benefit:"Dönemsel kampanya, kayıt ve indirimlere ek görünürlük sağlar.",includes:["Dijiyer banner alanı","Kurum profiline yönlendirme","Yayın süresi takibi"],delivery:"Planlanan yayın tarihinde",revision:"Yayın öncesi 1 kontrol"},
+    campaign:{title:"Kampanya Duyurusu",lead:"Kayıt, indirim veya yeni hizmet duyurusunun Dijiyer'de yayınlanması.",benefit:"Kurum profilini ziyaret eden müşteriye güncel kampanyayı görünür biçimde aktarır.",includes:["Kampanya duyuru kartı","Kurum sayfasına bağlantı","Yayın dönemi planlama"],delivery:"İçerik onayı sonrası",revision:"1 içerik düzenlemesi"},
+    videoAd:{title:"Video Vitrin Reklamı",lead:"Kısa tanıtım videosunun Dijiyer sponsorlu video alanında yayınlanması.",benefit:"Hareketli içerikle daha fazla dikkat çekerek kurumu hızlı anlatır.",includes:["Sponsorlu video alanı","Kurum profiline yönlendirme","Yayın süresi takibi"],delivery:"Planlanan yayın tarihinde",revision:"Hazır video için teknik kontrol"},
+    packageStarter:{title:"Başlangıç Görünürlüğü",lead:"Dijiyer reklamını ilk kez deneyecek kurumlar için başlangıç paketi.",benefit:"Banner tasarımı ile kategori görünürlüğünü tek pakette birleştirir.",includes:["Reklam banner tasarımı","Kategori vitrini"],delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon"},
+    packageRegional:{title:"Bölgesel Görünürlük",lead:"Yerel müşteri arayan kurumlar için içerik ve bölgesel reklam paketi.",benefit:"Şehir/ilçe hedeflemesiyle reklamı yerel kullanıcıya daha görünür hale getirir.",includes:["Banner tasarımı","Şehir / ilçe vitrini","Kampanya duyurusu"],delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon"},
+    combo:{title:"Dijiyer Mekan Tanıtım",lead:"Konum videosu ve 360° sanal turu tek kurum profilinde birleştiren mekan tanıtım paketi.",benefit:"Müşteriye hem kuruma nasıl ulaşacağını hem de içeride ne göreceğini gösterir.",includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],delivery:"5–10 iş günü",revision:"1 düzenleme turu"},
+    packagePlus:{title:"Görünürlük Plus",lead:"İçerik üretimi ile ana sayfa sponsorlu görünürlüğünü birleştiren paket.",benefit:"Hazırlanan tanıtım içeriğini sponsorlu yayınla destekler.",includes:["Konum Videosu","Banner tasarımı","Ana Sayfa Vitrini"],delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon"},
+    packagePremium:{title:"Premium Tanıtım",lead:"İçerik üretimi ve birden fazla sponsorlu görünürlük alanını bir araya getirir.",benefit:"Kurum profilini güçlü içerikle destekler ve farklı Dijiyer alanlarında görünürlük sağlar.",includes:["Konum Videosu + 360° Tur","Ana Sayfa Vitrini","Kategori Vitrini","Şehir / İlçe Vitrini"],delivery:"Kapsama göre planlanır",revision:"İçeriklerde 1 revizyon"},
+    consultation:{title:"Tanıtım Planlama Görüşmesi",lead:"Kurumun ihtiyacına uygun tanıtım hizmetlerini belirlemek için ön değerlendirme.",benefit:"Gereksiz hizmet almadan eksik görünürlük alanlarına göre plan oluşturur.",includes:["Profil değerlendirmesi","Hizmet önerisi","Kısa tanıtım planı"],delivery:"Planlanan görüşme zamanı",revision:"-"}
+  };
+
+  function promotionCatalogFor(order){
+    return PROMOTION_ADMIN_CATALOG[order.serviceKey] || {
+      title:order.serviceName || "Tanıtım Hizmeti",
+      lead:"Bu sipariş için hizmet kapsamı yönetim tarafından netleştirilebilir.",
+      benefit:"Kurumun tanıtım ve görünürlük ihtiyacına göre hazırlanır.",
+      includes:[],
+      delivery:"Planlamada netleşir",
+      revision:"Planlamada netleşir"
+    };
+  }
+
+  function promotionBreakdownFor(order){
+    const saved=order.priceBreakdown || {};
+    const existingItems=Array.isArray(saved.extraItems) ? saved.extraItems : [];
+    const selected=Array.isArray(order.extras) ? order.extras : [];
+    const merged=[...existingItems];
+
+    selected.forEach(name=>{
+      if(!merged.some(item=>normalize(item.name)===normalize(name))){
+        merged.push({name,price:0,source:"selected"});
+      }
+    });
+
+    const basePrice=Number(saved.basePrice ?? order.basePrice ?? order.price ?? 0) || 0;
+    const discount=Number(saved.discount ?? order.discount ?? 0) || 0;
+    const extrasTotal=merged.reduce((sum,item)=>sum+(Number(item.price)||0),0);
+    const subtotal=basePrice+extrasTotal;
+    const total=Math.max(0,subtotal-discount);
+
+    return {basePrice,discount,extraItems:merged,extrasTotal,subtotal,total};
+  }
+
+  function promotionExtraRowsHtml(orderId,items){
+    return items.map((item,index)=>`
+      <div class="promotion-price-extra-row" data-promotion-extra-row="${escapeHtml(orderId)}">
+        <label>
+          <span>Ek Hizmet</span>
+          <input type="text" data-extra-name value="${escapeHtml(item.name||"")}" placeholder="Ek hizmet adı">
+        </label>
+        <label class="extra-price-input">
+          <span>Fiyat</span>
+          <input type="number" min="0" step="1" data-extra-price value="${Number(item.price||0)}">
+        </label>
+        <button type="button" data-remove-extra title="Satırı kaldır">×</button>
+      </div>
+    `).join("");
+  }
+
+  function recalcPromotionPricing(orderId){
+    const card=document.querySelector('[data-promotion-id="' + CSS.escape(orderId) + '"]');
+    if(!card)return;
+
+    const base=Math.max(0,Number(card.querySelector("[data-promotion-base-price]")?.value||0));
+    const discount=Math.max(0,Number(card.querySelector("[data-promotion-discount]")?.value||0));
+    const extraTotal=[...card.querySelectorAll("[data-extra-price]")]
+      .reduce((sum,input)=>sum+Math.max(0,Number(input.value||0)),0);
+    const subtotal=base+extraTotal;
+    const total=Math.max(0,subtotal-discount);
+
+    const set=(key,value)=>{
+      const node=card.querySelector('[data-price-preview="'+key+'"]');
+      if(node)node.textContent=money(value);
+    };
+
+    set("base",base);
+    set("extras",extraTotal);
+    set("subtotal",subtotal);
+    set("discount",discount);
+    set("total",total);
+  }
+
+  function bindPromotionPricingEditor(root){
+    root.querySelectorAll("[data-promotion-id]").forEach(card=>{
+      const orderId=card.dataset.promotionId;
+
+      card.querySelectorAll("[data-promotion-base-price],[data-promotion-discount],[data-extra-price]")
+        .forEach(input=>input.addEventListener("input",()=>recalcPromotionPricing(orderId)));
+
+      card.querySelectorAll("[data-remove-extra]").forEach(button=>{
+        button.addEventListener("click",()=>{
+          button.closest(".promotion-price-extra-row")?.remove();
+          recalcPromotionPricing(orderId);
+        });
+      });
+
+      card.querySelector("[data-add-extra]")?.addEventListener("click",()=>{
+        const list=card.querySelector("[data-promotion-extra-list]");
+        if(!list)return;
+
+        const row=document.createElement("div");
+        row.className="promotion-price-extra-row";
+        row.dataset.promotionExtraRow=orderId;
+        row.innerHTML=`
+          <label><span>Ek Hizmet</span><input type="text" data-extra-name placeholder="Yeni ek hizmet"></label>
+          <label class="extra-price-input"><span>Fiyat</span><input type="number" min="0" step="1" data-extra-price value="0"></label>
+          <button type="button" data-remove-extra title="Satırı kaldır">×</button>
+        `;
+        list.appendChild(row);
+        row.querySelector("[data-extra-price]")?.addEventListener("input",()=>recalcPromotionPricing(orderId));
+        row.querySelector("[data-remove-extra]")?.addEventListener("click",()=>{
+          row.remove();
+          recalcPromotionPricing(orderId);
+        });
+        row.querySelector("[data-extra-name]")?.focus();
+        recalcPromotionPricing(orderId);
+      });
+
+      recalcPromotionPricing(orderId);
+    });
+  }
+
   async function savePromotionOrderAdmin(orderId) {
     const order = promotionAdminRecords.find(item => item.id === orderId);
     if (!order) return;
 
-    const status = document.querySelector('[data-promotion-status="' + CSS.escape(orderId) + '"]')?.value || order.status || "new";
-    const paymentStatus = document.querySelector('[data-promotion-payment="' + CSS.escape(orderId) + '"]')?.value || order.paymentStatus || "pending";
-    const adminNote = document.querySelector('[data-promotion-admin-note="' + CSS.escape(orderId) + '"]')?.value.trim() || "";
-    const priceInput = document.querySelector('[data-promotion-price="' + CSS.escape(orderId) + '"]');
-    const price = Math.max(0, Number(priceInput?.value || order.price || 0));
+    const card=document.querySelector('[data-promotion-id="' + CSS.escape(orderId) + '"]');
+    if(!card)return;
+
+    const status = card.querySelector("[data-promotion-status]")?.value || order.status || "new";
+    const paymentStatus = card.querySelector("[data-promotion-payment]")?.value || order.paymentStatus || "pending";
+    const scopeDescription = card.querySelector("[data-promotion-scope]")?.value.trim() || "";
+    const publicNote = card.querySelector("[data-promotion-public-note]")?.value.trim() || "";
+    const adminInternalNote = card.querySelector("[data-promotion-internal-note]")?.value.trim() || "";
+
+    const basePrice=Math.max(0,Number(card.querySelector("[data-promotion-base-price]")?.value||0));
+    const discount=Math.max(0,Number(card.querySelector("[data-promotion-discount]")?.value||0));
+
+    const extraItems=[...card.querySelectorAll(".promotion-price-extra-row")].map(row=>({
+      name:String(row.querySelector("[data-extra-name]")?.value||"").trim(),
+      price:Math.max(0,Number(row.querySelector("[data-extra-price]")?.value||0))
+    })).filter(item=>item.name);
+
+    const extrasTotal=extraItems.reduce((sum,item)=>sum+item.price,0);
+    const subtotal=basePrice+extrasTotal;
+    const total=Math.max(0,subtotal-discount);
     const now = new Date().toISOString();
+
+    const history=Array.isArray(order.statusHistory) ? [...order.statusHistory] : [];
+    if((order.status||"new")!==status){
+      history.push({status,date:now});
+    }
 
     try {
       await db.collection("promotionOrders").doc(orderId).update({
         status,
         paymentStatus,
-        adminNote,
-        price,
+        scopeDescription,
+        publicNote,
+        adminNote:publicNote,
+        adminInternalNote,
+        basePrice,
+        discount,
+        price:total,
+        priceLabel: total > 0 ? money(total) : (order.priceLabel || "Netleştirilecek"),
+        priceBreakdown:{
+          basePrice,
+          extraItems,
+          extrasTotal,
+          subtotal,
+          discount,
+          total
+        },
+        statusHistory:history,
         updatedAt:now
       });
+
       addAudit(
         "Tanıtım siparişi güncellendi",
-        (order.orderCode || orderId) + " · " + (order.institutionName || "Kurum") + " · " + promotionOrderStatusLabel(status)
+        (order.orderCode || orderId) + " · " + (order.institutionName || "Kurum") +
+        " · " + promotionOrderStatusLabel(status) + " · " + money(total)
       );
       await renderPromotionOrdersAdmin(true);
     } catch (error) {
@@ -484,9 +675,18 @@
     });
 
     const openCount = promotionAdminRecords.filter(x => (x.status || "new") !== "completed").length;
+    const pendingRevenue=promotionAdminRecords
+      .filter(x=>x.paymentStatus!=="paid")
+      .reduce((sum,x)=>sum+Number(x.priceBreakdown?.total ?? x.price ?? 0),0);
+    const paidRevenue=promotionAdminRecords
+      .filter(x=>x.paymentStatus==="paid")
+      .reduce((sum,x)=>sum+Number(x.priceBreakdown?.total ?? x.price ?? 0),0);
+
     if ($("promotionOrdersTabCount")) $("promotionOrdersTabCount").textContent = openCount;
     if ($("quickPromotionOrderCount")) $("quickPromotionOrderCount").textContent = openCount;
-    if ($("promotionAdminCount")) $("promotionAdminCount").textContent = promotionAdminRecords.length + " sipariş · " + openCount + " açık";
+    if ($("promotionAdminCount")) $("promotionAdminCount").textContent =
+      promotionAdminRecords.length + " sipariş · " + openCount + " açık · " +
+      money(pendingRevenue) + " ödeme bekliyor · " + money(paidRevenue) + " tahsil edildi";
 
     const q = normalize($("promotionAdminSearch")?.value || "");
     const statusFilter = $("promotionAdminStatus")?.value || "";
@@ -496,7 +696,10 @@
     let rows = promotionAdminRecords.filter(item => {
       const haystack = normalize([
         item.orderCode,item.institutionName,item.serviceName,item.contactName,
-        item.phone,item.note,item.adminNote,item.serviceId
+        item.phone,item.note,item.adminNote,item.publicNote,item.adminInternalNote,
+        item.scopeDescription,item.serviceId,
+        ...(Array.isArray(item.extras)?item.extras:[]),
+        ...(Array.isArray(item.priceBreakdown?.extraItems)?item.priceBreakdown.extraItems.map(x=>x.name):[])
       ].join(" "));
       return (!q || haystack.includes(q))
         && (!statusFilter || (item.status || "new") === statusFilter)
@@ -522,16 +725,21 @@
 
     root.innerHTML = rows.length ? rows.map(order => {
       const orderNo = escapeHtml(order.orderCode || order.id.slice(0,10).toUpperCase());
-      const priceText = Number(order.price || 0) > 0 ? money(order.price) : (order.priceLabel || "Netleştirilecek");
-      const extras = Array.isArray(order.extras) ? order.extras : [];
+      const catalog=promotionCatalogFor(order);
+      const breakdown=promotionBreakdownFor(order);
+      const priceText = breakdown.total > 0 ? money(breakdown.total) : (order.priceLabel || "Netleştirilecek");
+      const selectedExtras = Array.isArray(order.extras) ? order.extras : [];
+      const scope=order.scopeDescription || catalog.lead;
+      const publicNote=order.publicNote || order.adminNote || "";
+      const internalNote=order.adminInternalNote || "";
 
       return `
-        <details class="promotion-admin-row" data-promotion-id="${escapeHtml(order.id)}">
+        <details class="promotion-admin-row promotion-admin-order-v2" data-promotion-id="${escapeHtml(order.id)}">
           <summary>
             <div class="promotion-admin-summary-main">
               <span class="promotion-admin-service-icon">🛍️</span>
               <div>
-                <strong>${escapeHtml(order.serviceName || "Tanıtım Hizmeti")}</strong>
+                <strong>${escapeHtml(order.serviceName || catalog.title || "Tanıtım Hizmeti")}</strong>
                 <small>${escapeHtml(order.institutionName || "Kurum")} · ${orderNo} · ${formatDateLocal(order.createdAt)}</small>
               </div>
             </div>
@@ -542,21 +750,104 @@
           </summary>
 
           <div class="promotion-admin-detail">
-            <div class="promotion-admin-info-grid">
-              <div><span>Kurum</span><strong>${escapeHtml(order.institutionName || "-")}</strong></div>
-              <div><span>Sipariş No</span><strong>${orderNo}</strong></div>
-              <div><span>Yetkili</span><strong>${escapeHtml(order.contactName || "-")}</strong></div>
-              <div><span>Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
-              <div><span>Hizmet</span><strong>${escapeHtml(order.serviceName || "-")}</strong></div>
-              <div><span>Ödeme</span><strong>${order.paymentStatus === "paid" ? "Ödendi" : "Bekliyor"}</strong></div>
+            <div class="promotion-order-admin-top">
+              <div class="promotion-admin-info-grid">
+                <div><span>Kurum</span><strong>${escapeHtml(order.institutionName || "-")}</strong></div>
+                <div><span>Sipariş No</span><strong>${orderNo}</strong></div>
+                <div><span>Yetkili</span><strong>${escapeHtml(order.contactName || "-")}</strong></div>
+                <div><span>Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
+                <div><span>Hizmet</span><strong>${escapeHtml(order.serviceName || catalog.title || "-")}</strong></div>
+                <div><span>Ödeme</span><strong>${order.paymentStatus === "paid" ? "Ödendi" : "Bekliyor"}</strong></div>
+              </div>
+
+              <section class="promotion-package-overview">
+                <div class="promotion-package-title">
+                  <div>
+                    <span>PAKET / HİZMET İÇERİĞİ</span>
+                    <strong>${escapeHtml(catalog.title || order.serviceName || "Tanıtım Hizmeti")}</strong>
+                  </div>
+                  <div class="promotion-package-meta">
+                    <span>⏱ ${escapeHtml(catalog.delivery)}</span>
+                    <span>↻ ${escapeHtml(catalog.revision)}</span>
+                  </div>
+                </div>
+                <p>${escapeHtml(catalog.lead)}</p>
+                <div class="promotion-benefit-box"><b>Bu hizmet ne kazandırır?</b><span>${escapeHtml(catalog.benefit)}</span></div>
+                ${catalog.includes.length ? `
+                  <div class="promotion-package-includes">
+                    ${catalog.includes.map(item=>'<span>✓ '+escapeHtml(item)+'</span>').join("")}
+                  </div>
+                ` : ""}
+              </section>
+
+              <div class="promotion-order-customer-input">
+                <div>
+                  <span>KURUMUN SİPARİŞ NOTU</span>
+                  <p>${order.note ? escapeHtml(order.note) : "Kurum özel bir sipariş notu eklememiş."}</p>
+                </div>
+                <div>
+                  <span>KURUMUN SEÇTİĞİ EK HİZMETLER</span>
+                  <p>${selectedExtras.length ? selectedExtras.map(escapeHtml).join(" · ") : "Sipariş sırasında ek hizmet seçilmemiş."}</p>
+                </div>
+              </div>
             </div>
 
-            ${extras.length ? '<div class="promotion-admin-note"><span>Ek Hizmetler</span><strong>'+extras.map(escapeHtml).join(" · ")+'</strong></div>' : ""}
-            ${order.note ? '<div class="promotion-admin-note"><span>Kurum Notu</span><strong>'+escapeHtml(order.note)+'</strong></div>' : ""}
+            <section class="promotion-scope-editor">
+              <div class="promotion-editor-heading">
+                <div><span>SİPARİŞ KAPSAMI</span><strong>Kurumun göreceği paket açıklaması</strong></div>
+                <small>Siparişe özel kapsamı burada netleştirin.</small>
+              </div>
+              <textarea rows="3" data-promotion-scope placeholder="Sipariş kapsamını yazın...">${escapeHtml(scope)}</textarea>
+            </section>
 
-            <div class="promotion-admin-controls">
+            <section class="promotion-pricing-editor">
+              <div class="promotion-editor-heading">
+                <div><span>FİYATLANDIRMA</span><strong>Ana hizmet + ek hizmetler</strong></div>
+                <small>Toplam otomatik hesaplanır.</small>
+              </div>
+
+              <div class="promotion-base-price-row">
+                <label>
+                  <span>Ana hizmet bedeli</span>
+                  <input type="number" min="0" step="1" data-promotion-base-price value="${breakdown.basePrice}">
+                </label>
+                <label>
+                  <span>İndirim</span>
+                  <input type="number" min="0" step="1" data-promotion-discount value="${breakdown.discount}">
+                </label>
+              </div>
+
+              <div class="promotion-extra-price-list" data-promotion-extra-list>
+                ${promotionExtraRowsHtml(order.id,breakdown.extraItems)}
+              </div>
+
+              <button type="button" class="promotion-add-extra-btn" data-add-extra>+ Ek Hizmet Ekle</button>
+
+              <div class="promotion-price-summary">
+                <div><span>Ana Hizmet</span><b data-price-preview="base">0 TL</b></div>
+                <div><span>Ek Hizmetler</span><b data-price-preview="extras">0 TL</b></div>
+                <div><span>Ara Toplam</span><b data-price-preview="subtotal">0 TL</b></div>
+                <div class="discount"><span>İndirim</span><b data-price-preview="discount">0 TL</b></div>
+                <div class="total"><span>TOPLAM</span><strong data-price-preview="total">0 TL</strong></div>
+              </div>
+            </section>
+
+            <div class="promotion-admin-message-grid">
+              <label>
+                <span>Kurumla Paylaşılacak Açıklama</span>
+                <textarea rows="3" data-promotion-public-note placeholder="Örn: Çekim için sizinle 2 iş günü içinde iletişime geçeceğiz.">${escapeHtml(publicNote)}</textarea>
+                <small>Kurum panelinde görünür.</small>
+              </label>
+              <label class="internal-note">
+                <span>Yönetim İç Notu</span>
+                <textarea rows="3" data-promotion-internal-note placeholder="Sadece yönetim ekibinin göreceği not...">${escapeHtml(internalNote)}</textarea>
+                <small>Kurum bu notu görmez.</small>
+              </label>
+            </div>
+
+            <div class="promotion-admin-controls promotion-admin-controls-v2">
               <label>Durum
-                <select data-promotion-status="${escapeHtml(order.id)}">
+                <select data-promotion-status>
                   <option value="new" ${(order.status||"new")==="new"?"selected":""}>Yeni Sipariş</option>
                   <option value="contacting" ${order.status==="contacting"?"selected":""}>Görüşülüyor</option>
                   <option value="preparing" ${order.status==="preparing"?"selected":""}>Hazırlanıyor</option>
@@ -566,21 +857,13 @@
               </label>
 
               <label>Ödeme
-                <select data-promotion-payment="${escapeHtml(order.id)}">
+                <select data-promotion-payment>
                   <option value="pending" ${(order.paymentStatus||"pending")==="pending"?"selected":""}>Ödeme Bekliyor</option>
                   <option value="paid" ${order.paymentStatus==="paid"?"selected":""}>Ödendi</option>
                 </select>
               </label>
 
-              <label>Net Fiyat
-                <input type="number" min="0" step="1" data-promotion-price="${escapeHtml(order.id)}" value="${Number(order.price||0)}">
-              </label>
-
-              <label class="promotion-admin-note-input">Yönetim Notu
-                <textarea rows="2" data-promotion-admin-note="${escapeHtml(order.id)}" placeholder="Kurumun görebileceği kısa süreç notu...">${escapeHtml(order.adminNote||"")}</textarea>
-              </label>
-
-              <button type="button" data-promotion-save="${escapeHtml(order.id)}">Değişiklikleri Kaydet</button>
+              <button type="button" data-promotion-save="${escapeHtml(order.id)}">Siparişi Güncelle</button>
             </div>
           </div>
         </details>
@@ -599,6 +882,8 @@
         });
       });
     });
+
+    bindPromotionPricingEditor(root);
   }
 
   ["promotionAdminSearch","promotionAdminStatus","promotionAdminPayment","promotionAdminSort"].forEach(id => {
