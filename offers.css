@@ -166,3 +166,38 @@
     max-width:62%;
   }
 }
+
+
+/* Mobilde Teklif Takip reklam CTA'larının üstünü kapatmasın */
+.tracking-floating-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.tracking-floating-label{
+  display:inline-block;
+}
+@media(max-width:640px){
+  .tracking-floating-btn{
+    right:12px;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 12px);
+    min-width:68px;
+    min-height:40px;
+    padding:0 11px;
+    gap:5px;
+    font-size:10px;
+    box-shadow:0 9px 24px rgba(16,36,84,.22);
+    transition:opacity .18s ease,transform .18s ease,background .18s ease;
+  }
+  .tracking-floating-icon{
+    font-size:12px;
+  }
+  .tracking-floating-label{
+    font-size:10px;
+  }
+  .tracking-floating-btn.tracking-ad-safe{
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(10px);
+  }
+}
