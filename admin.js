@@ -13,6 +13,7 @@ const adminApp =
 
 const auth = adminApp.auth();
 const db = adminApp.firestore();
+const storage = adminApp.storage();
 
 const loginSection = document.getElementById("loginSection");
 const dashboardSection = document.getElementById("dashboardSection");
