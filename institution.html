@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=27">
+  <link rel="stylesheet" href="institution.css?v=28">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -170,6 +170,14 @@
         <div class="side-nav-group">
           <span class="side-nav-group-title">KURUMUM</span>
 
+          <button type="button" class="side-nav-item showcase-nav-item" data-panel-tab="showcase">
+            <span class="side-nav-icon">◎</span>
+            <span class="side-nav-copy">
+              <strong>Tanıtım Hizmetleri</strong>
+              <small>Konum videosu & 360° tur</small>
+            </span>
+          </button>
+
           <button type="button" class="side-nav-item" data-panel-tab="stats">
             <span class="side-nav-icon">▥</span>
             <span class="side-nav-copy">
@@ -234,6 +242,7 @@
         <span class="tab-count message-tab-count" id="messageTabCount" title="Okunmamış müşteri mesajları">💬 0</span>
       </button>
       <button class="panel-tab" data-panel-tab="verify">✓ Teklif Doğrula</button>
+      <button class="panel-tab" data-panel-tab="showcase">◎ Tanıtım Hizmetleri</button>
       <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
       <button class="panel-tab" data-panel-tab="support">
         🛟 Destek <span class="tab-count support-tab-count" id="supportTabCount">0</span>
@@ -293,6 +302,19 @@
             <span class="firm-home-action-value profile" id="firmHomeProfilePercent">%0</span>
           </button>
         </div>
+      </section>
+
+      <section class="firm-showcase-strip">
+        <div class="firm-showcase-strip-copy">
+          <span class="eyebrow">PROFİLİNİZİ GÜÇLENDİRİN</span>
+          <strong>Müşteriler sizi sadece bulmasın, mekanınızı da görsün.</strong>
+          <small>Konum Videosu ve 360° Sanal Tur, kurum sayfanızda müşteriye doğrudan gösterilir.</small>
+        </div>
+        <div class="firm-showcase-mini-status">
+          <span id="summaryLocationStatus">▶ Konum Videosu · Kontrol ediliyor</span>
+          <span id="summaryTourStatus">◉ 360° Tur · Kontrol ediliyor</span>
+        </div>
+        <button type="button" id="openShowcaseServicesBtn">Tanıtım Hizmetlerini Gör</button>
       </section>
 
       <section class="firm-opportunity-card">
@@ -495,6 +517,43 @@
           <div class="empty-state">Bir teklif kodu girerek doğrulama yapabilirsiniz.</div>
         </div>
       </article>
+    </section>
+
+    <section class="panel-view" data-panel-view="showcase">
+      <section class="showcase-sales-hero">
+        <div class="showcase-sales-copy">
+          <span class="eyebrow">DİJİYER TANITIM HİZMETLERİ</span>
+          <h2>Kurum sayfanızı müşterinin gezebileceği bir vitrine dönüştürün.</h2>
+          <p>İlk odak noktamız iki hizmet: <strong>Konum Videosu</strong> ile müşteriye nerede olduğunuzu hızlıca gösterin; <strong>360° Sanal Tur</strong> ile mekana gelmeden önce içeriyi gezdirin.</p>
+        </div>
+        <div class="showcase-live-status">
+          <div><span>Konum Videosu</span><strong id="showcaseLocationStatus">Kontrol ediliyor...</strong></div>
+          <div><span>360° Sanal Tur</span><strong id="showcaseTourStatus">Kontrol ediliyor...</strong></div>
+          <button type="button" id="showcasePreviewBtn">👁 Müşteri Sayfamı Gör</button>
+        </div>
+      </section>
+      <div class="showcase-product-grid">
+        <article class="showcase-product-card location-video">
+          <div class="showcase-product-icon">▶</div>
+          <div class="showcase-product-body"><span class="showcase-product-kicker">KONUM VİDEOSU</span><h3>Müşteri sizi aramadan önce yolu görsün.</h3><p>İşletmenizin konumunu ve ulaşımını kısa, anlaşılır bir video ile anlatın.</p><ul><li>Harita / rota üzerinden konum anlatımı</li><li>Kurum adı, adres ve ulaşım vurgusu</li><li>Dijiyer kurum sayfasında özel video alanı</li><li>Sosyal medya ve WhatsApp’ta tekrar kullanılabilir içerik</li></ul></div>
+          <button type="button" data-showcase-request="location">Konum Videosu İçin Bilgi Al</button>
+        </article>
+        <article class="showcase-product-card virtual-tour">
+          <div class="showcase-product-icon">360°</div>
+          <div class="showcase-product-body"><span class="showcase-product-kicker">360° SANAL TUR</span><h3>Müşteri mekana gelmeden önce içeriyi gezsin.</h3><p>Kurumunuzu çevrimiçi olarak gezilebilir hale getirerek mekan güvenini güçlendirin.</p><ul><li>Telefon ve bilgisayardan 360° gezinti</li><li>Sınıf, oda, salon veya işletme bölümlerini gösterme</li><li>Dijiyer kurum sayfasında “360° Turu Aç” alanı</li><li>Web sitesi, QR ve NFC yönlendirmelerinde kullanılabilir</li></ul></div>
+          <button type="button" data-showcase-request="tour">360° Sanal Tur İçin Bilgi Al</button>
+        </article>
+      </div>
+      <section class="showcase-combo-card">
+        <div><span class="eyebrow">ÖNERİLEN BAŞLANGIÇ PAKETİ</span><h3>Dijiyer Mekan Tanıtım Paketi</h3><p>Konum Videosu + 360° Sanal Tur birlikte kullanıldığında kurum sayfanız müşteriye “nasıl giderim?” ve “içerisi nasıl?” sorularının ikisini de yanıtlar.</p></div>
+        <div class="showcase-combo-features"><span>✓ Konum Videosu</span><span>✓ 360° Sanal Tur</span><span>✓ Kurum profilinde özel gösterim</span><span>✓ Paylaşılabilir kurum sayfası</span></div>
+        <button type="button" data-showcase-request="combo">Paket İçin Bilgi Al</button>
+      </section>
+      <section class="showcase-how-card">
+        <div class="showcase-how-step"><b>1</b><span><strong>Talep oluşturun</strong><small>İlgilendiğiniz hizmeti bize iletin.</small></span></div>
+        <div class="showcase-how-step"><b>2</b><span><strong>Çekim / içerik planlansın</strong><small>Konum ve mekanınıza göre çalışma belirlenir.</small></span></div>
+        <div class="showcase-how-step"><b>3</b><span><strong>Kurum sayfanızda yayınlansın</strong><small>Hazırlanan içerik profilinize eklenir.</small></span></div>
+      </section>
     </section>
 
     <section class="panel-view" data-panel-view="profile">
@@ -779,6 +838,7 @@
                 <option value="Fiyat Kilidi">Fiyat Kilidi / Doğrulama</option>
                 <option value="Hesap">Hesap / Giriş</option>
                 <option value="Kurum Bilgileri">Kurum Bilgileri</option>
+                <option value="Tanıtım Hizmeti">Tanıtım Hizmeti · Konum Videosu / 360° Tur</option>
                 <option value="Teknik Sorun">Teknik Sorun</option>
                 <option value="Diğer">Diğer</option>
               </select>
@@ -983,6 +1043,7 @@
 
       <div class="mobile-menu-grid">
         <button type="button" data-panel-tab="profile">✎ <span>Kurum Bilgileri</span></button>
+        <button type="button" data-panel-tab="showcase">◎ <span>Tanıtım Hizmetleri</span></button>
         <button type="button" data-panel-tab="stats">▥ <span>İstatistikler</span></button>
         <button type="button" data-panel-tab="announcements">📣 <span>Duyurular</span></button>
         <button type="button" data-panel-tab="support">? <span>Destek</span></button>
@@ -1011,8 +1072,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=12"></script>
-  <script src="institution-layout.js?v=2"></script>
+  <script src="institution.js?v=13"></script>
+  <script src="institution-layout.js?v=3"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
   <script src="institution-announcements.js?v=2"></script>
