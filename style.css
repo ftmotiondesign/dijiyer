@@ -8088,3 +8088,22 @@ button{cursor:pointer}
   .dijiyer-wallet-grid article:first-child{grid-column:1/-1}
   .dijiyer-referral-share{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   MOBİL ALT KATEGORİ SONUÇ PANELİ KONUMU
+   Sonuç özeti seçilen alt kategorilerin hemen altında görünür
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-inline-subcategories > .mobile-category-result{
+    width:100%;
+    margin:10px 0 0 !important;
+    border-color:#b9d5f8;
+    box-shadow:0 5px 14px rgba(22,119,255,.07);
+  }
+
+  .mobile-inline-subcategories > .mobile-category-result::before{
+    content:"";
+    display:block;
+  }
+}
