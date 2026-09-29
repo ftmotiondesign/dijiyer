@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=30" />
+  <link rel="stylesheet" href="style.css?v=31" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -349,6 +349,55 @@
     </aside>
 
     <section class="workspace">
+      <section class="mobile-daily-stats" id="mobileDailyStats" aria-label="Bugünkü Dijiyer istatistikleri">
+        <div class="mobile-daily-stats-head">
+          <div>
+            <span>BUGÜN DİJİYER'DE</span>
+            <strong>Günlük teklif hareketleri</strong>
+          </div>
+          <small><i></i> Canlı</small>
+        </div>
+
+        <div class="mobile-daily-stats-grid">
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">📝</span>
+            <div>
+              <strong id="dailyQuoteRequestCount">—</strong>
+              <small>Teklif İstendi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">💬</span>
+            <div>
+              <strong id="dailyOfferCount">—</strong>
+              <small>Teklif Verildi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat">
+            <span class="mobile-daily-stat-icon">✓</span>
+            <div>
+              <strong id="dailyAcceptedCount">—</strong>
+              <small>Kabul Edildi</small>
+            </div>
+          </article>
+
+          <article class="mobile-daily-stat mobile-daily-stat-top">
+            <span class="mobile-daily-stat-icon">↗</span>
+            <div>
+              <strong id="dailyTopService">—</strong>
+              <small>En Çok Teklif Alınan</small>
+              <em id="dailyTopServiceCount"></em>
+            </div>
+          </article>
+        </div>
+
+        <div class="mobile-daily-stats-note" id="mobileDailyStatsNote">
+          Bugünün verileri yükleniyor...
+        </div>
+      </section>
+
       <div class="map-card">
         <div class="map-tabs">
           <button class="active" id="mapStreetBtn">Harita</button>
@@ -1077,7 +1126,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=37"></script>
+<script src="script.js?v=38"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
