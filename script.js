@@ -5035,6 +5035,7 @@ function updateMainLocationButton() {
     }
     mobileSearchLocationBtn?.classList.add('all-turkey');
     syncExploreQuickFilterState();
+    if(typeof renderBrandDirectory==='function')renderBrandDirectory();
     return;
   }
 
@@ -5055,6 +5056,7 @@ function updateMainLocationButton() {
   }
   mobileSearchLocationBtn?.classList.remove('all-turkey');
   syncExploreQuickFilterState();
+  if(typeof renderBrandDirectory==='function')renderBrandDirectory();
 }
 
 async function loadMainLocationDistricts(provinceId, selectedDistrict = '') {
@@ -6695,4 +6697,311 @@ window.addEventListener("resize",()=>{
   window.addEventListener('scroll',updateVisibility,{passive:true});
   window.addEventListener('resize',updateVisibility);
   updateVisibility();
+})();
+
+
+/* =========================================================
+   MARKA BAYİ & SERVİS REHBERİ · ÇANAKKALE PİLOT
+   Resmi marka sayfalarından kontrol edilen başlangıç kayıtları.
+   ========================================================= */
+const brandDirectoryData = [
+  {
+    brand:'Renault', city:'Çanakkale', district:'Merkez', type:'dealer_service',
+    name:'SARUHAN - MERKEZ',
+    address:'Renault Saruhan Çanakkale, İzmir Yolu, Çanakkale - İzmir Asfaltı, Kavşağı 9. Km, 17100 Merkez/Çanakkale',
+    phone:'02862471717', phoneLabel:'(0286) 247 17 17',
+    source:'https://saruhan.renault.com.tr/renault/bize-ulasin/'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Merkez', type:'service',
+    name:'Beko Yetkili Servis - Cevatpaşa',
+    address:'Barbaros Mah. Hamidiye Sk. No:34, Merkez/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-merkezilce-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Merkez', type:'service',
+    name:'Beko Yetkili Servis - İsmetpaşa',
+    address:'İsmetpaşa Mah. Asafpaşa Cad. No:68/1, Merkez/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-merkezilce-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Merkez', type:'dealer',
+    name:'Postacılar Dayanıklı Tüketim Malları',
+    address:'Namık Kemal Mah. Sakızlı Çeşme Sok. No:68, Merkez/Çanakkale',
+    phone:'02862135055', phoneLabel:'(0286) 213 50 55',
+    source:'https://www.beko.com.tr/canakkale-merkezilce-beko-magazalari'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Merkez', type:'dealer',
+    name:'Sadettin Dönmez - Yeliz Beyazeşya ve Mobilya',
+    address:'Kemalpaşa Mah. Değirmenlik Sok. No:55A, Merkez/Çanakkale',
+    phone:'05497304588', phoneLabel:'0549 730 45 88',
+    source:'https://www.beko.com.tr/canakkale-merkezilce-beko-magazalari'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Merkez', type:'dealer',
+    name:'Tokgöz Dayanıklı Tüketim Malları',
+    address:'Barbaros Mah. Atatürk Cad. Zakkum Evleri No:109, Merkez/Çanakkale',
+    phone:'05339351840', phoneLabel:'0533 935 18 40',
+    source:'https://www.beko.com.tr/canakkale-merkezilce-beko-magazalari'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Merkez', type:'service',
+    name:'Arçelik Yetkili Servis - Cevatpaşa',
+    address:'Barbaros Mah. Hamidiye Sk. No:34, Merkez/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.arcelik.com.tr/canakkale-merkezilce-yetkili-servis'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Merkez', type:'service',
+    name:'Arçelik Yetkili Servis - İsmetpaşa',
+    address:'İsmetpaşa Mah. Asafpaşa Cad. No:68/1, Merkez/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.arcelik.com.tr/canakkale-merkezilce-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Çan', type:'dealer',
+    name:'Bilge Gökce DTM',
+    address:'Cumhuriyet Mah. Vaiz Mustafa Sok. Truva Apt. No:35B, Çan/Çanakkale',
+    phone:'02864161252', phoneLabel:'(0286) 416 12 52',
+    source:'https://www.beko.com.tr/canakkale-can-beko-magazalari'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Çan', type:'service',
+    name:'Beko Yetkili Servis - Çan',
+    address:'Karşıyaka Mah. Nadir Pazarbaşı Sok. No:19 İç Kapı No:3, Çan/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-can-yetkili-servis'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Çan', type:'dealer',
+    name:'Emel Aktaş - Güven Dayanıklı Tüketim Malzemeleri',
+    address:'İstiklal Mah. Bülent Ecevit Cad. No:5, Çan/Çanakkale',
+    phone:'05444121114', phoneLabel:'0544 412 11 14',
+    source:'https://www.arcelik.com.tr/canakkale-can-arcelik-magazalari'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Çan', type:'service',
+    name:'Arçelik Yetkili Servis - Çan',
+    address:'Karşıyaka Mah. Nadir Pazarbaşı Sok. No:19 İç Kapı No:3, Çan/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.arcelik.com.tr/canakkale-can-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Ezine', type:'dealer',
+    name:'Ceyhanlar Mobilya Dayanıklı Tüketim Malları',
+    address:'Camikebir Mah. Spor Sk. No:2, Ezine/Çanakkale',
+    phone:'02866181567', phoneLabel:'(0286) 618 15 67',
+    source:'https://www.beko.com.tr/canakkale-ezine-beko-magazalari'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Ezine', type:'service',
+    name:'Beko Yetkili Servis - Ezine',
+    address:'18 Evler 5. Sok. No:2/A, Ezine/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-ezine-yetkili-servis'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Ezine', type:'service',
+    name:'Arçelik Yetkili Servis - Ezine',
+    address:'18 Evler 5. Sok. No:2/A, Ezine/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.arcelik.com.tr/canakkale-ezine-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Biga', type:'service',
+    name:'Beko Yetkili Servis - Biga',
+    address:'Hamdibey Mah. İnönü Cad. No:87/A, Biga/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-biga-yetkili-servis'
+  },
+  {
+    brand:'Arçelik', city:'Çanakkale', district:'Biga', type:'service',
+    name:'Arçelik Yetkili Servis - Biga',
+    address:'Hamdibey Mah. İnönü Cad. No:87/A, Biga/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.arcelik.com.tr/canakkale-biga-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Gelibolu', type:'service',
+    name:'Beko Yetkili Servis - Gelibolu',
+    address:'Hoca Hamza Mah. Şehit Arif Becce Sok. No:2/B, Gelibolu/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-gelibolu-yetkili-servis'
+  },
+  {
+    brand:'Beko', city:'Çanakkale', district:'Gökçeada', type:'service',
+    name:'Beko Yetkili Servis - Gökçeada',
+    address:'Fatih Mah. Bahçeler Sk. No:1/E, Gökçeada/Çanakkale',
+    phone:'08502100888', phoneLabel:'0850 210 0 888',
+    source:'https://www.beko.com.tr/canakkale-gokceada-yetkili-servis'
+  }
+];
+
+let brandDirectoryBrand='all';
+let brandDirectoryType='all';
+let brandDirectoryQuery='';
+
+function brandDirectoryMatchesType(row,type){
+  if(type==='all')return true;
+  if(row.type==='dealer_service')return type==='dealer'||type==='service';
+  return row.type===type;
+}
+
+function brandDirectoryTypeLabel(type){
+  if(type==='service')return 'Yetkili Servis';
+  if(type==='dealer')return 'Bayi / Mağaza';
+  return 'Bayi + Servis';
+}
+
+function brandDirectoryTypeClass(type){
+  if(type==='dealer')return 'dealer';
+  if(type==='dealer_service')return 'both';
+  return 'service';
+}
+
+function brandDirectoryRouteUrl(row){
+  return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(row.name+' '+row.address);
+}
+
+function brandDirectoryCardHtml(row){
+  return `
+    <article class="brand-directory-card">
+      <div class="brand-directory-card-top">
+        <div class="brand-directory-logo">${escapeHtml(row.brand)}</div>
+        <div class="brand-directory-card-copy">
+          <span>${escapeHtml(row.brand.toUpperCase())}</span>
+          <strong>${escapeHtml(row.name)}</strong>
+          <small>📍 ${escapeHtml(row.district+' / '+row.city)}</small>
+        </div>
+        <span class="brand-directory-type-badge ${brandDirectoryTypeClass(row.type)}">${escapeHtml(brandDirectoryTypeLabel(row.type))}</span>
+      </div>
+
+      <div class="brand-directory-contact">
+        <p><strong>Adres:</strong> ${escapeHtml(row.address)}</p>
+        <p><strong>Telefon:</strong> ${escapeHtml(row.phoneLabel)}</p>
+      </div>
+
+      <div class="brand-directory-verified">✓ Resmi marka kaynağı · 29.09.2026 kontrol</div>
+
+      <div class="brand-directory-actions">
+        <a class="call" href="tel:${escapeHtml(row.phone)}">☎ Ara</a>
+        <a class="route" href="${brandDirectoryRouteUrl(row)}" target="_blank" rel="noopener">📍 Yol Tarifi</a>
+        <a class="source" href="${escapeHtml(row.source)}" target="_blank" rel="noopener" aria-label="Resmi marka kaynağını aç" title="Resmi kaynak">↗</a>
+      </div>
+    </article>
+  `;
+}
+
+function renderBrandDirectory(){
+  const root=document.getElementById('brandDirectoryMobile');
+  const results=document.getElementById('brandDirectoryResults');
+  const brandsRoot=document.getElementById('brandDirectoryBrands');
+  if(!root||!results||!brandsRoot)return;
+
+  const locationLabel=document.getElementById('brandDirectoryLocation');
+  const countEl=document.getElementById('brandDirectoryResultCount');
+  const titleEl=document.getElementById('brandDirectoryResultTitle');
+  const hintEl=document.getElementById('brandDirectoryResultHint');
+
+  const activeCityNorm=normalizeQuoteSearch(activeLocationCity||'');
+  const activeDistrictNorm=normalizeQuoteSearch(activeLocationDistrict||'');
+
+  if(locationLabel){
+    locationLabel.textContent=activeLocationCity
+      ? (activeLocationDistrict ? activeLocationCity+' / '+activeLocationDistrict : activeLocationCity)
+      : 'Tüm bölgeler';
+  }
+
+  const availableBrands=['all',...new Set(brandDirectoryData.map(row=>row.brand))];
+  brandsRoot.innerHTML=availableBrands.map(brand=>`
+    <button type="button" class="${brandDirectoryBrand===brand?'active':''}" data-brand-directory-brand="${escapeHtml(brand)}">
+      ${brand==='all'?'Tüm Markalar':escapeHtml(brand)}
+    </button>
+  `).join('');
+
+  const query=normalizeQuoteSearch(brandDirectoryQuery);
+  const filtered=brandDirectoryData.filter(row=>{
+    const rowCity=normalizeQuoteSearch(row.city);
+    const rowDistrict=normalizeQuoteSearch(row.district);
+
+    if(activeCityNorm && rowCity!==activeCityNorm)return false;
+    if(activeDistrictNorm && rowDistrict!==activeDistrictNorm)return false;
+    if(brandDirectoryBrand!=='all' && row.brand!==brandDirectoryBrand)return false;
+    if(!brandDirectoryMatchesType(row,brandDirectoryType))return false;
+
+    if(query){
+      const haystack=normalizeQuoteSearch([row.brand,row.name,row.address,row.city,row.district,brandDirectoryTypeLabel(row.type)].join(' '));
+      if(!haystack.includes(query))return false;
+    }
+    return true;
+  });
+
+  if(countEl)countEl.textContent=String(filtered.length);
+  if(titleEl){
+    titleEl.textContent=brandDirectoryBrand==='all'
+      ? 'Yakındaki bayi ve servisler'
+      : brandDirectoryBrand+' noktaları';
+  }
+  if(hintEl){
+    hintEl.textContent=activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
+      ? 'Bu il için rehber kayıtları henüz ekleniyor'
+      : 'Resmi marka kaynaklarından derlenen iletişim bilgileri';
+  }
+
+  results.innerHTML=filtered.length
+    ? filtered.slice(0,12).map(brandDirectoryCardHtml).join('')
+    : `
+      <div class="brand-directory-empty">
+        <strong>Bu filtreye uygun kayıt bulunamadı.</strong>
+        <span>${activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
+          ? 'Marka rehberi şu anda Çanakkale pilot verileriyle başlıyor. Diğer iller sırayla eklenecek.'
+          : 'Marka veya tür filtresini değiştirerek tekrar deneyin.'}</span>
+      </div>
+    `;
+
+  brandsRoot.querySelectorAll('[data-brand-directory-brand]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      brandDirectoryBrand=button.dataset.brandDirectoryBrand||'all';
+      renderBrandDirectory();
+    });
+  });
+}
+
+(function setupBrandDirectory(){
+  const search=document.getElementById('brandDirectorySearch');
+  const clear=document.getElementById('brandDirectorySearchClear');
+  const locationButton=document.getElementById('brandDirectoryChangeLocation');
+
+  search?.addEventListener('input',()=>{
+    brandDirectoryQuery=search.value||'';
+    clear?.classList.toggle('hidden',!brandDirectoryQuery);
+    renderBrandDirectory();
+  });
+
+  clear?.addEventListener('click',()=>{
+    brandDirectoryQuery='';
+    if(search)search.value='';
+    clear.classList.add('hidden');
+    renderBrandDirectory();
+    search?.focus();
+  });
+
+  document.querySelectorAll('[data-brand-directory-type]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      brandDirectoryType=button.dataset.brandDirectoryType||'all';
+      document.querySelectorAll('[data-brand-directory-type]').forEach(item=>{
+        item.classList.toggle('active',item===button);
+      });
+      renderBrandDirectory();
+    });
+  });
+
+  locationButton?.addEventListener('click',()=>{
+    document.getElementById('mobileSearchLocationBtn')?.click();
+  });
+
+  renderBrandDirectory();
 })();
