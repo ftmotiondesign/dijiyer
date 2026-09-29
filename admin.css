@@ -3255,3 +3255,10 @@ button{
     font-size:8px;
   }
 }
+
+
+/* Kuruma ücretli tanıtım hizmeti bağlama */
+.admin-showcase-edit{display:grid;gap:9px;margin:8px 0;padding:12px;border:1px solid #cfe1fa;border-radius:11px;background:#f8fbff}
+.admin-showcase-edit-head{display:grid;gap:2px}.admin-showcase-edit-head span{color:#1677ff;font-size:8px;font-weight:900;letter-spacing:.08em}.admin-showcase-edit-head strong{font-size:11px;color:#172033}.admin-showcase-edit-head small{font-size:8.5px;color:#64748b}
+.admin-showcase-edit label{display:grid;gap:5px;color:#475569;font-size:9px;font-weight:850}.admin-showcase-edit input{min-height:36px;width:100%;border:1px solid #d8e1ec;border-radius:8px;background:#fff;padding:7px 9px;font-size:9px}
+.manage-badges .badge-tour{background:#f4f0ff;color:#6d28d9}
