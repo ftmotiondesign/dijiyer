@@ -105,6 +105,19 @@
       <button type="button" id="closeInstitutionAnnouncementAlert" class="priority-action-close announcement-alert-close" aria-label="Duyuruyu kapat">×</button>
     </div>
 
+    <div class="priority-action-card request persistent-new-request hidden" id="persistentNewRequestCard">
+      <div class="priority-action-icon">🔔</div>
+      <div class="priority-action-copy">
+        <span class="priority-action-kicker">YENİ İŞ FIRSATI</span>
+        <strong>Yeni müşteri talepleriniz var</strong>
+        <span id="persistentNewRequestText">Size uygun yeni talepler bekliyor.</span>
+      </div>
+      <div class="priority-action-side">
+        <span class="priority-action-badge request-badge"><b id="persistentNewRequestCount">0</b>&nbsp;Yeni</span>
+        <button type="button" id="persistentNewRequestBtn">Yeni Talepleri Göster</button>
+      </div>
+    </div>
+
     <div class="live-quote-alert priority-action-card request hidden" id="liveQuoteAlert">
       <div class="priority-action-icon live-quote-alert-icon">🔔</div>
       <div class="priority-action-copy live-quote-alert-copy">
