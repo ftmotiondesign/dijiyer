@@ -11287,3 +11287,9 @@ to{opacity:1;transform:none}
     order:3;
   }
 }
+
+
+/* Yönetim panelinden günlük istatistikler kapatıldığında alan tamamen gizlenir. */
+.mobile-daily-stats.stats-disabled{
+  display:none !important;
+}
