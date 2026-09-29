@@ -19,82 +19,53 @@
     })[char]);
   }
 
-  function youtubeEmbed(value) {
+  function directVideo(value) {
+    const safe = safePublicUrl(value);
+    if (!safe) return "";
+    try {
+      const path = new URL(safe).pathname.toLowerCase();
+      return /\.(mp4|webm|ogg|mov|m4v)$/.test(path) ? safe : "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function youtubeEmbed(value, autoplay = false) {
     const raw = safePublicUrl(value);
     if (!raw) return "";
     try {
       const url = new URL(raw);
+      let id = "";
       if (url.hostname.includes("youtu.be")) {
-        const id = url.pathname.replace(/^\//, "").split("/")[0];
-        return id ? "https://www.youtube.com/embed/" + encodeURIComponent(id) : "";
-      }
-      if (url.hostname.includes("youtube.com")) {
-        const id =
+        id = url.pathname.replace(/^\//, "").split("/")[0];
+      } else if (url.hostname.includes("youtube.com")) {
+        id =
           url.searchParams.get("v") ||
           (url.pathname.includes("/shorts/")
             ? url.pathname.split("/shorts/")[1]?.split("/")[0]
             : "");
-        return id ? "https://www.youtube.com/embed/" + encodeURIComponent(id) : "";
       }
-    } catch (_) {}
-    return "";
+      if (!id) return "";
+      return "https://www.youtube.com/embed/" + encodeURIComponent(id) +
+        (autoplay ? "?autoplay=1&mute=1&playsinline=1&rel=0" : "?rel=0");
+    } catch (_) {
+      return "";
+    }
   }
 
-  function vimeoEmbed(value) {
+  function vimeoEmbed(value, autoplay = false) {
     const raw = safePublicUrl(value);
     if (!raw) return "";
     try {
       const url = new URL(raw);
       if (!url.hostname.includes("vimeo.com")) return "";
       const id = url.pathname.split("/").filter(Boolean).pop();
-      return /^\d+$/.test(id || "") ? "https://player.vimeo.com/video/" + id : "";
+      if (!/^\d+$/.test(id || "")) return "";
+      return "https://player.vimeo.com/video/" + id +
+        (autoplay ? "?autoplay=1&muted=1&background=0" : "");
     } catch (_) {
       return "";
     }
-  }
-
-  function videoMarkup(url, cover, name) {
-    const safe = safePublicUrl(url);
-    if (!safe) return "";
-
-    const embed = youtubeEmbed(safe) || vimeoEmbed(safe);
-    if (embed) {
-      return `
-        <div class="kp-premium-frame">
-          <iframe
-            src="${html(embed)}"
-            title="${html(name)} konum videosu"
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
-        </div>
-      `;
-    }
-
-    let pathname = "";
-    try { pathname = new URL(safe).pathname.toLowerCase(); } catch (_) {}
-
-    if (/\.(mp4|webm|ogg)$/.test(pathname)) {
-      return `
-        <div class="kp-premium-frame">
-          <video controls playsinline preload="metadata" ${cover ? 'poster="' + html(cover) + '"' : ""}>
-            <source src="${html(safe)}">
-          </video>
-        </div>
-      `;
-    }
-
-    return `
-      <div class="kp-premium-link-card">
-        <span class="kp-premium-play">▶</span>
-        <div>
-          <strong>Konum Videosu</strong>
-          <small>Video yeni sekmede açılacaktır.</small>
-        </div>
-        <a href="${html(safe)}" target="_blank" rel="noopener">Videoyu İzle</a>
-      </div>
-    `;
   }
 
   function tourEmbed(value) {
@@ -117,20 +88,99 @@
     }
   }
 
-  function restoreCover(data, videoUrl) {
-    if (!videoUrl) return;
-    const coverRoot = document.querySelector(".kp-cover");
-    const currentVideo = coverRoot?.querySelector("video");
-    if (!coverRoot || !currentVideo) return;
+  function badgeMarkup(data, hasTour, hasVideo) {
+    return `
+      <div class="kp-badges kp-premium-badges">
+        <span class="kp-badge ok">✓ Onaylı Kurum</span>
+        ${data.offer !== false ? '<span class="kp-badge offer">₺ Teklif Veriyor</span>' : ''}
+        ${hasTour ? '<span class="kp-badge tour">360° Mekan</span>' : ''}
+        ${!hasTour && hasVideo ? '<span class="kp-badge video">▶ Video</span>' : ''}
+        ${data.vip ? '<span class="kp-badge">★ Öne Çıkan</span>' : ''}
+      </div>
+    `;
+  }
 
+  function fallbackVisual(data) {
     const cover = safePublicUrl(data.coverUrl);
     if (cover) {
-      currentVideo.outerHTML =
-        '<img src="' + html(cover) + '" alt="' + html(data.name || "Kurum") + ' kapak">';
-    } else {
-      currentVideo.outerHTML =
-        '<div class="kp-cover-empty">' + html(data.emoji || "🏢") + "</div>";
+      return '<img class="kp-hero-fallback-image" src="' + html(cover) + '" alt="' +
+        html((data.name || "Kurum") + " kapak") + '">';
     }
+    return '<div class="kp-cover-empty">' + html(data.emoji || "🏢") + '</div>';
+  }
+
+  function locationVideoMarkup(url, cover, name) {
+    const safe = safePublicUrl(url);
+    if (!safe) return "";
+
+    const direct = directVideo(safe);
+    if (direct) {
+      return `
+        <video class="kp-hero-video" autoplay muted loop playsinline controls preload="metadata"
+          ${cover ? 'poster="' + html(cover) + '"' : ''}>
+          <source src="${html(direct)}">
+        </video>
+      `;
+    }
+
+    const embed = youtubeEmbed(safe, true) || vimeoEmbed(safe, true);
+    if (embed) {
+      return `
+        <iframe
+          class="kp-hero-iframe"
+          src="${html(embed)}"
+          title="${html(name)} tanıtım videosu"
+          loading="eager"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowfullscreen
+        ></iframe>
+      `;
+    }
+
+    return "";
+  }
+
+  function tourMarkup(url, cover, name) {
+    const safe = safePublicUrl(url);
+    if (!safe) return { markup:"", interactive:false, external:"" };
+
+    const embed = tourEmbed(safe);
+    if (embed) {
+      return {
+        markup:`
+          <iframe
+            class="kp-hero-iframe kp-hero-tour-frame"
+            src="${html(embed)}"
+            title="${html(name)} 360 derece sanal tur"
+            loading="eager"
+            allow="fullscreen; autoplay; gyroscope; accelerometer; xr-spatial-tracking"
+            allowfullscreen
+          ></iframe>
+        `,
+        interactive:true,
+        external:safe
+      };
+    }
+
+    const direct = directVideo(safe);
+    if (direct) {
+      return {
+        markup:`
+          <video class="kp-hero-video kp-hero-360-video" autoplay muted loop playsinline controls preload="metadata"
+            ${cover ? 'poster="' + html(cover) + '"' : ''}>
+            <source src="${html(direct)}">
+          </video>
+        `,
+        interactive:false,
+        external:safe
+      };
+    }
+
+    return {
+      markup:fallbackVisual({ ...institution, coverUrl:cover }),
+      interactive:false,
+      external:safe
+    };
   }
 
   function enhance() {
@@ -149,122 +199,102 @@
     const virtualTour = safePublicUrl(
       data.virtualTourUrl || data.tour360Url || data.tourUrl
     );
+    const cover = safePublicUrl(data.coverUrl);
+    const signature = [
+      data.id || "",
+      locationVideo,
+      virtualTour,
+      cover
+    ].join("|");
 
-    const signature = [data.id || "", locationVideo, virtualTour, data.coverUrl || ""].join("|");
     if (enhanced && signature === lastSignature) return;
     lastSignature = signature;
 
-    document.getElementById("kpPremiumExperience")?.remove();
     document.querySelectorAll(".kp-premium-added").forEach(node => node.remove());
+    document.getElementById("kpPremiumExperience")?.remove();
+    document.querySelector(".kp-special")?.remove();
 
-    if (!locationVideo && !virtualTour) {
+    const hero = document.querySelector(".kp-hero");
+    const coverRoot = document.querySelector(".kp-cover");
+    if (!hero || !coverRoot) {
       enhanced = true;
       return;
     }
 
-    restoreCover(data, locationVideo);
+    hero.classList.add("kp-clean-hero");
+    coverRoot.classList.add("kp-cover-experience");
 
-    const badges = document.querySelector(".kp-badges");
-    if (badges) {
-      if (locationVideo) {
-        const badge = document.createElement("span");
-        badge.className = "kp-badge video kp-premium-added";
-        badge.textContent = "▶ Konum Videosu";
-        badges.appendChild(badge);
+    const hasTour = Boolean(virtualTour);
+    const hasVideo = Boolean(locationVideo);
+    let currentMode = hasTour ? "tour" : (hasVideo ? "video" : "cover");
+
+    const renderHero = mode => {
+      currentMode = mode;
+
+      let mediaMarkup = "";
+      let guideMarkup = "";
+      let externalLink = "";
+
+      if (mode === "tour" && hasTour) {
+        const tour = tourMarkup(virtualTour, cover, data.name || "Kurum");
+        mediaMarkup = tour.markup || fallbackVisual(data);
+        externalLink = tour.external;
+
+        guideMarkup = tour.interactive
+          ? '<div class="kp-hero-guide"><span>↔</span><div><strong>360° Mekanı Gezin</strong><small>Görüntüyü parmağınızla veya fareyle sürükleyin</small></div></div>'
+          : directVideo(virtualTour)
+            ? '<div class="kp-hero-guide"><span>360°</span><div><strong>Mekan Videosu</strong><small>Video otomatik oynatılıyor</small></div></div>'
+            : '<div class="kp-hero-guide"><span>360°</span><div><strong>360° Sanal Tur</strong><small>Turu tam ekran açarak mekanı gezin</small></div></div>';
+      } else if (mode === "video" && hasVideo) {
+        mediaMarkup = locationVideoMarkup(locationVideo, cover, data.name || "Kurum") || fallbackVisual(data);
+        externalLink = locationVideo;
+        guideMarkup = '<div class="kp-hero-guide"><span>▶</span><div><strong>Konum / Tanıtım Videosu</strong><small>Video sessiz başlar, isterseniz sesi açabilirsiniz</small></div></div>';
+      } else {
+        mediaMarkup = fallbackVisual(data);
       }
-      if (virtualTour) {
-        const badge = document.createElement("span");
-        badge.className = "kp-badge tour kp-premium-added";
-        badge.textContent = "360° Sanal Tur";
-        badges.appendChild(badge);
-      }
-    }
+
+      const tabs = hasTour && hasVideo
+        ? `
+          <div class="kp-hero-media-tabs">
+            <button type="button" data-kp-media="tour" class="${currentMode === "tour" ? "active" : ""}">360° Mekan</button>
+            <button type="button" data-kp-media="video" class="${currentMode === "video" ? "active" : ""}">▶ Video</button>
+          </div>
+        `
+        : "";
+
+      const fullscreen = externalLink
+        ? '<a class="kp-hero-fullscreen" href="' + html(externalLink) + '" target="_blank" rel="noopener">⛶ Tam ekran</a>'
+        : "";
+
+      coverRoot.innerHTML = `
+        <div class="kp-hero-media-stage">
+          ${mediaMarkup}
+        </div>
+        ${badgeMarkup(data, hasTour, hasVideo)}
+        ${tabs}
+        ${guideMarkup}
+        ${fullscreen}
+      `;
+
+      coverRoot.querySelectorAll("[data-kp-media]").forEach(button => {
+        button.addEventListener("click", () => {
+          const next = button.dataset.kpMedia;
+          if (next && next !== currentMode) renderHero(next);
+        });
+      });
+    };
+
+    renderHero(currentMode);
 
     const actions = document.querySelector(".kp-actions");
-    if (actions) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "kp-btn kp-premium-discover kp-premium-added";
-      button.textContent = "◎ Mekanı Keşfet";
-      button.addEventListener("click", () => {
-        document.getElementById("kpPremiumExperience")
-          ?.scrollIntoView({ behavior:"smooth", block:"start" });
-      });
-      actions.prepend(button);
-    }
-
-    document.querySelector(".kp-special")?.remove();
-
-    const main = document.querySelector(".kp-main");
-    if (!main) return;
-
-    const cards = [...main.querySelectorAll(":scope > .kp-card")];
-    const galleryCard = cards.find(card =>
-      /Kurumdan Görseller/i.test(card.textContent || "")
-    );
-    const servicesCard = cards.find(card =>
-      /Sunulan Hizmetler/i.test(card.textContent || "")
-    );
-
-    const section = document.createElement("section");
-    section.className = "kp-card kp-premium-experience";
-    section.id = "kpPremiumExperience";
-
-    const cover = safePublicUrl(data.coverUrl);
-    const tourFrame = tourEmbed(virtualTour);
-
-    section.innerHTML = `
-      <div class="kp-head kp-premium-head">
-        <div>
-          <span class="eyebrow">MEKANI KEŞFET</span>
-          <h2>Gelmeden Önce Kurumu Görün</h2>
-          <p>Konumu ve mekanı daha yakından inceleyin.</p>
-        </div>
-        <span class="kp-premium-label">Dijiyer Tanıtım</span>
-      </div>
-
-      <div class="kp-premium-grid">
-        ${locationVideo ? `
-          <article class="kp-premium-card">
-            <div class="kp-premium-title">
-              <span class="kp-premium-icon video">▶</span>
-              <div>
-                <strong>Konum Videosu</strong>
-                <small>Kuruma nasıl ulaşacağınızı kısa videoda görün.</small>
-              </div>
-            </div>
-            ${videoMarkup(locationVideo, cover, data.name || "Kurum")}
-          </article>
-        ` : ""}
-
-        ${virtualTour ? `
-          <article class="kp-premium-card">
-            <div class="kp-premium-title">
-              <span class="kp-premium-icon tour">360°</span>
-              <div>
-                <strong>360° Sanal Tur</strong>
-                <small>Mekana gelmeden önce içeride gezinin.</small>
-              </div>
-            </div>
-            ${tourFrame ? `
-              <div class="kp-premium-frame tour">
-                <iframe src="${html(tourFrame)}" title="360 derece sanal tur" loading="lazy" allowfullscreen></iframe>
-              </div>
-            ` : ""}
-            <a class="kp-premium-tour-open" href="${html(virtualTour)}" target="_blank" rel="noopener">
-              ◉ 360° Turu Tam Ekran Aç
-            </a>
-          </article>
-        ` : ""}
-      </div>
-    `;
-
-    if (galleryCard) {
-      main.insertBefore(section, galleryCard);
-    } else if (servicesCard?.nextSibling) {
-      main.insertBefore(section, servicesCard.nextSibling);
-    } else {
-      main.appendChild(section);
+    if (actions && hasTour) {
+      const tourButton = document.createElement("a");
+      tourButton.className = "kp-btn kp-premium-discover kp-premium-added";
+      tourButton.href = virtualTour;
+      tourButton.target = "_blank";
+      tourButton.rel = "noopener";
+      tourButton.textContent = "360° Turu Aç";
+      actions.prepend(tourButton);
     }
 
     enhanced = true;
@@ -286,10 +316,8 @@
   const timer = setInterval(() => {
     attempts += 1;
     enhance();
-    if (enhanced || attempts >= 30) {
-      clearInterval(timer);
-    }
-  }, 300);
+    if (enhanced || attempts >= 30) clearInterval(timer);
+  }, 250);
 
-  window.addEventListener("load", () => setTimeout(enhance, 100));
+  window.addEventListener("load", () => setTimeout(enhance, 80));
 })();
