@@ -2702,7 +2702,7 @@ function premiumShowcaseSalesHtml() {
         <strong>Markanızı Premium Vitrin'de öne çıkarın</strong>
         <small>Geniş görsel alan, ana sayfa görünürlüğü ve doğrudan kurum profilinize yönlendirme.</small>
       </div>
-      <button type="button" data-advertise-home>Premium Reklam Ver</button>
+      <button type="button" data-advertise-home data-ad-service="homepage" data-ad-order="1">Premium Reklam Ver</button>
     </div>
   `;
 }
@@ -2894,7 +2894,7 @@ function homepageAdSalesHtml() {
         <strong>Bu alanda işletmeniz görünsün</strong>
         <small>Bölge ve sektörünüze göre potansiyel müşterilere ulaşın.</small>
       </div>
-      <button type="button" data-advertise-home>Reklam Ver</button>
+      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
     </div>
   `;
 }
@@ -2941,13 +2941,34 @@ function bindHomepageSponsoredCards(container) {
 function institutionPanelDestination() {
   const showcaseIntent =
     sessionStorage.getItem('dijiyerInstitutionIntent') === 'showcase';
+  const service =
+    String(sessionStorage.getItem('dijiyerInstitutionAdService') || '').trim();
+  const orderNow =
+    sessionStorage.getItem('dijiyerInstitutionAdOrder') === '1';
 
-  return 'institution.html?session=institution' +
-    (showcaseIntent ? '&tab=showcase' : '');
+  const params = new URLSearchParams({ session: 'institution' });
+
+  if (showcaseIntent) params.set('tab', 'showcase');
+  if (showcaseIntent && service) params.set('service', service);
+  if (showcaseIntent && service && orderNow) params.set('order', '1');
+
+  return 'institution.html?' + params.toString();
 }
 
-async function openAdvertisingCenter() {
+async function openAdvertisingCenter(service = '', orderNow = false) {
   sessionStorage.setItem('dijiyerInstitutionIntent', 'showcase');
+
+  if (service) {
+    sessionStorage.setItem('dijiyerInstitutionAdService', String(service));
+  } else {
+    sessionStorage.removeItem('dijiyerInstitutionAdService');
+  }
+
+  if (orderNow) {
+    sessionStorage.setItem('dijiyerInstitutionAdOrder', '1');
+  } else {
+    sessionStorage.removeItem('dijiyerInstitutionAdOrder');
+  }
 
   if (institutionSessionUser) {
     try {
@@ -2970,7 +2991,7 @@ async function openAdvertisingCenter() {
 
   if (institutionLoginMessage) {
     institutionLoginMessage.textContent =
-      'Reklam seçeneklerini görmek için kurum hesabınızla giriş yapın.';
+      'Reklam siparişi vermek için kurum hesabınızla giriş yapın.';
   }
 }
 
@@ -2981,7 +3002,11 @@ function bindHomepageAdvertiseButtons() {
     button.addEventListener('click', event => {
       event.preventDefault();
       event.stopPropagation();
-      openAdvertisingCenter();
+
+      openAdvertisingCenter(
+        button.dataset.adService || '',
+        button.dataset.adOrder === '1'
+      );
     });
   });
 }
@@ -3014,7 +3039,7 @@ function renderSponsoredAds() {
           <span>SPONSORLU ALAN</span>
           <strong>İşletmeni burada göster</strong>
           <small>Ana sayfada görünürlüğünü artır.</small>
-          <button type="button" data-advertise-home>Reklam Ver</button>
+          <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
         </div>
       `;
     }
@@ -3062,6 +3087,8 @@ institutionAuth.onAuthStateChanged(user => {
 
 institutionLoginBtn.addEventListener('click', async () => {
   sessionStorage.removeItem('dijiyerInstitutionIntent');
+  sessionStorage.removeItem('dijiyerInstitutionAdService');
+  sessionStorage.removeItem('dijiyerInstitutionAdOrder');
   setInstitutionActionsMenu(false);
 
   if (institutionSessionUser) {
@@ -3304,6 +3331,39 @@ document.getElementById('businessPanelBtn')?.addEventListener('click', () => {
 });
 
 bindHomepageAdvertiseButtons();
+
+function setupTrackingAdSafeMode() {
+  const trackingButton = document.getElementById('trackingMainBtn');
+  const zones = [
+    document.getElementById('premiumHomeShowcase'),
+    document.getElementById('sponsoredSection')
+  ].filter(Boolean);
+
+  if (!trackingButton || !zones.length || !('IntersectionObserver' in window)) return;
+
+  const visibleZones = new Set();
+
+  const sync = () => {
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    trackingButton.classList.toggle(
+      'tracking-ad-safe',
+      isMobile && visibleZones.size > 0
+    );
+  };
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) visibleZones.add(entry.target);
+      else visibleZones.delete(entry.target);
+    });
+    sync();
+  }, { threshold: 0.12 });
+
+  zones.forEach(zone => observer.observe(zone));
+  window.addEventListener('resize', sync);
+}
+
+setupTrackingAdSafeMode();
 
 document.getElementById('exploreScrollBtn')?.addEventListener('click', () => {
   document.getElementById('exploreSection')?.scrollIntoView({
