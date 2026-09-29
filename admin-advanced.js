@@ -218,7 +218,14 @@
         inst.lng !== null && inst.lng !== "" && inst.lng !== undefined &&
         Number.isFinite(Number(inst.lat)) && Number.isFinite(Number(inst.lng))
       ],
-      ["Web / Instagram", Boolean(safeText(inst.website).trim())]
+      ["Logo", Boolean(safeText(inst.logoUrl).trim())],
+      ["Kapak görseli", Boolean(safeText(inst.coverUrl).trim())],
+      ["Galeri / Video",
+        Boolean(inst.video) ||
+        Boolean(safeText(inst.locationVideoUrl || inst.profileVideoUrl || inst.videoUrl).trim()) ||
+        (Array.isArray(inst.galleryUrls) && inst.galleryUrls.length > 0)
+      ],
+      ["Web / Instagram", Boolean(safeText(inst.website || inst.instagram).trim())]
     ];
 
     const profileScore = Math.round(
@@ -300,27 +307,58 @@
     }
 
     const healthBox = document.createElement("div");
-    healthBox.className = "institution-health-box health-" + health.state;
+    healthBox.className = "institution-health-box institution-health-actionable health-" + health.state;
     healthBox.innerHTML = `
-      <div>
-        <span>Kurum Sağlığı</span>
-        <strong>%${health.score} · ${escapeHtml(health.label)}</strong>
+      <div class="institution-health-summary">
+        <div>
+          <span>Kurum Sağlığı</span>
+          <strong>%${health.score} · ${escapeHtml(health.label)}</strong>
+        </div>
+        <div class="institution-health-progress" aria-label="Profil tamamlama yüzdesi">
+          <i style="width:${Math.max(0,Math.min(100,health.profileScore))}%"></i>
+        </div>
+        <small>Profil tamamlama: %${health.profileScore}</small>
       </div>
-      <div>
-        <span>Profil</span>
-        <strong>%${health.profileScore}</strong>
+
+      <div class="institution-health-missing">
+        <span>EKSİK ALANLAR</span>
+        <div>
+          ${health.missing.length
+            ? health.missing.map(item=>'<b>✕ '+escapeHtml(item)+'</b>').join("")
+            : '<b class="complete">✓ Profil bilgileri tamam</b>'}
+        </div>
       </div>
-      <div>
-        <span>Eksik</span>
-        <strong>${health.missing.length ? escapeHtml(health.missing.slice(0,3).join(", ")) : "Yok"}</strong>
-      </div>
-      <div>
+
+      <div class="institution-health-activity">
         <span>Son Teklif</span>
         <strong>${health.latestEvent ? formatDateLocal(health.latestEvent) : "Henüz yok"}</strong>
+        <small>${health.offerOpen ? "Teklif alımı açık" : "Teklif alımı kapalı"}</small>
+      </div>
+
+      <div class="institution-health-actions">
+        <button type="button" data-health-edit>Eksikleri Tamamla</button>
+        <button type="button" class="sales" data-health-suggest>Tanıtım Hizmeti Öner</button>
       </div>
     `;
     const healthSlot = card.querySelector(".institution-health-slot");
     (healthSlot || card).appendChild(healthBox);
+
+    healthBox.querySelector("[data-health-edit]")?.addEventListener("click",()=>{
+      if (typeof openInstitutionEdit === "function") {
+        openInstitutionEdit(data.id,data);
+      }
+    });
+
+    healthBox.querySelector("[data-health-suggest]")?.addEventListener("click",()=>{
+      const recommendation = card.querySelector(".ad-recommendation");
+      if (recommendation) {
+        recommendation.scrollIntoView({behavior:"smooth",block:"center"});
+        recommendation.classList.add("attention");
+        setTimeout(()=>recommendation.classList.remove("attention"),1800);
+        return;
+      }
+      card.querySelector(".ad-whatsapp-recommend")?.click();
+    });
 
     const checkbox = card.querySelector(".institution-bulk-check");
     if (selectedInstitutionIds.has(String(data.id))) checkbox.checked = true;
