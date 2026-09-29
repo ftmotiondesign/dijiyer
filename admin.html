@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=25">
+  <link rel="stylesheet" href="admin.css?v=26">
   <link rel="stylesheet" href="admin-advanced.css?v=14">
 </head>
 
@@ -480,8 +480,8 @@
 
         <div class="banner-list-placement-note">
           <span>📍 GÖSTERİM YERİ</span>
-          <strong>Kurum listesinde 2. kurumdan sonra gösterilir</strong>
-          <small>Burada oluşturduğunuz aktif görsel veya video reklamlar, uygun bölge ve sektör eşleşmesinde kurum listesinin içine sponsorlu reklam olarak yerleşir.</small>
+          <strong>Reklamın gösterim yerini yüklerken seçin</strong>
+          <small>Arama Bannerı kurum listesinde 2. kurumdan sonra; Sponsor Bannerı ise “Bölgenizde Öne Çıkanlar” alanında gösterilir.</small>
         </div>
 
         <div class="banner-admin-guide">
@@ -575,6 +575,23 @@
                   <input id="bannerAdVideoUrlManual" type="url" placeholder="https://...mp4">
                 </label>
               </details>
+            </div>
+
+            <div class="banner-placement-box">
+              <div class="banner-target-head">
+                <strong>Gösterim Yeri</strong>
+                <small>Reklamın sitede hangi alanda gösterileceğini seçin.</small>
+              </div>
+              <label>Reklam Türü
+                <select id="bannerAdPlacement">
+                  <option value="search">🔎 Arama Bannerı · 2. kurumdan sonra</option>
+                  <option value="sponsor">📣 Sponsor Bannerı · Bölgenizde Öne Çıkanlar</option>
+                </select>
+              </label>
+              <div class="banner-placement-help">
+                <span><b>Arama Bannerı:</b> Kullanıcı kurum aradıktan sonra kurum listesinin içinde gösterilir.</span>
+                <span><b>Sponsor Bannerı:</b> “Bölgenizde Öne Çıkanlar” sponsor alanında gösterilir.</span>
+              </div>
             </div>
 
             <div class="banner-target-box">
@@ -1302,7 +1319,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="admin.js?v=38"></script>
-  <script src="admin-advanced.js?v=17"></script>
+  <script src="admin-advanced.js?v=18"></script>
 
 </body>
 </html>
