@@ -8621,3 +8621,58 @@ button{cursor:pointer}
     line-height:1.35;
   }
 }
+
+/* =========================================================
+   DİJİYER BİLGİLENDİRME ALT ALANI
+   ========================================================= */
+.dijiyer-legal-footer{
+  max-width:1408px;
+  margin:12px auto 20px;
+  padding:0 16px;
+  color:#748197;
+}
+
+.dijiyer-legal-note{
+  padding:12px 15px;
+  border:1px dashed #cfd8e4;
+  border-radius:7px;
+  background:#fbfcfe;
+  font-size:9.5px;
+  line-height:1.55;
+}
+
+.dijiyer-legal-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:10px 2px 0;
+  color:#65748a;
+  font-size:9.5px;
+}
+
+.dijiyer-legal-bottom strong{
+  color:#45566d;
+  font-weight:800;
+}
+
+@media(max-width:820px){
+  .dijiyer-legal-footer{
+    margin:10px 10px 16px;
+    padding:0;
+  }
+
+  .dijiyer-legal-note{
+    padding:11px 12px;
+    font-size:8.8px;
+    line-height:1.55;
+  }
+
+  .dijiyer-legal-bottom{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:4px;
+    padding:9px 2px 0;
+    font-size:8.8px;
+  }
+}
