@@ -5035,7 +5035,7 @@ function updateMainLocationButton() {
     }
     mobileSearchLocationBtn?.classList.add('all-turkey');
     syncExploreQuickFilterState();
-    if(typeof renderBrandDirectory==='function')renderBrandDirectory();
+    if(window.__brandDirectoryReady && typeof renderBrandDirectory==='function')renderBrandDirectory();
     return;
   }
 
@@ -5056,7 +5056,7 @@ function updateMainLocationButton() {
   }
   mobileSearchLocationBtn?.classList.remove('all-turkey');
   syncExploreQuickFilterState();
-  if(typeof renderBrandDirectory==='function')renderBrandDirectory();
+  if(window.__brandDirectoryReady && typeof renderBrandDirectory==='function')renderBrandDirectory();
 }
 
 async function loadMainLocationDistricts(provinceId, selectedDistrict = '') {
@@ -7026,6 +7026,8 @@ function renderBrandDirectory(){
     });
   });
 }
+
+window.__brandDirectoryReady=true;
 
 (function setupBrandDirectory(){
   const search=document.getElementById('brandDirectorySearch');
