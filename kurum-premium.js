@@ -216,6 +216,8 @@
       data.locationVideoUrl || data.profileVideoUrl || data.videoUrl
     );
 
+    const campaignVideo = safePublicUrl(data.campaignVideoUrl);
+
     const panorama360 = safePublicUrl(data.panorama360Url);
 
     const virtualTour = safePublicUrl(
@@ -225,11 +227,13 @@
     const cover = safePublicUrl(data.coverUrl);
     const has360 = Boolean(panorama360 || virtualTour);
     const hasVideo = Boolean(locationVideo);
+    const hasCampaignVideo = Boolean(campaignVideo);
     const hasPhoto = Boolean(cover);
 
     const signature = [
       data.id || "",
       locationVideo,
+      campaignVideo,
       panorama360,
       virtualTour,
       cover
@@ -265,7 +269,9 @@
       ? "tour"
       : hasVideo
         ? "video"
-        : "photo";
+        : hasPhoto
+          ? "photo"
+          : "campaign";
 
     const renderHero = mode => {
       destroyPanoramaViewer();
@@ -319,6 +325,30 @@
 
         guideMarkup =
           '<div class="kp-hero-guide"><span>📍</span><div><strong>Konum & Çevre Rehberi</strong><small>Nasıl gidilir · yakınında neler var</small></div></div>';
+      } else if (mode === "campaign") {
+        if(hasCampaignVideo){
+          mediaMarkup =
+            locationVideoMarkup(campaignVideo, cover, (data.name || "Kurum") + " kampanya") ||
+            fallbackVisual(data);
+          externalLink = campaignVideo;
+          guideMarkup =
+            '<div class="kp-hero-guide campaign"><span>🎁</span><div><strong>Sponsorlu Kampanya</strong><small>Kurumun güncel video duyurusu</small></div></div>';
+        }else{
+          mediaMarkup = `
+            <div class="kp-dijiyer-campaign-fallback">
+              <div class="kp-dijiyer-campaign-orb orb-one"></div>
+              <div class="kp-dijiyer-campaign-orb orb-two"></div>
+              <div class="kp-dijiyer-campaign-content">
+                <span class="kp-dijiyer-campaign-label">DİJİYER</span>
+                <strong>İşletmenizi daha görünür hale getirin</strong>
+                <small>Konum, 360° mekan, kampanya videosu ve sponsorlu görünürlük tek profilde.</small>
+                <em>Bu alan kurumun kampanya videosu yayınlandığında otomatik olarak değişir.</em>
+              </div>
+            </div>
+          `;
+          guideMarkup =
+            '<div class="kp-hero-guide campaign dijiyer"><span>◆</span><div><strong>Dijiyer Tanıtımı</strong><small>Bu alanda kurum kampanya videosu yayınlanabilir</small></div></div>';
+        }
       } else {
         mediaMarkup = fallbackVisual(data);
 
@@ -330,6 +360,7 @@
       const tabs = [
         has360 ? {key:"tour",label:"360° Mekan"} : null,
         hasVideo ? {key:"video",label:"📍 Konum & Çevre"} : null,
+        {key:"campaign",label:"🎁 Kampanya"},
         hasPhoto ? {key:"photo",label:"▣ Fotoğraf"} : null
       ].filter(Boolean);
 
