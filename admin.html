@@ -1661,51 +1661,75 @@
           </label>
         </div>
 
-        <section class="admin-showcase-edit">
+                <section class="admin-showcase-edit">
           <div class="admin-showcase-edit-head">
             <span>DİJİYER TANITIM HİZMETLERİ</span>
-            <strong>Satın alınan içerikleri kuruma bağla</strong>
-            <small>Bu alanlar sadece yönetim panelinden düzenlenir.</small>
+            <strong>Konum videosu ve 360° turu ayrı ayrı yönetin</strong>
+            <small>Yanlış alana bağlantı eklememek için iki hizmet birbirinden ayrıldı. Bu alanlar mobil uygulamadaki kurum profilini besler.</small>
           </div>
-          <label>Konum Videosu URL
-            <input type="url" id="editLocationVideoUrl" placeholder="Firebase Storage yüklemesi sonrası otomatik dolar veya harici MP4 URL yapıştırın">
-          </label>
 
-          <div class="admin-media-upload-box" style="margin:-4px 0 14px;padding:14px;border:1px solid #dfe4ee;border-radius:14px;background:#f8faff;">
-            <input type="file" id="editLocationVideoFile" accept="video/mp4,video/webm,video/quicktime" hidden>
-            <input type="hidden" id="editLocationVideoStoragePath">
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button type="button" id="editLocationVideoUploadBtn">🎬 Video Seç ve Yükle</button>
-              <button type="button" id="editLocationVideoPreviewBtn">▶ Önizle</button>
-              <button type="button" id="editLocationVideoRemoveBtn">🗑 Videoyu Kaldır</button>
+          <div style="margin:14px 0;padding:16px;border:2px solid #d8e3ff;border-radius:16px;background:#f7f9ff;">
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;">
+              <span style="font-size:24px;">🎬</span>
+              <div>
+                <strong style="display:block;">KONUM VİDEOSU</strong>
+                <small style="display:block;color:#667085;margin-top:3px;">Kuruma ulaşımı anlatan normal video. YouTube / Shorts bağlantısı veya doğrudan MP4 kullanılabilir.</small>
+              </div>
             </div>
 
-            <small id="editLocationVideoUploadStatus" style="display:block;margin-top:9px;color:#667085;">
-              MP4 / WebM / MOV yükleyebilirsiniz. Video Firebase Storage'a yüklenir ve kuruma otomatik bağlanır.
-            </small>
+            <label>Konum Videosu URL
+              <input type="url" id="editLocationVideoUrl" placeholder="Örn. https://www.youtube.com/shorts/... veya https://.../konum-video.mp4">
+            </label>
 
-            <video
-              id="editLocationVideoPreview"
-              controls
-              playsinline
-              hidden
-              style="width:100%;max-height:280px;margin-top:12px;border-radius:12px;background:#111;"
-            ></video>
+            <div class="admin-media-upload-box" style="margin:8px 0 0;padding:14px;border:1px solid #dfe4ee;border-radius:14px;background:#fff;">
+              <input type="file" id="editLocationVideoFile" accept="video/mp4,video/webm,video/quicktime" hidden>
+              <input type="hidden" id="editLocationVideoStoragePath">
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" id="editLocationVideoUploadBtn">🎬 Video Seç ve Yükle</button>
+                <button type="button" id="editLocationVideoPreviewBtn">▶ Önizle</button>
+                <button type="button" id="editLocationVideoRemoveBtn">🗑 Videoyu Kaldır</button>
+              </div>
+
+              <small id="editLocationVideoUploadStatus" style="display:block;margin-top:9px;color:#667085;">
+                Dosya yüklemek istemezseniz üstteki alana YouTube veya MP4 bağlantısını yapıştırabilirsiniz.
+              </small>
+
+              <video
+                id="editLocationVideoPreview"
+                controls
+                playsinline
+                hidden
+                style="width:100%;max-height:280px;margin-top:12px;border-radius:12px;background:#111;"
+              ></video>
+            </div>
           </div>
 
-          <label>360° Sanal Tur URL
-            <input type="url" id="editVirtualTourUrl" placeholder="https://... 3DVista / Kuula / Matterport bağlantısı">
-          </label>
+          <div style="margin:14px 0;padding:16px;border:2px solid #d8f0e3;border-radius:16px;background:#f6fcf8;">
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;">
+              <span style="font-size:24px;">🌐</span>
+              <div>
+                <strong style="display:block;">360° MEKAN TURU</strong>
+                <small style="display:block;color:#667085;margin-top:3px;">Buraya video değil; 3DVista, Kuula, Matterport veya web tabanlı 360° tur bağlantısı girilir.</small>
+              </div>
+            </div>
 
-          <div style="display:flex;gap:8px;margin:-4px 0 14px;flex-wrap:wrap;">
-            <button type="button" id="editVirtualTourPreviewBtn">🌐 360° Turu Önizle</button>
+            <label>360° Sanal Tur URL
+              <input type="url" id="editVirtualTourUrl" placeholder="Örn. https://... 3DVista / Kuula / Matterport tur bağlantısı">
+            </label>
+
+            <div style="display:flex;gap:8px;margin:8px 0 0;flex-wrap:wrap;">
+              <button type="button" id="editVirtualTourPreviewBtn">🌐 360° Turu Önizle</button>
+              <button type="button" id="editVirtualTourClearBtn">🗑 360° Linkini Temizle</button>
+            </div>
           </div>
 
-          <label>Kampanya Videosu URL
-            <input type="url" id="editCampaignVideoUrl" placeholder="https://.../kampanya-video.mp4 veya YouTube bağlantısı">
-            <small>Kurum ücretli kampanya videosu satın aldığında buraya ekleyin. Boşsa profilin Kampanya sekmesinde Dijiyer tanıtımı gösterilir.</small>
-          </label>
+          <div style="margin:14px 0;padding:14px;border:1px solid #ece8f7;border-radius:14px;background:#fbfaff;">
+            <label>Kampanya Videosu URL
+              <input type="url" id="editCampaignVideoUrl" placeholder="https://.../kampanya-video.mp4 veya YouTube bağlantısı">
+              <small>Kurum ücretli kampanya videosu satın aldığında buraya ekleyin. Bu alan konum videosundan ayrıdır.</small>
+            </label>
+          </div>
         </section>
 
         <div class="check-grid">
@@ -1749,7 +1773,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=48"></script>
+<script src="admin.js?v=49"></script>
   <script src="admin-advanced.js?v=27"></script>
 
 </body>
