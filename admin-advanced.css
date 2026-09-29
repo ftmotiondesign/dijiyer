@@ -892,3 +892,12 @@
   .promotion-admin-controls{grid-template-columns:1fr}
   .promotion-admin-note-input{grid-column:auto}
 }
+
+
+/* Reklam ana menüsü eklendi */
+.admin-main-nav{grid-template-columns:repeat(6,minmax(0,1fr))}
+.admin-quick-strip{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:780px){
+  .admin-main-nav{grid-template-columns:repeat(6,max-content)}
+  .admin-quick-strip{grid-template-columns:1fr 1fr}
+}
