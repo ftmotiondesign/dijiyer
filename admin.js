@@ -1350,6 +1350,8 @@ function openInstitutionEdit(id, data) {
     data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
   document.getElementById("editVirtualTourUrl").value =
     data.virtualTourUrl || data.tour360Url || data.tourUrl || "";
+  document.getElementById("editCampaignVideoUrl").value =
+    data.campaignVideoUrl || "";
   document.getElementById("editLat").value =
     data.lat === null || data.lat === undefined || data.lat === "" ? "" : data.lat;
   document.getElementById("editLng").value =
@@ -1396,6 +1398,7 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const lngValue=String(document.getElementById("editLng").value||"").trim();
   const locationVideoUrl=String(document.getElementById("editLocationVideoUrl").value||"").trim();
   const virtualTourUrl=String(document.getElementById("editVirtualTourUrl").value||"").trim();
+  const campaignVideoUrl=String(document.getElementById("editCampaignVideoUrl").value||"").trim();
 
   const showSaveMessage=(text,state="")=>{
     if(!saveMessage)return;
@@ -1441,6 +1444,11 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     document.getElementById("editVirtualTourUrl").focus();
     return;
   }
+  if(!isValidHttpUrl(campaignVideoUrl)){
+    showSaveMessage("Kampanya videosu bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("editCampaignVideoUrl").focus();
+    return;
+  }
 
   if(lat!==null && (!Number.isFinite(lat) || lat < -90 || lat > 90)){
     showSaveMessage("Enlem (lat) -90 ile 90 arasında olmalıdır.","error");
@@ -1464,6 +1472,7 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     website:String(document.getElementById("editWebsite").value||"").trim(),
     locationVideoUrl,
     virtualTourUrl,
+    campaignVideoUrl,
     lat,
     lng,
     vip:document.getElementById("editVip").checked,
