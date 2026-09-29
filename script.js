@@ -3772,7 +3772,7 @@ function renderExternalAds(){
   }
 
   if(live.length>1){
-    const seconds=Math.max(5,Math.min(60,Number(active.rotationSeconds||10)));
+    const seconds=Math.max(5,Math.min(60,Number(active.rotationSeconds||5)));
     externalAdTimer=setTimeout(()=>{
       externalAdIndex=(externalAdIndex+1)%live.length;
       renderExternalAds();
