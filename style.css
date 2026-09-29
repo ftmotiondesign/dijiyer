@@ -3789,7 +3789,7 @@ button{cursor:pointer}
 }
 .regional-banner-stage{position:relative}
 .regional-banner-card{
-  position:relative;min-height:125px;padding:14px;
+  position:relative;min-height:155px;padding:18px;
   overflow:hidden;border-radius:12px;
   display:flex;flex-direction:column;justify-content:flex-end;
   background:linear-gradient(135deg,#173a70,#1677ff);
@@ -3830,12 +3830,12 @@ button{cursor:pointer}
   line-height:1.15;
   text-shadow:0 2px 8px rgba(0,0,0,.48),0 1px 2px rgba(0,0,0,.38);
 }
-.regional-banner-copy p{margin:0;font-size:9px;line-height:1.35;color:rgba(255,255,255,.92)}
+.regional-banner-copy p{margin:0;font-size:10px;line-height:1.4;color:rgba(255,255,255,.92)}
 .regional-banner-copy small{font-size:7.8px;color:rgba(255,255,255,.76)}
 .regional-banner-cta{
-  position:absolute;z-index:2;right:12px;bottom:14px;
-  padding:7px 9px;border-radius:8px;background:#fff;color:#172033;
-  font-size:8.5px;font-weight:900;
+  position:absolute;z-index:2;right:15px;bottom:16px;
+  padding:8px 11px;border-radius:9px;background:#fff;color:#172033;
+  font-size:9px;font-weight:900;
 }
 .regional-banner-progress{
   position:absolute;z-index:3;left:0;bottom:0;height:3px;width:100%;
@@ -3859,9 +3859,9 @@ button{cursor:pointer}
   .regional-banner-head{align-items:stretch;flex-direction:column}
   .regional-banner-filters{display:grid;grid-template-columns:1fr 1fr}
   .regional-banner-filters select{max-width:none;width:100%}
-  .regional-banner-card{min-height:112px;padding:11px}
+  .regional-banner-card{min-height:135px;padding:13px}
   .regional-banner-copy{max-width:78%}
-  .regional-banner-copy strong{font-size:13px}
+  .regional-banner-copy strong{font-size:15px}
   .regional-banner-cta{right:9px;bottom:10px;font-size:7.5px;padding:6px 7px}
 }
 
