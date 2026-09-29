@@ -370,7 +370,7 @@ function scrollToMobileResults() {
   });
 }
 
-function updateMobileCategoryResult(options = {}) {
+function updateMobileCategoryResult() {
   const root = document.getElementById('mobileCategoryResult');
   if (!root) return;
 
@@ -400,13 +400,16 @@ function updateMobileCategoryResult(options = {}) {
   const label = document.getElementById('mobileCategoryResultLabel');
   const countEl = document.getElementById('mobileCategoryResultCount');
   const hint = document.getElementById('mobileCategoryResultHint');
+  const locationEl = document.getElementById('mobileCategoryResultLocation');
+  const offerBtn = document.getElementById('mobileCategoryOfferBtn');
+  const videoBtn = document.getElementById('mobileCategoryVideoBtn');
 
   root.classList.remove('hidden');
 
   if (label) {
     label.textContent = subLabel
-      ? subLabel + ' seçildi'
-      : mainLabel + ' seçildi';
+      ? mainLabel + ' · ' + subLabel
+      : mainLabel;
   }
 
   if (countEl) countEl.textContent = String(count);
@@ -416,16 +419,39 @@ function updateMobileCategoryResult(options = {}) {
       Object.keys(categoryTaxonomy[activeMain]?.subs || {}).length > 0;
 
     hint.textContent = subLabel || !hasSubcategories
-      ? 'Uygun kurumları harita ve listede göstereceğiz.'
-      : 'Alt kategoriyi seçerseniz sonuçlar daha da netleşir.';
+      ? 'Uygun kurumları inceleyin, karşılaştırın veya teklif alın.'
+      : 'Alt kategori seçerek sonuçları daha da daraltabilirsiniz.';
   }
 
-  if (options.scroll === true) {
-    setTimeout(scrollToMobileResults, 120);
+  if (locationEl) {
+    locationEl.textContent =
+      [activeLocationCity, activeLocationDistrict].filter(Boolean).join(' / ') ||
+      'Tüm bölgeler';
   }
+
+  offerBtn?.classList.toggle('active', Boolean(document.getElementById('offerOnly')?.checked));
+  videoBtn?.classList.toggle('active', Boolean(document.getElementById('videoOnly')?.checked));
 }
 
 document.getElementById('mobileCategoryResultBtn')?.addEventListener('click', scrollToMobileResults);
+
+document.getElementById('mobileCategoryOfferBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('offerOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+  updateMobileCategoryResult();
+});
+
+document.getElementById('mobileCategoryVideoBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('videoOnly');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+  updateMobileCategoryResult();
+});
 
 function renderMobileSubcategories(mainKey) {
   const root = document.getElementById('mobileSubcategories');
@@ -478,7 +504,7 @@ function renderMobileSubcategories(mainKey) {
 
       renderMobileCategories();
       renderList();
-      updateMobileCategoryResult({ scroll: Boolean(target?.checked) });
+      updateMobileCategoryResult();
     });
   });
 }
@@ -518,14 +544,13 @@ function renderMobileCategories() {
       const hasSubcategories =
         Object.keys(categoryTaxonomy[key]?.subs || {}).length > 0;
 
-      updateMobileCategoryResult({
-        scroll: !currentlyActive && !hasSubcategories
-      });
+      updateMobileCategoryResult();
     });
   });
 
   renderMobileSubcategories(activeMain);
   syncMobileQuickFilterState();
+  updateMobileCategoryResult();
 }
 
 document.getElementById('mobileClearCategoriesBtn')?.addEventListener('click', () => {
@@ -541,6 +566,7 @@ document.getElementById('mobileVideoOnlyBtn')?.addEventListener('click', () => {
   input.checked = !input.checked;
   syncMobileQuickFilterState();
   renderList();
+  updateMobileCategoryResult();
 });
 
 document.getElementById('mobileOfferOnlyBtn')?.addEventListener('click', () => {
@@ -557,8 +583,14 @@ document.querySelectorAll('.categoryFilter, .subCategoryFilter').forEach(input =
   });
 });
 
-document.getElementById('videoOnly')?.addEventListener('change', syncMobileQuickFilterState);
-document.getElementById('offerOnly')?.addEventListener('change', syncMobileQuickFilterState);
+document.getElementById('videoOnly')?.addEventListener('change', () => {
+  syncMobileQuickFilterState();
+  updateMobileCategoryResult();
+});
+document.getElementById('offerOnly')?.addEventListener('change', () => {
+  syncMobileQuickFilterState();
+  updateMobileCategoryResult();
+});
 
 const institutions = [
   {
@@ -3685,17 +3717,35 @@ function renderSponsoredAds() {
   }
 
   if (mobileSlot) {
-    if (sponsored.length) {
-      mobileSlot.innerHTML = homepageSponsoredMobileHtml(sponsored[0]);
+    const activeMain = getSelectedMainCategory();
+    const selectedSub = document.querySelector('.subCategoryFilter:checked')?.value || '';
+
+    const mobileSponsored = sponsored.find(inst => {
+      if (!activeMain) return false;
+      const [mainCategory, subCategory] = resolveTaxonomy(inst);
+      if (String(mainCategory) !== String(activeMain)) return false;
+      return !selectedSub || String(subCategory) === String(selectedSub);
+    }) || sponsored.find(inst => {
+      if (!activeMain) return false;
+      const [mainCategory] = resolveTaxonomy(inst);
+      return String(mainCategory) === String(activeMain);
+    }) || sponsored[0];
+
+    if (mobileSponsored) {
+      mobileSlot.innerHTML = homepageSponsoredMobileHtml(mobileSponsored);
       bindHomepageSponsoredCards(mobileSlot);
     } else {
+      const categoryLabel = activeMain
+        ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
+        : 'bulunduğun bölgeyi';
+
       mobileSlot.innerHTML = `
         <div class="mobile-sponsored-placeholder">
           <div class="mobile-sponsored-placeholder-icon">📣</div>
           <div class="mobile-sponsored-placeholder-copy">
             <span>SPONSORLU ALAN</span>
-            <strong>İşletmeni burada göster</strong>
-            <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
+            <strong>Bu alanda öne çıkın</strong>
+            <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
           </div>
           <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
         </div>
