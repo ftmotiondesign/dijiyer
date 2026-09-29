@@ -123,7 +123,8 @@
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
+                <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads">🌐 Harici Reklamlar <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
+<button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
         <button class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</button>
@@ -822,7 +823,123 @@
         </section>
       </section>
 
-      <section id="promotionPackagesSection" hidden>
+            <section id="externalAdsSection" hidden>
+        <div class="section-title external-ad-admin-title">
+          <div>
+            <h3>🌐 Harici / Affiliate Reklamlar</h3>
+            <p id="externalAdAdminCount">Reklamlar yükleniyor...</p>
+          </div>
+          <button type="button" class="advanced-primary-btn" id="externalAdNewBtn">+ Harici Reklam Ekle</button>
+        </div>
+
+        <div class="external-ad-admin-note">
+          <strong>İzinli banner kullanın</strong>
+          <span>Markanın size verdiği resmi bannerı, affiliate görselini veya kullanma izniniz bulunan medyayı ekleyin. Harici URL çalışmazsa dosyayı Cloudinary'ye yükleyebilirsiniz.</span>
+        </div>
+
+        <div class="external-ad-admin-layout">
+          <form id="externalAdForm" class="external-ad-editor">
+            <input type="hidden" id="externalAdEditId">
+
+            <div class="external-ad-editor-head">
+              <div>
+                <span>HARİCİ REKLAM</span>
+                <strong id="externalAdFormTitle">Yeni Reklam</strong>
+              </div>
+              <label class="promotion-package-active-toggle">
+                <input type="checkbox" id="externalAdActive" checked><span>Yayında</span>
+              </label>
+            </div>
+
+            <div class="external-ad-form-grid">
+              <label>Marka Adı
+                <input id="externalAdBrand" maxlength="100" required placeholder="Örn. Marka Adı">
+              </label>
+              <label>Başlık
+                <input id="externalAdHeadline" maxlength="120" placeholder="Örn. Sezon fırsatlarını keşfet">
+              </label>
+            </div>
+
+            <label>Tıklama / Affiliate Linki
+              <input id="externalAdTargetUrl" type="url" required placeholder="https://...">
+            </label>
+
+            <div class="external-ad-media-box">
+              <div class="external-ad-media-head">
+                <div>
+                  <strong>Banner Medyası</strong>
+                  <small>Dosya yükleyin veya markanın verdiği doğrudan medya URL'sini kullanın.</small>
+                </div>
+                <select id="externalAdMediaType">
+                  <option value="image">Görsel</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+
+              <div class="external-ad-upload-actions">
+                <button type="button" id="externalAdImageUploadBtn">🖼 Görsel Yükle</button>
+                <button type="button" id="externalAdVideoUploadBtn">🎬 Video Yükle</button>
+              </div>
+
+              <input id="externalAdImageFile" class="hidden" type="file" accept="image/jpeg,image/png,image/webp">
+              <input id="externalAdVideoFile" class="hidden" type="file" accept="video/mp4,video/webm">
+
+              <label>Görsel URL
+                <input id="externalAdImageUrl" type="url" placeholder="https://...jpg">
+              </label>
+              <label>Video URL
+                <input id="externalAdVideoUrl" type="url" placeholder="https://...mp4">
+              </label>
+
+              <p id="externalAdUploadMessage" class="external-ad-upload-message"></p>
+            </div>
+
+            <div class="external-ad-form-grid three">
+              <label>Başlangıç
+                <input id="externalAdStartAt" type="datetime-local">
+              </label>
+              <label>Bitiş
+                <input id="externalAdEndAt" type="datetime-local">
+              </label>
+              <label>Değişim Süresi
+                <select id="externalAdRotationSeconds">
+                  <option value="5">5 saniye</option>
+                  <option value="10" selected>10 saniye</option>
+                  <option value="15">15 saniye</option>
+                  <option value="20">20 saniye</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="external-ad-rights">
+              <input type="checkbox" id="externalAdRightsConfirmed" required>
+              <span><strong>Bu bannerı Dijiyer'de yayınlama / affiliate kullanım iznim var.</strong><small>İzinsiz marka görseli veya başka sitenin içeriği eklenmemelidir.</small></span>
+            </label>
+
+            <div class="external-ad-preview" id="externalAdPreview">
+              <div class="advanced-empty">Banner önizlemesi burada görünecek.</div>
+            </div>
+
+            <div class="external-ad-form-actions">
+              <button type="submit" class="advanced-primary-btn">Kaydet / Yayınla</button>
+              <button type="button" class="support-refresh-btn" id="externalAdCancelBtn">Temizle</button>
+            </div>
+          </form>
+
+          <section class="external-ad-list-panel">
+            <div class="external-ad-list-head">
+              <div>
+                <strong>Harici Reklam Havuzu</strong>
+                <small>Aktif reklamlar ana sayfadaki harici banner alanında sırayla döner.</small>
+              </div>
+              <input id="externalAdSearch" type="search" placeholder="Marka veya başlık ara...">
+            </div>
+            <div id="externalAdAdminList" class="external-ad-admin-list"></div>
+          </section>
+        </div>
+      </section>
+
+<section id="promotionPackagesSection" hidden>
         <div class="section-title promotion-package-admin-title">
           <div>
             <h3>📦 Reklam Paketleri</h3>
