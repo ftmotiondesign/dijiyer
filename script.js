@@ -1349,28 +1349,42 @@ function renderDijiyerEarningsBottom(){
 captureDijiyerReferralSource();
 renderDijiyerEarningsBottom();
 
-async function loadHomeBottomSectionVisibility(){
+function applyHomeBottomSectionVisibility(data={}){
   const bottomQuote=document.querySelector('.business-cta-section');
   const earnings=document.getElementById('dijiyerEarningsBottom');
 
-  // Alanlar tanımlı değilse eski görünümü koru.
-  let bottomQuoteVisible=true;
-  let earningsVisible=true;
+  const bottomQuoteVisible=data.bottomQuoteVisible !== false;
+  const earningsVisible=data.earningsVisible !== false;
 
-  try{
-    const snap=await db.collection('siteSettings').doc('home').get();
-    const data=snap.exists ? (snap.data() || {}) : {};
-    bottomQuoteVisible=data.bottomQuoteVisible !== false;
-    earningsVisible=data.earningsVisible !== false;
-  }catch(error){
-    console.warn('Ana sayfa alt bölüm görünürlük ayarları okunamadı:',error);
+  if(bottomQuote){
+    bottomQuote.hidden=!bottomQuoteVisible;
+    bottomQuote.classList.toggle('site-section-disabled',!bottomQuoteVisible);
+    bottomQuote.style.display=bottomQuoteVisible ? '' : 'none';
   }
 
-  if(bottomQuote) bottomQuote.hidden=!bottomQuoteVisible;
-  if(earnings) earnings.hidden=!earningsVisible;
+  if(earnings){
+    earnings.hidden=!earningsVisible;
+    earnings.classList.toggle('site-section-disabled',!earningsVisible);
+    earnings.style.display=earningsVisible ? '' : 'none';
+  }
 }
 
-loadHomeBottomSectionVisibility();
+function watchHomeBottomSectionVisibility(){
+  try{
+    return db.collection('siteSettings').doc('home').onSnapshot(snap=>{
+      applyHomeBottomSectionVisibility(snap.exists ? (snap.data() || {}) : {});
+    },error=>{
+      console.warn('Ana sayfa alt bölüm görünürlük ayarları dinlenemedi:',error);
+      applyHomeBottomSectionVisibility({});
+    });
+  }catch(error){
+    console.warn('Ana sayfa alt bölüm görünürlük ayarı başlatılamadı:',error);
+    applyHomeBottomSectionVisibility({});
+    return null;
+  }
+}
+
+watchHomeBottomSectionVisibility();
 
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
