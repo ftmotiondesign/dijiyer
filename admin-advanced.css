@@ -804,3 +804,91 @@
     justify-content:flex-start;
   }
 }
+
+
+/* =========================================================
+   Tanıtım Siparişleri Yönetimi
+   ========================================================= */
+.promotion-admin-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.promotion-admin-kpis{
+  margin-bottom:8px;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+}
+.promotion-admin-kpis button{
+  min-height:58px;padding:8px 10px;
+  border:1px solid #e1e7ef;border-radius:9px;background:#fff;
+  display:grid;grid-template-columns:1fr auto;align-items:center;
+  color:#526175;text-align:left;cursor:pointer;
+}
+.promotion-admin-kpis span{font-size:9px;font-weight:800}
+.promotion-admin-kpis strong{font-size:19px;color:#172033}
+.promotion-admin-toolbar{grid-template-columns:minmax(240px,1fr) repeat(3,minmax(130px,.35fr))}
+.promotion-admin-list{display:grid;gap:6px}
+.promotion-admin-row{
+  overflow:hidden;border:1px solid #e1e7ef;border-radius:10px;background:#fff;
+}
+.promotion-admin-row[open]{border-color:#b9d4fa;box-shadow:0 5px 16px rgba(15,23,42,.045)}
+.promotion-admin-row>summary{
+  min-height:60px;padding:9px 11px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;
+  cursor:pointer;list-style:none;
+}
+.promotion-admin-row>summary::-webkit-details-marker{display:none}
+.promotion-admin-row>summary:hover{background:#fafcff}
+.promotion-admin-summary-main{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;min-width:0}
+.promotion-admin-service-icon{
+  width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:#eef5ff;
+}
+.promotion-admin-summary-main>div{display:grid;gap:3px;min-width:0}
+.promotion-admin-summary-main strong{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.promotion-admin-summary-main small{font-size:8.5px;color:#8491a2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.promotion-admin-summary-side{display:flex;align-items:center;gap:7px}
+.promotion-admin-price{font-size:9px;font-weight:900;color:#1268da}
+.promotion-admin-state{
+  padding:5px 7px;border-radius:999px;background:#eef2f7;color:#526175;
+  font-size:8px;font-weight:900;white-space:nowrap;
+}
+.promotion-admin-state.state-contacting{background:#e0f2fe;color:#0369a1}
+.promotion-admin-state.state-preparing{background:#fff7e6;color:#b45309}
+.promotion-admin-state.state-approval{background:#f5f3ff;color:#7c3aed}
+.promotion-admin-state.state-completed{background:#dcfce7;color:#15803d}
+.promotion-admin-detail{padding:11px;border-top:1px solid #edf1f5;background:#fcfdff}
+.promotion-admin-info-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:7px;
+}
+.promotion-admin-info-grid>div,.promotion-admin-note{
+  padding:8px;border:1px solid #e5eaf0;border-radius:8px;background:#fff;display:grid;gap:2px;
+}
+.promotion-admin-info-grid span,.promotion-admin-note span{font-size:7.8px;color:#94a3b8;font-weight:900;text-transform:uppercase}
+.promotion-admin-info-grid strong,.promotion-admin-note strong{font-size:9.5px;color:#46566b;line-height:1.4}
+.promotion-admin-note{margin-top:7px}
+.promotion-admin-controls{
+  margin-top:8px;
+  display:grid;grid-template-columns:150px 140px 120px minmax(220px,1fr) auto;
+  gap:6px;align-items:end;
+}
+.promotion-admin-controls label{display:grid;gap:4px;font-size:8px;color:#8491a2;font-weight:850}
+.promotion-admin-controls select,.promotion-admin-controls input,.promotion-admin-controls textarea{
+  width:100%;min-height:34px;padding:7px 8px;border:1px solid #d7e0ea;border-radius:8px;background:#fff;font-size:9.5px;
+}
+.promotion-admin-controls textarea{resize:vertical}
+.promotion-admin-controls>button{
+  min-height:34px;padding:0 10px;border:0;border-radius:8px;background:#1677ff;color:#fff;font-size:9px;font-weight:900;cursor:pointer;
+}
+@media(max-width:1000px){
+  .promotion-admin-kpis{grid-template-columns:repeat(3,1fr)}
+  .promotion-admin-toolbar{grid-template-columns:1fr 1fr}
+  .promotion-admin-controls{grid-template-columns:1fr 1fr}
+  .promotion-admin-note-input{grid-column:1/-1}
+}
+@media(max-width:650px){
+  .promotion-admin-title{align-items:stretch;flex-direction:column}
+  .promotion-admin-kpis{grid-template-columns:1fr 1fr}
+  .promotion-admin-toolbar{grid-template-columns:1fr}
+  .promotion-admin-row>summary{grid-template-columns:1fr}
+  .promotion-admin-summary-side{justify-content:flex-start}
+  .promotion-admin-info-grid{grid-template-columns:1fr 1fr}
+  .promotion-admin-controls{grid-template-columns:1fr}
+  .promotion-admin-note-input{grid-column:auto}
+}
