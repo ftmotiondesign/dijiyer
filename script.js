@@ -514,17 +514,67 @@ function renderMobileCategories() {
   if (!root) return;
 
   const activeMain = getSelectedMainCategory();
+  const entries = getSortedMainCategories();
+  const activeIndex = entries.findIndex(([key]) => key === activeMain);
+  const activeRowStart = activeIndex >= 0 ? Math.floor(activeIndex / 3) * 3 : -1;
+  const activeRowEnd = activeRowStart >= 0
+    ? Math.min(activeRowStart + 2, entries.length - 1)
+    : -1;
 
-  root.innerHTML = getSortedMainCategories().map(([key, item]) => `
-    <button
-      type="button"
-      class="mobile-category-btn ${activeMain === key ? 'active' : ''}"
-      data-mobile-category="${key}"
-    >
-      <span class="mobile-category-icon">${categoryIcons[key] || '•'}</span>
-      <span>${item.label}</span>
-    </button>
-  `).join('');
+  const htmlParts = [];
+
+  entries.forEach(([key, item], index) => {
+    htmlParts.push(`
+      <button
+        type="button"
+        class="mobile-category-btn ${activeMain === key ? 'active' : ''}"
+        data-mobile-category="${key}"
+        aria-expanded="${activeMain === key ? 'true' : 'false'}"
+      >
+        <span class="mobile-category-icon">${categoryIcons[key] || '•'}</span>
+        <span>${item.label}</span>
+      </button>
+    `);
+
+    if (activeMain && index === activeRowEnd) {
+      const rows = Object.entries(categoryTaxonomy[activeMain]?.subs || {});
+
+      if (rows.length) {
+        htmlParts.push(`
+          <div class="mobile-inline-subcategories" data-mobile-inline-subs="${activeMain}">
+            <div class="mobile-inline-subcategories-head">
+              <strong>${categoryTaxonomy[activeMain]?.label || 'Alt kategoriler'}</strong>
+              <span>Alt kategori seçin</span>
+            </div>
+            <div class="mobile-inline-subcategories-grid">
+              ${rows.map(([subKey, label]) => {
+                const input = document.querySelector(
+                  '.subCategoryFilter[data-main-category="' + activeMain + '"][value="' + subKey + '"]'
+                );
+                return `
+                  <button
+                    type="button"
+                    class="mobile-subcategory-btn ${input?.checked ? 'active' : ''}"
+                    data-mobile-subcategory="${subKey}"
+                    data-mobile-main="${activeMain}"
+                  >${label}</button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `);
+      }
+    }
+  });
+
+  root.innerHTML = htmlParts.join('');
+
+  // Eski alt kategori alanını artık kullanmıyoruz; satırın altında açılır.
+  const legacySubRoot = document.getElementById('mobileSubcategories');
+  if (legacySubRoot) {
+    legacySubRoot.innerHTML = '';
+    legacySubRoot.classList.add('hidden');
+  }
 
   root.querySelectorAll('[data-mobile-category]').forEach(button => {
     button.addEventListener('click', () => {
@@ -540,15 +590,38 @@ function renderMobileCategories() {
 
       renderMobileCategories();
       renderList();
-
-      const hasSubcategories =
-        Object.keys(categoryTaxonomy[key]?.subs || {}).length > 0;
-
       updateMobileCategoryResult();
     });
   });
 
-  renderMobileSubcategories(activeMain);
+  root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
+    button.addEventListener('click', () => {
+      const selectedMain = button.dataset.mobileMain;
+      const selectedSub = button.dataset.mobileSubcategory;
+      const target = document.querySelector(
+        '.subCategoryFilter[data-main-category="' + selectedMain + '"][value="' + selectedSub + '"]'
+      );
+      const parent = document.querySelector(
+        '.categoryFilter[value="' + selectedMain + '"]'
+      );
+
+      const wasSelected = Boolean(target?.checked);
+
+      document.querySelectorAll(
+        '.subCategoryFilter[data-main-category="' + selectedMain + '"]'
+      ).forEach(input => { input.checked = false; });
+
+      if (target && !wasSelected) {
+        target.checked = true;
+        if (parent) parent.checked = true;
+      }
+
+      renderMobileCategories();
+      renderList();
+      updateMobileCategoryResult();
+    });
+  });
+
   syncMobileQuickFilterState();
   updateMobileCategoryResult();
 }
