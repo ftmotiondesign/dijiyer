@@ -70,3 +70,157 @@
 .institution-announcement-alert.hidden{
   display:none !important;
 }
+
+/* Öncelikli duyuru kartı - yeni tasarım */
+.institution-announcement-alert.priority-action-card{
+  position:relative;
+  margin:14px 0 6px;
+  padding:16px 48px 16px 16px;
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  overflow:hidden;
+  border:1px solid #c9d5ff;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(99,102,241,.12),transparent 38%),
+    linear-gradient(135deg,#f5f7ff 0%,#ffffff 72%);
+  box-shadow:0 10px 28px rgba(67,56,202,.08);
+}
+
+.institution-announcement-alert.priority-action-card::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:5px;
+  background:linear-gradient(180deg,#4f46e5,#2563eb);
+}
+
+.institution-announcement-alert .announcement-alert-icon{
+  width:52px;
+  height:52px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:#e8eaff;
+  color:#4338ca;
+  font-size:23px;
+}
+
+.institution-announcement-alert .priority-action-copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+
+.institution-announcement-alert .priority-action-kicker{
+  display:block;
+  color:#4f46e5;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.10em;
+  white-space:normal;
+}
+
+.institution-announcement-alert .priority-action-copy strong{
+  color:#172033;
+  font-size:15px;
+  line-height:1.25;
+}
+
+.institution-announcement-alert .priority-action-copy > span:last-child{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#64748b;
+  font-size:11px;
+}
+
+.institution-announcement-alert .priority-action-side{
+  display:grid;
+  justify-items:end;
+  gap:7px;
+}
+
+.institution-announcement-alert .priority-action-badge{
+  min-height:23px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 9px;
+  border-radius:999px;
+  background:#e0e7ff;
+  color:#4338ca;
+  font-size:9px;
+  font-weight:900;
+}
+
+.institution-announcement-alert #openInstitutionAnnouncements{
+  min-height:40px;
+  padding:0 15px;
+  border:0;
+  border-radius:11px;
+  background:linear-gradient(135deg,#4f46e5,#2563eb);
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  box-shadow:0 7px 18px rgba(79,70,229,.18);
+}
+
+.institution-announcement-alert .priority-action-close{
+  position:absolute;
+  top:9px;
+  right:9px;
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:9px;
+  background:rgba(255,255,255,.75);
+  color:#64748b;
+  font-size:18px;
+}
+
+@media(max-width:680px){
+  .institution-announcement-alert.priority-action-card{
+    padding:14px 42px 14px 13px;
+    grid-template-columns:46px minmax(0,1fr);
+    gap:11px;
+    border-radius:16px;
+  }
+
+  .institution-announcement-alert .announcement-alert-icon{
+    width:46px;
+    height:46px;
+    border-radius:13px;
+    font-size:20px;
+  }
+
+  .institution-announcement-alert .priority-action-copy strong{
+    font-size:14px;
+  }
+
+  .institution-announcement-alert .priority-action-copy > span:last-child{
+    white-space:normal;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+
+  .institution-announcement-alert .priority-action-side{
+    grid-column:1/-1;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:9px;
+    padding-top:3px;
+  }
+
+  .institution-announcement-alert #openInstitutionAnnouncements{
+    flex:1;
+    min-height:42px;
+  }
+}
