@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=49" />
+  <link rel="stylesheet" href="style.css?v=50" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -235,8 +235,9 @@
           <input type="checkbox" id="tour360Only" hidden>
         </section>
 
-      <section class="standalone-quote-form-card hidden" id="quoteModal">
-    <div class="modal-card">
+      <div class="modal hidden quote-page-request-modal" id="quoteModal">
+    <div class="modal-card quote-page-request-card">
+      <button type="button" class="modal-close" data-close="quoteModal" onclick="document.getElementById('quoteModal').classList.add('hidden'); return false;">×</button>
       <div class="standalone-quote-form-heading">
         <div>
           <h2>Toplu Teklif Talebi</h2>
@@ -312,7 +313,7 @@
         </button>
       </form>
     </div>
-  </section>
+  </div>
 
 
       <aside class="standalone-quote-side">
@@ -1419,11 +1420,15 @@
 
   function openQuoteForm(){
     syncQuoteFormFromDiscovery();
-    document.getElementById('mobileInstantResults')?.classList.add('hidden');
-    discovery?.classList.add('quote-selection-complete');
-    formCard?.classList.remove('hidden');
-    shell?.classList.add('quote-form-open');
-    scrollToElement(formCard);
+    try{
+      if(typeof openModal==='function'){
+        openModal('quoteModal');
+      }else{
+        formCard?.classList.remove('hidden');
+      }
+    }catch(_){
+      formCard?.classList.remove('hidden');
+    }
   }
 
   // Arama butonu / Enter sonucu hazırlar. "Sonuçları Gör" seçildiğinde
@@ -1494,8 +1499,6 @@
 
   document.getElementById('quoteChoiceBackBtn')?.addEventListener('click',()=>{
     formCard?.classList.add('hidden');
-    shell?.classList.remove('quote-form-open');
-    discovery?.classList.remove('quote-selection-complete');
     scrollToElement(discovery);
   });
 })();
