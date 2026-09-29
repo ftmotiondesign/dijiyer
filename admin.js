@@ -2874,7 +2874,8 @@ function renderQuoteRequests() {
       item.city,
       item.district,
       item.service,
-      item.note
+      item.note,
+      item.targetInstitutionName
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
     const currentState = item.currentState || getAdminQuoteLiveState(item);
@@ -2960,10 +2961,17 @@ function renderQuoteRequests() {
       normalizeText(inst.city) === requestCity
     );
 
-    // Önce aynı ilçe; yoksa aynı şehirdeki aynı kategorideki kurumları göster.
-    const matching = exactDistrictMatches.length
-      ? exactDistrictMatches
-      : sameCityMatches;
+    const directTargetInstitution = request.targetInstitutionId
+      ? institutionRecords.find(inst =>
+          String(inst.id) === String(request.targetInstitutionId)
+        )
+      : null;
+
+    // Doğrudan profil talebi yalnızca hedef kuruma aittir.
+    // Normal taleplerde mevcut konum + kategori eşleşmesi devam eder.
+    const matching = request.targetInstitutionId
+      ? (directTargetInstitution ? [directTargetInstitution] : [])
+      : (exactDistrictMatches.length ? exactDistrictMatches : sameCityMatches);
 
     const cityInstitutionCount = activeInstitutions.filter(inst =>
       normalizeText(inst.city) === requestCity
@@ -3034,7 +3042,7 @@ function renderQuoteRequests() {
 
     const diagnosticInstitutions = [...diagnosticMap.values()].slice(0, 8);
 
-    const diagnosticHtml = !matching.length && diagnosticInstitutions.length
+    const diagnosticHtml = !request.targetInstitutionId && !matching.length && diagnosticInstitutions.length
       ? `
         <div class="match-diagnostics">
           <div class="diagnostic-title">Neden eşleşmedi?</div>
@@ -3086,6 +3094,7 @@ function renderQuoteRequests() {
           <h3>${escapeHtml(request.name || "-")}</h3>
           <div class="quote-badges">
             <span>${escapeHtml(request.service || "-")}</span>
+            ${request.targetInstitutionId ? '<span class="direct-request-admin-badge">🎯 Doğrudan Kurum Talebi</span>' : ""}
             <span class="quote-status ${liveStateClass}">
               ${liveStateLabel}
             </span>
@@ -3097,7 +3106,11 @@ function renderQuoteRequests() {
 
       <div class="quote-info-grid">
         <div><small>Telefon</small><strong>${escapeHtml(request.phone || "-")}</strong></div>
-        <div><small>Konum</small><strong>${escapeHtml([request.city, request.district].filter(Boolean).join(" / ") || "-")}</strong></div>
+        <div><small>${request.targetInstitutionId ? "Hedef Kurum" : "Konum"}</small><strong>${escapeHtml(
+          request.targetInstitutionId
+            ? (request.targetInstitutionName || directTargetInstitution?.name || "-")
+            : ([request.city, request.district].filter(Boolean).join(" / ") || "-")
+        )}</strong></div>
         <div class="wide"><small>Not</small><strong>${escapeHtml(request.note || "Not yok")}</strong></div>
       </div>
 
@@ -3108,11 +3121,13 @@ function renderQuoteRequests() {
       <div class="matching-institutions">
         <strong>Uygun kurumlar (${matching.length})</strong>
         <div class="match-scope">
-          ${exactDistrictMatches.length
-            ? 'Aynı ilçe + aynı kategori'
-            : sameCityMatches.length
-              ? 'Aynı şehir + aynı kategori'
-              : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu kategoride toplam ${categoryMatches.length} kurum var`}
+          ${request.targetInstitutionId
+            ? 'Doğrudan kurum profilinden gönderildi · sadece hedef kurum görür'
+            : (exactDistrictMatches.length
+                ? 'Aynı ilçe + aynı kategori'
+                : sameCityMatches.length
+                  ? 'Aynı şehir + aynı kategori'
+                  : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu kategoride toplam ${categoryMatches.length} kurum var`)}
         </div>
         <div class="matching-buttons">${institutionButtons}</div>
         ${diagnosticHtml}
