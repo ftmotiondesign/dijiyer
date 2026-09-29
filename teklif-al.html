@@ -1408,8 +1408,8 @@
     scrollToElement(formCard);
   }
 
-  // Arama butonu / Enter burada sadece sonucu hazırlar; ana sayfadaki gibi
-  // aşağıdaki kurum kartlarına otomatik atlamaz.
+  // Arama butonu / Enter sonucu hazırlar. "Sonuçları Gör" seçildiğinde
+  // ana sayfadaki kurum kartları bu alanın hemen altında açılır.
   document.addEventListener('click',event=>{
     const searchBtn=event.target.closest('#mobileDiscoverySearchBtn');
     if(searchBtn && discovery?.contains(searchBtn)){
@@ -1443,7 +1443,15 @@
     if(resultBtn && discovery?.contains(resultBtn)){
       event.preventDefault();
       event.stopImmediatePropagation();
-      openQuoteForm();
+
+      // Ana sayfadakiyle aynı şekilde eşleşen kurumları hemen aşağıda göster.
+      // Kurum kartına veya "Kurumu Gör" butonuna dokununca kurumun
+      // tanıtım sayfası (kurum.html?id=...) açılır.
+      try{
+        if(typeof showMobileInstitutionResults==='function'){
+          showMobileInstitutionResults(true);
+        }
+      }catch(_){}
     }
   },true);
 
