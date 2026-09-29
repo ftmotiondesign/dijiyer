@@ -12958,3 +12958,56 @@ to{opacity:1;transform:none}
     bottom:calc(env(safe-area-inset-bottom, 0px) + 128px);
   }
 }
+
+
+/* =========================================================
+   HARİCİ REKLAM ELLE KAYDIRMA
+   ========================================================= */
+.external-ad-stage{
+  position:relative;
+  overflow:hidden;
+  touch-action:pan-y;
+  cursor:grab;
+  user-select:none;
+}
+.external-ad-stage:active{
+  cursor:grabbing;
+}
+.external-ad-nav{
+  position:absolute;
+  top:50%;
+  z-index:5;
+  width:34px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:999px;
+  background:rgba(15,23,42,.58);
+  color:#fff;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+  transform:translateY(-50%);
+  backdrop-filter:blur(5px);
+  box-shadow:0 4px 14px rgba(15,23,42,.16);
+  transition:.18s ease;
+}
+.external-ad-nav:hover{
+  background:rgba(15,23,42,.78);
+  transform:translateY(-50%) scale(1.05);
+}
+.external-ad-nav.prev{left:9px}
+.external-ad-nav.next{right:9px}
+
+@media(max-width:820px){
+  .external-ad-nav{
+    width:30px;
+    height:38px;
+    font-size:22px;
+    background:rgba(15,23,42,.46);
+  }
+  .external-ad-nav.prev{left:6px}
+  .external-ad-nav.next{right:6px}
+}
