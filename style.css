@@ -13908,3 +13908,199 @@ to{opacity:1;transform:none}
     font-size:11px;
   }
 }
+
+
+/* =========================================================
+   MOBİL ANLIK KURUM SONUÇLARI V1
+   Arama sonucu artık kategori alanının altında kaybolmaz.
+   "Sonuçları Gör" eşleşen kurumları hemen aşağıda açar.
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-keyword-hints + .mobile-category-result{
+    margin-top:8px !important;
+  }
+
+  #mobileCategoryResultBtn:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    box-shadow:none !important;
+  }
+
+  .mobile-instant-results{
+    margin-top:8px;
+    padding:9px;
+    border:1px solid #cfe0f5;
+    border-radius:14px;
+    background:#fff;
+    box-shadow:0 8px 22px rgba(18,69,126,.08);
+  }
+
+  .mobile-instant-results.hidden{
+    display:none !important;
+  }
+
+  .mobile-instant-results-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:2px 2px 8px;
+  }
+
+  .mobile-instant-results-head span{
+    display:block;
+    color:#1677ff;
+    font-size:7px;
+    font-weight:950;
+    letter-spacing:.07em;
+  }
+
+  .mobile-instant-results-head strong{
+    display:block;
+    margin-top:2px;
+    color:#203650;
+    font-size:11px;
+  }
+
+  .mobile-instant-results-head button{
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:8px;
+    background:#f1f5f9;
+    color:#64748b;
+    font-size:18px;
+    line-height:1;
+  }
+
+  .mobile-instant-results-list{
+    display:grid;
+    gap:7px;
+  }
+
+  .mobile-instant-result-card{
+    display:grid;
+    grid-template-columns:50px minmax(0,1fr) auto;
+    gap:9px;
+    align-items:center;
+    padding:8px;
+    border:1px solid #e0e7ef;
+    border-radius:11px;
+    background:#fff;
+    cursor:pointer;
+  }
+
+  .mobile-instant-result-logo{
+    width:50px;
+    height:50px;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    border-radius:10px;
+    background:linear-gradient(145deg,#eef5ff,#f8fbff);
+    color:#274968;
+    font-size:19px;
+  }
+
+  .mobile-instant-result-logo.has-logo{
+    background:#fff;
+    border:1px solid #edf1f5;
+  }
+
+  .mobile-instant-result-logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:4px;
+  }
+
+  .mobile-instant-result-copy{
+    min-width:0;
+  }
+
+  .mobile-instant-result-copy>strong{
+    display:block;
+    overflow:hidden;
+    color:#213750;
+    font-size:9.5px;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-instant-result-copy>span,
+  .mobile-instant-result-copy>small{
+    display:block;
+    margin-top:3px;
+    overflow:hidden;
+    color:#77869a;
+    font-size:7px;
+    line-height:1.25;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-instant-result-copy>small{
+    color:#66778c;
+  }
+
+  .mobile-instant-result-copy>div{
+    display:flex;
+    gap:4px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+
+  .mobile-instant-result-copy em{
+    padding:3px 5px;
+    border-radius:999px;
+    background:#eef7f2;
+    color:#17804b;
+    font-size:6px;
+    font-style:normal;
+    font-weight:900;
+  }
+
+  .mobile-instant-result-actions{
+    display:grid;
+    gap:5px;
+  }
+
+  .mobile-instant-result-actions button{
+    min-height:29px;
+    padding:0 7px;
+    border:1px solid #cfe0f5;
+    border-radius:8px;
+    background:#f3f8ff;
+    color:#1268da;
+    font-size:6.8px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .mobile-instant-result-actions button.offer{
+    border-color:#bfe5ce;
+    background:#effaf3;
+    color:#16804a;
+  }
+
+  .mobile-instant-results-empty{
+    padding:16px 10px;
+    border:1px dashed #cfd9e5;
+    border-radius:10px;
+    background:#fafcfe;
+    text-align:center;
+  }
+
+  .mobile-instant-results-empty strong{
+    display:block;
+    color:#3c5168;
+    font-size:9px;
+  }
+
+  .mobile-instant-results-empty span{
+    display:block;
+    margin-top:4px;
+    color:#8190a2;
+    font-size:7px;
+  }
+}
