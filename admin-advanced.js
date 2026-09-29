@@ -598,6 +598,23 @@
     root.querySelectorAll("[data-banner-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteBannerAd(btn.dataset.bannerDelete)));
   }
 
+  window.openBannerAdForInstitution = async institutionId => {
+    showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
+    await loadBannerAdsAdmin();
+    const inst=institutionRecords.find(item=>String(item.id)===String(institutionId));
+    resetBannerAdForm();
+    if(inst){
+      fillBannerAdTargetOptions(inst);
+      $("bannerAdInstitution").value=String(inst.id);
+      $("bannerAdHeadline").value=inst.name||"";
+      $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
+      $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
+      renderBannerAdminPreview();
+    }
+    await renderBannerAdsAdmin(false);
+  };
+
   $("bannerAdForm")?.addEventListener("submit",saveBannerAd);
   $("bannerAdNewBtn")?.addEventListener("click",resetBannerAdForm);
   $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
