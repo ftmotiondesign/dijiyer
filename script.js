@@ -382,6 +382,16 @@ function updateMobileCategoryResult() {
     return;
   }
 
+  const hasSubcategories =
+    Object.keys(categoryTaxonomy[activeMain]?.subs || {}).length > 0;
+
+  // Alt kategorisi olan bir ana kategoride, sonuç kutusunu
+  // kullanıcı alt kategori seçtikten sonra göster.
+  if (hasSubcategories && !selectedSub) {
+    root.classList.add('hidden');
+    return;
+  }
+
   const mainLabel =
     categoryTaxonomy[activeMain]?.label ||
     activeMain;
@@ -415,9 +425,6 @@ function updateMobileCategoryResult() {
   if (countEl) countEl.textContent = String(count);
 
   if (hint) {
-    const hasSubcategories =
-      Object.keys(categoryTaxonomy[activeMain]?.subs || {}).length > 0;
-
     hint.textContent = subLabel || !hasSubcategories
       ? 'Uygun kurumları inceleyin, karşılaştırın veya teklif alın.'
       : 'Alt kategori seçerek sonuçları daha da daraltabilirsiniz.';
@@ -513,6 +520,19 @@ function renderMobileCategories() {
   const root = document.getElementById('mobileCategories');
   if (!root) return;
 
+  const resultPanel = document.getElementById('mobileCategoryResult');
+  const legacySubRoot = document.getElementById('mobileSubcategories');
+
+  // Sonuç paneli bir önceki render'da kategori gridinin içine taşındıysa,
+  // root.innerHTML yenilenmeden önce güvenli sabit konumuna geri al.
+  if (
+    resultPanel &&
+    root.contains(resultPanel) &&
+    legacySubRoot?.parentNode
+  ) {
+    legacySubRoot.parentNode.insertBefore(resultPanel, legacySubRoot.nextSibling);
+  }
+
   const activeMain = getSelectedMainCategory();
   const entries = getSortedMainCategories();
   const activeIndex = entries.findIndex(([key]) => key === activeMain);
@@ -570,7 +590,6 @@ function renderMobileCategories() {
   root.innerHTML = htmlParts.join('');
 
   // Eski alt kategori alanını artık kullanmıyoruz; satırın altında açılır.
-  const legacySubRoot = document.getElementById('mobileSubcategories');
   if (legacySubRoot) {
     legacySubRoot.innerHTML = '';
     legacySubRoot.classList.add('hidden');
@@ -621,6 +640,15 @@ function renderMobileCategories() {
       updateMobileCategoryResult();
     });
   });
+
+  const selectedSub = document.querySelector('.subCategoryFilter:checked');
+  const inlineSubPanel = activeMain
+    ? root.querySelector('[data-mobile-inline-subs="' + activeMain + '"]')
+    : null;
+
+  if (resultPanel && selectedSub && inlineSubPanel) {
+    inlineSubPanel.appendChild(resultPanel);
+  }
 
   syncMobileQuickFilterState();
   updateMobileCategoryResult();
