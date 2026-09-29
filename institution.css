@@ -3520,3 +3520,11 @@ body[data-panel-current="stats"] .persistent-performance{
     flex:1 1 auto;
   }
 }
+
+
+/* Destek menüsünde okunmamış yanıt sayısını kırmızı göster */
+[data-mirror-count="supportTabCount"]:not(.empty){
+  background:#dc2626 !important;
+  color:#fff !important;
+  animation:djyMessagePulse 1.5s infinite;
+}
