@@ -1214,6 +1214,7 @@ let mobileJobPosts = [];
 let activeMobileJobFilter = 'all';
 let activeMobileJobQuick = 'all';
 let activeMobileJobCategory = 'all';
+let mobileJobCategoryShowAll = false;
 let mobileJobSearchQuery = '';
 let mobileJobSearchTimer = null;
 
@@ -1363,35 +1364,123 @@ function renderMobileJobCategories(){
     counts.set(category,(counts.get(category)||0)+1);
   });
 
-  const allButton=`
-    <button type="button" class="${activeMobileJobCategory==='all'?'active':''}" data-job-category="all">
-      <span>⌘</span>
-      <strong>Tümü</strong>
-      <small>${facetRows.length}</small>
-    </button>
-  `;
+  const items=[
+    {key:'all',icon:'⌘',label:'Tümü',count:facetRows.length},
+    ...MOBILE_JOB_CATEGORIES.map(item=>({
+      ...item,
+      count:counts.get(item.key)||0
+    }))
+  ];
 
-  root.innerHTML=allButton+MOBILE_JOB_CATEGORIES.map(item=>`
-    <button
-      type="button"
-      class="${activeMobileJobCategory===item.key?'active':''}"
-      data-job-category="${item.key}"
-      ${(counts.get(item.key)||0)===0?'aria-disabled="true"':''}
-    >
-      <span>${item.icon}</span>
-      <strong>${escapeHtml(item.label)}</strong>
-      <small>${counts.get(item.key)||0}</small>
-    </button>
-  `).join('');
+  const selectedIndex=items.findIndex(item=>item.key===activeMobileJobCategory);
+  const rowEndIndex=activeMobileJobCategory==='all'
+    ? -1
+    : Math.min(items.length,Math.ceil((selectedIndex+1)/3)*3);
+
+  const selectedRows=activeMobileJobCategory==='all'
+    ? []
+    : facetRows.filter(post=>inferMobileJobCategory(post)===activeMobileJobCategory);
+
+  const selectedMeta=activeMobileJobCategory==='all'
+    ? null
+    : mobileJobCategoryMeta(activeMobileJobCategory);
+
+  const visibleSelectedRows=mobileJobCategoryShowAll
+    ? selectedRows
+    : selectedRows.slice(0,4);
+
+  const expandHtml=selectedMeta ? `
+    <div class="mobile-jobs-category-expand" data-job-category-expand="${escapeHtml(activeMobileJobCategory)}">
+      <div class="mobile-jobs-category-expand-head">
+        <div class="mobile-jobs-category-expand-title">
+          <span>${selectedMeta.icon}</span>
+          <div>
+            <strong>${escapeHtml(selectedMeta.label)}</strong>
+            <small>${selectedRows.length} ilan · kategori sonuçları</small>
+          </div>
+        </div>
+        <button type="button" data-job-category-close aria-label="Kategoriyi kapat">×</button>
+      </div>
+
+      <div class="mobile-jobs-category-expand-list">
+        ${visibleSelectedRows.length
+          ? visibleSelectedRows.map(mobileJobCardHtml).join('')
+          : `
+            <div class="mobile-jobs-category-no-result">
+              <span>💼</span>
+              <div>
+                <strong>Bu kategoride uygun ilan yok</strong>
+                <small>Filtreleri temizleyebilir veya ilk ilanı sen verebilirsin.</small>
+              </div>
+              <button type="button" data-job-post-empty>İlan Ver</button>
+            </div>
+          `}
+      </div>
+
+      ${selectedRows.length>4 ? `
+        <button type="button" class="mobile-jobs-category-more" data-job-category-more>
+          ${mobileJobCategoryShowAll
+            ? 'Daha az göster'
+            : 'Bu kategorideki tüm '+selectedRows.length+' ilanı göster'}
+        </button>
+      ` : ''}
+    </div>
+  ` : '';
+
+  let output='';
+
+  items.forEach((item,index)=>{
+    const active=activeMobileJobCategory===item.key;
+    output+=`
+      <button
+        type="button"
+        class="${active?'active':''}"
+        data-job-category="${item.key}"
+        ${item.count===0&&item.key!=='all'?'aria-disabled="true"':''}
+      >
+        <span>${item.icon}</span>
+        <strong>${escapeHtml(item.label)}</strong>
+        <small>${item.count}</small>
+      </button>
+    `;
+
+    if(rowEndIndex>0 && index+1===rowEndIndex){
+      output+=expandHtml;
+    }
+  });
+
+  root.innerHTML=output;
 
   root.querySelectorAll('[data-job-category]').forEach(button=>{
     button.addEventListener('click',()=>{
-      activeMobileJobCategory=button.dataset.jobCategory||'all';
+      const next=button.dataset.jobCategory||'all';
+
+      if(next===activeMobileJobCategory && next!=='all'){
+        activeMobileJobCategory='all';
+      }else{
+        activeMobileJobCategory=next;
+      }
+
+      mobileJobCategoryShowAll=false;
       renderMobileJobs();
     });
   });
-}
 
+  root.querySelector('[data-job-category-close]')?.addEventListener('click',()=>{
+    activeMobileJobCategory='all';
+    mobileJobCategoryShowAll=false;
+    renderMobileJobs();
+  });
+
+  root.querySelector('[data-job-category-more]')?.addEventListener('click',()=>{
+    mobileJobCategoryShowAll=!mobileJobCategoryShowAll;
+    renderMobileJobs();
+  });
+
+  root.querySelector('[data-job-post-empty]')?.addEventListener('click',()=>openJobPostModal('hire'));
+
+  bindMobileJobContactButtons(root);
+}
 function updateMobileJobsUi(filtered){
   const count=document.getElementById('mobileJobsResultCount');
   const location=document.getElementById('mobileJobsLocationLabel');
@@ -1487,29 +1576,11 @@ function mobileJobCardHtml(post){
   `;
 }
 
-function renderMobileJobs(){
-  const list=document.getElementById('mobileJobsList');
-  if(!list)return;
+function bindMobileJobContactButtons(scope=document){
+  scope.querySelectorAll('[data-job-contact]').forEach(button=>{
+    if(button.dataset.jobContactBound==='1')return;
+    button.dataset.jobContactBound='1';
 
-  const filtered=getFilteredMobileJobs();
-
-  renderMobileJobCategories();
-  updateMobileJobsUi(filtered);
-
-  list.innerHTML=filtered.length
-    ? filtered.slice(0,12).map(mobileJobCardHtml).join('')
-    : `
-      <div class="mobile-jobs-empty">
-        <span>💼</span>
-        <div>
-          <strong>Aramana uygun ilan bulunamadı</strong>
-          <small>Filtreyi temizleyebilir veya ilk ilanı sen verebilirsin.</small>
-        </div>
-        <button type="button" data-job-post-empty>İlan Ver</button>
-      </div>
-    `;
-
-  list.querySelectorAll('[data-job-contact]').forEach(button=>{
     button.addEventListener('click',()=>{
       const post=mobileJobPosts.find(item=>String(item.id)===String(button.dataset.jobContact));
       if(!post)return;
@@ -1531,10 +1602,43 @@ function renderMobileJobs(){
       window.open('https://wa.me/'+phone+'?text='+text,'_blank','noopener');
     });
   });
-
-  list.querySelector('[data-job-post-empty]')?.addEventListener('click',()=>openJobPostModal('hire'));
 }
 
+function renderMobileJobs(){
+  const list=document.getElementById('mobileJobsList');
+  const resultsHead=document.querySelector('.mobile-jobs-results-head');
+  if(!list)return;
+
+  const filtered=getFilteredMobileJobs();
+  const inlineCategoryActive=activeMobileJobCategory!=='all';
+
+  renderMobileJobCategories();
+  updateMobileJobsUi(filtered);
+
+  resultsHead?.classList.toggle('hidden',inlineCategoryActive);
+  list.classList.toggle('hidden',inlineCategoryActive);
+
+  if(inlineCategoryActive){
+    list.innerHTML='';
+    return;
+  }
+
+  list.innerHTML=filtered.length
+    ? filtered.slice(0,12).map(mobileJobCardHtml).join('')
+    : `
+      <div class="mobile-jobs-empty">
+        <span>💼</span>
+        <div>
+          <strong>Aramana uygun ilan bulunamadı</strong>
+          <small>Filtreyi temizleyebilir veya ilk ilanı sen verebilirsin.</small>
+        </div>
+        <button type="button" data-job-post-empty>İlan Ver</button>
+      </div>
+    `;
+
+  bindMobileJobContactButtons(list);
+  list.querySelector('[data-job-post-empty]')?.addEventListener('click',()=>openJobPostModal('hire'));
+}
 async function loadMobileJobs(){
   const list=document.getElementById('mobileJobsList');
   if(!list)return;
@@ -1563,11 +1667,13 @@ async function loadMobileJobs(){
 
 function setMobileJobFilter(filter){
   activeMobileJobFilter=filter||'all';
+  mobileJobCategoryShowAll=false;
   renderMobileJobs();
 }
 
 function setMobileJobQuickFilter(filter){
   activeMobileJobQuick=filter||'all';
+  mobileJobCategoryShowAll=false;
   renderMobileJobs();
 }
 
