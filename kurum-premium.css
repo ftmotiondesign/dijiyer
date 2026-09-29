@@ -511,3 +511,208 @@ body{
     transform-origin:left top;
   }
 }
+
+
+/* =========================================================
+   360° ALANI · DAHA FERAH GÖRÜNÜM V3
+   Kontroller görüntünün üstünden kaldırıldı.
+   ========================================================= */
+
+.kp-cover{
+  height:430px;
+}
+
+.kp-hero-media-toolbar{
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 10px;
+  border-top:1px solid #e5eaf0;
+  border-bottom:1px solid #edf0f4;
+  background:#fff;
+}
+
+.kp-hero-media-toolbar.hidden{
+  display:none!important;
+}
+
+.kp-hero-media-toolbar-left,
+.kp-hero-media-toolbar-right{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.kp-hero-media-toolbar-right{
+  margin-left:auto;
+  justify-content:flex-end;
+}
+
+/* Medya sekmeleri artık görüntünün üstünü kapatmaz. */
+.kp-hero-media-toolbar .kp-hero-media-tabs{
+  position:static;
+  z-index:auto;
+  display:flex;
+  gap:4px;
+  padding:3px;
+  border:1px solid #dfe5ec;
+  border-radius:9px;
+  background:#f3f6f9;
+  backdrop-filter:none;
+}
+
+.kp-hero-media-toolbar .kp-hero-media-tabs button{
+  min-height:31px;
+  padding:0 9px;
+  border-radius:7px;
+  color:#66758a;
+  font-size:8.3px;
+}
+
+.kp-hero-media-toolbar .kp-hero-media-tabs button.active{
+  background:#fff;
+  color:#172033;
+  box-shadow:0 2px 7px rgba(15,23,42,.08);
+}
+
+/* Kullanım bilgisi küçük bir satır haline geldi. */
+.kp-hero-media-toolbar .kp-hero-guide{
+  position:static;
+  z-index:auto;
+  max-width:none;
+  min-height:34px;
+  gap:6px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#556478;
+  backdrop-filter:none;
+}
+
+.kp-hero-media-toolbar .kp-hero-guide>span{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  border-radius:8px;
+  background:#eef3f7;
+  color:#42556d;
+  font-size:8px;
+}
+
+.kp-hero-media-toolbar .kp-hero-guide strong{
+  color:#35485f;
+  font-size:8.4px;
+}
+
+.kp-hero-media-toolbar .kp-hero-guide small{
+  color:#8491a2;
+  font-size:7.2px;
+}
+
+/* Tam ekran butonu da medya dışına taşındı. */
+.kp-hero-media-toolbar .kp-hero-fullscreen{
+  position:static;
+  z-index:auto;
+  min-height:32px;
+  padding:0 9px;
+  border:1px solid #d9e1e9;
+  border-radius:8px;
+  background:#f8fafc;
+  color:#34475f;
+  font-size:8px;
+  backdrop-filter:none;
+  white-space:nowrap;
+}
+
+/* Eski absolute kuralların 360 görüntüyü kapatmasını engelle. */
+.kp-cover-experience>.kp-hero-media-tabs,
+.kp-cover-experience>.kp-hero-guide,
+.kp-cover-experience>.kp-hero-fullscreen{
+  display:none!important;
+}
+
+@media(max-width:900px){
+  .kp-cover{
+    height:370px;
+  }
+}
+
+@media(max-width:640px){
+  .kp-cover{
+    height:320px;
+  }
+
+  .kp-hero-media-toolbar{
+    min-height:auto;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:7px;
+    padding:7px 8px;
+  }
+
+  .kp-hero-media-toolbar-left,
+  .kp-hero-media-toolbar-right{
+    gap:6px;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-media-tabs{
+    width:100%;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-media-tabs::-webkit-scrollbar{
+    display:none;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-media-tabs button{
+    min-height:30px;
+    padding:0 8px;
+    font-size:7.5px;
+    white-space:nowrap;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-guide{
+    grid-column:1/-1;
+    order:2;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-guide small{
+    display:inline;
+  }
+
+  .kp-hero-media-toolbar-right{
+    display:contents;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-fullscreen{
+    grid-column:2;
+    grid-row:1;
+    min-height:30px;
+    padding:0 8px;
+    font-size:7.4px;
+  }
+}
+
+@media(max-width:390px){
+  .kp-cover{
+    height:300px;
+  }
+
+  .kp-hero-media-toolbar{
+    grid-template-columns:minmax(0,1fr) auto;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-guide{
+    display:none;
+  }
+
+  .kp-hero-media-toolbar .kp-hero-media-tabs button{
+    padding:0 7px;
+    font-size:7px;
+  }
+}
