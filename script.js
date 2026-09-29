@@ -3906,6 +3906,102 @@ function showQuoteTrackingSuccess(tracking, matchedCount) {
   openModal('quoteSuccessModal');
 }
 
+
+function dijiyerTurkeyDayRange(){
+  const now=new Date();
+  const tr=new Date(now.getTime()+3*60*60*1000);
+  const year=tr.getUTCFullYear();
+  const month=tr.getUTCMonth();
+  const day=tr.getUTCDate();
+  const startMs=Date.UTC(year,month,day)-3*60*60*1000;
+  return {
+    start:new Date(startMs).toISOString(),
+    end:new Date(startMs+24*60*60*1000).toISOString()
+  };
+}
+
+async function createPublicStatEvent(collectionName,eventId,data){
+  try{
+    const ref=db.collection(collectionName).doc(String(eventId));
+    const existing=await ref.get();
+    if(existing.exists)return;
+    await ref.set(data);
+  }catch(error){
+    console.warn("Günlük istatistik olayı kaydedilemedi:",collectionName,error);
+  }
+}
+
+async function recordPublicQuoteRequestEvent(quoteId,requestData){
+  if(!quoteId||!requestData)return;
+  return createPublicStatEvent("publicQuoteRequestEvents",quoteId,{
+    quoteId:String(quoteId),
+    mainCategory:String(requestData.mainCategory||""),
+    subCategory:String(requestData.subCategory||""),
+    service:String(requestData.service||""),
+    date:String(requestData.date||"")
+  });
+}
+
+async function loadTodayPublicStats(){
+  const root=document.getElementById("mobileDailyStats");
+  if(!root)return;
+
+  const requestEl=document.getElementById("dailyQuoteRequestCount");
+  const offerEl=document.getElementById("dailyOfferCount");
+  const acceptedEl=document.getElementById("dailyAcceptedCount");
+  const topEl=document.getElementById("dailyTopService");
+  const topCountEl=document.getElementById("dailyTopServiceCount");
+  const noteEl=document.getElementById("mobileDailyStatsNote");
+
+  try{
+    const {start,end}=dijiyerTurkeyDayRange();
+
+    const [requestsSnap,offersSnap,acceptedSnap]=await Promise.all([
+      db.collection("publicQuoteRequestEvents")
+        .where("date",">=",start)
+        .where("date","<",end)
+        .get(),
+      db.collection("publicOfferEvents")
+        .where("date",">=",start)
+        .where("date","<",end)
+        .get(),
+      db.collection("publicAcceptedEvents")
+        .where("date",">=",start)
+        .where("date","<",end)
+        .get()
+    ]);
+
+    if(requestEl)requestEl.textContent=String(requestsSnap.size);
+    if(offerEl)offerEl.textContent=String(offersSnap.size);
+    if(acceptedEl)acceptedEl.textContent=String(acceptedSnap.size);
+
+    const serviceCounts=new Map();
+    requestsSnap.docs.forEach(doc=>{
+      const row=doc.data()||{};
+      const service=String(row.service||"").trim() || "Diğer";
+      serviceCounts.set(service,(serviceCounts.get(service)||0)+1);
+    });
+
+    const top=[...serviceCounts.entries()]
+      .sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0],"tr"))[0];
+
+    if(top){
+      if(topEl)topEl.textContent=top[0];
+      if(topCountEl)topCountEl.textContent=top[1]+" talep";
+    }else{
+      if(topEl)topEl.textContent="Henüz yok";
+      if(topCountEl)topCountEl.textContent="";
+    }
+
+    if(noteEl){
+      noteEl.textContent="Bugün oluşturulan talep, verilen teklif ve kabul edilen tekliflerden otomatik hesaplanır.";
+    }
+  }catch(error){
+    console.warn("Günlük Dijiyer istatistikleri yüklenemedi:",error);
+    if(noteEl)noteEl.textContent="Günlük istatistikler hazırlanıyor.";
+  }
+}
+
 document.getElementById('quoteForm').addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -3951,6 +4047,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
 
   try {
     const quoteRef = await db.collection('quoteRequests').add(request);
+    await recordPublicQuoteRequestEvent(quoteRef.id, request);
     let tracking = null;
 
     try {
@@ -6296,3 +6393,6 @@ loadApprovedInstitutions();
 
 
 startRegionalBannerAds();
+
+
+loadTodayPublicStats().catch(()=>{});
