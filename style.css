@@ -2680,3 +2680,45 @@ button{cursor:pointer}
     grid-template-columns:repeat(2,1fr);
   }
 }
+
+
+/* Kurum panelinden açılan müşteri görünümü önizlemesi */
+.public-preview-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 14px;
+  padding:11px 13px;
+  border:1px solid #bfdbfe;
+  border-radius:12px;
+  background:#eff6ff;
+}
+.public-preview-banner>div{
+  display:grid;
+  gap:2px;
+}
+.public-preview-banner strong{
+  color:#1d4ed8;
+  font-size:12px;
+}
+.public-preview-banner span{
+  color:#64748b;
+  font-size:10px;
+}
+.public-preview-banner button{
+  flex:0 0 auto;
+  border:1px solid #93c5fd;
+  border-radius:8px;
+  background:#fff;
+  color:#1d4ed8;
+  padding:7px 9px;
+  font-size:9px;
+  font-weight:850;
+}
+@media(max-width:560px){
+  .public-preview-banner{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
