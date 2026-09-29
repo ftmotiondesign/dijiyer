@@ -1086,6 +1086,8 @@ function openDijiyerEarningsModal(tab='invite'){
 
 function bindDijiyerEarningsActions(){
   document.querySelectorAll('[data-dijiyer-invite]').forEach(button=>{
+    if(button.dataset.dijiyerEarningsBound==='1')return;
+    button.dataset.dijiyerEarningsBound='1';
     button.addEventListener('click',event=>{
       event.preventDefault();
       event.stopPropagation();
@@ -1094,6 +1096,8 @@ function bindDijiyerEarningsActions(){
   });
 
   document.querySelectorAll('[data-dijiyer-earnings]').forEach(button=>{
+    if(button.dataset.dijiyerEarningsBound==='1')return;
+    button.dataset.dijiyerEarningsBound='1';
     button.addEventListener('click',event=>{
       event.preventDefault();
       event.stopPropagation();
@@ -1102,7 +1106,26 @@ function bindDijiyerEarningsActions(){
   });
 }
 
+function renderDijiyerEarningsBottom(){
+  const root=document.getElementById('dijiyerEarningsBottom');
+  if(!root)return;
+
+  root.innerHTML=`
+    <div class="dijiyer-earnings-bottom-inner">
+      <div class="dijiyer-earnings-bottom-head">
+        <span>DAHA FAZLA</span>
+        <strong>Dijiyer Kazanç</strong>
+        <small>Pilot özellik · detayları geliştirme aşamasında</small>
+      </div>
+      ${dijiyerEarningsCardHtml()}
+    </div>
+  `;
+
+  bindDijiyerEarningsActions();
+}
+
 captureDijiyerReferralSource();
+renderDijiyerEarningsBottom();
 
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
@@ -1451,6 +1474,82 @@ function openComparisonModal(){
   });
 }
 
+function getInstitutionListSponsorAds(){
+  const activeMain=getSelectedMainCategory();
+  const selectedSub=document.querySelector('.subCategoryFilter:checked')?.value || '';
+  const activeCity=normalizeQuoteSearch(activeLocationCity || '');
+  const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
+
+  return activeRegionalBannerAds().filter(ad=>{
+    const adCity=normalizeQuoteSearch(ad.city || '');
+    const adDistrict=normalizeQuoteSearch(ad.district || '');
+    const adCategory=String(ad.category || '').trim();
+
+    if(adCity && activeCity && adCity!==activeCity)return false;
+    if(adDistrict && activeDistrict && adDistrict!==activeDistrict)return false;
+
+    if(adCategory){
+      const categoryMatch=
+        adCategory===String(activeMain || '') ||
+        adCategory===String(selectedSub || '');
+
+      if((activeMain || selectedSub) && !categoryMatch)return false;
+    }
+
+    return true;
+  });
+}
+
+function institutionListSponsorHtml(){
+  const ads=getInstitutionListSponsorAds();
+
+  if(!ads.length){
+    return `
+      <article class="institution-list-sponsored institution-list-sponsored-empty">
+        <div class="institution-list-sponsored-empty-icon">📣</div>
+        <div class="institution-list-sponsored-empty-copy">
+          <span>SPONSORLU REKLAM ALANI</span>
+          <strong>İşletmeni burada göster</strong>
+          <small>Kurum listesinde müşterilerin karşısına görsel veya video reklamla çık.</small>
+        </div>
+        <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+      </article>
+    `;
+  }
+
+  const ad=ads[0];
+  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const video=safePublicProfileUrl(ad.videoUrl || '');
+  const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
+  const regionText=[ad.city,ad.district].filter(Boolean).join(' / ');
+  const sectorText=ad.categoryLabel || bannerCategoryLabel(ad.category);
+  const href='kurum.html?id='+encodeURIComponent(ad.institutionId || '');
+
+  return `
+    <article class="institution-list-sponsored">
+      <a class="institution-list-sponsored-link" href="${href}">
+        <div class="institution-list-sponsored-media ${isVideo ? 'is-video' : ''}">
+          ${isVideo
+            ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
+            : (image
+                ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
+                : '<div class="institution-list-sponsored-fallback">📣</div>')}
+          <span class="institution-list-sponsored-badge">SPONSORLU</span>
+          ${isVideo ? '<span class="institution-list-sponsored-video-badge">▶ Video Reklam</span>' : ''}
+        </div>
+        <div class="institution-list-sponsored-body">
+          <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
+          <p>${escapeHtml(ad.text || '')}</p>
+          <div>
+            <small>${escapeHtml([regionText,sectorText].filter(Boolean).join(' · '))}</small>
+            <b>İncele →</b>
+          </div>
+        </div>
+      </a>
+    </article>
+  `;
+}
+
 function renderList() {
   const list = document.getElementById('institutionList');
   const data = getFilteredInstitutions();
@@ -1509,15 +1608,15 @@ function renderList() {
   });
 
   if (institutionCards.length >= 2) {
-    institutionCards.splice(2, 0, dijiyerEarningsCardHtml());
+    institutionCards.splice(2, 0, institutionListSponsorHtml());
   } else if (institutionCards.length) {
-    institutionCards.push(dijiyerEarningsCardHtml());
+    institutionCards.push(institutionListSponsorHtml());
   }
 
   list.innerHTML = institutionCards.join('') ||
     `<div class="institution-list-empty">Filtreye uygun kurum bulunamadı.</div>`;
 
-  bindDijiyerEarningsActions();
+  bindHomepageAdvertiseButtons();
 
   document.querySelectorAll('.institution-card').forEach(card => {
     card.addEventListener('click', e => {
@@ -2320,6 +2419,10 @@ function startRegionalBannerAds(){
     if(document.getElementById("detailPanel") && selectedId){
       renderDecisionAlternatives();
       renderDetail();
+    }
+
+    if(document.getElementById("institutionList")){
+      renderList();
     }
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
