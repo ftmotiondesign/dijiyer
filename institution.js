@@ -2167,6 +2167,22 @@ auth.onAuthStateChanged(async user => {
   }
 });
 
+document.getElementById("publicProfilePreviewBtn")?.addEventListener("click", () => {
+  const institutionId=String(currentAccount?.institutionId || "").trim();
+
+  if(!institutionId){
+    alert("Kurum bilgileri henüz yüklenmedi. Birkaç saniye sonra tekrar deneyin.");
+    return;
+  }
+
+  const url=new URL("index.html",window.location.href);
+  url.searchParams.set("kurum",institutionId);
+  url.searchParams.set("onizleme","1");
+  url.hash="kurum-profili";
+
+  window.open(url.toString(),"_blank","noopener");
+});
+
 document.getElementById("institutionLogoutBtn").addEventListener("click", async () => {
   if (liveQuoteUnsubscribe) {
     liveQuoteUnsubscribe();
