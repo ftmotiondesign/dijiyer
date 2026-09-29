@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=26">
+  <link rel="stylesheet" href="admin.css?v=27">
   <link rel="stylesheet" href="admin-advanced.css?v=14">
 </head>
 
@@ -122,7 +122,7 @@
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
-        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Kurum Listesi / Banner Reklamları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Banner Reklamları / Yayın Alanları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paket Yönetimi</button>
 
@@ -472,7 +472,7 @@
       <section id="bannerAdsSection" hidden>
         <div class="section-title banner-admin-title">
           <div>
-            <h3>🖼️ Kurum Listesi / Banner Reklamları</h3>
+            <h3>🖼️ Banner Reklamları / Yayın Alanları</h3>
             <p id="bannerAdAdminCount">Reklamlar yükleniyor...</p>
           </div>
           <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Banner Reklama Ekle</button>
@@ -480,8 +480,8 @@
 
         <div class="banner-list-placement-note">
           <span>📍 GÖSTERİM YERİ</span>
-          <strong>Reklamın gösterim yerini yüklerken seçin</strong>
-          <small>Arama Bannerı kurum listesinde 2. kurumdan sonra; Sponsor Bannerı ise “Bölgenizde Öne Çıkanlar” alanında gösterilir.</small>
+          <strong>Her reklam için yayınlanacağı alanı seçin</strong>
+          <small>Bir reklam yalnızca seçtiğiniz alanda gösterilir. Böylece aynı reklam farklı sponsor alanlarında tekrar etmez.</small>
         </div>
 
         <div class="banner-admin-guide">
@@ -584,13 +584,21 @@
               </div>
               <label>Reklam Türü
                 <select id="bannerAdPlacement">
-                  <option value="search">🔎 Arama Bannerı · 2. kurumdan sonra</option>
-                  <option value="sponsor">📣 Sponsor Bannerı · Bölgenizde Öne Çıkanlar</option>
+                  <option value="search">🔎 Arama Sonuçları · 2. kurumdan sonra</option>
+                  <option value="home_sponsor">📣 Bölgenizde Öne Çıkanlar · Sponsor alanı</option>
+                  <option value="premium_home">◆ Ana Sayfa Premium Vitrini</option>
+                  <option value="mobile_sponsor">📱 Mobil Sponsor Alanı</option>
+                  <option value="sidebar_sponsor">▤ Masaüstü Yan Sponsor Alanı</option>
+                  <option value="detail_banner">🏢 Kurum Hızlı Önizleme Altı Banner</option>
                 </select>
               </label>
               <div class="banner-placement-help">
-                <span><b>Arama Bannerı:</b> Kullanıcı kurum aradıktan sonra kurum listesinin içinde gösterilir.</span>
-                <span><b>Sponsor Bannerı:</b> “Bölgenizde Öne Çıkanlar” sponsor alanında gösterilir.</span>
+                <span><b>Arama Sonuçları:</b> Kurum listesindeki 2. kurumdan sonra görünür.</span>
+                <span><b>Bölgenizde Öne Çıkanlar:</b> Ana sayfadaki sponsorlu işletmeler bölümünde görünür.</span>
+                <span><b>Premium Vitrin:</b> Ana sayfadaki geniş premium reklam alanında görünür.</span>
+                <span><b>Mobil Sponsor:</b> Mobil ana sayfadaki özel sponsor alanında görünür.</span>
+                <span><b>Masaüstü Yan Sponsor:</b> Sonuç sayfasında filtrelerin yanındaki reklam alanında görünür.</span>
+                <span><b>Hızlı Önizleme Bannerı:</b> Masaüstünde kurum hızlı önizlemesinin altında görünür.</span>
               </div>
             </div>
 
@@ -637,7 +645,7 @@
 
           <section class="banner-ad-list-panel">
             <div class="promotion-package-list-head">
-              <div><strong>Banner Reklamları</strong><small>Aktif reklamlar kurum listesinde 2. kurumdan sonra ve uygun banner alanlarında gösterilir.</small></div>
+              <div><strong>Banner Reklamları</strong><small>Aktif reklamlar yalnızca seçilen yayın alanında gösterilir.</small></div>
               <input type="search" id="bannerAdSearch" placeholder="Kurum, bölge veya sektör ara...">
             </div>
             <div id="bannerAdAdminList" class="banner-ad-admin-list"></div>
@@ -1320,7 +1328,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="admin.js?v=38"></script>
-  <script src="admin-advanced.js?v=19"></script>
+  <script src="admin-advanced.js?v=20"></script>
 
 </body>
 </html>
