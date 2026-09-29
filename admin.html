@@ -7,7 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=24">
-  <link rel="stylesheet" href="admin-advanced.css?v=13">
+  <link rel="stylesheet" href="admin-advanced.css?v=14">
 </head>
 
 <body>
@@ -522,6 +522,31 @@
                 <button type="button" id="bannerAdVideoUploadBtn">🎬 Video Yükle</button>
                 <button type="button" id="bannerAdMediaClearBtn" class="danger-lite">Medyayı Temizle</button>
               </div>
+
+              <details class="cloudinary-config" id="cloudinaryConfigDetails">
+                <summary>
+                  <span>☁ Ücretsiz Medya Yükleme Ayarı</span>
+                  <small id="cloudinaryConfigSummary">Cloudinary ayarını bir kez yapın</small>
+                </summary>
+                <div class="cloudinary-config-body">
+                  <div class="banner-form-grid">
+                    <label>Cloud Name
+                      <input id="cloudinaryCloudName" autocomplete="off" placeholder="Örn. dxxxxxxx">
+                    </label>
+                    <label>Unsigned Upload Preset
+                      <input id="cloudinaryUploadPreset" autocomplete="off" placeholder="Örn. dijiyer_banner">
+                    </label>
+                  </div>
+                  <div class="cloudinary-config-actions">
+                    <div>
+                      <strong>Ücretsiz Cloudinary bağlantısı</strong>
+                      <small>API Key veya API Secret girmeyin. Yalnızca Cloud Name ve unsigned preset yeterli.</small>
+                    </div>
+                    <button type="button" id="cloudinarySaveBtn">Ayarı Kaydet</button>
+                  </div>
+                  <p id="cloudinaryConfigMessage"></p>
+                </div>
+              </details>
 
               <input id="bannerAdImageFile" class="hidden" type="file" accept="image/jpeg,image/png,image/webp">
               <input id="bannerAdVideoFile" class="hidden" type="file" accept="video/mp4,video/webm">
@@ -1270,11 +1295,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-
-
-  <script src="admin.js?v=37"></script>
-  <script src="admin-advanced.js?v=15"></script>
+<script src="admin.js?v=38"></script>
+  <script src="admin-advanced.js?v=16"></script>
 
 </body>
 </html>
