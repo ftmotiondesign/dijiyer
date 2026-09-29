@@ -2656,10 +2656,11 @@ function institutionListSponsorHtml(){
   const regionText=[ad.city,ad.district].filter(Boolean).join(' / ');
   const sectorText=ad.categoryLabel || bannerCategoryLabel(ad.category);
   const href='kurum.html?id='+encodeURIComponent(ad.institutionId || '');
+  trackBannerAdImpression(ad);
 
   return `
     <article class="institution-list-sponsored">
-      <a class="institution-list-sponsored-link" href="${href}">
+      <a class="institution-list-sponsored-link" data-banner-ad-id="${escapeHtml(String(ad.id||""))}" href="${href}">
         <div class="institution-list-sponsored-media ${isVideo ? 'is-video' : ''}">
           ${isVideo
             ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
@@ -3491,6 +3492,37 @@ function bannerPlacementHref(ad){
   return 'kurum.html?id='+encodeURIComponent(ad?.institutionId || '');
 }
 
+function bannerAdInstitution(ad){
+  return institutions.find(inst=>String(inst.id)===String(ad?.institutionId||"")) || null;
+}
+
+function trackBannerAdImpression(ad){
+  if(!ad?.id)return;
+  const inst=bannerAdInstitution(ad);
+  if(!inst || inst.source!=="firestore")return;
+
+  const day=localDayKey(new Date());
+  const key="dijiyer_banner_impression_"+day+"_"+String(ad.id);
+  if(sessionStorage.getItem(key))return;
+
+  sessionStorage.setItem(key,"1");
+  trackInstitutionEvent(inst,"banner_ad_impression");
+}
+
+function trackBannerAdClick(ad){
+  if(!ad?.id)return;
+  const inst=bannerAdInstitution(ad);
+  if(!inst || inst.source!=="firestore")return;
+  trackInstitutionEvent(inst,"banner_ad_click");
+}
+
+document.addEventListener("click",event=>{
+  const target=event.target.closest("[data-banner-ad-id]");
+  if(!target)return;
+  const ad=regionalBannerAds.find(item=>String(item.id)===String(target.dataset.bannerAdId));
+  if(ad)trackBannerAdClick(ad);
+});
+
 function bannerPlacementMediaHtml(ad, fallbackClass){
   const image=safePublicProfileUrl(ad?.imageUrl || ad?.logoUrl || '');
   const video=safePublicProfileUrl(ad?.videoUrl || '');
@@ -3570,7 +3602,7 @@ function renderRegionalBannerCarousel(reset=false){
   const duration=[3,5,7].includes(savedDuration)?savedDuration:7;
 
   stage.innerHTML=
-    '<a class="regional-banner-card '+((image||isVideo)?"has-image":"")+'" href="'+href+'">'+
+    '<a class="regional-banner-card '+((image||isVideo)?"has-image":"")+'" data-banner-ad-id="'+escapeHtml(String(ad.id||""))+'" href="'+href+'">'+
       (isVideo
         ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+(image||"")+'"></video>'
         : (image?'<img src="'+image+'" alt="'+escapeHtml(ad.institutionName||"Sponsorlu kurum")+'">':""))+
@@ -3585,6 +3617,8 @@ function renderRegionalBannerCarousel(reset=false){
       '<i class="regional-banner-progress" style="--banner-duration:'+duration+'s"></i>'+
     '</a>'+
     (ads.length>1?'<div class="regional-banner-dots">'+ads.map((_,index)=>'<button type="button" data-banner-index="'+index+'" class="'+(index===regionalBannerIndex?"active":"")+'" aria-label="Reklam '+(index+1)+'"></button>').join("")+'</div>':"");
+
+  trackBannerAdImpression(ad);
 
   stage.querySelectorAll("[data-banner-index]").forEach(button=>{
     button.addEventListener("click",()=>{regionalBannerIndex=Number(button.dataset.bannerIndex||0);renderRegionalBannerCarousel(false);});
@@ -5651,9 +5685,11 @@ function homepageSponsorBannerHtml(ad){
   const region=[ad.city,ad.district].filter(Boolean).join(' / ');
   const sector=ad.categoryLabel || bannerCategoryLabel(ad.category);
 
+  trackBannerAdImpression(ad);
+
   return `
     <article class="sponsored-card sponsor-banner-card">
-      <a href="${href}" class="sponsor-banner-link">
+      <a href="${href}" class="sponsor-banner-link" data-banner-ad-id="${escapeHtml(String(ad.id||""))}">
         <div class="sponsored-media">
           ${isVideo
             ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
@@ -5680,8 +5716,9 @@ function homepageSponsorBannerHtml(ad){
 }
 
 function sidebarPlacementBannerHtml(ad){
+  trackBannerAdImpression(ad);
   return `
-    <a class="sidebar-sponsored-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+    <a class="sidebar-sponsored-card banner-placement-card" data-banner-ad-id="${escapeHtml(String(ad.id||""))}" href="${bannerPlacementHref(ad)}">
       <div class="sidebar-sponsored-cover">
         ${bannerPlacementMediaHtml(ad,'sponsored-media-fallback')}
         <span class="sponsored-label">SPONSORLU</span>
@@ -5696,8 +5733,9 @@ function sidebarPlacementBannerHtml(ad){
 }
 
 function mobilePlacementBannerHtml(ad){
+  trackBannerAdImpression(ad);
   return `
-    <a class="mobile-sponsored-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+    <a class="mobile-sponsored-card banner-placement-card" data-banner-ad-id="${escapeHtml(String(ad.id||""))}" href="${bannerPlacementHref(ad)}">
       <div class="mobile-sponsored-media">
         ${bannerPlacementMediaHtml(ad,'mobile-sponsored-media-fallback')}
         <span class="mobile-sponsored-label">SPONSORLU</span>
@@ -5724,8 +5762,10 @@ function premiumPlacementBannerHtml(ad){
   const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
   const location=[ad.city,ad.district].filter(Boolean).join(' / ');
 
+  trackBannerAdImpression(ad);
+
   return `
-    <a class="premium-showcase-card premium-showcase-clean banner-placement-card" href="${bannerPlacementHref(ad)}">
+    <a class="premium-showcase-card premium-showcase-clean banner-placement-card" data-banner-ad-id="${escapeHtml(String(ad.id||""))}" href="${bannerPlacementHref(ad)}">
       <div class="premium-showcase-media">
         ${isVideo
           ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
@@ -5870,8 +5910,10 @@ function mobileSponsorBannerCardHtml(ad){
   const title=ad.headline || ad.institutionName || 'Sponsorlu Kurum';
   const sub=[ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Sponsorlu';
 
+  trackBannerAdImpression(ad);
+
   return `
-    <a class="mobile-sponsor-mini-card mobile-sponsor-mini-ad" href="${href}">
+    <a class="mobile-sponsor-mini-card mobile-sponsor-mini-ad" data-banner-ad-id="${escapeHtml(String(ad.id||""))}" href="${href}">
       <div class="mobile-sponsor-mini-media">
         ${isVideo
           ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
