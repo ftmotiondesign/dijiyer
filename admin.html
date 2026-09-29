@@ -229,6 +229,44 @@
           </div>
         </section>
 
+        <section class="overview-visibility-control" id="bottomQuoteVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">🏷️</span>
+            <div>
+              <strong>Ana Sayfa Alt Teklif / İşletme Alanı</strong>
+              <small>Ana sayfanın altındaki teklif verme / işletme ekleme bölümünü göster veya gizle.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <span class="overview-visibility-state active" id="bottomQuoteVisibilityState">Aktif · Görünüyor</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="bottomQuoteVisibilityToggle" checked>
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+
+        <section class="overview-visibility-control" id="earningsVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">₺</span>
+            <div>
+              <strong>Dijiyer Kazanç</strong>
+              <small>Ana sayfanın altındaki Dijiyer Kazanç pilot bölümünü göster veya gizle.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <span class="overview-visibility-state active" id="earningsVisibilityState">Aktif · Görünüyor</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="earningsVisibilityToggle" checked>
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+
         <details class="overview-extra-stats">
           <summary>Diğer teklif istatistiklerini göster</summary>
           <div class="overview-kpi-grid">
@@ -1637,7 +1675,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="admin.js?v=43"></script>
+<script src="admin.js?v=44"></script>
   <script src="admin-advanced.js?v=27"></script>
 
 </body>
