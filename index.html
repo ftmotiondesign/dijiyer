@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=29" />
+  <link rel="stylesheet" href="style.css?v=30" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -378,6 +378,33 @@
             </select>
           </div>
           <div id="institutionList" class="institution-list"></div>
+        </section>
+
+        <section class="mobile-jobs-board" id="mobileJobsBoard" aria-label="Dijiyer İş Fırsatları">
+          <div class="mobile-jobs-head">
+            <div>
+              <span>DİJİYER İŞ FIRSATLARI</span>
+              <h2>Yakınındaki iş ve ek kazanç fırsatları</h2>
+              <p>Eleman arayanlarla iş arayanlar aynı yerde buluşsun.</p>
+            </div>
+            <button type="button" class="mobile-jobs-post-btn" id="mobileJobsPostBtn">+ İlan Ver</button>
+          </div>
+
+          <div class="mobile-jobs-switch" role="tablist" aria-label="İş ilanı türleri">
+            <button type="button" class="active" data-job-filter="all">Tümü</button>
+            <button type="button" data-job-filter="hire">Eleman Arayan</button>
+            <button type="button" data-job-filter="work">İş Arayan</button>
+            <button type="button" data-job-filter="extra">Günlük / Ek İş</button>
+          </div>
+
+          <div class="mobile-jobs-list" id="mobileJobsList">
+            <div class="mobile-jobs-loading">İş fırsatları hazırlanıyor...</div>
+          </div>
+
+          <div class="mobile-jobs-footer">
+            <button type="button" id="mobileJobsHireBtn">🏢 Eleman / Yardımcı Ara</button>
+            <button type="button" id="mobileJobsWorkBtn">👤 İş / Ek İş Ara</button>
+          </div>
         </section>
 
         <section class="detail-panel" id="detailPanel">
@@ -814,6 +841,83 @@
     </div>
   </div>
 
+  <div class="modal hidden" id="jobPostModal">
+    <div class="modal-card job-post-modal-card">
+      <button type="button" class="modal-close" data-close="jobPostModal">×</button>
+
+      <div class="job-post-modal-head">
+        <span>DİJİYER İŞ FIRSATLARI</span>
+        <h2>İlanını Oluştur</h2>
+        <p>Kısa süreli, günlük, part-time veya ek iş ilanını birkaç adımda yayınlanmak üzere gönder.</p>
+      </div>
+
+      <form id="jobPostForm" class="job-post-form">
+        <div class="job-post-type-grid">
+          <label>
+            <input type="radio" name="jobPostType" value="hire" checked>
+            <span><b>🏢 Eleman Arıyorum</b><small>İşletme veya kişi yardımcı / çalışan arıyor.</small></span>
+          </label>
+          <label>
+            <input type="radio" name="jobPostType" value="work">
+            <span><b>👤 İş Arıyorum</b><small>Yapabileceğin işleri ve müsaitliğini paylaş.</small></span>
+          </label>
+        </div>
+
+        <label>İlan Başlığı
+          <input id="jobPostTitle" type="text" maxlength="100" required placeholder="Örn. Boyacı yanına 3 günlük yardımcı aranıyor">
+        </label>
+
+        <div class="form-grid-2">
+          <label>Şehir
+            <input id="jobPostCity" type="text" maxlength="60" required placeholder="Çanakkale">
+          </label>
+          <label>İlçe
+            <input id="jobPostDistrict" type="text" maxlength="60" placeholder="Merkez">
+          </label>
+        </div>
+
+        <div class="form-grid-2">
+          <label>Çalışma Şekli
+            <select id="jobPostWorkMode" required>
+              <option value="Günlük / Ek İş">Günlük / Ek İş</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Tam zamanlı">Tam zamanlı</option>
+              <option value="Evden">Evden</option>
+              <option value="Proje bazlı">Proje bazlı</option>
+              <option value="Hafta sonu">Hafta sonu</option>
+            </select>
+          </label>
+          <label>Ücret
+            <input id="jobPostWage" type="text" maxlength="80" placeholder="Örn. Günlük 1.500 TL / Görüşülür">
+          </label>
+        </div>
+
+        <label>Açıklama
+          <textarea id="jobPostDescription" rows="4" maxlength="700" required placeholder="Yapılacak işi, aranan deneyimi veya yapabileceğin işleri kısaca anlat."></textarea>
+        </label>
+
+        <div class="form-grid-2">
+          <label>İletişim Adı
+            <input id="jobPostContactName" type="text" maxlength="80" required placeholder="Ad Soyad / İşletme">
+          </label>
+          <label>Telefon / WhatsApp
+            <input id="jobPostPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+          </label>
+        </div>
+
+        <label class="job-post-confirm">
+          <input id="jobPostConfirm" type="checkbox" required>
+          <span>İlanın yasal, güvenli ve doğru bilgiler içerdiğini onaylıyorum.</span>
+        </label>
+
+        <div class="job-post-review-note">İlanlar ilk aşamada kontrol sonrası yayınlanır. Telefon numarası kart üzerinde açık gösterilmez.</div>
+
+        <button type="submit" class="btn btn-primary full" id="jobPostSubmitBtn">İlanı Gönder</button>
+        <p class="form-message" id="jobPostMessage"></p>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -823,7 +927,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=48"></script>
+<script src="script.js?v=49"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
