@@ -435,14 +435,26 @@ async function clearProfileHeroMedia(fieldName) {
   const previous=safeProfileUrl(currentInstitution?.[fieldName] || "");
 
   try{
+    const updates={
+      [fieldName]:"",
+      updatedAt:new Date().toISOString()
+    };
+
+    if(fieldName==="locationVideoUrl"){
+      updates.profileVideoUrl="";
+      updates.videoUrl="";
+    }
+
+    if(fieldName==="virtualTourUrl"){
+      updates.tour360Url="";
+      updates.tourUrl="";
+    }
+
     await db.collection("institutions")
       .doc(currentAccount.institutionId)
-      .update({
-        [fieldName]:"",
-        updatedAt:new Date().toISOString()
-      });
+      .update(updates);
 
-    currentInstitution[fieldName]="";
+    Object.assign(currentInstitution,updates);
 
     const input=document.getElementById(config.inputId);
     if(input)input.value="";
@@ -2335,8 +2347,12 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
     logoUrl,
     coverUrl,
     locationVideoUrl,
+    profileVideoUrl:"",
+    videoUrl:"",
     panorama360Url,
     virtualTourUrl,
+    tour360Url:"",
+    tourUrl:"",
     serviceAreas:String(document.getElementById("profileServiceAreas").value||"").trim(),
     weekdayHours:String(document.getElementById("profileWeekdayHours").value||"").trim(),
     saturdayHours:String(document.getElementById("profileSaturdayHours").value||"").trim(),
