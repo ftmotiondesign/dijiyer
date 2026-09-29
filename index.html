@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=34" />
+  <link rel="stylesheet" href="style.css?v=35" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -402,9 +402,39 @@
             <button type="button" class="hidden" id="mobileJobsSearchClear" aria-label="Aramayı temizle">×</button>
           </div>
 
-          <div class="mobile-jobs-context">
-            <span class="mobile-jobs-context-location">📍 <b id="mobileJobsLocationLabel">Bulunduğun bölge</b></span>
-            <span class="mobile-jobs-context-count"><b id="mobileJobsResultCount">0</b> ilan</span>
+          <div class="mobile-jobs-location-box">
+            <div class="mobile-jobs-location-head">
+              <div>
+                <span>NERede ARIYORSUN?</span>
+                <strong>İşin yapılacağı yeri seç</strong>
+              </div>
+              <span class="mobile-jobs-location-count"><b id="mobileJobsResultCount">0</b> ilan</span>
+            </div>
+
+            <div class="mobile-jobs-location-modes" role="tablist" aria-label="İş konumu">
+              <button type="button" class="active" data-job-location-mode="local">📍 Yerel</button>
+              <button type="button" data-job-location-mode="remote">🌐 Online / Evden</button>
+              <button type="button" data-job-location-mode="all">🇹🇷 Tüm Türkiye</button>
+            </div>
+
+            <div class="mobile-jobs-location-selects" id="mobileJobsLocationSelects">
+              <label>
+                <span>İl</span>
+                <select id="mobileJobsCitySelect">
+                  <option value="">İller yükleniyor...</option>
+                </select>
+              </label>
+              <label>
+                <span>İlçe</span>
+                <select id="mobileJobsDistrictSelect" disabled>
+                  <option value="">Önce il seçin</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="mobile-jobs-location-note" id="mobileJobsLocationNote">
+              📍 <b id="mobileJobsLocationLabel">Bulunduğun bölge</b> içindeki ilanlar gösteriliyor.
+            </div>
           </div>
 
           <div class="mobile-jobs-switch" role="tablist" aria-label="İş ilanı türleri">
@@ -416,9 +446,9 @@
           <div class="mobile-jobs-quick-filters" aria-label="Hızlı iş filtreleri">
             <button type="button" class="active" data-job-quick="all">Tüm Türler</button>
             <button type="button" data-job-quick="extra">⚡ Günlük / Ek İş</button>
-            <button type="button" data-job-quick="home">🏠 Evden</button>
             <button type="button" data-job-quick="parttime">◷ Part-time</button>
-            <button type="button" data-job-quick="local">📍 Bu şehir</button>
+            <button type="button" data-job-quick="weekend">📅 Hafta sonu</button>
+            <button type="button" data-job-quick="project">🧩 Proje bazlı</button>
           </div>
 
           <div class="mobile-jobs-category-head">
@@ -938,24 +968,58 @@
           <input id="jobPostTitle" type="text" maxlength="100" required placeholder="Örn. Boyacı yanına 3 günlük yardımcı aranıyor">
         </label>
 
-        <div class="form-grid-2">
-          <label>Şehir
-            <input id="jobPostCity" type="text" maxlength="60" required placeholder="Çanakkale">
-          </label>
-          <label>İlçe
-            <input id="jobPostDistrict" type="text" maxlength="60" placeholder="Merkez">
-          </label>
+        <div class="job-post-location-block">
+          <div class="job-post-location-title">
+            <span>İŞ NEREDE YAPILACAK?</span>
+            <small>Online ve evden işler şehir bağımsız da yayınlanabilir.</small>
+          </div>
+
+          <div class="job-post-location-mode-grid">
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="onsite" checked>
+              <span><b>📍 İş yerinde / Sahada</b><small>Belirli il ve ilçede yapılır.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="remote">
+              <span><b>🌐 Online / Uzaktan</b><small>Türkiye'nin her yerinden yapılabilir.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="home">
+              <span><b>🏠 Evden üretim / Sipariş</b><small>Evde hazırlanır, teslim veya kargo yapılabilir.</small></span>
+            </label>
+            <label>
+              <input type="radio" name="jobPostLocationMode" value="hybrid">
+              <span><b>🔄 Hibrit</b><small>Hem yerinde hem online yapılabilir.</small></span>
+            </label>
+          </div>
+
+          <div class="form-grid-2" id="jobPostLocationSelects">
+            <label>İl
+              <select id="jobPostCity" required>
+                <option value="">İller yükleniyor...</option>
+              </select>
+            </label>
+            <label>İlçe
+              <select id="jobPostDistrict" disabled>
+                <option value="">Önce il seçin</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="job-post-location-helper" id="jobPostLocationHelper">
+            Yerel ilanlarda il seçimi zorunludur.
+          </div>
         </div>
 
         <div class="form-grid-2">
-          <label>Çalışma Şekli
+          <label>Çalışma Düzeni
             <select id="jobPostWorkMode" required>
               <option value="Günlük / Ek İş">Günlük / Ek İş</option>
               <option value="Part-time">Part-time</option>
               <option value="Tam zamanlı">Tam zamanlı</option>
-              <option value="Evden">Evden</option>
               <option value="Proje bazlı">Proje bazlı</option>
               <option value="Hafta sonu">Hafta sonu</option>
+              <option value="Esnek">Esnek</option>
             </select>
           </label>
           <label>Ücret
@@ -998,7 +1062,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=51"></script>
+<script src="script.js?v=52"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
