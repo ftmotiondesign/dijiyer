@@ -6923,21 +6923,52 @@ function renderBrandDirectory(){
   `).join('');
 
   const query=normalizeQuoteSearch(brandDirectoryQuery);
-  const filtered=brandDirectoryData.filter(row=>{
-    const rowCity=normalizeQuoteSearch(row.city);
-    const rowDistrict=normalizeQuoteSearch(row.district);
 
-    if(activeCityNorm && rowCity!==activeCityNorm)return false;
-    if(activeDistrictNorm && rowDistrict!==activeDistrictNorm)return false;
+  const matchesCommonFilters=row=>{
     if(brandDirectoryBrand!=='all' && row.brand!==brandDirectoryBrand)return false;
     if(!brandDirectoryMatchesType(row,brandDirectoryType))return false;
 
     if(query){
-      const haystack=normalizeQuoteSearch([row.brand,row.name,row.address,row.city,row.district,brandDirectoryTypeLabel(row.type)].join(' '));
+      const haystack=normalizeQuoteSearch([
+        row.brand,
+        row.name,
+        row.address,
+        row.city,
+        row.district,
+        brandDirectoryTypeLabel(row.type)
+      ].join(' '));
       if(!haystack.includes(query))return false;
     }
     return true;
-  });
+  };
+
+  const matchesExactLocation=row=>{
+    const rowCity=normalizeQuoteSearch(row.city);
+    const rowDistrict=normalizeQuoteSearch(row.district);
+    if(activeCityNorm && rowCity!==activeCityNorm)return false;
+    if(activeDistrictNorm && rowDistrict!==activeDistrictNorm)return false;
+    return true;
+  };
+
+  let filtered=brandDirectoryData.filter(row=>matchesCommonFilters(row) && matchesExactLocation(row));
+  let usedSearchFallback=false;
+
+  /* Arama yapıldığında seçili il/ilçede sonuç yoksa kullanıcıyı boş ekranda
+     bırakma. Önce aynı ilde, sonra rehberin tamamında eşleşme göster. */
+  if(query && !filtered.length){
+    if(activeCityNorm){
+      filtered=brandDirectoryData.filter(row=>
+        matchesCommonFilters(row) &&
+        normalizeQuoteSearch(row.city)===activeCityNorm
+      );
+    }
+
+    if(!filtered.length){
+      filtered=brandDirectoryData.filter(matchesCommonFilters);
+    }
+
+    usedSearchFallback=filtered.length>0;
+  }
 
   if(countEl)countEl.textContent=String(filtered.length);
   if(titleEl){
@@ -6946,9 +6977,11 @@ function renderBrandDirectory(){
       : brandDirectoryBrand+' noktaları';
   }
   if(hintEl){
-    hintEl.textContent=activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
-      ? 'Bu il için rehber kayıtları henüz ekleniyor'
-      : 'Resmi marka kaynaklarından derlenen iletişim bilgileri';
+    hintEl.textContent=usedSearchFallback
+      ? 'Seçili bölgede sonuç bulunamadı; diğer eşleşen noktalar gösteriliyor'
+      : (activeCityNorm && activeCityNorm!==normalizeQuoteSearch('Çanakkale')
+          ? 'Bu il için rehber kayıtları henüz ekleniyor'
+          : 'Resmi marka kaynaklarından derlenen iletişim bilgileri');
   }
 
   results.innerHTML=filtered.length
@@ -6977,6 +7010,13 @@ function renderBrandDirectory(){
 
   search?.addEventListener('input',()=>{
     brandDirectoryQuery=search.value||'';
+
+    /* Serbest arama marka çipine takılmasın. Örn. daha önce Arçelik seçiliyken
+       "Beko" yazıldığında da Beko sonuçları gelebilsin. */
+    if(brandDirectoryQuery.trim()){
+      brandDirectoryBrand='all';
+    }
+
     clear?.classList.toggle('hidden',!brandDirectoryQuery);
     renderBrandDirectory();
   });
