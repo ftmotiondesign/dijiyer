@@ -799,6 +799,8 @@
     if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
     if($("bannerAdActive"))$("bannerAdActive").checked=true;
     if($("bannerAdDuration"))$("bannerAdDuration").value="7";
+    if($("bannerAdPrice"))$("bannerAdPrice").value="0";
+    if($("bannerAdPaymentStatus"))$("bannerAdPaymentStatus").value="unpaid";
     if($("bannerAdPlacement"))$("bannerAdPlacement").value="search";
     if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
     if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
@@ -846,6 +848,8 @@
     $("bannerAdDistrict").value=item.district||"";
     $("bannerAdCategory").value=item.category||"";
     $("bannerAdDuration").value=String([3,5,7].includes(Number(item.durationSeconds))?Number(item.durationSeconds):7);
+    if($("bannerAdPrice"))$("bannerAdPrice").value=String(Math.max(0,Number(item.salePrice||0)));
+    if($("bannerAdPaymentStatus"))$("bannerAdPaymentStatus").value=String(item.paymentStatus||"unpaid");
     if($("bannerAdPlacement"))$("bannerAdPlacement").value=normalizeBannerPlacement(item.placement);
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
@@ -858,7 +862,17 @@
     const sourceOrderId=String(item?.sourceOrderId || "");
     if(!sourceOrderId)return;
 
-    const order=promotionAdminRecords.find(x=>String(x.id)===sourceOrderId) || null;
+    let order=promotionAdminRecords.find(x=>String(x.id)===sourceOrderId) || null;
+
+    if(!order){
+      try{
+        const orderDoc=await db.collection("promotionOrders").doc(sourceOrderId).get();
+        if(orderDoc.exists)order={id:orderDoc.id,...orderDoc.data()};
+      }catch(error){
+        console.warn("Kaynak sipariş yüklenemedi:",error);
+      }
+    }
+
     const institutionId=String(nextData?.institutionId || item?.institutionId || order?.institutionId || "");
     const now=new Date().toISOString();
 
@@ -936,6 +950,11 @@
       durationSeconds:[3,5,7].includes(Number($("bannerAdDuration")?.value))
         ? Number($("bannerAdDuration")?.value)
         : 7,
+      salePrice:Math.max(0,Number($("bannerAdPrice")?.value||0)),
+      paymentStatus:String($("bannerAdPaymentStatus")?.value||"unpaid"),
+      paidAt:String($("bannerAdPaymentStatus")?.value||"unpaid")==="paid"
+        ? (existing?.paidAt || now)
+        : "",
       placement:normalizeBannerPlacement($("bannerAdPlacement")?.value),
       startAt:String($("bannerAdStartAt")?.value||""),
       endAt:String($("bannerAdEndAt")?.value||""),
@@ -1084,6 +1103,14 @@
           '<div><span>Sektör</span><strong>'+escapeHtml(item.categoryLabel||bannerCategoryLabel(item.category)||"Tüm Sektörler")+'</strong></div>'+
           '<div><span>Gösterim</span><strong>'+bannerPlacementLabel(item.placement)+'</strong></div>'+
           '<div><span>Dönüş</span><strong>'+([3,5,7].includes(Number(item.durationSeconds))?Number(item.durationSeconds):7)+' sn</strong></div>'+
+          '<div><span>Satış</span><strong>'+money(Number(item.salePrice||0))+'</strong></div>'+
+          '<div><span>Ödeme</span><strong>'+(
+            item.paymentStatus==="paid"
+              ? "Ödendi"
+              : item.paymentStatus==="partial"
+                ? "Kısmi"
+                : "Bekliyor"
+          )+'</strong></div>'+
         '</div>'+
         '<div class="banner-admin-card-actions">'+
           '<span class="banner-state '+(item.active===false?"passive":"active")+'">'+(item.active===false?"Pasif":"Yayında")+'</span>'+
@@ -2913,6 +2940,9 @@
         ? bannerCategoryLabel(inst.subCategory || inst.category || "")
         : "",
       durationSeconds:7,
+      salePrice:total,
+      paymentStatus:"paid",
+      paidAt:order.paidAt || now,
       placement,
       startAt:schedule.startAt,
       endAt:schedule.endAt,
@@ -3302,6 +3332,21 @@
         pending:String(order.paymentStatus || "pending") !== "paid",
         date:String(order.paidAt || order.updatedAt || order.createdAt || ""),
         packageLabel:String(order.serviceName || "Sipariş")
+      });
+    });
+
+    bannerAdRecords.forEach(ad => {
+      if (ad.sourceOrderId) return;
+      const amount=Math.max(0,Number(ad.salePrice||0));
+      if(amount<=0)return;
+      rows.push({
+        source:"Banner reklam satışı",
+        name:String(ad.institutionName || ad.headline || "Banner"),
+        amount,
+        paid:String(ad.paymentStatus||"unpaid")==="paid",
+        pending:String(ad.paymentStatus||"unpaid")!=="paid",
+        date:String(ad.paidAt || ad.updatedAt || ad.createdAt || ""),
+        packageLabel:adPlacementLabel(ad.placement)
       });
     });
 
