@@ -1,56 +1,104 @@
-# Firestore - Bölgesel Banner Reklamları
+# Firestore - Banner Reklamları
 
-Ana sayfadaki sponsorlu banner alanının ve yönetim panelindeki **Reklam → Banner Reklamları**
-bölümünün çalışması için aşağıdaki kuralı
+Dijiyer **Reklam Merkezi / Yayın Alanları** bölümünün çalışması için bu kuralı
+Firebase Console > Firestore Database > Rules içinde,
 `match /databases/{database}/documents {` bloğunun içine ekleyin.
+
+> Not: Mevcut `isAdmin()` fonksiyonunuzu koruyun. Bu blok en sondaki genel
+> `match /{document=**}` kapatma kuralından önce olmalıdır.
 
 ```firestore
 match /bannerAds/{bannerId} {
 
-  // Yönetim tüm banner reklamlarını oluşturabilir, düzenleyebilir ve silebilir.
+  // Yönetici banner oluşturabilir, güncelleyebilir ve silebilir.
   allow create, update, delete: if isAdmin();
 
-  // Yönetim bütün kayıtları görebilir.
-  // Ziyaretçiler sadece aktif reklamları okuyabilir.
+  // Yönetici bütün reklamları; ziyaretçi yalnızca aktif reklamları okuyabilir.
   allow read: if
     isAdmin()
     || resource.data.active == true;
 }
 ```
 
-Ana sayfa sorgusu:
+## Gösterim yeri değerleri
 
-```javascript
-db.collection("bannerAds")
-  .where("active","==",true)
+Yönetim paneli şu `placement` değerlerini kullanır:
+
+```text
+search
+home_sponsor
+premium_home
+mobile_sponsor
+sidebar_sponsor
+detail_banner
+page_top_mini
 ```
 
-şeklinde çalışır.
+Yeni eklenen:
 
-## Banner belgesi alanları
+```text
+page_top_mini = Teklif Al / İş Fırsatları / Bayi & Servis sayfalarının üstündeki mini sponsor bannerı
+```
+
+Eğer mevcut Firestore kuralınızda `placement` için ayrıca bir izin listesi varsa,
+listeye mutlaka `"page_top_mini"` ekleyin.
+
+Örnek:
+
+```firestore
+request.resource.data.placement in [
+  "search",
+  "home_sponsor",
+  "premium_home",
+  "mobile_sponsor",
+  "sidebar_sponsor",
+  "detail_banner",
+  "page_top_mini"
+]
+```
+
+## Banner belgesinde kullanılan alanlar
+
+Yönetim paneli aşağıdaki alanları yazabilir:
 
 ```text
 adCode
 institutionId
 institutionName
 logoUrl
-
 headline
 text
+mediaType
 imageUrl
-
+videoUrl
 city
 district
 category
 categoryLabel
-
-durationSeconds   // 3 veya 5
-startAt           // YYYY-MM-DD veya boş
-endAt             // YYYY-MM-DD veya boş
-
+durationSeconds
+salePrice
+paymentStatus
+paidAt
+placement
+startAt
+endAt
 active
+sourceOrderId
+sourceOrderCode
 createdAt
 updatedAt
+```
+
+Eğer Firestore Rules içinde `keys().hasOnly([...])` ile alan kısıtlaması yapıyorsanız,
+yukarıdaki alanların tamamının izin listesinde bulunması gerekir.
+
+## Public sorgu
+
+Site aktif bannerları şu şekilde dinler:
+
+```javascript
+db.collection("bannerAds")
+  .where("active","==",true)
 ```
 
 Hedefleme mantığı:
@@ -59,6 +107,4 @@ Hedefleme mantığı:
 - city + district doluysa: ilgili ilçede
 - category boşsa: tüm sektörlerde
 - category doluysa: ilgili sektörde
-
-Kullanıcı ana sayfada filtre seçmezse aktif bannerlar sırayla döner.
-Bölge veya sektör seçerse seçime uygun bannerlar gösterilir.
+- placement: reklamın gösterileceği alanı belirler
