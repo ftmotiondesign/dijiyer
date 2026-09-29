@@ -13,6 +13,7 @@ const adminApp =
 
 const auth = adminApp.auth();
 const db = adminApp.firestore();
+const storage = adminApp.storage();
 
 const loginSection = document.getElementById("loginSection");
 const dashboardSection = document.getElementById("dashboardSection");
@@ -1644,6 +1645,216 @@ clearInstitutionFilters.addEventListener("click", () => {
   renderManagedInstitutions();
 });
 
+
+function getInstitutionMediaElement(id) {
+  return document.getElementById(id);
+}
+
+function setInstitutionVideoStatus(text, state = "") {
+  const el = getInstitutionMediaElement("editLocationVideoUploadStatus");
+  if (!el) return;
+
+  el.textContent = text;
+  el.style.color =
+    state === "error" ? "#b42318" :
+    state === "success" ? "#067647" :
+    state === "uploading" ? "#175cd3" :
+    "#667085";
+}
+
+function syncInstitutionLocationVideoPreview() {
+  const urlInput = getInstitutionMediaElement("editLocationVideoUrl");
+  const preview = getInstitutionMediaElement("editLocationVideoPreview");
+  const previewBtn = getInstitutionMediaElement("editLocationVideoPreviewBtn");
+  const removeBtn = getInstitutionMediaElement("editLocationVideoRemoveBtn");
+
+  const url = String(urlInput?.value || "").trim();
+  const hasUrl = Boolean(url);
+
+  if (previewBtn) previewBtn.disabled = !hasUrl;
+  if (removeBtn) removeBtn.disabled = !hasUrl;
+
+  if (!preview) return;
+
+  if (!hasUrl) {
+    try { preview.pause(); } catch (_) {}
+    preview.removeAttribute("src");
+    preview.load();
+    preview.hidden = true;
+  }
+}
+
+async function uploadInstitutionLocationVideo(file) {
+  const institutionId = String(
+    getInstitutionMediaElement("editInstitutionId")?.value || ""
+  ).trim();
+
+  if (!institutionId) {
+    setInstitutionVideoStatus("Kurum kimliği bulunamadı. Pencereyi kapatıp tekrar açın.", "error");
+    return;
+  }
+
+  if (!file) return;
+
+  const allowedTypes = ["video/mp4", "video/webm", "video/quicktime"];
+  if (file.type && !allowedTypes.includes(file.type)) {
+    setInstitutionVideoStatus("Yalnızca MP4, WebM veya MOV video yükleyebilirsiniz.", "error");
+    return;
+  }
+
+  const maxBytes = 500 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    setInstitutionVideoStatus("Video 500 MB'dan büyük olamaz.", "error");
+    return;
+  }
+
+  const uploadBtn = getInstitutionMediaElement("editLocationVideoUploadBtn");
+  const urlInput = getInstitutionMediaElement("editLocationVideoUrl");
+  const pathInput = getInstitutionMediaElement("editLocationVideoStoragePath");
+  const oldPath = String(pathInput?.value || "").trim();
+  const safeName = String(file.name || "konum-video.mp4")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-");
+  const storagePath =
+    "institution-media/" + institutionId + "/location-video/" +
+    Date.now() + "-" + safeName;
+
+  if (uploadBtn) uploadBtn.disabled = true;
+  setInstitutionVideoStatus("Video yükleniyor... %0", "uploading");
+
+  try {
+    const ref = storage.ref().child(storagePath);
+    const task = ref.put(file, {
+      contentType: file.type || "video/mp4",
+      customMetadata: {
+        institutionId,
+        mediaType: "locationVideo"
+      }
+    });
+
+    const snapshot = await new Promise((resolve, reject) => {
+      task.on(
+        "state_changed",
+        snap => {
+          const total = Number(snap.totalBytes || 0);
+          const sent = Number(snap.bytesTransferred || 0);
+          const percent = total ? Math.round((sent / total) * 100) : 0;
+          setInstitutionVideoStatus("Video yükleniyor... %" + percent, "uploading");
+        },
+        reject,
+        () => resolve(task.snapshot)
+      );
+    });
+
+    const downloadURL = await snapshot.ref.getDownloadURL();
+
+    await db.collection("institutions").doc(institutionId).update({
+      locationVideoUrl: downloadURL,
+      locationVideoStoragePath: storagePath,
+      video: true,
+      updatedAt: new Date().toISOString()
+    });
+
+    if (urlInput) urlInput.value = downloadURL;
+    if (pathInput) pathInput.value = storagePath;
+
+    const record = institutionRecords.find(item => String(item.id) === institutionId);
+    if (record) {
+      record.locationVideoUrl = downloadURL;
+      record.locationVideoStoragePath = storagePath;
+      record.video = true;
+    }
+
+    const videoCheck = getInstitutionMediaElement("editVideo");
+    if (videoCheck) videoCheck.checked = true;
+
+    syncInstitutionLocationVideoPreview();
+    setInstitutionVideoStatus("✓ Video yüklendi ve kuruma bağlandı. Mobil uygulamada kullanılabilir.", "success");
+
+    if (oldPath && oldPath !== storagePath) {
+      storage.ref().child(oldPath).delete().catch(error => {
+        if (String(error?.code || "").includes("object-not-found")) return;
+        console.warn("Eski konum videosu silinemedi:", error);
+      });
+    }
+
+    renderManagedInstitutions();
+  } catch (error) {
+    console.error("Konum videosu yüklenemedi:", error);
+
+    let message = "Video yüklenemedi.";
+    const code = String(error?.code || "");
+    if (code.includes("storage/unauthorized")) {
+      message = "Firebase Storage yükleme yetkisi reddedildi. Storage Rules ayarlarını kontrol edin.";
+    } else if (code.includes("storage/retry-limit-exceeded")) {
+      message = "Yükleme zaman aşımına uğradı. İnternet bağlantısını kontrol edip tekrar deneyin.";
+    } else if (code.includes("storage/bucket-not-found")) {
+      message = "Firebase Storage henüz etkin değil veya bucket bulunamadı.";
+    }
+
+    setInstitutionVideoStatus(message, "error");
+  } finally {
+    if (uploadBtn) uploadBtn.disabled = false;
+    const fileInput = getInstitutionMediaElement("editLocationVideoFile");
+    if (fileInput) fileInput.value = "";
+  }
+}
+
+async function removeInstitutionLocationVideo() {
+  const institutionId = String(
+    getInstitutionMediaElement("editInstitutionId")?.value || ""
+  ).trim();
+  const urlInput = getInstitutionMediaElement("editLocationVideoUrl");
+  const pathInput = getInstitutionMediaElement("editLocationVideoStoragePath");
+  const storagePath = String(pathInput?.value || "").trim();
+  const currentUrl = String(urlInput?.value || "").trim();
+
+  if (!institutionId || !currentUrl) return;
+
+  const ok = confirm(
+    "Bu kurumun konum videosu bağlantısı kaldırılacak" +
+    (storagePath ? " ve Firebase Storage'daki dosya silinecek." : ".") +
+    " Devam edilsin mi?"
+  );
+  if (!ok) return;
+
+  setInstitutionVideoStatus("Video kaldırılıyor...", "uploading");
+
+  try {
+    if (storagePath) {
+      try {
+        await storage.ref().child(storagePath).delete();
+      } catch (error) {
+        if (!String(error?.code || "").includes("object-not-found")) {
+          throw error;
+        }
+      }
+    }
+
+    await db.collection("institutions").doc(institutionId).update({
+      locationVideoUrl: "",
+      locationVideoStoragePath: "",
+      updatedAt: new Date().toISOString()
+    });
+
+    if (urlInput) urlInput.value = "";
+    if (pathInput) pathInput.value = "";
+
+    const record = institutionRecords.find(item => String(item.id) === institutionId);
+    if (record) {
+      record.locationVideoUrl = "";
+      record.locationVideoStoragePath = "";
+    }
+
+    syncInstitutionLocationVideoPreview();
+    setInstitutionVideoStatus("Konum videosu kaldırıldı.", "success");
+    renderManagedInstitutions();
+  } catch (error) {
+    console.error("Konum videosu kaldırılamadı:", error);
+    setInstitutionVideoStatus("Konum videosu kaldırılamadı.", "error");
+  }
+}
+
 function openInstitutionEdit(id, data) {
   const form=document.getElementById("institutionEditForm");
   const saveMessage=document.getElementById("institutionEditSaveMessage");
@@ -1676,6 +1887,8 @@ function openInstitutionEdit(id, data) {
   document.getElementById("editWebsite").value = data.website || "";
   document.getElementById("editLocationVideoUrl").value =
     data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
+  document.getElementById("editLocationVideoStoragePath").value =
+    data.locationVideoStoragePath || "";
   document.getElementById("editVirtualTourUrl").value =
     data.virtualTourUrl || data.tour360Url || data.tourUrl || "";
   document.getElementById("editCampaignVideoUrl").value =
@@ -1687,6 +1900,12 @@ function openInstitutionEdit(id, data) {
   document.getElementById("editVip").checked = Boolean(data.vip);
   document.getElementById("editVideo").checked = Boolean(data.video);
   document.getElementById("editOffer").checked = data.offer !== false;
+  syncInstitutionLocationVideoPreview();
+  setInstitutionVideoStatus(
+    document.getElementById("editLocationVideoUrl").value
+      ? "Kayıtlı konum videosu hazır. Önizleyebilir, değiştirebilir veya kaldırabilirsiniz."
+      : "MP4 / WebM / MOV yükleyebilirsiniz. Video Firebase Storage'a yüklenir ve kuruma otomatik bağlanır."
+  );
 
   if(form)form.dataset.originalName=String(data.name||"");
   if(saveMessage){
@@ -1711,6 +1930,52 @@ institutionEditModal.addEventListener("click", (e) => {
   }
 });
 
+
+document.getElementById("editLocationVideoUploadBtn")?.addEventListener("click", () => {
+  document.getElementById("editLocationVideoFile")?.click();
+});
+
+document.getElementById("editLocationVideoFile")?.addEventListener("change", event => {
+  const file = event.target.files?.[0] || null;
+  if (file) uploadInstitutionLocationVideo(file);
+});
+
+document.getElementById("editLocationVideoPreviewBtn")?.addEventListener("click", () => {
+  const url = String(document.getElementById("editLocationVideoUrl")?.value || "").trim();
+  const preview = document.getElementById("editLocationVideoPreview");
+  if (!url || !preview) return;
+
+  preview.src = url;
+  preview.hidden = false;
+  preview.load();
+  preview.play().catch(() => {});
+  preview.scrollIntoView({ behavior: "smooth", block: "nearest" });
+});
+
+document.getElementById("editLocationVideoRemoveBtn")?.addEventListener("click", () => {
+  removeInstitutionLocationVideo();
+});
+
+document.getElementById("editLocationVideoUrl")?.addEventListener("input", () => {
+  syncInstitutionLocationVideoPreview();
+});
+
+document.getElementById("editVirtualTourPreviewBtn")?.addEventListener("click", () => {
+  const url = String(document.getElementById("editVirtualTourUrl")?.value || "").trim();
+  if (!url) {
+    alert("Önce 360° Sanal Tur URL alanına bir bağlantı girin.");
+    return;
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("invalid");
+    window.open(parsed.href, "_blank", "noopener");
+  } catch (_) {
+    alert("360° Sanal Tur bağlantısı geçerli bir http/https adresi olmalıdır.");
+  }
+});
+
 document.getElementById("institutionEditForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -1725,6 +1990,7 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const latValue=String(document.getElementById("editLat").value||"").trim();
   const lngValue=String(document.getElementById("editLng").value||"").trim();
   const locationVideoUrl=String(document.getElementById("editLocationVideoUrl").value||"").trim();
+  const locationVideoStoragePath=String(document.getElementById("editLocationVideoStoragePath").value||"").trim();
   const virtualTourUrl=String(document.getElementById("editVirtualTourUrl").value||"").trim();
   const campaignVideoUrl=String(document.getElementById("editCampaignVideoUrl").value||"").trim();
 
@@ -1799,7 +2065,9 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     phone:String(document.getElementById("editPhone").value||"").trim(),
     website:String(document.getElementById("editWebsite").value||"").trim(),
     locationVideoUrl,
+    locationVideoStoragePath,
     virtualTourUrl,
+    tour360Url:virtualTourUrl,
     campaignVideoUrl,
     lat,
     lng,
