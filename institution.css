@@ -3528,3 +3528,31 @@ body[data-panel-current="stats"] .persistent-performance{
   color:#fff !important;
   animation:djyMessagePulse 1.5s infinite;
 }
+
+
+/* Kurum profili kaydetme durumları */
+.profile-save-message{
+  min-height:20px;
+  padding:0 2px;
+}
+.profile-save-message.saving{
+  color:#1d4ed8;
+}
+.profile-save-message.success{
+  padding:9px 11px;
+  border:1px solid #bbf7d0;
+  border-radius:9px;
+  background:#f0fdf4;
+  color:#15803d;
+}
+.profile-save-message.error{
+  padding:9px 11px;
+  border:1px solid #fecaca;
+  border-radius:9px;
+  background:#fff7f7;
+  color:#b91c1c;
+}
+#profileSaveBtn:disabled{
+  cursor:wait;
+  opacity:.68;
+}
