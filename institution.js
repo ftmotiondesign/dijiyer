@@ -781,6 +781,13 @@ document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
   setPanelTab("quotes");
   renderQuotes();
 });
+
+document.getElementById("persistentNewRequestBtn")?.addEventListener("click", () => {
+  quotePanelFilter.value = "new";
+  setPanelTab("quotes");
+  if (typeof syncQuoteShortcutActive === "function") syncQuoteShortcutActive();
+  renderQuotes();
+});
 document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
 document.getElementById("completeProfileBtn")?.addEventListener("click", () => setPanelTab("profile"));
 
@@ -1014,10 +1021,30 @@ function getQuoteViewStatus(quote) {
   return responseMap.get(quote.id)?.status || "new";
 }
 
+function updatePersistentNewRequestCard(newCount) {
+  const card = document.getElementById("persistentNewRequestCard");
+  const count = document.getElementById("persistentNewRequestCount");
+  const text = document.getElementById("persistentNewRequestText");
+  if (!card || !count || !text) return;
+
+  count.textContent = String(newCount || 0);
+
+  if (newCount > 0) {
+    text.textContent =
+      newCount + " yeni müşteri talebi sizi bekliyor. Hızlı dönüş yapmak teklif alma şansınızı artırır.";
+    card.classList.remove("hidden");
+  } else {
+    text.textContent = "Şu anda bekleyen yeni müşteri talebi yok.";
+    card.classList.add("hidden");
+  }
+}
+
 function renderSummary() {
   const newCount = quoteRecords.filter(q => getQuoteViewStatus(q) === "new").length;
   const offeredCount = quoteRecords.filter(q => getQuoteViewStatus(q) === "interested").length;
   const lockedCount = 0;
+
+  updatePersistentNewRequestCard(newCount);
 
   document.getElementById("newQuoteCount").textContent = newCount;
   document.getElementById("totalQuoteCount").textContent = quoteRecords.length;
