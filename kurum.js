@@ -40,7 +40,9 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
     note:request.note||"",
     date:request.date,
     status:"active",
-    createdAt:new Date().toISOString()
+    createdAt:new Date().toISOString(),
+    targetInstitutionId:String(request.targetInstitutionId||institution?.id||""),
+    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum")
   });
   return {trackingCode,trackingUrl:url,normalizedPhone};
 }
