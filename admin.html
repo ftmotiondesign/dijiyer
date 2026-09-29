@@ -6,8 +6,8 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=28">
-  <link rel="stylesheet" href="admin-advanced.css?v=14">
+  <link rel="stylesheet" href="admin.css?v=29">
+  <link rel="stylesheet" href="admin-advanced.css?v=15">
 </head>
 
 <body>
@@ -101,7 +101,7 @@
           <span>Kurumlar</span>
         </button>
         <button type="button" class="admin-main-nav-btn" data-admin-main="ads">
-          <span>Reklam</span>
+          <span>Reklam & Gelir</span>
         </button>
         <button type="button" class="admin-main-nav-btn" data-admin-main="support">
           <span>İletişim</span>
@@ -122,9 +122,11 @@
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
-        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Banner Reklamları / Yayın Alanları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paket Yönetimi</button>
+        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
+        <button class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</button>
 
         <button class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</button>
@@ -166,6 +168,23 @@
           </div>
           <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
         </div>
+
+        <section class="admin-today-board">
+          <div class="admin-today-head">
+            <div>
+              <span>BUGÜN YAPILACAKLAR</span>
+              <h4>Önce bunlara bakın</h4>
+              <p>Teklif, kurum, reklam ve destek tarafında işlem bekleyen konular tek yerde.</p>
+            </div>
+            <div class="admin-today-head-side">
+              <strong id="adminTodayTaskCount">0</strong>
+              <small>işlem</small>
+            </div>
+          </div>
+          <div id="adminTodayTasks" class="admin-today-list">
+            <div class="advanced-empty">Görevler hazırlanıyor...</div>
+          </div>
+        </section>
 
         <div class="overview-kpi-grid overview-kpi-primary">
           <article class="overview-kpi">
@@ -672,6 +691,117 @@
         </div>
       </section>
 
+      <section id="adCalendarSection" hidden>
+        <div class="section-title ad-business-title">
+          <div>
+            <h3>🗓️ Reklam Takvimi</h3>
+            <p>Hangi reklam alanının hangi tarihlerde dolu olduğunu ve yaklaşan bitişleri görün.</p>
+          </div>
+          <div class="ad-calendar-nav">
+            <button type="button" id="adCalendarPrev">←</button>
+            <button type="button" id="adCalendarToday">Bugün</button>
+            <button type="button" id="adCalendarNext">→</button>
+          </div>
+        </div>
+
+        <div class="ad-calendar-summary" id="adCalendarSummary"></div>
+        <div class="ad-calendar-card">
+          <div class="ad-calendar-month-head">
+            <strong id="adCalendarMonthTitle">Takvim</strong>
+            <small id="adCalendarMonthHint">Reklam dönemleri yükleniyor...</small>
+          </div>
+          <div class="ad-calendar-weekdays">
+            <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+          </div>
+          <div class="ad-calendar-grid" id="adCalendarGrid"></div>
+        </div>
+
+        <section class="advanced-card ad-calendar-detail-card">
+          <div class="advanced-card-head">
+            <div>
+              <h4 id="adCalendarSelectedTitle">Seçili gün</h4>
+              <p>Takvimde bir güne tıklayın; o gün yayında olan reklamları görün.</p>
+            </div>
+          </div>
+          <div id="adCalendarSelectedList"></div>
+        </section>
+      </section>
+
+      <section id="adRevenueSection" hidden>
+        <div class="section-title ad-business-title">
+          <div>
+            <h3>₺ Reklam Gelir Merkezi</h3>
+            <p>Reklam satışlarını, tahsilatı, performansı ve yenileme fırsatlarını tek ekranda yönetin.</p>
+          </div>
+          <button type="button" class="overview-refresh-btn" id="adRevenueRefreshBtn">Verileri Yenile</button>
+        </div>
+
+        <div class="ad-revenue-kpis">
+          <article>
+            <span>Aktif Reklam</span>
+            <strong id="adRevenueActiveCount">0</strong>
+            <small>Yayındaki tüm reklam alanları</small>
+          </article>
+          <article class="success">
+            <span>Tahsil Edilen</span>
+            <strong id="adRevenuePaid">0 TL</strong>
+            <small>Kayıtlı ödenmiş reklam geliri</small>
+          </article>
+          <article class="warning">
+            <span>Bekleyen Tahsilat</span>
+            <strong id="adRevenuePending">0 TL</strong>
+            <small>Ödeme bekleyen reklam ve siparişler</small>
+          </article>
+          <article>
+            <span>7 Günde Bitecek</span>
+            <strong id="adRevenueExpiring">0</strong>
+            <small>Yenileme görüşmesi fırsatı</small>
+          </article>
+          <article>
+            <span>Gösterim</span>
+            <strong id="adRevenueImpressions">0</strong>
+            <small>Takip edilen sponsor gösterimleri</small>
+          </article>
+          <article>
+            <span>Tıklama / CTR</span>
+            <strong id="adRevenueClicks">0</strong>
+            <small id="adRevenueCtr">%0 CTR</small>
+          </article>
+        </div>
+
+        <div class="ad-revenue-grid">
+          <section class="advanced-card">
+            <div class="advanced-card-head">
+              <div>
+                <h4>Gelir Dağılımı</h4>
+                <p>Reklam paketi ve tanıtım siparişlerinden kayıtlı gelir</p>
+              </div>
+            </div>
+            <div id="adRevenueBreakdown"></div>
+          </section>
+
+          <section class="advanced-card">
+            <div class="advanced-card-head">
+              <div>
+                <h4>Yenileme Fırsatları</h4>
+                <p>Süresi yaklaşan reklamları kaçırmayın</p>
+              </div>
+            </div>
+            <div id="adRenewalList"></div>
+          </section>
+        </div>
+
+        <section class="advanced-card">
+          <div class="advanced-card-head">
+            <div>
+              <h4>Reklam Performansı</h4>
+              <p>Gösterim ve tıklama kaydı oluşan reklam veren kurumlar</p>
+            </div>
+          </div>
+          <div id="adPerformanceList"></div>
+        </section>
+      </section>
+
       <section id="promotionPackagesSection" hidden>
         <div class="section-title promotion-package-admin-title">
           <div>
@@ -792,10 +922,12 @@
           <button type="button" class="support-refresh-btn" id="promotionAdminRefresh">Yenile</button>
         </div>
 
-        <div class="promotion-admin-guide">
-          <div><b>1</b><span><strong>Paketi incele</strong><small>Hizmet kapsamı ve kurum notunu kontrol et.</small></span></div>
-          <div><b>2</b><span><strong>Fiyatlandır</strong><small>Ana hizmet ve ek hizmetlere ayrı fiyat gir.</small></span></div>
-          <div><b>3</b><span><strong>Kuruma bildir</strong><small>Kapsam, toplam fiyat ve süreç notunu paylaş.</small></span></div>
+        <div class="promotion-admin-guide promotion-workflow-guide">
+          <div><b>1</b><span><strong>Siparişi incele</strong><small>Kapsam ve reklam hedefini kontrol et.</small></span></div>
+          <div><b>2</b><span><strong>Fiyatı netleştir</strong><small>Toplamı belirleyip kuruma bildir.</small></span></div>
+          <div><b>3</b><span><strong>Ödemeyi takip et</strong><small>Ödeme geldiğinde işaretle.</small></span></div>
+          <div><b>4</b><span><strong>Reklamı oluştur</strong><small>Uygun reklam alanını tek tıkla hazırla.</small></span></div>
+          <div><b>5</b><span><strong>Yayına al</strong><small>Tarih ve içeriği onaylayıp yayınla.</small></span></div>
         </div>
 
         <div class="promotion-admin-kpis">
@@ -1351,8 +1483,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="admin.js?v=40"></script>
-  <script src="admin-advanced.js?v=20"></script>
+<script src="admin.js?v=41"></script>
+  <script src="admin-advanced.js?v=21"></script>
 
 </body>
 </html>
