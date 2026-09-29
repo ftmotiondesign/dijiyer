@@ -15235,3 +15235,40 @@ to{opacity:1;transform:none}
     font-size:7px;
   }
 }
+
+
+/* =========================================================
+   TEKLİF SAYFASI · ANA SAYFA ARAMA BLOĞU V1
+   Ana sayfadaki "Nerede arıyorsunuz?" bölümü aynen kullanılır.
+   ========================================================= */
+.standalone-quote-page .standalone-quote-layout>.quote-page-discovery{
+  grid-column:1/-1;
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+}
+
+.standalone-quote-page .quote-page-discovery.quote-selection-complete{
+  display:none !important;
+}
+
+.standalone-quote-page .standalone-quote-side{
+  display:none;
+}
+
+.standalone-quote-page .standalone-quote-shell.quote-form-open .standalone-quote-side{
+  display:block;
+}
+
+.standalone-quote-page .standalone-quote-form-card.hidden{
+  display:none !important;
+}
+
+@media(max-width:820px){
+  .standalone-quote-page .standalone-quote-layout>.quote-page-discovery{
+    width:100% !important;
+    margin:0 !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+}
