@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=41" />
+  <link rel="stylesheet" href="style.css?v=42" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -293,6 +293,17 @@
         <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
       </div>
     </div>
+
+    <section class="mobile-instant-results hidden" id="mobileInstantResults" aria-label="Eşleşen kurumlar">
+      <div class="mobile-instant-results-head">
+        <div>
+          <span>ARAMA SONUÇLARI</span>
+          <strong id="mobileInstantResultsTitle">Eşleşen kurumlar</strong>
+        </div>
+        <button type="button" id="mobileInstantResultsClose" aria-label="Sonuçları kapat">×</button>
+      </div>
+      <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
+    </section>
 
     <input type="checkbox" id="videoOnly" hidden>
     <input type="checkbox" id="offerOnly" hidden>
@@ -1202,7 +1213,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=49"></script>
+<script src="script.js?v=50"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
