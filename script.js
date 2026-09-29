@@ -776,7 +776,8 @@ function renderList() {
   document.querySelectorAll('.institution-card').forEach(card => {
     card.addEventListener('click', e => {
       if (e.target.matches('[data-quick-offer]')) return;
-      selectInstitution(card.dataset.id);
+      window.location.href =
+        'kurum.html?id=' + encodeURIComponent(card.dataset.id);
     });
   });
 
@@ -828,13 +829,31 @@ function applyRequestedInstitutionPreview(){
   renderList();
   renderDetail();
 
-  requestAnimationFrame(()=>{
-    const panel=document.getElementById("detailPanel");
-    if(panel){
-      panel.id="kurum-profili";
-      panel.scrollIntoView({behavior:"smooth",block:"start"});
+  const params=new URLSearchParams(window.location.search);
+  if(params.get("teklif")==="1"){
+    const mainCategory=inst.mainCategory || resolveTaxonomy(inst)[0];
+    const subCategory=inst.subCategory || resolveTaxonomy(inst)[1];
+    const categorySelect=document.getElementById("quoteCategory");
+    const serviceSelect=document.getElementById("quoteService");
+
+    if(categorySelect){
+      categorySelect.value=mainCategory || "";
+      fillQuoteServices(mainCategory || "");
     }
-  });
+    if(serviceSelect && subCategory){
+      serviceSelect.value=subCategory;
+    }
+
+    setTimeout(()=>openModal("quoteModal"),80);
+  }else{
+    requestAnimationFrame(()=>{
+      const panel=document.getElementById("detailPanel");
+      if(panel){
+        panel.id="kurum-profili";
+        panel.scrollIntoView({behavior:"smooth",block:"start"});
+      }
+    });
+  }
 
   return true;
 }
