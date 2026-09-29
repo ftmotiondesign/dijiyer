@@ -3757,3 +3757,16 @@ body[data-panel-current="stats"] .persistent-performance{
     min-height:42px;
   }
 }
+
+.direct-profile-request-badge{
+  display:inline-flex;
+  align-items:center;
+  margin:5px 0 2px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:#eef5ff;
+  border:1px solid #cfe0f7;
+  color:#1268da;
+  font-size:9px;
+  font-weight:900;
+}
