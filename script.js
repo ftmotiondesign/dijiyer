@@ -3697,24 +3697,31 @@ function safeExternalAdUrl(value){
 }
 
 function externalAdIsLive(item){
-  if(!item || item.active===false || item.rightsConfirmed!==true)return false;
+  if(!item || item.active===false || item.rightsConfirmed===false)return false;
+
   const now=Date.now();
   const start=item.startAt ? new Date(item.startAt).getTime() : 0;
   const end=item.endAt ? new Date(item.endAt).getTime() : 0;
-  if(start && Number.isFinite(start) && start>now)return false;
-  if(end && Number.isFinite(end) && end<now)return false;
+
+  if(Number.isFinite(start) && start>now)return false;
+  if(Number.isFinite(end) && end>0 && end<now)return false;
+
   const target=safeExternalAdUrl(item.targetUrl);
   const image=safeExternalAdUrl(item.imageUrl);
   const video=safeExternalAdUrl(item.videoUrl);
   if(!target)return false;
-  return item.mediaType==="video" ? Boolean(video) : Boolean(image);
+
+  const type=String(item.mediaType||"").toLowerCase();
+  if(type==="video")return Boolean(video || image);
+  return Boolean(image || video);
 }
 
 function externalAdCardHtml(item){
   const target=safeExternalAdUrl(item.targetUrl);
   const image=safeExternalAdUrl(item.imageUrl);
   const video=safeExternalAdUrl(item.videoUrl);
-  const isVideo=item.mediaType==="video" && Boolean(video);
+  const isVideo=String(item.mediaType||"").toLowerCase()==="video" && Boolean(video);
+  const displayImage=image || (!isVideo ? video : "");
   const brand=String(item.brandName||"Reklam");
   const headline=String(item.headline||"").trim();
   return `
@@ -3722,7 +3729,7 @@ function externalAdCardHtml(item){
       <div class="external-ad-public-media">
         ${isVideo
           ? '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline poster="'+escapeHtml(image)+'"></video>'
-          : '<img src="'+escapeHtml(image)+'" alt="'+escapeHtml(brand)+' reklamı">'}
+          : '<img src="'+escapeHtml(image || video)+'" alt="'+escapeHtml(brand)+' reklamı">'}
       </div>
       <div class="external-ad-public-info">
         <div>
@@ -3818,7 +3825,12 @@ function renderExternalAds(){
   if(externalAdIndex>=live.length)externalAdIndex=0;
 
   const active=live[externalAdIndex];
-  stage.innerHTML=externalAdCardHtml(active);
+  stage.innerHTML=
+    externalAdCardHtml(active)+
+    (live.length>1
+      ? '<button type="button" class="external-ad-nav prev" data-external-ad-prev aria-label="Önceki reklam">‹</button>'+
+        '<button type="button" class="external-ad-nav next" data-external-ad-next aria-label="Sonraki reklam">›</button>'
+      : '');
 
   bindExternalAdManualNavigation(live.length);
 
@@ -3846,8 +3858,12 @@ function renderExternalAds(){
 
 function startExternalAds(){
   if(externalAdUnsubscribe)externalAdUnsubscribe();
-  externalAdUnsubscribe=db.collection("externalAds").where("active","==",true).onSnapshot(snapshot=>{
-    externalAds=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+
+  externalAdUnsubscribe=db.collection("externalAds").onSnapshot(snapshot=>{
+    externalAds=snapshot.docs
+      .map(doc=>({id:doc.id,...doc.data()}))
+      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+
     externalAdRandomized=false;
     renderExternalAds();
   },error=>{
