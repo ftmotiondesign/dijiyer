@@ -1324,7 +1324,7 @@
     if($("externalAdActive"))$("externalAdActive").checked=true;
     if($("externalAdRotationSeconds"))$("externalAdRotationSeconds").value="10";
     if($("externalAdMediaType"))$("externalAdMediaType").value="image";
-    if($("externalAdFormTitle"))$("externalAdFormTitle").textContent="Yeni Reklam";
+    if($("externalAdFormTitle"))$("externalAdFormTitle").textContent="Yeni Harici Reklam";
     if($("externalAdUploadMessage"))$("externalAdUploadMessage").textContent="";
     renderExternalAdPreview();
   }
@@ -1488,8 +1488,27 @@
   }
 
   $("externalAdForm")?.addEventListener("submit",saveExternalAd);
-  $("externalAdNewBtn")?.addEventListener("click",resetExternalAdForm);
-  $("externalAdCancelBtn")?.addEventListener("click",resetExternalAdForm);
+  $("externalAdNewBtn")?.addEventListener("click",()=>{
+    resetExternalAdForm();
+
+    const form=$("externalAdForm");
+    if(form){
+      form.classList.remove("external-ad-editor-collapsed");
+      form.classList.remove("external-ad-editor-attention");
+      void form.offsetWidth;
+      form.classList.add("external-ad-editor-attention");
+      form.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+
+    window.setTimeout(()=>{
+      $("externalAdBrand")?.focus();
+      form?.classList.remove("external-ad-editor-attention");
+    },420);
+  });
+  $("externalAdCancelBtn")?.addEventListener("click",()=>{
+    resetExternalAdForm();
+    $("externalAdBrand")?.focus();
+  });
   $("externalAdSearch")?.addEventListener("input",renderExternalAdList);
   $("externalAdImageUploadBtn")?.addEventListener("click",()=>$("externalAdImageFile")?.click());
   $("externalAdVideoUploadBtn")?.addEventListener("click",()=>$("externalAdVideoFile")?.click());
