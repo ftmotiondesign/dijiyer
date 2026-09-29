@@ -115,7 +115,7 @@
       <span class="kp-status-badge verified">✓ Onaylı Kurum</span>
       ${data.offer !== false ? '<span class="kp-status-badge offer">₺ Teklif Veriyor</span>' : ''}
       ${has360 ? '<span class="kp-status-badge tour">360° Mekan</span>' : ''}
-      ${!has360 && hasVideo ? '<span class="kp-status-badge video">▶ Videolu Kurum</span>' : ''}
+      ${!has360 && hasVideo ? '<span class="kp-status-badge video">📍 Konum Rehberi</span>' : ''}
       ${data.vip ? '<span class="kp-status-badge vip">★ Öne Çıkan</span>' : ''}
     `;
   }
@@ -142,7 +142,7 @@
         <iframe
           class="kp-hero-iframe"
           src="${html(embed)}"
-          title="${html(name)} tanıtım videosu"
+          title="${html(name)} konum ve çevre videosu"
           loading="eager"
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowfullscreen
@@ -318,7 +318,7 @@
         externalLink = locationVideo;
 
         guideMarkup =
-          '<div class="kp-hero-guide"><span>▶</span><div><strong>Tanıtım / Konum Videosu</strong><small>Video sessiz başlar · sesi kontrollerden açabilirsiniz</small></div></div>';
+          '<div class="kp-hero-guide"><span>📍</span><div><strong>Konum & Çevre Rehberi</strong><small>Nasıl gidilir · yakınında neler var</small></div></div>';
       } else {
         mediaMarkup = fallbackVisual(data);
 
@@ -329,7 +329,7 @@
 
       const tabs = [
         has360 ? {key:"tour",label:"360° Mekan"} : null,
-        hasVideo ? {key:"video",label:"▶ Video"} : null,
+        hasVideo ? {key:"video",label:"📍 Konum & Çevre"} : null,
         hasPhoto ? {key:"photo",label:"▣ Fotoğraf"} : null
       ].filter(Boolean);
 
