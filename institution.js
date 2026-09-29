@@ -825,6 +825,49 @@ document.querySelectorAll("[data-quote-shortcut]").forEach(btn => {
   });
 });
 
+function getShowcaseServiceState() {
+  const institution=currentInstitution || {};
+  const locationVideo=String(institution.locationVideoUrl || institution.profileVideoUrl || institution.videoUrl || "").trim();
+  const virtualTour=String(institution.virtualTourUrl || institution.tour360Url || institution.tourUrl || "").trim();
+  return { locationVideo, virtualTour, hasLocationVideo:Boolean(locationVideo), hasVirtualTour:Boolean(virtualTour) };
+}
+
+function updateShowcaseServiceStatus() {
+  const state=getShowcaseServiceState();
+  const setStatus=(id,active,activeText,emptyText)=>{
+    const node=document.getElementById(id);
+    if(!node)return;
+    node.textContent=active ? activeText : emptyText;
+    node.classList.toggle("active",active);
+    node.classList.toggle("missing",!active);
+  };
+  setStatus("showcaseLocationStatus",state.hasLocationVideo,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
+  setStatus("showcaseTourStatus",state.hasVirtualTour,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
+  setStatus("summaryLocationStatus",state.hasLocationVideo,"▶ Konum Videosu · Aktif","▶ Konum Videosu · Henüz yok");
+  setStatus("summaryTourStatus",state.hasVirtualTour,"◉ 360° Tur · Aktif","◉ 360° Tur · Henüz yok");
+}
+
+function openShowcaseRequest(type) {
+  const config={
+    location:{subject:"Konum Videosu hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu hizmeti hakkında bilgi almak istiyorum. Çekim / hazırlama süreci, kullanım alanları ve fiyat bilgisi paylaşabilir misiniz?"},
+    tour:{subject:"360° Sanal Tur hakkında bilgi almak istiyorum",message:"Kurumum için 360° Sanal Tur hizmeti hakkında bilgi almak istiyorum. Çekim süreci, kurum sayfasında yayınlama ve fiyat bilgisi paylaşabilir misiniz?"},
+    combo:{subject:"Dijiyer Mekan Tanıtım Paketi hakkında bilgi almak istiyorum",message:"Kurumum için Konum Videosu + 360° Sanal Tur paketini değerlendirmek istiyorum. Paket kapsamı, süreç ve fiyat bilgisi paylaşabilir misiniz?"}
+  };
+  const selected=config[type] || config.combo;
+  setPanelTab("support");
+  setTimeout(()=>{
+    const category=document.getElementById("supportCategory");
+    const subject=document.getElementById("supportSubject");
+    const message=document.getElementById("supportMessage");
+    if(category)category.value="Tanıtım Hizmeti";
+    if(subject)subject.value=selected.subject;
+    if(message)message.value=selected.message;
+    if(typeof populateSupportQuoteReferences==="function")populateSupportQuoteReferences();
+    document.getElementById("supportTicketForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+    subject?.focus();
+  },100);
+}
+
 function renderInstitutionHeader() {
   const institution = currentInstitution;
 
@@ -877,6 +920,7 @@ function renderInstitutionHeader() {
   renderProfileMediaPreview();
   updateOfferUi();
   updateProfileCompletion();
+  updateShowcaseServiceStatus();
 }
 
 function updateOfferUi() {
@@ -1114,6 +1158,12 @@ async function saveQuoteResponse(quoteId, status) {
     alert("İşlem kaydedilemedi. Firestore yetkisini kontrol edin.");
   }
 }
+
+document.getElementById("openShowcaseServicesBtn")?.addEventListener("click",()=>setPanelTab("showcase"));
+document.getElementById("showcasePreviewBtn")?.addEventListener("click",()=>document.getElementById("publicProfilePreviewBtn")?.click());
+document.querySelectorAll("[data-showcase-request]").forEach(button=>{
+  button.addEventListener("click",()=>openShowcaseRequest(button.dataset.showcaseRequest || "combo"));
+});
 
 quotePanelFilter.addEventListener("change", () => {
   syncQuoteShortcutActive();
