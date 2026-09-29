@@ -1772,31 +1772,7 @@ function openComparisonModal(){
 }
 
 function getInstitutionListSponsorAds(){
-  const activeMain=getSelectedMainCategory();
-  const selectedSub=document.querySelector('.subCategoryFilter:checked')?.value || '';
-  const activeCity=normalizeQuoteSearch(activeLocationCity || '');
-  const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
-
-  return activeRegionalBannerAds()
-    .filter(ad => String(ad.placement || 'search') === 'search')
-    .filter(ad=>{
-    const adCity=normalizeQuoteSearch(ad.city || '');
-    const adDistrict=normalizeQuoteSearch(ad.district || '');
-    const adCategory=String(ad.category || '').trim();
-
-    if(adCity && activeCity && adCity!==activeCity)return false;
-    if(adDistrict && activeDistrict && adDistrict!==activeDistrict)return false;
-
-    if(adCategory){
-      const categoryMatch=
-        adCategory===String(activeMain || '') ||
-        adCategory===String(selectedSub || '');
-
-      if((activeMain || selectedSub) && !categoryMatch)return false;
-    }
-
-    return true;
-  });
+  return getBannerAdsForPlacement('search');
 }
 
 function institutionListSponsorHtml(){
@@ -2611,6 +2587,67 @@ function activeRegionalBannerAds(){
   });
 }
 
+function normalizePublicBannerPlacement(value){
+  const raw=String(value||'search');
+  if(raw==='sponsor')return 'home_sponsor';
+  const allowed=new Set([
+    'search',
+    'home_sponsor',
+    'premium_home',
+    'mobile_sponsor',
+    'sidebar_sponsor',
+    'detail_banner'
+  ]);
+  return allowed.has(raw)?raw:'search';
+}
+
+function bannerAdMatchesActiveSearchContext(ad){
+  const activeMain=getSelectedMainCategory();
+  const selectedSub=document.querySelector('.subCategoryFilter:checked')?.value || '';
+  const activeCity=normalizeQuoteSearch(activeLocationCity || '');
+  const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
+  const adCity=normalizeQuoteSearch(ad.city || '');
+  const adDistrict=normalizeQuoteSearch(ad.district || '');
+  const adCategory=String(ad.category || '').trim();
+
+  if(adCity && activeCity && adCity!==activeCity)return false;
+  if(adDistrict && activeDistrict && adDistrict!==activeDistrict)return false;
+
+  if(adCategory && (activeMain || selectedSub)){
+    const matchesCategory=
+      adCategory===String(activeMain || '') ||
+      adCategory===String(selectedSub || '');
+    if(!matchesCategory)return false;
+  }
+
+  return true;
+}
+
+function getBannerAdsForPlacement(placement, matchContext=true){
+  const wanted=normalizePublicBannerPlacement(placement);
+  return activeRegionalBannerAds()
+    .filter(ad=>normalizePublicBannerPlacement(ad.placement)===wanted)
+    .filter(ad=>!matchContext || bannerAdMatchesActiveSearchContext(ad));
+}
+
+function bannerPlacementHref(ad){
+  return 'kurum.html?id='+encodeURIComponent(ad?.institutionId || '');
+}
+
+function bannerPlacementMediaHtml(ad, fallbackClass){
+  const image=safePublicProfileUrl(ad?.imageUrl || ad?.logoUrl || '');
+  const video=safePublicProfileUrl(ad?.videoUrl || '');
+  const isVideo=String(ad?.mediaType || '')==='video' && Boolean(video);
+
+  if(isVideo){
+    return '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>';
+  }
+  if(image){
+    return '<img src="'+image+'" alt="'+escapeHtml(ad?.institutionName || 'Sponsorlu kurum')+'">';
+  }
+  return '<div class="'+fallbackClass+'">📣</div>';
+}
+
 function regionalBannerRegionValue(ad){
   return [ad.city||"",ad.district||""].join("|");
 }
@@ -2619,7 +2656,7 @@ function populateRegionalBannerFilters(){
   const region=document.getElementById("regionalBannerRegionFilter");
   const sector=document.getElementById("regionalBannerSectorFilter");
   if(!region||!sector)return;
-  const ads=activeRegionalBannerAds();
+  const ads=getBannerAdsForPlacement('detail_banner', false);
   const regionMap=new Map();
   ads.filter(ad=>ad.city).forEach(ad=>regionMap.set(regionalBannerRegionValue(ad),[ad.city,ad.district].filter(Boolean).join(" / ")));
   const regions=[...regionMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"tr"));
@@ -2634,8 +2671,7 @@ function populateRegionalBannerFilters(){
 }
 
 function filteredRegionalBannerAds(){
-  let rows=activeRegionalBannerAds()
-    .filter(ad => String(ad.placement || 'search') === 'sponsor');
+  let rows=getBannerAdsForPlacement('detail_banner', false);
   if(regionalBannerRegionFilter){
     const parts=regionalBannerRegionFilter.split("|");
     const city=parts[0]||"";
@@ -4344,19 +4380,38 @@ function renderPremiumShowcase(restartTimer = false) {
   const stage = document.getElementById('premiumShowcaseStage');
   if (!stage) return;
 
-  const ads = getPremiumShowcaseInstitutions();
-
   if (premiumShowcaseTimer) {
-    clearInterval(premiumShowcaseTimer);
+    clearTimeout(premiumShowcaseTimer);
     premiumShowcaseTimer = null;
   }
 
+  const bannerAds=getBannerAdsForPlacement('premium_home');
+
+  if (bannerAds.length) {
+    paintPremiumPlacementBanners(bannerAds);
+
+    if (bannerAds.length > 1) {
+      const active=bannerAds[premiumShowcaseIndex] || bannerAds[0];
+      const duration=[3,5,7].includes(Number(active?.durationSeconds))
+        ? Number(active.durationSeconds)*1000
+        : PREMIUM_SHOWCASE_DURATION;
+
+      premiumShowcaseTimer=setTimeout(()=>{
+        premiumShowcaseIndex=(premiumShowcaseIndex+1)%bannerAds.length;
+        renderPremiumShowcase(false);
+      },duration);
+    }
+
+    return;
+  }
+
+  const ads = getPremiumShowcaseInstitutions();
   paintPremiumShowcase(ads);
 
   if (ads.length > 1) {
-    premiumShowcaseTimer = setInterval(() => {
+    premiumShowcaseTimer = setTimeout(() => {
       premiumShowcaseIndex = (premiumShowcaseIndex + 1) % ads.length;
-      paintPremiumShowcase(ads);
+      renderPremiumShowcase(false);
     }, PREMIUM_SHOWCASE_DURATION);
   }
 
@@ -4618,30 +4673,7 @@ function bindHomepageAdvertiseButtons() {
 }
 
 function getHomepageSponsorBannerAds(){
-  const activeMain=getSelectedMainCategory();
-  const selectedSub=document.querySelector('.subCategoryFilter:checked')?.value || '';
-  const activeCity=normalizeQuoteSearch(activeLocationCity || '');
-  const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
-
-  return activeRegionalBannerAds()
-    .filter(ad => String(ad.placement || '') === 'sponsor')
-    .filter(ad => {
-      const adCity=normalizeQuoteSearch(ad.city || '');
-      const adDistrict=normalizeQuoteSearch(ad.district || '');
-      const adCategory=String(ad.category || '').trim();
-
-      if(adCity && activeCity && adCity!==activeCity)return false;
-      if(adDistrict && activeDistrict && adDistrict!==activeDistrict)return false;
-
-      if(adCategory && (activeMain || selectedSub)){
-        const matchesCategory=
-          adCategory===String(activeMain || '') ||
-          adCategory===String(selectedSub || '');
-        if(!matchesCategory)return false;
-      }
-
-      return true;
-    });
+  return getBannerAdsForPlacement('home_sponsor');
 }
 
 function homepageSponsorBannerHtml(ad){
@@ -4680,6 +4712,104 @@ function homepageSponsorBannerHtml(ad){
   `;
 }
 
+function sidebarPlacementBannerHtml(ad){
+  return `
+    <a class="sidebar-sponsored-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+      <div class="sidebar-sponsored-cover">
+        ${bannerPlacementMediaHtml(ad,'sponsored-media-fallback')}
+        <span class="sponsored-label">SPONSORLU</span>
+      </div>
+      <div class="sidebar-sponsored-copy">
+        <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
+        <small>${escapeHtml([ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Reklam')}</small>
+        <button type="button" tabindex="-1">İncele</button>
+      </div>
+    </a>
+  `;
+}
+
+function mobilePlacementBannerHtml(ad){
+  return `
+    <a class="mobile-sponsored-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+      <div class="mobile-sponsored-media">
+        ${bannerPlacementMediaHtml(ad,'mobile-sponsored-media-fallback')}
+        <span class="mobile-sponsored-label">SPONSORLU</span>
+      </div>
+      <div class="mobile-sponsored-body">
+        <div class="mobile-sponsored-title">
+          <div>
+            <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
+            <small>${escapeHtml([ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Reklam')}</small>
+          </div>
+        </div>
+        <div class="mobile-sponsored-footer">
+          <span>${escapeHtml(ad.text || 'Sponsorlu reklam')}</span>
+          <b>İncele →</b>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+function premiumPlacementBannerHtml(ad){
+  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const video=safePublicProfileUrl(ad.videoUrl || '');
+  const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
+  const location=[ad.city,ad.district].filter(Boolean).join(' / ');
+
+  return `
+    <a class="premium-showcase-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+      <div class="premium-showcase-media">
+        ${isVideo
+          ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
+          : (image
+              ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
+              : '<div class="premium-showcase-fallback">📣</div>')}
+      </div>
+      <div class="premium-showcase-overlay"></div>
+      <div class="premium-showcase-content">
+        <div class="premium-showcase-brand">
+          <span class="premium-showcase-sponsored">PREMIUM SPONSORLU</span>
+        </div>
+        <div class="premium-showcase-copy">
+          <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
+          <p>${escapeHtml(ad.text || '')}</p>
+          ${location ? '<small>📍 '+escapeHtml(location)+'</small>' : ''}
+        </div>
+        <span class="premium-showcase-cta">İncele →</span>
+      </div>
+    </a>
+  `;
+}
+
+function paintPremiumPlacementBanners(ads){
+  const stage=document.getElementById('premiumShowcaseStage');
+  const dots=document.getElementById('premiumShowcaseDots');
+  if(!stage || !ads.length)return false;
+
+  premiumShowcaseIndex=((premiumShowcaseIndex % ads.length)+ads.length)%ads.length;
+  const active=ads[premiumShowcaseIndex];
+  stage.innerHTML=premiumPlacementBannerHtml(active);
+
+  if(dots){
+    dots.innerHTML=ads.length>1
+      ? ads.map((_,index)=>
+          '<button type="button" class="'+(index===premiumShowcaseIndex?'active':'')+
+          '" data-premium-banner-slide="'+index+'" aria-label="'+(index+1)+'. premium reklam"></button>'
+        ).join('')
+      : '';
+
+    dots.querySelectorAll('[data-premium-banner-slide]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        premiumShowcaseIndex=Number(button.dataset.premiumBannerSlide || 0);
+        renderPremiumShowcase(true);
+      });
+    });
+  }
+
+  return true;
+}
+
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
@@ -4702,7 +4832,11 @@ function renderSponsoredAds() {
   }
 
   if (sidebar) {
-    if (sponsored.length) {
+    const sidebarBanners=getBannerAdsForPlacement('sidebar_sponsor');
+
+    if (sidebarBanners.length) {
+      sidebar.innerHTML=sidebarPlacementBannerHtml(sidebarBanners[0]);
+    } else if (sponsored.length) {
       sidebar.innerHTML = homepageSponsoredSidebarHtml(sponsored[0]);
       bindHomepageSponsoredCards(sidebar);
     } else {
@@ -4718,39 +4852,45 @@ function renderSponsoredAds() {
   }
 
   if (mobileSlot) {
-    const activeMain = getSelectedMainCategory();
-    const selectedSub = document.querySelector('.subCategoryFilter:checked')?.value || '';
+    const mobileBanners=getBannerAdsForPlacement('mobile_sponsor');
 
-    const mobileSponsored = sponsored.find(inst => {
-      if (!activeMain) return false;
-      const [mainCategory, subCategory] = resolveTaxonomy(inst);
-      if (String(mainCategory) !== String(activeMain)) return false;
-      return !selectedSub || String(subCategory) === String(selectedSub);
-    }) || sponsored.find(inst => {
-      if (!activeMain) return false;
-      const [mainCategory] = resolveTaxonomy(inst);
-      return String(mainCategory) === String(activeMain);
-    }) || sponsored[0];
-
-    if (mobileSponsored) {
-      mobileSlot.innerHTML = homepageSponsoredMobileHtml(mobileSponsored);
-      bindHomepageSponsoredCards(mobileSlot);
+    if (mobileBanners.length) {
+      mobileSlot.innerHTML=mobilePlacementBannerHtml(mobileBanners[0]);
     } else {
-      const categoryLabel = activeMain
-        ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
-        : 'bulunduğun bölgeyi';
+      const activeMain = getSelectedMainCategory();
+      const selectedSub = document.querySelector('.subCategoryFilter:checked')?.value || '';
 
-      mobileSlot.innerHTML = `
-        <div class="mobile-sponsored-placeholder">
-          <div class="mobile-sponsored-placeholder-icon">📣</div>
-          <div class="mobile-sponsored-placeholder-copy">
-            <span>SPONSORLU ALAN</span>
-            <strong>Bu alanda öne çıkın</strong>
-            <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
+      const mobileSponsored = sponsored.find(inst => {
+        if (!activeMain) return false;
+        const [mainCategory, subCategory] = resolveTaxonomy(inst);
+        if (String(mainCategory) !== String(activeMain)) return false;
+        return !selectedSub || String(subCategory) === String(selectedSub);
+      }) || sponsored.find(inst => {
+        if (!activeMain) return false;
+        const [mainCategory] = resolveTaxonomy(inst);
+        return String(mainCategory) === String(activeMain);
+      }) || sponsored[0];
+
+      if (mobileSponsored) {
+        mobileSlot.innerHTML = homepageSponsoredMobileHtml(mobileSponsored);
+        bindHomepageSponsoredCards(mobileSlot);
+      } else {
+        const categoryLabel = activeMain
+          ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
+          : 'bulunduğun bölgeyi';
+
+        mobileSlot.innerHTML = `
+          <div class="mobile-sponsored-placeholder">
+            <div class="mobile-sponsored-placeholder-icon">📣</div>
+            <div class="mobile-sponsored-placeholder-copy">
+              <span>SPONSORLU ALAN</span>
+              <strong>Bu alanda öne çıkın</strong>
+              <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
+            </div>
+            <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
           </div>
-          <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
-        </div>
-      `;
+        `;
+      }
     }
   }
 
