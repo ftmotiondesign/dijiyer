@@ -1168,14 +1168,18 @@ function renderRegionalBannerCarousel(reset=false){
   if(reset||regionalBannerIndex>=ads.length)regionalBannerIndex=0;
   const ad=ads[regionalBannerIndex];
   const image=safePublicProfileUrl(ad.imageUrl||ad.logoUrl||"");
+  const video=safePublicProfileUrl(ad.videoUrl||"");
+  const isVideo=ad.mediaType==="video"&&Boolean(video);
   const href="kurum.html?id="+encodeURIComponent(ad.institutionId||"");
   const regionText=[ad.city,ad.district].filter(Boolean).join(" / ");
   const sectorText=ad.categoryLabel||bannerCategoryLabel(ad.category);
   const duration=Number(ad.durationSeconds)===3?3:5;
 
   stage.innerHTML=
-    '<a class="regional-banner-card '+(image?"has-image":"")+'" href="'+href+'">'+
-      (image?'<img src="'+image+'" alt="'+escapeHtml(ad.institutionName||"Sponsorlu kurum")+'">':"")+
+    '<a class="regional-banner-card '+((image||isVideo)?"has-image":"")+'" href="'+href+'">'+
+      (isVideo
+        ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+(image||"")+'"></video>'
+        : (image?'<img src="'+image+'" alt="'+escapeHtml(ad.institutionName||"Sponsorlu kurum")+'">':""))+
       '<div class="regional-banner-overlay"></div>'+
       '<div class="regional-banner-copy">'+
         '<span class="regional-banner-sponsored">SPONSORLU</span>'+
