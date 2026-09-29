@@ -463,3 +463,51 @@ body{
     max-width:175px;
   }
 }
+
+
+/* 360° YÜKLENEN PANORAMA GÖRÜNTÜLEYİCİ */
+.kp-panorama-viewer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  background:#0d1627;
+}
+
+.kp-panorama-viewer .pnlm-render-container,
+.kp-panorama-viewer .pnlm-ui{
+  border-radius:0;
+}
+
+.kp-panorama-viewer.fallback img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.kp-hero-fullscreen{
+  border:1px solid rgba(255,255,255,.42);
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.kp-hero-guide.compact{
+  max-width:220px;
+}
+
+.kp-cover-experience .pnlm-controls-container{
+  z-index:6;
+}
+
+.kp-cover-experience .pnlm-load-box{
+  background:rgba(10,18,31,.82);
+  border-radius:10px;
+}
+
+@media(max-width:640px){
+  .kp-cover-experience .pnlm-controls{
+    transform:scale(.9);
+    transform-origin:left top;
+  }
+}
