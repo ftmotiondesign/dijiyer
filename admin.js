@@ -949,6 +949,7 @@ function renderManagedInstitutions() {
         </div>
 
         <div class="manage-actions compact">
+          <button class="banner-ad-institution-btn">🖼️ Banner Reklama Ekle</button>
           <button class="edit-institution-btn">✏ Düzenle</button>
         </div>
       </div>
@@ -1109,6 +1110,14 @@ function renderManagedInstitutions() {
         button.textContent = opening ? "Bilgileri Kapat" : "Kurum Bilgileri";
       }
       card.classList.toggle("expanded", opening);
+    });
+
+    card.querySelector(".banner-ad-institution-btn")?.addEventListener("click", () => {
+      if (typeof window.openBannerAdForInstitution === "function") {
+        window.openBannerAdForInstitution(data.id);
+      } else {
+        document.getElementById("bannerAdsTabBtn")?.click();
+      }
     });
 
     card.querySelector(".edit-institution-btn").addEventListener("click", () => {
