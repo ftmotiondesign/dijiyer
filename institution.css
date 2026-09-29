@@ -3378,3 +3378,50 @@ body[data-panel-current="stats"] .persistent-performance{
     font-size:15px;
   }
 }
+
+
+/* Kurum Bilgileri: kurum adının yanında üst erişim */
+.welcome-title-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:7px 0 5px;
+}
+.welcome-title-row h1{
+  margin:0!important;
+}
+.welcome-profile-btn{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:7px 11px;
+  border:1px solid #bfdbfe;
+  border-radius:9px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:11px;
+  font-weight:800;
+}
+.welcome-profile-btn:hover{
+  background:#dbeafe;
+}
+.welcome-profile-btn.active{
+  background:#1677ff;
+  border-color:#1677ff;
+  color:#fff;
+}
+
+@media(max-width:600px){
+  .welcome-title-row{
+    align-items:flex-start;
+    gap:7px;
+  }
+  .welcome-title-row h1{
+    width:100%;
+  }
+  .welcome-profile-btn{
+    min-height:32px;
+    padding:6px 9px;
+    font-size:10px;
+  }
+}
