@@ -7,7 +7,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=24">
-  <link rel="stylesheet" href="admin-advanced.css?v=9">
+  <link rel="stylesheet" href="admin-advanced.css?v=10">
 </head>
 
 <body>
@@ -122,6 +122,7 @@
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
+        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">🖼️ Banner Reklamları <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Tanıtım Siparişleri <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paket Yönetimi</button>
 
@@ -466,6 +467,100 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+      <section id="bannerAdsSection" hidden>
+        <div class="section-title banner-admin-title">
+          <div>
+            <h3>🖼️ Bölgesel Banner Reklamları</h3>
+            <p id="bannerAdAdminCount">Reklamlar yükleniyor...</p>
+          </div>
+          <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Banner Reklama Ekle</button>
+        </div>
+
+        <div class="banner-admin-guide">
+          <div><b>1</b><span><strong>Kurumu seç</strong><small>Reklam verecek kurumu belirle.</small></span></div>
+          <div><b>2</b><span><strong>Hedefle</strong><small>Bölge ve sektör seç; boş bırakırsan herkese gösterilir.</small></span></div>
+          <div><b>3</b><span><strong>Yayınla</strong><small>3 veya 5 saniyelik dönüş süresiyle bannerı aktif et.</small></span></div>
+        </div>
+
+        <div class="banner-admin-layout">
+          <form id="bannerAdForm" class="banner-ad-editor">
+            <input type="hidden" id="bannerAdEditId">
+
+            <div class="banner-editor-head">
+              <div><span>BANNER REKLAMA EKLE</span><strong id="bannerAdFormTitle">Yeni Banner Reklamı</strong></div>
+              <label class="promotion-package-active-toggle">
+                <input type="checkbox" id="bannerAdActive" checked><span>Yayında</span>
+              </label>
+            </div>
+
+            <label>Reklam Veren Kurum
+              <select id="bannerAdInstitution" required><option value="">Kurum seçin</option></select>
+            </label>
+
+            <div class="banner-form-grid">
+              <label>Başlık
+                <input id="bannerAdHeadline" maxlength="100" placeholder="Örn. Ekim kayıtlarında son fırsat">
+              </label>
+              <label>Kısa Reklam Metni
+                <input id="bannerAdText" maxlength="150" placeholder="Kısa kampanya veya hizmet mesajı">
+              </label>
+            </div>
+
+            <label>Banner Görsel URL
+              <input id="bannerAdImageUrl" type="url" placeholder="Boş bırakılırsa kurum kapak görseli kullanılır">
+              <small>Kurum seçildiğinde varsa kapak görseli otomatik gelir.</small>
+            </label>
+
+            <div class="banner-target-box">
+              <div class="banner-target-head">
+                <strong>Hedefleme</strong>
+                <small>Seçim yapılmazsa reklam genel akışta gösterilir.</small>
+              </div>
+              <div class="banner-form-grid banner-target-grid">
+                <label>Bölge / Şehir
+                  <select id="bannerAdCity"><option value="">Tüm Bölgeler</option></select>
+                </label>
+                <label>İlçe
+                  <select id="bannerAdDistrict"><option value="">Tüm İlçeler</option></select>
+                </label>
+                <label>Sektör
+                  <select id="bannerAdCategory"><option value="">Tüm Sektörler</option></select>
+                </label>
+                <label>Gösterim Süresi
+                  <select id="bannerAdDuration">
+                    <option value="3">3 saniye</option>
+                    <option value="5" selected>5 saniye</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="banner-form-grid">
+              <label>Yayın Başlangıcı <small>(isteğe bağlı)</small><input id="bannerAdStartAt" type="date"></label>
+              <label>Yayın Bitişi <small>(isteğe bağlı)</small><input id="bannerAdEndAt" type="date"></label>
+            </div>
+
+            <div class="banner-preview-admin" id="bannerAdPreview">
+              <span>SPONSORLU</span><strong>Banner önizlemesi</strong><small>Kurum seçildiğinde önizleme güncellenir.</small>
+            </div>
+
+            <div class="promotion-package-form-actions">
+              <button type="button" id="bannerAdCancelBtn">Temizle</button>
+              <button type="submit" class="advanced-primary-btn">Bannerı Kaydet</button>
+            </div>
+            <p id="bannerAdMessage" class="advanced-message"></p>
+          </form>
+
+          <section class="banner-ad-list-panel">
+            <div class="promotion-package-list-head">
+              <div><strong>Banner Reklamları</strong><small>Aktif reklamlar ana sayfadaki kurum detaylarında döner.</small></div>
+              <input type="search" id="bannerAdSearch" placeholder="Kurum, bölge veya sektör ara...">
+            </div>
+            <div id="bannerAdAdminList" class="banner-ad-admin-list"></div>
+          </section>
+        </div>
       </section>
 
       <section id="promotionPackagesSection" hidden>
@@ -1144,8 +1239,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=33"></script>
-  <script src="admin-advanced.js?v=11"></script>
+  <script src="admin.js?v=34"></script>
+  <script src="admin-advanced.js?v=12"></script>
 
 </body>
 </html>
