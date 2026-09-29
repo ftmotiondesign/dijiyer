@@ -2485,3 +2485,25 @@
 .external-ad-admin-actions{display:grid;gap:5px}.external-ad-admin-actions button{min-height:28px;padding:0 8px;border:1px solid #d9e3ee;border-radius:7px;background:#fff;color:#40556f;font-size:7px;font-weight:850}.external-ad-admin-actions .danger{border-color:#fecaca;color:#b91c1c;background:#fff7f7}
 @media(max-width:980px){.external-ad-admin-layout{grid-template-columns:1fr}.external-ad-form-grid.three{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.external-ad-form-grid,.external-ad-form-grid.three{grid-template-columns:1fr}.external-ad-admin-row{grid-template-columns:84px minmax(0,1fr)}.external-ad-admin-actions{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}}
+
+
+/* =========================================================
+   HARİCİ REKLAM YENİ KAYIT ODAĞI
+   ========================================================= */
+.external-ad-editor{
+  scroll-margin-top:18px;
+  transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.external-ad-editor.external-ad-editor-attention{
+  border-color:#1677ff;
+  box-shadow:0 0 0 4px rgba(22,119,255,.12),0 10px 28px rgba(18,69,126,.10);
+  transform:translateY(-2px);
+}
+#externalAdNewBtn{
+  cursor:pointer;
+  position:relative;
+  z-index:2;
+}
+#externalAdNewBtn:active{
+  transform:translateY(1px);
+}
