@@ -1312,3 +1312,136 @@
   .banner-form-grid{grid-template-columns:1fr}
   .banner-admin-card-meta{grid-template-columns:1fr 1fr}
 }
+
+
+/* Banner medya yükleme */
+.banner-media-upload{
+  padding:10px;
+  border:1px solid #dbe7f5;
+  border-radius:10px;
+  background:#f8fbff;
+}
+.banner-media-upload-head{
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.banner-media-upload-head>div{display:grid;gap:2px}
+.banner-media-upload-head strong{font-size:9.5px;color:#334155}
+.banner-media-upload-head small{font-size:7.8px;color:#8491a2}
+#bannerAdMediaTypeBadge{
+  padding:4px 7px;
+  border-radius:999px;
+  background:#eaf3ff;
+  color:#1268da;
+  font-size:7.8px;
+  font-weight:900;
+}
+#bannerAdMediaTypeBadge.video{
+  background:#f4eefe;
+  color:#7c3aed;
+}
+.banner-media-upload-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:6px;
+}
+.banner-media-upload-actions button{
+  min-height:36px;
+  padding:0 9px;
+  border:1px solid #d7e0ea;
+  border-radius:8px;
+  background:#fff;
+  color:#475569;
+  font-size:8.5px;
+  font-weight:900;
+  cursor:pointer;
+}
+.banner-media-upload-actions button:hover{border-color:#8dbaf8;background:#f5f9ff}
+.banner-media-upload-actions .danger-lite{color:#b91c1c;border-color:#fecaca;background:#fff8f8}
+.banner-upload-progress{margin-top:8px;display:grid;gap:4px}
+.banner-upload-progress.hidden{display:none!important}
+.banner-upload-progress>div{
+  height:6px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#e5eaf0;
+}
+.banner-upload-progress i{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:999px;
+  background:#1677ff;
+  transition:width .15s linear;
+}
+.banner-upload-progress span{font-size:7.8px;color:#64748b}
+.banner-upload-message{
+  min-height:14px;
+  margin:6px 0 0;
+  color:#526175;
+  font-size:8.5px;
+}
+.banner-url-details{
+  margin-top:7px;
+  border-top:1px solid #e5eaf0;
+  padding-top:7px;
+}
+.banner-url-details summary{
+  color:#64748b;
+  font-size:8px;
+  font-weight:850;
+  cursor:pointer;
+}
+.banner-url-details label{
+  margin-top:7px;
+  display:grid;
+  gap:4px;
+  color:#64748b;
+  font-size:8.2px;
+  font-weight:800;
+}
+.banner-preview-admin{position:relative;overflow:hidden}
+.banner-preview-admin>video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.banner-preview-shade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(10,22,40,.82),rgba(10,22,40,.2));
+}
+.banner-preview-admin>span,
+.banner-preview-admin>strong,
+.banner-preview-admin>small{
+  position:relative;
+  z-index:2;
+}
+.banner-admin-card-visual{position:relative;overflow:hidden}
+.banner-admin-card-visual>video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.banner-admin-video-shade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(10,22,40,.78),rgba(10,22,40,.2));
+}
+.banner-admin-card-visual>span,
+.banner-admin-card-visual>strong,
+.banner-admin-card-visual>small{
+  position:relative;
+  z-index:2;
+}
+@media(max-width:650px){
+  .banner-media-upload-actions{grid-template-columns:1fr 1fr}
+  .banner-media-upload-actions .danger-lite{grid-column:1/-1}
+}
