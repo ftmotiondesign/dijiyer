@@ -483,6 +483,66 @@
       .slice(-90);
   }
 
+  const CLOUDINARY_BANNER_SETTINGS_KEY="dijiyer_cloudinary_banner";
+
+  function loadCloudinaryBannerSettings(){
+    try{
+      const parsed=JSON.parse(localStorage.getItem(CLOUDINARY_BANNER_SETTINGS_KEY)||"{}");
+      return {
+        cloudName:String(parsed.cloudName||"").trim(),
+        uploadPreset:String(parsed.uploadPreset||"").trim()
+      };
+    }catch(_){
+      return {cloudName:"",uploadPreset:""};
+    }
+  }
+
+  function cloudinaryBannerReady(){
+    const settings=loadCloudinaryBannerSettings();
+    return Boolean(settings.cloudName&&settings.uploadPreset);
+  }
+
+  function fillCloudinaryBannerSettings(){
+    const settings=loadCloudinaryBannerSettings();
+    if($("cloudinaryCloudName"))$("cloudinaryCloudName").value=settings.cloudName;
+    if($("cloudinaryUploadPreset"))$("cloudinaryUploadPreset").value=settings.uploadPreset;
+
+    const summary=$("cloudinaryConfigSummary");
+    if(summary){
+      summary.textContent=settings.cloudName&&settings.uploadPreset
+        ? "Bağlı · "+settings.cloudName
+        : "Kurulum gerekli";
+      summary.classList.toggle("ready",Boolean(settings.cloudName&&settings.uploadPreset));
+    }
+  }
+
+  function saveCloudinaryBannerSettings(){
+    const cloudName=String($("cloudinaryCloudName")?.value||"").trim();
+    const uploadPreset=String($("cloudinaryUploadPreset")?.value||"").trim();
+    const message=$("cloudinaryConfigMessage");
+
+    if(!cloudName||!uploadPreset){
+      if(message)message.textContent="Cloud Name ve Unsigned Upload Preset alanlarını doldurun.";
+      return;
+    }
+
+    localStorage.setItem(
+      CLOUDINARY_BANNER_SETTINGS_KEY,
+      JSON.stringify({cloudName,uploadPreset})
+    );
+
+    if(message)message.textContent="Ayar kaydedildi. Görsel ve video yükleyebilirsiniz.";
+    fillCloudinaryBannerSettings();
+  }
+
+  function openCloudinarySetup(messageText){
+    const details=$("cloudinaryConfigDetails");
+    if(details)details.open=true;
+    const message=$("cloudinaryConfigMessage");
+    if(message)message.textContent=messageText||"Önce ücretsiz Cloudinary ayarını tamamlayın.";
+    $("cloudinaryCloudName")?.focus();
+  }
+
   function syncBannerMediaBadge(){
     const badge=$("bannerAdMediaTypeBadge");
     if(!badge)return;
@@ -500,6 +560,13 @@
       return;
     }
     if(!file)return;
+
+    const settings=loadCloudinaryBannerSettings();
+    if(!settings.cloudName||!settings.uploadPreset){
+      if(message)message.textContent="Önce ücretsiz medya yükleme ayarını yapın.";
+      openCloudinarySetup("Cloudinary Cloud Name ve Unsigned Upload Preset bilgilerini girip Ayarı Kaydet'e basın.");
+      return;
+    }
 
     const isVideo=type==="video";
     const valid=isVideo
@@ -520,40 +587,57 @@
       return;
     }
 
-    const path="bannerAds/"+String(inst.id)+"/"+Date.now()+"_"+bannerSafeFileName(file.name);
-    const ref=storage.ref().child(path);
-
-    if(message)message.textContent="Dosya yükleniyor...";
+    if(message)message.textContent="Cloudinary'ye yükleniyor...";
     setBannerUploadProgress(0,"Yükleniyor... %0");
 
+    const formData=new FormData();
+    formData.append("file",file);
+    formData.append("upload_preset",settings.uploadPreset);
+    formData.append("folder","dijiyer/bannerAds/"+String(inst.id));
+
     try{
-      const task=ref.put(file,{contentType:file.type});
-      await new Promise((resolve,reject)=>{
-        task.on("state_changed",
-          snapshot=>{
-            const percent=snapshot.totalBytes
-              ? (snapshot.bytesTransferred/snapshot.totalBytes)*100
-              : 0;
-            setBannerUploadProgress(percent,"Yükleniyor... %"+Math.round(percent));
-          },
-          reject,
-          resolve
+      const result=await new Promise((resolve,reject)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open(
+          "POST",
+          "https://api.cloudinary.com/v1_1/"+encodeURIComponent(settings.cloudName)+"/auto/upload",
+          true
         );
+
+        xhr.upload.onprogress=event=>{
+          if(!event.lengthComputable)return;
+          const percent=(event.loaded/event.total)*100;
+          setBannerUploadProgress(percent,"Yükleniyor... %"+Math.round(percent));
+        };
+
+        xhr.onerror=()=>reject(new Error("Ağ bağlantısı sırasında yükleme başarısız oldu."));
+        xhr.onload=()=>{
+          let data={};
+          try{data=JSON.parse(xhr.responseText||"{}")}catch(_){}
+          if(xhr.status>=200&&xhr.status<300&&data.secure_url){
+            resolve(data);
+          }else{
+            reject(new Error(data?.error?.message||"Cloudinary yükleme hatası."));
+          }
+        };
+
+        xhr.send(formData);
       });
 
-      const url=await task.snapshot.ref.getDownloadURL();
+      const url=String(result.secure_url||"");
+      if(!url)throw new Error("Cloudinary dosya adresi dönmedi.");
 
       if(isVideo){
         $("bannerAdVideoUrl").value=url;
         $("bannerAdVideoUrlManual").value=url;
         $("bannerAdMediaType").value="video";
-        if(message)message.textContent="Video yüklendi. Banner önizlemesinde oynatılıyor.";
+        if(message)message.textContent="Video ücretsiz Cloudinary hesabına yüklendi.";
       }else{
         $("bannerAdImageUrl").value=url;
         $("bannerAdVideoUrl").value="";
         $("bannerAdVideoUrlManual").value="";
         $("bannerAdMediaType").value="image";
-        if(message)message.textContent="Görsel yüklendi.";
+        if(message)message.textContent="Görsel ücretsiz Cloudinary hesabına yüklendi.";
       }
 
       setBannerUploadProgress(100,"Yükleme tamamlandı");
@@ -561,13 +645,15 @@
       renderBannerAdminPreview();
       setTimeout(()=>setBannerUploadProgress(null,""),900);
     }catch(error){
-      console.error("Banner medya yüklenemedi:",error);
+      console.error("Cloudinary banner medya yüklemesi başarısız:",error);
       setBannerUploadProgress(null,"");
       if(message){
-        message.textContent=String(error?.code||"").includes("storage/unauthorized")
-          ? "Yükleme izni yok. Firebase Storage Rules ayarını kontrol edin."
-          : "Dosya yüklenemedi. Lütfen tekrar deneyin.";
+        const text=String(error?.message||"");
+        message.textContent=text.toLowerCase().includes("preset")
+          ? "Upload Preset bulunamadı veya unsigned değil. Cloudinary ayarını kontrol edin."
+          : "Dosya yüklenemedi: "+(text||"Lütfen tekrar deneyin.");
       }
+      openCloudinarySetup("");
     }
   }
 
@@ -624,6 +710,7 @@
     if($("bannerAdVideoUrlManual"))$("bannerAdVideoUrlManual").value="";
     if($("bannerAdUploadMessage"))$("bannerAdUploadMessage").textContent="";
     setBannerUploadProgress(null,"");
+    fillCloudinaryBannerSettings();
     ["bannerAdCity","bannerAdDistrict","bannerAdCategory"].forEach(id=>{if($(id))delete $(id).dataset.current;});
     fillBannerAdTargetOptions();
     if($("bannerAdMessage"))$("bannerAdMessage").textContent="";
@@ -776,8 +863,23 @@
     await renderBannerAdsAdmin(false);
   };
 
-  $("bannerAdImageUploadBtn")?.addEventListener("click",()=>$("bannerAdImageFile")?.click());
-  $("bannerAdVideoUploadBtn")?.addEventListener("click",()=>$("bannerAdVideoFile")?.click());
+  $("cloudinarySaveBtn")?.addEventListener("click",saveCloudinaryBannerSettings);
+  fillCloudinaryBannerSettings();
+
+  $("bannerAdImageUploadBtn")?.addEventListener("click",()=>{
+    if(!cloudinaryBannerReady()){
+      openCloudinarySetup("Önce ücretsiz Cloudinary bağlantısını kurun.");
+      return;
+    }
+    $("bannerAdImageFile")?.click();
+  });
+  $("bannerAdVideoUploadBtn")?.addEventListener("click",()=>{
+    if(!cloudinaryBannerReady()){
+      openCloudinarySetup("Önce ücretsiz Cloudinary bağlantısını kurun.");
+      return;
+    }
+    $("bannerAdVideoFile")?.click();
+  });
   $("bannerAdMediaClearBtn")?.addEventListener("click",clearBannerMedia);
   $("bannerAdImageFile")?.addEventListener("change",event=>uploadBannerMedia(event.target.files?.[0],"image"));
   $("bannerAdVideoFile")?.addEventListener("change",event=>uploadBannerMedia(event.target.files?.[0],"video"));
