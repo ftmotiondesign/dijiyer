@@ -3770,3 +3770,31 @@ body[data-panel-current="stats"] .persistent-performance{
   font-size:9px;
   font-weight:900;
 }
+
+/* Özet ekranında yeni talepleri kalıcı öncelikli kart olarak göster */
+.persistent-new-request{
+  margin-top:12px;
+}
+.persistent-new-request #persistentNewRequestBtn{
+  min-height:40px;
+  padding:0 15px;
+  border:0;
+  border-radius:11px;
+  background:#16a34a;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  box-shadow:0 7px 18px rgba(22,163,74,.18);
+}
+.persistent-new-request #persistentNewRequestBtn:hover{
+  background:#15803d;
+}
+body[data-panel-current="summary"] .panel-heading-action{
+  display:none !important;
+}
+@media(max-width:680px){
+  .persistent-new-request #persistentNewRequestBtn{
+    flex:1;
+    min-height:42px;
+  }
+}
