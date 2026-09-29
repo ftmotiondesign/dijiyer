@@ -3619,3 +3619,88 @@ button{cursor:pointer}
     font-size:9px;
   }
 }
+
+
+/* =========================================================
+   Bölgesel Sponsorlu Banner Alanı
+   ========================================================= */
+.regional-banner-zone{
+  margin:16px 0 2px;
+  padding-top:12px;
+  border-top:1px solid #e4eaf2;
+}
+.regional-banner-zone.hidden{display:none!important}
+.regional-banner-head{
+  margin-bottom:8px;
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+}
+.regional-banner-head>div:first-child{display:grid;gap:2px}
+.regional-banner-head>div:first-child>span{
+  color:#f97316;font-size:8px;font-weight:950;letter-spacing:.08em;
+}
+.regional-banner-head>div:first-child>strong{font-size:11px;color:#26364d}
+.regional-banner-filters{display:flex;gap:6px}
+.regional-banner-filters select{
+  max-width:150px;padding:7px 8px;
+  border:1px solid #d7e0ea;border-radius:8px;background:#fff;
+  color:#526175;font-size:9px;font-weight:750;
+}
+.regional-banner-stage{position:relative}
+.regional-banner-card{
+  position:relative;min-height:125px;padding:14px;
+  overflow:hidden;border-radius:12px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  background:linear-gradient(135deg,#173a70,#1677ff);
+  color:#fff;text-decoration:none;
+  box-shadow:0 7px 22px rgba(15,23,42,.1);
+}
+.regional-banner-card>img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+}
+.regional-banner-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(7,17,32,.88) 0%,rgba(7,17,32,.65) 50%,rgba(7,17,32,.18) 100%);
+}
+.regional-banner-copy{position:relative;z-index:2;max-width:72%;display:grid;gap:3px}
+.regional-banner-sponsored{
+  width:max-content;padding:3px 5px;border-radius:999px;
+  background:rgba(255,255,255,.18);
+  font-size:6.8px;font-weight:950;letter-spacing:.07em;
+}
+.regional-banner-copy strong{
+  font-size:15px;line-height:1.15;text-shadow:0 2px 8px rgba(0,0,0,.28);
+}
+.regional-banner-copy p{margin:0;font-size:9px;line-height:1.35;color:rgba(255,255,255,.92)}
+.regional-banner-copy small{font-size:7.8px;color:rgba(255,255,255,.76)}
+.regional-banner-cta{
+  position:absolute;z-index:2;right:12px;bottom:14px;
+  padding:7px 9px;border-radius:8px;background:#fff;color:#172033;
+  font-size:8.5px;font-weight:900;
+}
+.regional-banner-progress{
+  position:absolute;z-index:3;left:0;bottom:0;height:3px;width:100%;
+  background:#fff;transform-origin:left center;
+  animation:regionalBannerProgress var(--banner-duration) linear forwards;
+}
+@keyframes regionalBannerProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.regional-banner-dots{
+  margin-top:6px;display:flex;justify-content:center;gap:4px;
+}
+.regional-banner-dots button{
+  width:6px;height:6px;padding:0;border:0;border-radius:50%;
+  background:#cbd5e1;cursor:pointer;
+}
+.regional-banner-dots button.active{width:17px;border-radius:999px;background:#1677ff}
+.regional-banner-empty{
+  padding:14px;border:1px dashed #cbd5e1;border-radius:10px;
+  background:#f8fafc;color:#7c899a;text-align:center;font-size:9px;
+}
+@media(max-width:650px){
+  .regional-banner-head{align-items:stretch;flex-direction:column}
+  .regional-banner-filters{display:grid;grid-template-columns:1fr 1fr}
+  .regional-banner-filters select{max-width:none;width:100%}
+  .regional-banner-card{min-height:112px;padding:11px}
+  .regional-banner-copy{max-width:78%}
+  .regional-banner-copy strong{font-size:13px}
+  .regional-banner-cta{right:9px;bottom:10px;font-size:7.5px;padding:6px 7px}
+}
