@@ -1,127 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1677ff">
   <meta name="description" content="Dijiyer kurum profili">
-  <title>Dijiyer - Kurum Profili</title>
-  <link rel="stylesheet" href="kurum.css?v=1">
+  <title>Kurum Profili | Dijiyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="kurum.css?v=2">
 </head>
 <body>
-  <header class="public-header">
-    <a class="brand" href="index.html">
-      <span class="brand-mark">D</span>
-      <span>
-        <strong>Dijiyer</strong>
-        <small>Bul • Teklif Al • Ulaş</small>
-      </span>
+  <header class="kp-topbar">
+    <a class="kp-brand" href="index.html">
+      <span class="kp-brand-mark">D</span>
+      <span class="kp-brand-copy"><strong>Dijiyer</strong><small>Bul • Teklif Al • Ulaş</small></span>
     </a>
-    <a class="back-home" href="index.html">← Ana Sayfa</a>
+    <nav>
+      <a href="index.html#exploreSection">← Kurumlara Dön</a>
+      <a class="primary" href="index.html">Ücretsiz Teklif Al</a>
+    </nav>
   </header>
 
-  <main class="profile-shell">
-    <div id="previewBanner" class="preview-banner hidden">
-      <div>
-        <strong>👁 Önizleme Modu</strong>
-        <span>Müşteriler kurum sayfanızı bu şekilde görür.</span>
-      </div>
+  <main class="kp-shell">
+    <div id="previewBanner" class="kp-preview hidden">
+      <div><strong>👁 Önizleme Modu</strong><span>Müşteriler kurum sayfanızı bu şekilde görür.</span></div>
       <a href="institution.html?session=institution">Panele Dön</a>
     </div>
 
-    <section id="loadingState" class="state-card">Kurum sayfası yükleniyor...</section>
-    <section id="errorState" class="state-card error hidden">
-      <strong>Kurum bulunamadı.</strong>
-      <span>Bu kurum kaldırılmış veya bağlantı geçersiz olabilir.</span>
+    <section id="loadingState" class="kp-loading">Kurum sayfası yükleniyor...</section>
+    <section id="errorState" class="kp-error hidden">
+      <b>🏢</b><h1>Kurum bulunamadı</h1><p>Bu kurum kaldırılmış veya bağlantı geçersiz olabilir.</p><a href="index.html">Kurumlara Dön</a>
     </section>
 
-    <article id="institutionProfile" class="institution-profile hidden">
-      <section class="hero-card">
-        <div class="cover" id="profileCover">
-          <div class="cover-placeholder">Dijiyer Kurum Profili</div>
-        </div>
-
-        <div class="hero-content">
-          <div class="identity-row">
-            <div class="logo" id="profileLogo">🏢</div>
-            <div class="identity-copy">
-              <div class="name-row">
-                <h1 id="profileName">Kurum</h1>
-                <span id="vipBadge" class="vip-badge hidden">VIP</span>
-              </div>
-              <div class="location" id="profileLocation"></div>
-              <div class="rating" id="profileRating">⭐ 0.0 · 0 değerlendirme</div>
-            </div>
-          </div>
-
-          <p class="description" id="profileDescription"></p>
-
-          <div class="primary-actions">
-            <button type="button" class="action whatsapp" id="whatsappBtn">💬 WhatsApp</button>
-            <button type="button" class="action route" id="routeBtn">🧭 Yol Tarifi</button>
-            <button type="button" class="action offer" id="quoteBtn">📄 Teklif Al</button>
-          </div>
-
-          <div class="secondary-actions">
-            <button type="button" id="websiteBtn" class="hidden">🌐 Web Sitesi</button>
-            <button type="button" id="instagramBtn" class="hidden">📷 Instagram</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="info-grid">
-        <article>
-          <span>Hizmet Bölgesi</span>
-          <strong id="serviceAreas">-</strong>
-        </article>
-        <article>
-          <span>Telefon</span>
-          <strong id="phoneValue">-</strong>
-        </article>
-        <article class="wide">
-          <span>Adres</span>
-          <strong id="addressValue">-</strong>
-        </article>
-        <article class="hours wide">
-          <span>Çalışma Saatleri</span>
-          <div><b>Hafta içi</b><strong id="weekdayHours">-</strong></div>
-          <div><b>Cumartesi</b><strong id="saturdayHours">-</strong></div>
-          <div><b>Pazar</b><strong id="sundayHours">-</strong></div>
-        </article>
-      </section>
-
-      <section class="content-card">
-        <div class="section-head">
-          <div>
-            <span>GALERİ</span>
-            <h2>Kurumdan Görseller</h2>
-          </div>
-          <small id="galleryCount">0 görsel</small>
-        </div>
-        <div class="gallery" id="gallery"></div>
-      </section>
-
-      <section class="content-card">
-        <div class="section-head">
-          <div>
-            <span>DEĞERLENDİRMELER</span>
-            <h2>Müşteri Yorumları</h2>
-          </div>
-          <small id="reviewCount">0 değerlendirme</small>
-        </div>
-        <div class="reviews" id="reviews"></div>
-      </section>
-
-      <section class="profile-footer-note">
-        <strong>Dijiyer</strong>
-        <span>Bu sayfa kurumun Dijiyer üzerindeki herkese açık profilidir.</span>
-      </section>
-    </article>
+    <div id="institutionProfile" class="hidden"></div>
   </main>
 
-  <div class="toast" id="toast"></div>
+  <div id="reviewModal" class="kp-modal hidden">
+    <div class="kp-modal-card">
+      <button type="button" id="reviewModalClose" class="kp-modal-close">×</button>
+      <span class="eyebrow">DENEYİMİNİ PAYLAŞ</span>
+      <h2>Yorum Yap / Puan Ver</h2>
+      <form id="reviewForm">
+        <div id="ratingPicker" class="kp-rating-picker">
+          <button type="button" data-rating="1">★</button>
+          <button type="button" data-rating="2">★</button>
+          <button type="button" data-rating="3">★</button>
+          <button type="button" data-rating="4">★</button>
+          <button type="button" data-rating="5">★</button>
+        </div>
+        <textarea id="reviewText" rows="5" maxlength="1000" required placeholder="Kurumla ilgili deneyiminizi yazın..."></textarea>
+        <button type="submit" class="kp-submit">Yorumu Gönder</button>
+        <p id="reviewMessage" class="kp-form-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="kp-toast"></div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="kurum.js?v=1"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="kurum.js?v=2"></script>
 </body>
 </html>
