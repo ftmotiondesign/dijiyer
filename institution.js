@@ -408,7 +408,7 @@ async function clearProfileHeroMedia(fieldName) {
     locationVideoUrl:{
       inputId:"profileVideoUrl",
       statusId:"profileVideoUploadStatus",
-      emptyText:"Video kaldırıldı."
+      emptyText:"Konum & çevre videosu kaldırıldı."
     },
     virtualTourUrl:{
       inputId:"profileVirtualTourUrl",
@@ -1132,7 +1132,7 @@ function updateShowcaseServiceStatus() {
 
   setStatus("showcaseLocationStatus",state.hasLocationVideo,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
   setStatus("showcaseTourStatus",state.hasVirtualTour,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
-  setStatus("summaryLocationStatus",state.hasLocationVideo,"▶ Konum Videosu · Aktif","▶ Konum Videosu · Henüz yok");
+  setStatus("summaryLocationStatus",state.hasLocationVideo,"▶ Konum & Çevre Videosu · Aktif","▶ Konum & Çevre Videosu · Henüz yok");
   setStatus("summaryTourStatus",state.hasVirtualTour,"◉ 360° Tur · Aktif","◉ 360° Tur · Henüz yok");
 
   const adNode=document.getElementById("showcaseAdStatus");
@@ -1183,13 +1183,13 @@ function renderShowcaseRecommendations(state=getShowcaseServiceState()) {
     rows.push({
       status:"missing",
       icon:"▶",
-      title:"Konum Videosu ekleyin",
-      text:"Müşteriye işletmenize nasıl ulaşacağını görsel olarak anlatın.",
+      title:"Konum & Çevre Videosu ekleyin",
+      text:"Müşteriye işletmenize nasıl ulaşacağını, çevrede neler bulunduğunu ve yakın noktaları gösterin.",
       action:"location",
-      button:"Konum Videosu"
+      button:"Konum & Çevre Videosu"
     });
   }else{
-    rows.push({status:"done",icon:"✓",title:"Konum Videosu aktif",text:"Kurum sayfanızda müşterilere gösteriliyor."});
+    rows.push({status:"done",icon:"✓",title:"Konum & Çevre Videosu aktif",text:"Kurum sayfanızda müşterilere gösteriliyor."});
   }
 
   if(!state.hasVirtualTour){
@@ -1312,9 +1312,9 @@ const PROMOTION_SERVICES = {
   videoAd:{id:"video_showcase_ad",name:"Video Vitrin Reklamı",icon:"▶",lead:"Kısa tanıtım videonuzu sponsorlu video alanında gösterin.",benefit:"Hareketli içerikle daha fazla dikkat çekerek kurumunuzu hızlı anlatmanızı sağlar.",includes:["Sponsorlu video alanı","Kurum profiline yönlendirme","Yayın süresi takibi"],process:"Video teknik olarak kontrol edilir, yayın alanı ve tarih planlanır.",required:"Hazır video veya video hazırlanacaksa içerik materyalleri.",delivery:"Onay sonrası planlanan tarihte",revision:"Hazır video için teknik kontrol",price:0,priceLabel:"Süre ve alana göre fiyatlandırılır",extras:["Reels video üretimi"],example:"Kısa tanıtım videosunun Dijiyer sponsorlu video alanında gösterilmesi."},
   packageStarter:{id:"package_starter",name:"Başlangıç Görünürlüğü",icon:"★",lead:"Dijiyer reklamını ilk kez deneyecek kurumlar için başlangıç paketi.",benefit:"Tek tasarım ve kategori görünürlüğünü birlikte kullanarak düşük adımla reklam deneyimi başlatır.",includes:["Reklam banner tasarımı","Kategori vitrini"],process:"İçerik hazırlanır ve kategori yayın dönemi planlanır.",required:"Logo, tanıtım metni ve kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket fiyatı planlamada netleşir",extras:["Ek yayın süresi"],example:"Banner + kategori içinde sponsorlu kurum gösterimi."},
   packageRegional:{id:"package_regional",name:"Bölgesel Görünürlük",icon:"📍",lead:"Bölgesel müşteri arayan kurumlar için içerik + yerel reklam paketi.",benefit:"Şehir/ilçe hedeflemesiyle kampanyanızı yerel kullanıcılara daha görünür kılar.",includes:["Banner tasarımı","Şehir / ilçe vitrini","Kampanya duyurusu"],process:"Bölge ve kampanya planlanır, tasarım hazırlanır ve yayınlanır.",required:"Logo, hedef bölge, kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Bölge ve süreye göre paket fiyatı",extras:["Kategori vitrini"],example:"Yerel banner + bölgesel sponsorlu görünürlük + kampanya duyurusu."},
-  combo:{id:"location_tour_combo",name:"Dijiyer Mekan Tanıtım Paketi",icon:"360°",lead:"Konum videosu ve 360° sanal turu tek pakette birleştirin.",benefit:"Müşteriye hem size nasıl ulaşacağını hem de mekanda ne göreceğini tek kurum profilinde gösterir.",includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],process:"Konum ve mekan çekimi birlikte planlanır, iki içerik hazırlanıp kurum profilinize eklenir.",required:"Kurum adresi, çekim günü, logo ve mekan erişimi.",delivery:"Çekim sonrası ortalama 5–10 iş günü",revision:"1 düzenleme turu",price:0,priceLabel:"Mekan ve çekim kapsamına göre fiyatlandırılır",extras:["Reels tanıtım videosu","QR/NFC yönlendirme"],example:"Profilde 'Konum Videosu' ve '360° Sanal Tur' alanlarının birlikte aktif olması."},
-  packagePlus:{id:"package_plus",name:"Görünürlük Plus",icon:"＋",lead:"İçerik üretimiyle ana sayfa görünürlüğünü birleştiren paket.",benefit:"Hazırlanan tanıtım içeriğini aynı zamanda sponsorlu görünürlükle destekler.",includes:["Konum Videosu","Banner tasarımı","Ana Sayfa Vitrini"],process:"İçerikler hazırlanır ve sponsorlu yayın dönemi planlanır.",required:"Logo, adres, kurum bilgileri ve kampanya mesajı.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket kapsamına göre fiyatlandırılır",extras:["Kategori vitrini"],example:"Konum videosu + banner + ana sayfa sponsorlu vitrin."},
-  packagePremium:{id:"package_premium",name:"Premium Tanıtım",icon:"◆",lead:"İçerik ve Dijiyer görünürlüğünü kapsamlı bir pakette birleştirin.",benefit:"Kurum profilinizde güçlü içerik oluştururken farklı sponsorlu alanlarda görünürlüğünüzü artırır.",includes:["Konum Videosu + 360° Tur","Ana Sayfa Vitrini","Kategori Vitrini","Şehir / İlçe Vitrini"],process:"Çekim, tasarım ve reklam yayını tek plan altında hazırlanır.",required:"Kurum bilgileri, çekim erişimi, hedef bölge ve kampanya amacı.",delivery:"Kapsama göre planlanır",revision:"İçeriklerde 1 revizyon",price:0,priceLabel:"Kapsama özel paket fiyatı",extras:["Reels video","Kampanya duyurusu"],example:"İçerik üretimi + çoklu sponsorlu görünürlük planı."},
+  combo:{id:"location_tour_combo",name:"Dijiyer Mekan Tanıtım Paketi",icon:"360°",lead:"Konum videosu ve 360° sanal turu tek pakette birleştirin.",benefit:"Müşteriye hem size nasıl ulaşacağını hem de mekanda ne göreceğini tek kurum profilinde gösterir.",includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],process:"Konum ve mekan çekimi birlikte planlanır, iki içerik hazırlanıp kurum profilinize eklenir.",required:"Kurum adresi, çekim günü, logo ve mekan erişimi.",delivery:"Çekim sonrası ortalama 5–10 iş günü",revision:"1 düzenleme turu",price:0,priceLabel:"Mekan ve çekim kapsamına göre fiyatlandırılır",extras:["Reels tanıtım videosu","QR/NFC yönlendirme"],example:"Profilde 'Konum & Çevre Videosu' ve '360° Sanal Tur' alanlarının birlikte aktif olması."},
+  packagePlus:{id:"package_plus",name:"Görünürlük Plus",icon:"＋",lead:"İçerik üretimiyle ana sayfa görünürlüğünü birleştiren paket.",benefit:"Hazırlanan tanıtım içeriğini aynı zamanda sponsorlu görünürlükle destekler.",includes:["Konum & Çevre Videosu","Banner tasarımı","Ana Sayfa Vitrini"],process:"İçerikler hazırlanır ve sponsorlu yayın dönemi planlanır.",required:"Logo, adres, kurum bilgileri ve kampanya mesajı.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket kapsamına göre fiyatlandırılır",extras:["Kategori vitrini"],example:"Konum videosu + banner + ana sayfa sponsorlu vitrin."},
+  packagePremium:{id:"package_premium",name:"Premium Tanıtım",icon:"◆",lead:"İçerik ve Dijiyer görünürlüğünü kapsamlı bir pakette birleştirin.",benefit:"Kurum profilinizde güçlü içerik oluştururken farklı sponsorlu alanlarda görünürlüğünüzü artırır.",includes:["Konum & Çevre Videosu + 360° Tur","Ana Sayfa Vitrini","Kategori Vitrini","Şehir / İlçe Vitrini"],process:"Çekim, tasarım ve reklam yayını tek plan altında hazırlanır.",required:"Kurum bilgileri, çekim erişimi, hedef bölge ve kampanya amacı.",delivery:"Kapsama göre planlanır",revision:"İçeriklerde 1 revizyon",price:0,priceLabel:"Kapsama özel paket fiyatı",extras:["Reels video","Kampanya duyurusu"],example:"İçerik üretimi + çoklu sponsorlu görünürlük planı."},
   consultation:{id:"promotion_consultation",name:"Tanıtım Planlama Görüşmesi",icon:"?",lead:"Kurumunuz için hangi tanıtım hizmetinin daha uygun olduğunu birlikte belirleyin.",benefit:"Gereksiz hizmet almadan kurumunuzun eksik görünürlük alanlarına göre plan oluşturmanızı sağlar.",includes:["Profil değerlendirmesi","Hizmet önerisi","Kısa tanıtım planı"],process:"Kurum profiliniz ve hedefiniz incelenir, uygun hizmetler belirlenir.",required:"Tanıtım hedefiniz ve öncelikli hizmetiniz.",delivery:"Planlanan görüşme zamanı",revision:"-",price:0,priceLabel:"Ücretsiz ön değerlendirme",extras:[],example:"Kurum profilinizde eksik olan tanıtım alanlarına göre hizmet önerisi."}
 };
 
@@ -2459,7 +2459,7 @@ document.getElementById("profileVideoFile")?.addEventListener("change", async ev
     fieldName:"locationVideoUrl",
     inputId:"profileVideoUrl",
     statusId:"profileVideoUploadStatus",
-    label:"Video",
+    label:"Konum & çevre videosu",
     mediaType:"video"
   });
 
