@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
   <link rel="stylesheet" href="institution.css?v=28">
-  <link rel="stylesheet" href="institution-announcements.css?v=2">
+  <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
 <body>
@@ -91,24 +91,32 @@
       </div>
     </section>
 
-    <div class="institution-announcement-alert hidden" id="institutionAnnouncementAlert">
-      <div class="announcement-alert-icon">📣</div>
-      <div>
+    <div class="institution-announcement-alert priority-action-card announcement hidden" id="institutionAnnouncementAlert">
+      <div class="priority-action-icon announcement-alert-icon">📣</div>
+      <div class="priority-action-copy">
+        <span class="priority-action-kicker">YÖNETİM DUYURUSU</span>
         <strong id="institutionAnnouncementAlertTitle">Yeni yönetim duyurusu</strong>
         <span id="institutionAnnouncementAlertText"></span>
       </div>
-      <button type="button" id="openInstitutionAnnouncements">Duyuruyu Gör</button>
-      <button type="button" id="closeInstitutionAnnouncementAlert" class="announcement-alert-close">×</button>
+      <div class="priority-action-side">
+        <span class="priority-action-badge">Önemli</span>
+        <button type="button" id="openInstitutionAnnouncements">Duyuruyu Gör</button>
+      </div>
+      <button type="button" id="closeInstitutionAnnouncementAlert" class="priority-action-close announcement-alert-close" aria-label="Duyuruyu kapat">×</button>
     </div>
 
-    <div class="live-quote-alert hidden" id="liveQuoteAlert">
-      <div class="live-quote-alert-icon">🔔</div>
-      <div class="live-quote-alert-copy">
-        <strong>Yeni teklif talebi geldi</strong>
+    <div class="live-quote-alert priority-action-card request hidden" id="liveQuoteAlert">
+      <div class="priority-action-icon live-quote-alert-icon">🔔</div>
+      <div class="priority-action-copy live-quote-alert-copy">
+        <span class="priority-action-kicker">YENİ İŞ FIRSATI</span>
+        <strong>Yeni müşteri talebi geldi</strong>
         <span id="liveQuoteAlertText">Yeni bir müşteri talebi kurumunuzla eşleşti.</span>
       </div>
-      <button type="button" id="liveQuoteAlertBtn">Teklifi Gör</button>
-      <button type="button" class="live-quote-alert-close" id="liveQuoteAlertClose" aria-label="Kapat">×</button>
+      <div class="priority-action-side">
+        <span class="priority-action-badge request-badge">Yeni</span>
+        <button type="button" id="liveQuoteAlertBtn">Yeni Talepleri Göster</button>
+      </div>
+      <button type="button" class="priority-action-close live-quote-alert-close" id="liveQuoteAlertClose" aria-label="Kapat">×</button>
     </div>
 
     <div class="live-quote-alert live-message-alert hidden" id="liveMessageAlert">
