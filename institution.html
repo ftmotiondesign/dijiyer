@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=38">
+  <link rel="stylesheet" href="institution.css?v=39">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -989,6 +989,122 @@
             </details>
           </section>
 
+          <section class="firm-profile-section firm-profile-showcase-media">
+            <div class="firm-profile-section-head">
+              <div>
+                <span class="eyebrow">ÜST PROFİL MEDYASI</span>
+                <h3>360° mekan, video ve üst görsel</h3>
+                <p>Müşteri kurum sayfanızı açtığında ilk gördüğü medya alanını buradan yönetebilirsiniz.</p>
+              </div>
+              <span class="firm-profile-media-badge">Üstte Gösterilir</span>
+            </div>
+
+            <div class="firm-profile-media-priority">
+              <span><b>1</b> 360° Mekan</span>
+              <span><b>2</b> Tanıtım Videosu</span>
+              <span><b>3</b> Kapak Görseli</span>
+            </div>
+
+            <div class="firm-profile-hero-media-grid">
+              <article class="firm-profile-hero-media-card panorama">
+                <div class="firm-profile-hero-media-card-head">
+                  <span class="firm-profile-hero-media-icon">360°</span>
+                  <div>
+                    <strong>360° Mekan Görüntüsü</strong>
+                    <small>2:1 panoramik JPG/WebP yükleyin. Ziyaretçi parmağıyla döndürebilir.</small>
+                  </div>
+                </div>
+
+                <label class="firm-upload-box firm-media-upload-box">
+                  <input id="profilePanorama360File" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+                  <span class="firm-upload-icon">◎</span>
+                  <span class="firm-upload-copy">
+                    <strong>360° Fotoğraf Yükle</strong>
+                    <small>Önerilen 2:1 · JPG/WebP · en fazla 20 MB</small>
+                  </span>
+                  <span class="firm-upload-action">Dosya Seç</span>
+                </label>
+
+                <div class="firm-media-upload-status" id="profilePanorama360UploadStatus">
+                  360° görüntü eklenmedi.
+                </div>
+
+                <div class="firm-profile-media-current hidden" id="profilePanorama360Current">
+                  <span>✓ 360° görüntü aktif</span>
+                  <button type="button" data-clear-profile-media="panorama360Url">Kaldır</button>
+                </div>
+
+                <details class="profile-url-fallback">
+                  <summary>360° görsel bağlantısı kullanmak istiyorum</summary>
+                  <label>360° Görsel URL
+                    <input id="profilePanorama360Url" type="url" placeholder="https://.../panorama.jpg">
+                  </label>
+                </details>
+              </article>
+
+              <article class="firm-profile-hero-media-card video">
+                <div class="firm-profile-hero-media-card-head">
+                  <span class="firm-profile-hero-media-icon">▶</span>
+                  <div>
+                    <strong>Tanıtım / Konum Videosu</strong>
+                    <small>Üst alanda sessiz otomatik başlar. Kullanıcı isterse sesi açabilir.</small>
+                  </div>
+                </div>
+
+                <label class="firm-upload-box firm-media-upload-box">
+                  <input id="profileVideoFile" type="file" accept="video/mp4,video/webm" hidden>
+                  <span class="firm-upload-icon">🎬</span>
+                  <span class="firm-upload-copy">
+                    <strong>Video Yükle</strong>
+                    <small>MP4 veya WebM · en fazla 80 MB</small>
+                  </span>
+                  <span class="firm-upload-action">Dosya Seç</span>
+                </label>
+
+                <div class="firm-media-upload-status" id="profileVideoUploadStatus">
+                  Video eklenmedi.
+                </div>
+
+                <div class="firm-profile-media-current hidden" id="profileVideoCurrent">
+                  <span>✓ Video aktif</span>
+                  <button type="button" data-clear-profile-media="locationVideoUrl">Kaldır</button>
+                </div>
+
+                <details class="profile-url-fallback">
+                  <summary>Video bağlantısı kullanmak istiyorum</summary>
+                  <label>Video URL
+                    <input id="profileVideoUrl" type="url" placeholder="https://.../video.mp4">
+                  </label>
+                </details>
+              </article>
+
+              <article class="firm-profile-hero-media-card tour">
+                <div class="firm-profile-hero-media-card-head">
+                  <span class="firm-profile-hero-media-icon">↔</span>
+                  <div>
+                    <strong>Hazır 360° Sanal Tur</strong>
+                    <small>Kuula, 3DVista, Matterport veya Momento360 tur bağlantısı ekleyin.</small>
+                  </div>
+                </div>
+
+                <label>360° Sanal Tur Linki
+                  <input id="profileVirtualTourUrl" type="url" placeholder="https://kuula.co/... veya 3DVista tur bağlantısı">
+                  <small>Hazır tur varsa 360° fotoğrafa göre öncelikli olarak kullanılabilir.</small>
+                </label>
+
+                <div class="firm-profile-media-current hidden" id="profileVirtualTourCurrent">
+                  <span>✓ Sanal tur aktif</span>
+                  <button type="button" data-clear-profile-media="virtualTourUrl">Kaldır</button>
+                </div>
+              </article>
+            </div>
+
+            <div class="firm-profile-media-help">
+              <strong>Üst alanda ne gösterilir?</strong>
+              <span>360° içerik varsa önce o açılır. Sonra Video ve Kapak Görseli sekmeleri görünür.</span>
+            </div>
+          </section>
+
           <section class="firm-profile-section">
             <div class="firm-profile-section-head">
               <div>
@@ -1524,7 +1640,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=10"></script>
+  <script src="institution.js?v=11"></script>
   <script src="institution-layout.js?v=3"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
