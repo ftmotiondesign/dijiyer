@@ -156,3 +156,28 @@ yerine:
 ```
 
 kullanılmalıdır.
+
+## 3) Müşteriye kurum yanıtı bildirimi
+
+Kurumun **İlgileniyorum / İlgilenmiyorum** seçimi müşterinin teklif takip ekranına
+`quoteRequests/{quoteId}/engagement/{institutionId}` üzerinden aktarılır.
+
+Engagement belgesinde müşteri adı veya telefon tutulmaz. Kullanılan alanlar:
+
+- `institutionId`
+- `institutionName`
+- `institutionResponse` (`interested` / `not_interested`)
+- `institutionResponseAt`
+- `lastInstitutionActionAt`
+
+Müşteri takip ekranı toplu durum özetini gösterebilmek için engagement koleksiyonunu
+listeleyebilir. Kurum ise yalnızca kendi engagement belgesindeki kurum yanıt alanlarını
+yazabilir/değiştirebilir.
+
+## 4) Doğrudan talebin takip kaydı
+
+`quoteAccess/{phoneHash}/codes/{trackingCode}` için izin verilen alanlara opsiyonel olarak
+`targetInstitutionId` ve `targetInstitutionName` eklenir. Bu iki alan ana quoteRequests
+belgesindeki hedef kurumla eşleşmelidir.
+
+Tam tek parça güncel kural dosyası: `firestore_rules_musteri_bildirim_guncel.rules`.
