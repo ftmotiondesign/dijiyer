@@ -18,6 +18,10 @@ let regionalBannerIndex = 0;
 let regionalBannerRegionFilter = "";
 let regionalBannerSectorFilter = "";
 
+let premiumShowcaseTimer = null;
+let premiumShowcaseIndex = 0;
+const PREMIUM_SHOWCASE_DURATION = 5500;
+
 const institutionSessionApp =
   firebase.apps.find(app => app.name === 'institutionSession') ||
   firebase.initializeApp(firebaseConfig, 'institutionSession');
@@ -2558,6 +2562,10 @@ async function loadApprovedInstitutions() {
         adPackage: String(data.adPackage || ''),
         adStartAt: data.adStartAt || '',
         adEndAt: data.adEndAt || '',
+        adBannerUrl: safePublicProfileUrl(data.adBannerUrl || data.bannerUrl || data.campaignBannerUrl || ''),
+        adHeadline: String(data.adHeadline || data.campaignTitle || ''),
+        adText: String(data.adText || data.campaignText || ''),
+        adCta: String(data.adCta || ''),
         lat: Number.isFinite(data.lat) ? data.lat : null,
         lng: Number.isFinite(data.lng) ? data.lng : null,
         emoji: data.emoji || '🏢'
@@ -2629,11 +2637,174 @@ function matchesHomepageAdLocation(inst) {
   return true;
 }
 
+function getPremiumShowcaseInstitutions() {
+  return institutions
+    .filter(isHomepageAdActive)
+    .filter(inst => String(inst.adPackage || '') === 'premium')
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'tr'))
+    .slice(0, 5);
+}
+
+function premiumShowcaseCardHtml(inst) {
+  const image = safePublicProfileUrl(inst.adBannerUrl || inst.coverUrl || '');
+  const logo = safePublicProfileUrl(inst.logoUrl || '');
+  const headline = String(inst.adHeadline || '').trim() || String(inst.name || 'Premium Marka');
+  const text = String(inst.adText || '').trim() ||
+    String(inst.description || '').trim() ||
+    'Markayı, kampanyayı veya hizmeti Dijiyer ana sayfasının en görünür alanında keşfedin.';
+  const cta = String(inst.adCta || '').trim() || 'İncele';
+  const location = String(inst.location || [inst.city, inst.district].filter(Boolean).join(', ') || '').trim();
+
+  return `
+    <article
+      class="premium-showcase-card"
+      data-premium-id="${escapeHtml(String(inst.id))}"
+      role="link"
+      tabindex="0"
+      aria-label="${escapeHtml(inst.name || 'Premium sponsorlu kurum')} reklamını aç"
+    >
+      <div class="premium-showcase-media">
+        ${image
+          ? '<img src="' + image + '" alt="' + escapeHtml(inst.name || 'Premium sponsorlu kurum') + '">'
+          : '<div class="premium-showcase-fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
+      </div>
+
+      <div class="premium-showcase-overlay"></div>
+
+      <div class="premium-showcase-content">
+        <div class="premium-showcase-brand">
+          <span class="premium-showcase-sponsored">PREMIUM SPONSORLU</span>
+          ${logo
+            ? '<span class="premium-showcase-logo"><img src="' + logo + '" alt=""></span>'
+            : ''}
+        </div>
+
+        <div class="premium-showcase-copy">
+          <strong>${escapeHtml(headline)}</strong>
+          <p>${escapeHtml(text)}</p>
+          ${location ? '<small>📍 ' + escapeHtml(location) + '</small>' : ''}
+        </div>
+
+        <span class="premium-showcase-cta">${escapeHtml(cta)} →</span>
+      </div>
+
+      <span class="premium-showcase-progress" style="--premium-duration:${PREMIUM_SHOWCASE_DURATION}ms"></span>
+    </article>
+  `;
+}
+
+function premiumShowcaseSalesHtml() {
+  return `
+    <div class="premium-showcase-empty">
+      <div class="premium-showcase-empty-icon">◆</div>
+      <div>
+        <span>ANA SAYFANIN EN DEĞERLİ REKLAM ALANI</span>
+        <strong>Markanızı Premium Vitrin'de öne çıkarın</strong>
+        <small>Geniş görsel alan, ana sayfa görünürlüğü ve doğrudan kurum profilinize yönlendirme.</small>
+      </div>
+      <button type="button" data-advertise-home>Premium Reklam Ver</button>
+    </div>
+  `;
+}
+
+function trackPremiumShowcaseImpression(inst) {
+  if (!inst || inst.source !== 'firestore') return;
+
+  const day = new Date().toISOString().slice(0, 10);
+  const key = 'dijiyer_premium_impression_' + day + '_' + String(inst.id);
+
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, '1');
+  trackInstitutionEvent(inst, 'premium_ad_impression');
+}
+
+function openPremiumShowcaseInstitution(inst) {
+  if (!inst) return;
+
+  trackInstitutionEvent(inst, 'premium_ad_click');
+  window.location.href = 'kurum.html?id=' + encodeURIComponent(inst.id);
+}
+
+function paintPremiumShowcase(ads) {
+  const stage = document.getElementById('premiumShowcaseStage');
+  const dots = document.getElementById('premiumShowcaseDots');
+  if (!stage) return;
+
+  if (!ads.length) {
+    stage.innerHTML = premiumShowcaseSalesHtml();
+    if (dots) dots.innerHTML = '';
+    bindHomepageAdvertiseButtons();
+    return;
+  }
+
+  premiumShowcaseIndex =
+    ((premiumShowcaseIndex % ads.length) + ads.length) % ads.length;
+
+  const active = ads[premiumShowcaseIndex];
+  stage.innerHTML = premiumShowcaseCardHtml(active);
+
+  const card = stage.querySelector('[data-premium-id]');
+  if (card) {
+    const open = () => openPremiumShowcaseInstitution(active);
+
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      open();
+    });
+  }
+
+  if (dots) {
+    dots.innerHTML = ads.length > 1
+      ? ads.map((_, index) =>
+          '<button type="button" class="' +
+          (index === premiumShowcaseIndex ? 'active' : '') +
+          '" data-premium-slide="' + index +
+          '" aria-label="' + (index + 1) + '. premium reklam"></button>'
+        ).join('')
+      : '';
+
+    dots.querySelectorAll('[data-premium-slide]').forEach(button => {
+      button.addEventListener('click', () => {
+        premiumShowcaseIndex = Number(button.dataset.premiumSlide || 0);
+        renderPremiumShowcase(true);
+      });
+    });
+  }
+
+  trackPremiumShowcaseImpression(active);
+}
+
+function renderPremiumShowcase(restartTimer = false) {
+  const stage = document.getElementById('premiumShowcaseStage');
+  if (!stage) return;
+
+  const ads = getPremiumShowcaseInstitutions();
+
+  if (premiumShowcaseTimer) {
+    clearInterval(premiumShowcaseTimer);
+    premiumShowcaseTimer = null;
+  }
+
+  paintPremiumShowcase(ads);
+
+  if (ads.length > 1) {
+    premiumShowcaseTimer = setInterval(() => {
+      premiumShowcaseIndex = (premiumShowcaseIndex + 1) % ads.length;
+      paintPremiumShowcase(ads);
+    }, PREMIUM_SHOWCASE_DURATION);
+  }
+
+  if (restartTimer) bindHomepageAdvertiseButtons();
+}
+
 function getHomepageSponsoredInstitutions() {
   const priority = { premium: 4, video: 3, regional: 2, starter: 1 };
 
   return institutions
     .filter(isHomepageAdActive)
+    .filter(inst => String(inst.adPackage || '') !== 'premium')
     .filter(matchesHomepageAdLocation)
     .sort((a, b) => {
       const packageDiff =
@@ -2818,7 +2989,10 @@ function bindHomepageAdvertiseButtons() {
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
-  if (!rail && !sidebar) return;
+  const premiumStage = document.getElementById('premiumShowcaseStage');
+  if (!rail && !sidebar && !premiumStage) return;
+
+  renderPremiumShowcase();
 
   const sponsored = getHomepageSponsoredInstitutions();
 
