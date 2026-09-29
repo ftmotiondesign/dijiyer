@@ -5725,6 +5725,139 @@ function setupHomeSponsoredSlider(){
   };
 }
 
+
+let mobileSponsorSliderTimer=null;
+
+function mobileSponsorSalesSlideHtml(slotNo,categoryLabel){
+  return `
+    <div class="mobile-sponsored-slide">
+      <div class="mobile-sponsored-placeholder">
+        <div class="mobile-sponsored-placeholder-icon">📣</div>
+        <div class="mobile-sponsored-placeholder-copy">
+          <span>SPONSORLU ALAN · ${slotNo}</span>
+          <strong>Bu alanda öne çıkın</strong>
+          <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
+        </div>
+        <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+      </div>
+    </div>
+  `;
+}
+
+function mobileSponsorBannerSlideHtml(ad){
+  return '<div class="mobile-sponsored-slide">'+mobilePlacementBannerHtml(ad)+'</div>';
+}
+
+function mobileSponsorInstitutionSlideHtml(inst){
+  return '<div class="mobile-sponsored-slide">'+homepageSponsoredMobileHtml(inst)+'</div>';
+}
+
+function stopMobileSponsorSlider(){
+  if(mobileSponsorSliderTimer){
+    clearInterval(mobileSponsorSliderTimer);
+    mobileSponsorSliderTimer=null;
+  }
+}
+
+function setupMobileSponsorSlider(){
+  const slot=document.getElementById('mobileSponsoredSlot');
+  const track=slot?.querySelector('.mobile-sponsored-track');
+  const dots=slot?.querySelectorAll('[data-mobile-sponsor-dot]') || [];
+  if(!slot||!track)return;
+
+  stopMobileSponsorSlider();
+
+  const slides=[...track.querySelectorAll('.mobile-sponsored-slide')];
+  if(slides.length<2)return;
+
+  const setActiveDot=()=>{
+    const width=track.clientWidth || 1;
+    const index=Math.max(0,Math.min(slides.length-1,Math.round(track.scrollLeft/width)));
+    dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));
+  };
+
+  track.addEventListener('scroll',()=>{
+    window.clearTimeout(track._dijiyerSponsorScrollTimer);
+    track._dijiyerSponsorScrollTimer=window.setTimeout(setActiveDot,80);
+  },{passive:true});
+
+  dots.forEach((dot,index)=>{
+    dot.onclick=()=>{
+      track.scrollTo({left:index*track.clientWidth,behavior:'smooth'});
+    };
+  });
+
+  mobileSponsorSliderTimer=setInterval(()=>{
+    if(document.hidden)return;
+    const width=track.clientWidth || 1;
+    const current=Math.round(track.scrollLeft/width);
+    const next=(current+1)%slides.length;
+    track.scrollTo({left:next*width,behavior:'smooth'});
+  },5000);
+
+  track.addEventListener('touchstart',stopMobileSponsorSlider,{passive:true,once:true});
+}
+
+function renderMobileSponsorCarousel(mobileSlot,sponsored){
+  if(!mobileSlot)return;
+
+  const mobileBanners=getBannerAdsForPlacement('mobile_sponsor');
+  const homeBanners=getHomepageSponsorBannerAds();
+
+  const seen=new Set();
+  const bannerCandidates=[];
+
+  [...mobileBanners,...homeBanners].forEach(ad=>{
+    const key=String(ad.id || ad.institutionId || '')+'|'+String(ad.placement || '');
+    if(!key||seen.has(key))return;
+    seen.add(key);
+    bannerCandidates.push(ad);
+  });
+
+  const slides=[];
+
+  bannerCandidates.slice(0,2).forEach(ad=>{
+    slides.push(mobileSponsorBannerSlideHtml(ad));
+  });
+
+  if(slides.length<2){
+    const usedInstitutionIds=new Set(
+      bannerCandidates.map(ad=>String(ad.institutionId||'')).filter(Boolean)
+    );
+
+    sponsored
+      .filter(inst=>!usedInstitutionIds.has(String(inst.id)))
+      .slice(0,2-slides.length)
+      .forEach(inst=>{
+        slides.push(mobileSponsorInstitutionSlideHtml(inst));
+      });
+  }
+
+  const activeMain=getSelectedMainCategory();
+  const categoryLabel=activeMain
+    ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
+    : 'bulunduğun bölgeyi';
+
+  while(slides.length<2){
+    slides.push(mobileSponsorSalesSlideHtml(slides.length+1,categoryLabel));
+  }
+
+  mobileSlot.innerHTML=`
+    <div class="mobile-sponsored-carousel" aria-label="Sponsorlu reklamlar">
+      <div class="mobile-sponsored-track">
+        ${slides.join('')}
+      </div>
+      <div class="mobile-sponsored-dots" aria-label="Sponsorlu reklam geçişleri">
+        ${slides.map((_,i)=>'<button type="button" class="'+(i===0?'active':'')+'" data-mobile-sponsor-dot="'+i+'" aria-label="'+(i+1)+'. sponsorlu reklam"></button>').join('')}
+      </div>
+    </div>
+  `;
+
+  bindHomepageSponsoredCards(mobileSlot);
+  bindHomepageAdvertiseButtons();
+  setupMobileSponsorSlider();
+}
+
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
@@ -5768,46 +5901,7 @@ function renderSponsoredAds() {
   }
 
   if (mobileSlot) {
-    const mobileBanners=getBannerAdsForPlacement('mobile_sponsor');
-
-    if (mobileBanners.length) {
-      mobileSlot.innerHTML=mobilePlacementBannerHtml(mobileBanners[0]);
-    } else {
-      const activeMain = getSelectedMainCategory();
-      const selectedSub = document.querySelector('.subCategoryFilter:checked')?.value || '';
-
-      const mobileSponsored = sponsored.find(inst => {
-        if (!activeMain) return false;
-        const [mainCategory, subCategory] = resolveTaxonomy(inst);
-        if (String(mainCategory) !== String(activeMain)) return false;
-        return !selectedSub || String(subCategory) === String(selectedSub);
-      }) || sponsored.find(inst => {
-        if (!activeMain) return false;
-        const [mainCategory] = resolveTaxonomy(inst);
-        return String(mainCategory) === String(activeMain);
-      }) || sponsored[0];
-
-      if (mobileSponsored) {
-        mobileSlot.innerHTML = homepageSponsoredMobileHtml(mobileSponsored);
-        bindHomepageSponsoredCards(mobileSlot);
-      } else {
-        const categoryLabel = activeMain
-          ? (categoryTaxonomy[activeMain]?.label || 'bu kategoriyi')
-          : 'bulunduğun bölgeyi';
-
-        mobileSlot.innerHTML = `
-          <div class="mobile-sponsored-placeholder">
-            <div class="mobile-sponsored-placeholder-icon">📣</div>
-            <div class="mobile-sponsored-placeholder-copy">
-              <span>SPONSORLU ALAN</span>
-              <strong>Bu alanda öne çıkın</strong>
-              <small>${escapeHtml(categoryLabel)} inceleyen kullanıcılara markanızı gösterin.</small>
-            </div>
-            <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
-          </div>
-        `;
-      }
-    }
+    renderMobileSponsorCarousel(mobileSlot,sponsored);
   }
 
   sponsored.forEach(trackHomepageAdImpression);
