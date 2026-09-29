@@ -457,15 +457,160 @@
     return institutionRecords.find(item=>String(item.id)===id)||null;
   }
 
+  function setBannerUploadProgress(percent,text){
+    const wrap=$("bannerAdUploadProgress");
+    const bar=$("bannerAdUploadProgressBar");
+    const label=$("bannerAdUploadProgressText");
+    if(!wrap||!bar||!label)return;
+    if(percent===null){
+      wrap.classList.add("hidden");
+      bar.style.width="0%";
+      label.textContent="";
+      return;
+    }
+    wrap.classList.remove("hidden");
+    bar.style.width=Math.max(0,Math.min(100,percent))+"%";
+    label.textContent=text||("Yükleniyor... %"+Math.round(percent));
+  }
+
+  function bannerSafeFileName(name){
+    return String(name||"dosya")
+      .toLocaleLowerCase("tr-TR")
+      .replace(/[çÇ]/g,"c").replace(/[ğĞ]/g,"g").replace(/[ıİ]/g,"i")
+      .replace(/[öÖ]/g,"o").replace(/[şŞ]/g,"s").replace(/[üÜ]/g,"u")
+      .replace(/[^a-z0-9._-]+/g,"-")
+      .replace(/-+/g,"-")
+      .slice(-90);
+  }
+
+  function syncBannerMediaBadge(){
+    const badge=$("bannerAdMediaTypeBadge");
+    if(!badge)return;
+    const type=$("bannerAdMediaType")?.value==="video"?"video":"image";
+    badge.textContent=type==="video"?"🎬 Video":"🖼 Görsel";
+    badge.classList.toggle("video",type==="video");
+  }
+
+  async function uploadBannerMedia(file,type){
+    const inst=selectedBannerInstitution();
+    const message=$("bannerAdUploadMessage");
+
+    if(!inst){
+      if(message)message.textContent="Önce reklam veren kurumu seçin.";
+      return;
+    }
+    if(!file)return;
+
+    const isVideo=type==="video";
+    const valid=isVideo
+      ? ["video/mp4","video/webm"].includes(file.type)
+      : ["image/jpeg","image/png","image/webp"].includes(file.type);
+    const maxBytes=isVideo ? 30*1024*1024 : 8*1024*1024;
+
+    if(!valid){
+      if(message)message.textContent=isVideo
+        ? "Video için MP4 veya WebM seçin."
+        : "Görsel için JPG, PNG veya WebP seçin.";
+      return;
+    }
+    if(file.size>maxBytes){
+      if(message)message.textContent=isVideo
+        ? "Video en fazla 30 MB olabilir."
+        : "Görsel en fazla 8 MB olabilir.";
+      return;
+    }
+
+    const path="bannerAds/"+String(inst.id)+"/"+Date.now()+"_"+bannerSafeFileName(file.name);
+    const ref=storage.ref().child(path);
+
+    if(message)message.textContent="Dosya yükleniyor...";
+    setBannerUploadProgress(0,"Yükleniyor... %0");
+
+    try{
+      const task=ref.put(file,{contentType:file.type});
+      await new Promise((resolve,reject)=>{
+        task.on("state_changed",
+          snapshot=>{
+            const percent=snapshot.totalBytes
+              ? (snapshot.bytesTransferred/snapshot.totalBytes)*100
+              : 0;
+            setBannerUploadProgress(percent,"Yükleniyor... %"+Math.round(percent));
+          },
+          reject,
+          resolve
+        );
+      });
+
+      const url=await task.snapshot.ref.getDownloadURL();
+
+      if(isVideo){
+        $("bannerAdVideoUrl").value=url;
+        $("bannerAdVideoUrlManual").value=url;
+        $("bannerAdMediaType").value="video";
+        if(message)message.textContent="Video yüklendi. Banner önizlemesinde oynatılıyor.";
+      }else{
+        $("bannerAdImageUrl").value=url;
+        $("bannerAdVideoUrl").value="";
+        $("bannerAdVideoUrlManual").value="";
+        $("bannerAdMediaType").value="image";
+        if(message)message.textContent="Görsel yüklendi.";
+      }
+
+      setBannerUploadProgress(100,"Yükleme tamamlandı");
+      syncBannerMediaBadge();
+      renderBannerAdminPreview();
+      setTimeout(()=>setBannerUploadProgress(null,""),900);
+    }catch(error){
+      console.error("Banner medya yüklenemedi:",error);
+      setBannerUploadProgress(null,"");
+      if(message){
+        message.textContent=String(error?.code||"").includes("storage/unauthorized")
+          ? "Yükleme izni yok. Firebase Storage Rules ayarını kontrol edin."
+          : "Dosya yüklenemedi. Lütfen tekrar deneyin.";
+      }
+    }
+  }
+
+  function clearBannerMedia(){
+    if($("bannerAdImageUrl"))$("bannerAdImageUrl").value="";
+    if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
+    if($("bannerAdVideoUrlManual"))$("bannerAdVideoUrlManual").value="";
+    if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
+    if($("bannerAdImageFile"))$("bannerAdImageFile").value="";
+    if($("bannerAdVideoFile"))$("bannerAdVideoFile").value="";
+    if($("bannerAdUploadMessage"))$("bannerAdUploadMessage").textContent="Medya temizlendi. Kaydedince kurum kapak görseli kullanılabilir.";
+    syncBannerMediaBadge();
+    renderBannerAdminPreview();
+  }
+
   function renderBannerAdminPreview(){
     const root=$("bannerAdPreview");
     if(!root)return;
     const inst=selectedBannerInstitution();
     const headline=String($("bannerAdHeadline")?.value||"").trim()||inst?.name||"Banner önizlemesi";
     const text=String($("bannerAdText")?.value||"").trim()||[inst?.city,inst?.district].filter(Boolean).join(" / ")||"Reklam metni";
+    const manualVideo=String($("bannerAdVideoUrlManual")?.value||"").trim();
+    if(manualVideo){
+      $("bannerAdVideoUrl").value=manualVideo;
+      $("bannerAdMediaType").value="video";
+    }
+    const type=$("bannerAdMediaType")?.value==="video"?"video":"image";
+    const video=String($("bannerAdVideoUrl")?.value||"").trim();
     const image=String($("bannerAdImageUrl")?.value||"").trim()||inst?.coverUrl||inst?.logoUrl||"";
-    root.style.backgroundImage=image?'linear-gradient(90deg,rgba(10,22,40,.82),rgba(10,22,40,.2)),url("'+String(image).replace(/"/g,"%22")+'")':"";
-    root.innerHTML='<span>SPONSORLU</span><strong>'+escapeHtml(headline)+'</strong><small>'+escapeHtml(text)+'</small>';
+
+    root.style.backgroundImage="";
+    if(type==="video" && video){
+      root.innerHTML=
+        '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline></video>'+
+        '<div class="banner-preview-shade"></div>'+
+        '<span>SPONSORLU</span><strong>'+escapeHtml(headline)+'</strong><small>'+escapeHtml(text)+'</small>';
+    }else{
+      root.style.backgroundImage=image
+        ? 'linear-gradient(90deg,rgba(10,22,40,.82),rgba(10,22,40,.2)),url("'+String(image).replace(/"/g,"%22")+'")'
+        : "";
+      root.innerHTML='<span>SPONSORLU</span><strong>'+escapeHtml(headline)+'</strong><small>'+escapeHtml(text)+'</small>';
+    }
+    syncBannerMediaBadge();
   }
 
   function resetBannerAdForm(){
@@ -474,9 +619,15 @@
     if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
     if($("bannerAdActive"))$("bannerAdActive").checked=true;
     if($("bannerAdDuration"))$("bannerAdDuration").value="5";
+    if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
+    if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
+    if($("bannerAdVideoUrlManual"))$("bannerAdVideoUrlManual").value="";
+    if($("bannerAdUploadMessage"))$("bannerAdUploadMessage").textContent="";
+    setBannerUploadProgress(null,"");
     ["bannerAdCity","bannerAdDistrict","bannerAdCategory"].forEach(id=>{if($(id))delete $(id).dataset.current;});
     fillBannerAdTargetOptions();
     if($("bannerAdMessage"))$("bannerAdMessage").textContent="";
+    syncBannerMediaBadge();
     renderBannerAdminPreview();
   }
 
@@ -502,6 +653,9 @@
     $("bannerAdHeadline").value=item.headline||"";
     $("bannerAdText").value=item.text||"";
     $("bannerAdImageUrl").value=item.imageUrl||"";
+    $("bannerAdVideoUrl").value=item.videoUrl||"";
+    $("bannerAdVideoUrlManual").value=item.videoUrl||"";
+    $("bannerAdMediaType").value=item.mediaType==="video"&&item.videoUrl?"video":"image";
     $("bannerAdCity").dataset.current=item.city||"";
     $("bannerAdDistrict").dataset.current=item.district||"";
     $("bannerAdCategory").dataset.current=item.category||"";
@@ -530,7 +684,9 @@
       adCode:existing?.adCode||uid("BNR"),
       institutionId:String(inst.id),institutionName:String(inst.name||"Kurum"),logoUrl:String(inst.logoUrl||""),
       headline,text:String($("bannerAdText")?.value||"").trim(),
+      mediaType:$("bannerAdMediaType")?.value==="video"&&String($("bannerAdVideoUrl")?.value||"").trim()?"video":"image",
       imageUrl:String($("bannerAdImageUrl")?.value||"").trim()||String(inst.coverUrl||inst.logoUrl||""),
+      videoUrl:String($("bannerAdVideoUrl")?.value||"").trim(),
       city:String($("bannerAdCity")?.value||""),district:String($("bannerAdDistrict")?.value||""),
       category:String($("bannerAdCategory")?.value||""),categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
       durationSeconds:Number($("bannerAdDuration")?.value)===3?3:5,
@@ -574,9 +730,14 @@
     if($("bannerAdsTabCount"))$("bannerAdsTabCount").textContent=activeCount;
 
     root.innerHTML=rows.length?rows.map(item=>{
-      const bg=item.imageUrl?' style="background-image:linear-gradient(90deg,rgba(10,22,40,.76),rgba(10,22,40,.2)),url(\''+escapeHtml(item.imageUrl)+'\')" ':"";
+      const hasVideo=item.mediaType==="video"&&item.videoUrl;
+      const bg=!hasVideo&&item.imageUrl?' style="background-image:linear-gradient(90deg,rgba(10,22,40,.76),rgba(10,22,40,.2)),url(\''+escapeHtml(item.imageUrl)+'\')" ':"";
+      const media=hasVideo
+        ? '<video src="'+escapeHtml(item.videoUrl)+'" autoplay muted loop playsinline></video><div class="banner-admin-video-shade"></div>'
+        : "";
       return '<article class="banner-admin-card '+(item.active===false?"is-passive":"")+'">'+
         '<div class="banner-admin-card-visual"'+bg+'>'+
+          media+
           '<span>SPONSORLU</span><strong>'+escapeHtml(item.headline||item.institutionName||"Banner Reklamı")+'</strong><small>'+escapeHtml(item.text||item.institutionName||"")+'</small>'+
         '</div>'+
         '<div class="banner-admin-card-meta">'+
@@ -615,6 +776,18 @@
     await renderBannerAdsAdmin(false);
   };
 
+  $("bannerAdImageUploadBtn")?.addEventListener("click",()=>$("bannerAdImageFile")?.click());
+  $("bannerAdVideoUploadBtn")?.addEventListener("click",()=>$("bannerAdVideoFile")?.click());
+  $("bannerAdMediaClearBtn")?.addEventListener("click",clearBannerMedia);
+  $("bannerAdImageFile")?.addEventListener("change",event=>uploadBannerMedia(event.target.files?.[0],"image"));
+  $("bannerAdVideoFile")?.addEventListener("change",event=>uploadBannerMedia(event.target.files?.[0],"video"));
+  $("bannerAdVideoUrlManual")?.addEventListener("input",()=>{
+    const value=String($("bannerAdVideoUrlManual")?.value||"").trim();
+    $("bannerAdVideoUrl").value=value;
+    if(value)$("bannerAdMediaType").value="video";
+    renderBannerAdminPreview();
+  });
+
   $("bannerAdForm")?.addEventListener("submit",saveBannerAd);
   $("bannerAdNewBtn")?.addEventListener("click",resetBannerAdForm);
   $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
@@ -625,6 +798,9 @@
       $("bannerAdHeadline").value=inst.name||"";
       $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
       $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
+      if(!$("bannerAdVideoUrl")?.value){
+        $("bannerAdMediaType").value="image";
+      }
       fillBannerAdTargetOptions(inst);
     }
     renderBannerAdminPreview();
@@ -635,7 +811,10 @@
     $("bannerAdDistrict").innerHTML='<option value="">Tüm İlçeler</option>'+districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
     renderBannerAdminPreview();
   });
-  ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",renderBannerAdminPreview));
+  ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",()=>{
+    if(id==="bannerAdImageUrl" && String($(id)?.value||"").trim())$("bannerAdMediaType").value="image";
+    renderBannerAdminPreview();
+  }));
 
   const DEFAULT_PROMOTION_PACKAGES = [
     {
