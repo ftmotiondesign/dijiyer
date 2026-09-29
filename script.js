@@ -1354,7 +1354,7 @@ function applyHomeBottomSectionVisibility(data={}){
   const earnings=document.getElementById('dijiyerEarningsBottom');
 
   const bottomQuoteVisible=data.bottomQuoteVisible !== false;
-  const earningsVisible=data.earningsVisible !== false;
+  const earningsVisible=data.earningsVisible === true;
 
   if(bottomQuote){
     bottomQuote.hidden=!bottomQuoteVisible;
@@ -1375,11 +1375,11 @@ function watchHomeBottomSectionVisibility(){
       applyHomeBottomSectionVisibility(snap.exists ? (snap.data() || {}) : {});
     },error=>{
       console.warn('Ana sayfa alt bölüm görünürlük ayarları dinlenemedi:',error);
-      applyHomeBottomSectionVisibility({});
+      applyHomeBottomSectionVisibility({earningsVisible:false});
     });
   }catch(error){
     console.warn('Ana sayfa alt bölüm görünürlük ayarı başlatılamadı:',error);
-    applyHomeBottomSectionVisibility({});
+    applyHomeBottomSectionVisibility({earningsVisible:false});
     return null;
   }
 }
