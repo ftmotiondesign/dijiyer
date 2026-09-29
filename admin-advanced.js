@@ -1002,7 +1002,13 @@
       setTimeout(resetBannerAdForm,350);
     }catch(error){
       console.error("Banner reklamı kaydedilemedi:",error);
-      $("bannerAdMessage").textContent="Banner kaydedilemedi. Firestore kuralını kontrol edin.";
+      const code=String(error?.code || "");
+      const detail=String(error?.message || "");
+      if(code.includes("permission-denied")){
+        $("bannerAdMessage").textContent="Banner kaydedilemedi: Firestore yazma izni reddedildi (permission-denied). Rules içinde bannerAds ve yeni 'page_top_mini' gösterim iznini kontrol edin.";
+      }else{
+        $("bannerAdMessage").textContent="Banner kaydedilemedi"+(code ? " · "+code : "")+(detail ? " · "+detail : "");
+      }
     }
   }
 
