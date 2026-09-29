@@ -363,44 +363,123 @@ function getSelectedMainCategory() {
   return checkedMain?.value || '';
 }
 
+function mobileInstantInstitutionCardHtml(inst) {
+  const logo = inst.logoUrl ? safePublicProfileUrl(inst.logoUrl) : '';
+  const location = [inst.district, inst.city].filter(Boolean).join(' / ') || inst.location || '';
+  const rating = Number(inst.rating || 0).toFixed(1);
+
+  return `
+    <article class="mobile-instant-result-card" data-mobile-instant-id="${escapeHtml(String(inst.id))}">
+      <div class="mobile-instant-result-logo ${logo ? 'has-logo' : ''}">
+        ${logo
+          ? '<img src="' + logo + '" alt="' + escapeHtml(inst.name || 'Kurum') + ' logosu">'
+          : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>'}
+      </div>
+
+      <div class="mobile-instant-result-copy">
+        <strong>${escapeHtml(inst.name || 'Kurum')}</strong>
+        <span>📍 ${escapeHtml(location || 'Konum bilgisi')}</span>
+        <small>⭐ ${rating}${Number(inst.reviewCount || 0) ? ' · ' + Number(inst.reviewCount || 0) + ' değerlendirme' : ''}</small>
+        <div>
+          ${inst.offer ? '<em>Teklif veriyor</em>' : ''}
+          ${inst.video ? '<em>🎥 Videolu</em>' : ''}
+        </div>
+      </div>
+
+      <div class="mobile-instant-result-actions">
+        <button type="button" data-mobile-instant-view="${escapeHtml(String(inst.id))}">Kurumu Gör</button>
+        ${inst.offer
+          ? '<button type="button" class="offer" data-mobile-instant-offer="' + escapeHtml(String(inst.id)) + '">Fiyat Al</button>'
+          : ''}
+      </div>
+    </article>
+  `;
+}
+
+function showMobileInstitutionResults(shouldScroll = true) {
+  const root = document.getElementById('mobileInstantResults');
+  const list = document.getElementById('mobileInstantResultsList');
+  const title = document.getElementById('mobileInstantResultsTitle');
+  const resultPanel = document.getElementById('mobileCategoryResult');
+
+  if (!root || !list || !resultPanel) return;
+
+  let data = [];
+  try {
+    data = getFilteredInstitutions();
+  } catch (_) {
+    data = [];
+  }
+
+  // Sonuçlar her zaman arama özetinin hemen altında açılsın.
+  resultPanel.insertAdjacentElement('afterend', root);
+
+  const keyword = String(
+    document.getElementById('mobileDiscoverySearchInput')?.value || ''
+  ).trim();
+
+  if (title) {
+    title.textContent = keyword
+      ? '“' + keyword + '” için ' + data.length + ' kurum'
+      : data.length + ' uygun kurum';
+  }
+
+  list.innerHTML = data.length
+    ? data.slice(0, 8).map(mobileInstantInstitutionCardHtml).join('')
+    : `
+      <div class="mobile-instant-results-empty">
+        <strong>Bu aramaya uygun kurum bulunamadı.</strong>
+        <span>Arama kelimesini veya konumu değiştirerek tekrar deneyin.</span>
+      </div>
+    `;
+
+  root.classList.remove('hidden');
+
+  root.querySelectorAll('[data-mobile-instant-view]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      const id = button.dataset.mobileInstantView;
+      if (id) window.location.href = 'kurum.html?id=' + encodeURIComponent(id);
+    });
+  });
+
+  root.querySelectorAll('[data-mobile-instant-offer]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      selectedId = button.dataset.mobileInstantOffer;
+      renderDecisionAlternatives();
+      renderDetail();
+      openModal('quoteModal');
+    });
+  });
+
+  root.querySelectorAll('[data-mobile-instant-id]').forEach(card => {
+    card.addEventListener('click', event => {
+      if (event.target.closest('button')) return;
+      const id = card.dataset.mobileInstantId;
+      if (id) window.location.href = 'kurum.html?id=' + encodeURIComponent(id);
+    });
+  });
+
+  document.getElementById('mobileCategoryResultBtn')?.setAttribute('aria-expanded','true');
+
+  if (shouldScroll) {
+    requestAnimationFrame(() => {
+      const top = root.getBoundingClientRect().top + window.scrollY - 10;
+      window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
+    });
+  }
+}
+
 function scrollToMobileResults() {
   const resultsSection = document.getElementById('resultsSection');
-  if (!resultsSection) return;
 
   if (window.matchMedia('(max-width: 820px)').matches) {
-    const discovery = document.querySelector('.mobile-discovery');
-
-    if (discovery && discovery.nextElementSibling !== resultsSection) {
-      discovery.insertAdjacentElement('afterend', resultsSection);
-    }
-
-    resultsSection.classList.add('mobile-results-direct');
-
-    renderList();
-
-    requestAnimationFrame(() => {
-      const listPanel = resultsSection.querySelector('.list-panel');
-      const target = listPanel || resultsSection;
-
-      const top =
-        target.getBoundingClientRect().top +
-        window.scrollY -
-        12;
-
-      window.scrollTo({
-        top: Math.max(0, top),
-        behavior:'smooth'
-      });
-
-      setTimeout(() => {
-        try { map.invalidateSize(); } catch (_) {}
-      }, 300);
-    });
-
+    showMobileInstitutionResults(true);
     return;
   }
 
-  resultsSection.scrollIntoView({
+  resultsSection?.scrollIntoView({
     behavior:'smooth',
     block:'start'
   });
@@ -455,6 +534,22 @@ function updateMobileCategoryResult() {
   const locationEl = document.getElementById('mobileCategoryResultLocation');
   const offerBtn = document.getElementById('mobileCategoryOfferBtn');
   const videoBtn = document.getElementById('mobileCategoryVideoBtn');
+  const resultBtn = document.getElementById('mobileCategoryResultBtn');
+  const keywordHints = document.querySelector('.mobile-keyword-hints');
+  const legacySubRoot = document.getElementById('mobileSubcategories');
+
+  // Kelimeyle aramada sonuç özeti kategori kutularının altına kaçmasın.
+  // Arama alanının hemen altında göster.
+  if (keyword && keywordHints) {
+    keywordHints.insertAdjacentElement('afterend', root);
+  } else if (!keyword && selectedSub) {
+    const inlineSubPanel = document.querySelector(
+      '[data-mobile-inline-subs="' + activeMain + '"]'
+    );
+    if (inlineSubPanel) inlineSubPanel.appendChild(root);
+  } else if (!keyword && legacySubRoot?.parentNode) {
+    legacySubRoot.insertAdjacentElement('afterend', root);
+  }
 
   root.classList.remove('hidden');
 
@@ -465,6 +560,16 @@ function updateMobileCategoryResult() {
   }
 
   if (countEl) countEl.textContent = String(count);
+
+  if (resultBtn) {
+    resultBtn.textContent = count > 0
+      ? (count === 1 ? '1 Sonucu Göster' : count + ' Sonucu Göster')
+      : 'Sonuç Bulunamadı';
+    resultBtn.disabled = count < 1;
+    resultBtn.setAttribute('aria-expanded',
+      String(!document.getElementById('mobileInstantResults')?.classList.contains('hidden'))
+    );
+  }
 
   if (hint) {
     const inferred = keyword ? inferQuoteCategory(keyword) : null;
@@ -504,6 +609,11 @@ function setMobileDiscoverySearch(value, options = {}) {
 
   renderList();
   updateMobileCategoryResult();
+
+  const instantRoot = document.getElementById('mobileInstantResults');
+  if (instantRoot && !instantRoot.classList.contains('hidden')) {
+    showMobileInstitutionResults(false);
+  }
 
   if (options.scroll === true && nextValue.trim()) {
     setTimeout(scrollToMobileResults, 80);
@@ -560,6 +670,11 @@ document.getElementById('searchInput')?.addEventListener('input', event => {
 });
 
 document.getElementById('mobileCategoryResultBtn')?.addEventListener('click', scrollToMobileResults);
+
+document.getElementById('mobileInstantResultsClose')?.addEventListener('click', () => {
+  document.getElementById('mobileInstantResults')?.classList.add('hidden');
+  document.getElementById('mobileCategoryResultBtn')?.setAttribute('aria-expanded','false');
+});
 
 document.getElementById('mobileCategoryOfferBtn')?.addEventListener('click', () => {
   const input = document.getElementById('offerOnly');
