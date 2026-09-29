@@ -5109,7 +5109,7 @@ function premiumShowcaseCardHtml(inst) {
 
   return `
     <article
-      class="premium-showcase-card"
+      class="premium-showcase-card premium-showcase-clean"
       data-premium-id="${escapeHtml(String(inst.id))}"
       role="link"
       tabindex="0"
@@ -5121,15 +5121,10 @@ function premiumShowcaseCardHtml(inst) {
           : '<div class="premium-showcase-fallback">' + escapeHtml(inst.emoji || '🏢') + '</div>'}
       </div>
 
-      <div class="premium-showcase-overlay"></div>
-
       <div class="premium-showcase-content">
-        <div class="premium-showcase-brand">
-          <span class="premium-showcase-sponsored">PREMIUM SPONSORLU</span>
-          ${logo
-            ? '<span class="premium-showcase-logo"><img src="' + logo + '" alt=""></span>'
-            : ''}
-        </div>
+        ${logo
+          ? '<span class="premium-showcase-logo"><img src="' + logo + '" alt=""></span>'
+          : ''}
 
         <div class="premium-showcase-copy">
           <strong>${escapeHtml(headline)}</strong>
@@ -5610,7 +5605,7 @@ function premiumPlacementBannerHtml(ad){
   const location=[ad.city,ad.district].filter(Boolean).join(' / ');
 
   return `
-    <a class="premium-showcase-card banner-placement-card" href="${bannerPlacementHref(ad)}">
+    <a class="premium-showcase-card premium-showcase-clean banner-placement-card" href="${bannerPlacementHref(ad)}">
       <div class="premium-showcase-media">
         ${isVideo
           ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
@@ -5618,11 +5613,8 @@ function premiumPlacementBannerHtml(ad){
               ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
               : '<div class="premium-showcase-fallback">📣</div>')}
       </div>
-      <div class="premium-showcase-overlay"></div>
+
       <div class="premium-showcase-content">
-        <div class="premium-showcase-brand">
-          <span class="premium-showcase-sponsored">PREMIUM SPONSORLU</span>
-        </div>
         <div class="premium-showcase-copy">
           <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
           <p>${escapeHtml(ad.text || '')}</p>
