@@ -36,6 +36,8 @@ const bottomQuoteVisibilityToggle = document.getElementById("bottomQuoteVisibili
 const bottomQuoteVisibilityState = document.getElementById("bottomQuoteVisibilityState");
 const earningsVisibilityToggle = document.getElementById("earningsVisibilityToggle");
 const earningsVisibilityState = document.getElementById("earningsVisibilityState");
+const homeFooterVisibilityToggle = document.getElementById("homeFooterVisibilityToggle");
+const homeFooterVisibilityState = document.getElementById("homeFooterVisibilityState");
 
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
@@ -345,10 +347,16 @@ async function loadHomeBottomVisibilitySettings(){
       earningsVisibilityState,
       data.earningsVisible === true
     );
+    paintHomeSectionVisibility(
+      homeFooterVisibilityToggle,
+      homeFooterVisibilityState,
+      data.homeFooterVisible === true
+    );
   }catch(error){
     console.error("Ana sayfa alt bölüm görünürlük ayarları okunamadı:",error);
     paintHomeSectionVisibility(bottomQuoteVisibilityToggle,bottomQuoteVisibilityState,true);
     paintHomeSectionVisibility(earningsVisibilityToggle,earningsVisibilityState,false);
+    paintHomeSectionVisibility(homeFooterVisibilityToggle,homeFooterVisibilityState,false);
   }
 }
 
@@ -385,6 +393,15 @@ earningsVisibilityToggle?.addEventListener("change",()=>{
     earningsVisibilityToggle,
     earningsVisibilityState,
     earningsVisibilityToggle.checked
+  );
+});
+
+homeFooterVisibilityToggle?.addEventListener("change",()=>{
+  saveHomeSectionVisibilitySetting(
+    "homeFooterVisible",
+    homeFooterVisibilityToggle,
+    homeFooterVisibilityState,
+    homeFooterVisibilityToggle.checked
   );
 });
 
