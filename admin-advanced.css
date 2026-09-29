@@ -2440,3 +2440,19 @@
     min-width:560px;
   }
 }
+
+
+/* Reklam taslağı hazır fakat henüz canlı değil */
+.promotion-ad-publish-box.draft{
+  border-color:#f3d38a;
+  background:#fffaf0;
+}
+.promotion-ad-publish-box.draft span{
+  color:#a66f08;
+}
+.promotion-ad-publish-box.draft strong{
+  color:#5d481c;
+}
+.promotion-ad-publish-box.draft button{
+  background:#c18412;
+}
