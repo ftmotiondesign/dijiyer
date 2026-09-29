@@ -1646,6 +1646,24 @@ function renderDetail() {
       <button type="button" id="quoteBtn">📄 Birden Fazla Kurumdan Teklif Al</button>
       <small>Kararsızsanız tek form ile birden fazla kurumdan fiyat isteyebilirsiniz.</small>
     </div>
+
+    <section class="regional-banner-zone quick-preview-banner-zone hidden" id="regionalBannerZone">
+      <div class="regional-banner-head">
+        <div>
+          <span>SPONSORLU</span>
+          <strong>Bölgenizde Öne Çıkanlar</strong>
+        </div>
+        <div class="regional-banner-filters">
+          <select id="regionalBannerRegionFilter" aria-label="Reklam bölgesi">
+            <option value="">Tüm Bölgeler</option>
+          </select>
+          <select id="regionalBannerSectorFilter" aria-label="Reklam sektörü">
+            <option value="">Tüm Sektörler</option>
+          </select>
+        </div>
+      </div>
+      <div id="regionalBannerStage" class="regional-banner-stage"></div>
+    </section>
   `;
 
   document.getElementById('closePublicPreviewBtn')?.addEventListener('click',()=>{
@@ -1700,6 +1718,8 @@ function renderDetail() {
   document.getElementById('detailCompareBtn')?.addEventListener('click', () => {
     toggleCompareInstitution(inst.id);
   });
+
+  setupRegionalBannerZone();
 }
 
 function bannerCategoryLabel(value){
