@@ -15428,3 +15428,54 @@ to{opacity:1;transform:none}
     border-radius:16px 16px 10px 10px;
   }
 }
+
+
+/* =========================================================
+   TEKLİF SAYFASI KURUMLARI İNCELE ARA BAŞLIK V1
+   Teklif takibi ile "Nerede arıyorsunuz?" alanı arasındaki yönlendirme.
+   ========================================================= */
+.quote-explore-lead{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin:8px 0 10px;
+}
+
+.quote-explore-lead button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:36px;
+  padding:0 13px;
+  border:1px solid #d7e2ee;
+  border-radius:999px;
+  background:#fff;
+  color:#53667d;
+  font-size:9px;
+  font-weight:850;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(19,44,79,.045);
+}
+
+.quote-explore-lead button:hover{
+  border-color:#b8d2f3;
+  color:#1677ff;
+}
+
+.quote-explore-lead b{
+  color:#1677ff;
+  font-size:12px;
+}
+
+@media(max-width:820px){
+  .quote-explore-lead{
+    margin:6px 0 8px;
+  }
+
+  .quote-explore-lead button{
+    min-height:34px;
+    padding:0 12px;
+    font-size:8px;
+  }
+}
