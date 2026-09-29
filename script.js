@@ -3811,26 +3811,27 @@ function renderPageTopMiniBanner(reset=false){
     ? Number(ad.durationSeconds)
     : 7;
 
-  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const logo=safePublicProfileUrl(ad.logoUrl || '');
+  const campaignImage=safePublicProfileUrl(ad.imageUrl || '');
   const video=safePublicProfileUrl(ad.videoUrl || '');
   const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
-  const meta=[ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Sponsorlu';
 
   root.innerHTML=
     '<a class="page-top-mini-banner-card" data-banner-ad-id="'+escapeHtml(String(ad.id||''))+'" href="'+bannerPlacementHref(ad)+'">'+
-      '<div class="page-top-mini-media">'+
+      '<div class="page-top-mini-logo">'+
+        (logo
+          ? '<img src="'+logo+'" alt="'+escapeHtml(ad.institutionName || 'Kurum')+' logosu">'
+          : '<span>🏢</span>')+
+      '</div>'+
+      '<div class="page-top-mini-campaign">'+
         (isVideo
-          ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
-          : (image
-              ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
-              : '<span>📣</span>'))+
+          ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+campaignImage+'"></video>'
+          : (campaignImage
+              ? '<img src="'+campaignImage+'" alt="'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu kampanya')+'">'
+              : '<div class="page-top-mini-campaign-fallback"><small>SPONSORLU</small><strong>'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')+'</strong><span>'+escapeHtml(ad.text || '')+'</span></div>'))+
+        '<span class="page-top-mini-sponsored">SPONSORLU</span>'+
+        '<b class="page-top-mini-cta">İncele →</b>'+
       '</div>'+
-      '<div class="page-top-mini-copy">'+
-        '<small>SPONSORLU</small>'+
-        '<strong>'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')+'</strong>'+
-        '<span>'+escapeHtml(ad.text || meta)+'</span>'+
-      '</div>'+
-      '<b>İncele →</b>'+
       (ads.length>1
         ? '<div class="page-top-mini-dots">'+ads.map((_,i)=>'<i class="'+(i===pageTopMiniBannerIndex?'active':'')+'"></i>').join('')+'</div>'
         : '')+
