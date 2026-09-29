@@ -1221,6 +1221,95 @@ function normalizeWhatsappNumber(value) {
   return digits;
 }
 
+function getInstitutionCurrentCampaign(inst) {
+  if (!inst) return null;
+
+  try {
+    return activeRegionalBannerAds().find(
+      ad => String(ad.institutionId || '') === String(inst.id || '')
+    ) || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function getSimilarInstitutions(inst) {
+  if (!inst) return [];
+
+  const main = String(inst.mainCategory || '');
+  const sub = String(inst.subCategory || inst.category || '');
+  const city = normalizeQuoteSearch(inst.city || '');
+  const district = normalizeQuoteSearch(inst.district || '');
+
+  return institutions
+    .filter(item => String(item.id) !== String(inst.id))
+    .map(item => {
+      let score = 0;
+      if (sub && String(item.subCategory || item.category || '') === sub) score += 8;
+      if (main && String(item.mainCategory || '') === main) score += 4;
+      if (city && normalizeQuoteSearch(item.city || '') === city) score += 3;
+      if (district && normalizeQuoteSearch(item.district || '') === district) score += 2;
+      if (item.offer) score += 1;
+      return { item, score };
+    })
+    .filter(entry => entry.score >= 4)
+    .sort((a, b) =>
+      b.score - a.score ||
+      Number(b.item.rating || 0) - Number(a.item.rating || 0) ||
+      Number(b.item.reviewCount || 0) - Number(a.item.reviewCount || 0)
+    )
+    .slice(0, 3)
+    .map(entry => entry.item);
+}
+
+function formatInstitutionProfileDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat('tr-TR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(date);
+}
+
+function institutionFaqItems(inst) {
+  const serviceArea = String(inst.serviceAreas || inst.location || '').trim();
+  const weekday = String(inst.weekdayHours || '').trim();
+  const weekend = [
+    inst.saturdayHours ? 'Cumartesi ' + inst.saturdayHours : '',
+    inst.sundayHours ? 'Pazar ' + inst.sundayHours : ''
+  ].filter(Boolean).join(' · ');
+
+  return [
+    {
+      q: 'Bu kurum hangi bölgede hizmet veriyor?',
+      a: serviceArea || 'Hizmet bölgesi bilgisi henüz eklenmedi.'
+    },
+    {
+      q: 'Fiyat bilgisini nasıl alabilirim?',
+      a: inst.offer
+        ? 'Kurum fiyat teklifi alıyor. “Fiyat Al” veya “Toplu Teklif Al” seçeneklerini kullanabilirsiniz.'
+        : 'Kurum şu anda Dijiyer üzerinden teklif almıyor. Profildeki iletişim kanallarını kullanabilirsiniz.'
+    },
+    {
+      q: 'Çalışma saatleri nedir?',
+      a: weekday
+        ? 'Hafta içi: ' + weekday + (weekend ? ' · ' + weekend : '')
+        : 'Çalışma saatleri henüz eklenmedi.'
+    },
+    {
+      q: 'Kurumu gitmeden önce inceleyebilir miyim?',
+      a: inst.video
+        ? 'Evet. Kurumun videolu profili mevcut' + (Array.isArray(inst.galleryUrls) && inst.galleryUrls.length ? ' ve galeri görsellerini de inceleyebilirsiniz.' : '.')
+        : (Array.isArray(inst.galleryUrls) && inst.galleryUrls.length
+          ? 'Kurumun galeri görsellerini inceleyebilirsiniz.'
+          : 'Kurum henüz video veya galeri içeriği eklememiş.')
+    }
+  ];
+}
+
 function renderDetail() {
   const panel = document.getElementById('detailPanel');
   const inst = institutions.find(i => String(i.id) === String(selectedId));
@@ -1260,6 +1349,11 @@ function renderDetail() {
   const galleryUrls = Array.isArray(inst.galleryUrls)
     ? inst.galleryUrls.map(safePublicProfileUrl).filter(Boolean).slice(0, 8)
     : [];
+
+  const currentCampaign = getInstitutionCurrentCampaign(inst);
+  const similarInstitutions = getSimilarInstitutions(inst);
+  const profileUpdatedText = formatInstitutionProfileDate(inst.updatedAt);
+  const faqItems = institutionFaqItems(inst);
 
   panel.innerHTML = `
     ${isInstitutionPreviewMode() ? `
@@ -1353,12 +1447,56 @@ function renderDetail() {
           <div>
             <span>BU KURUM HAKKINDA HIZLI BAKIŞ</span>
             <strong>Neden incelemeye değer?</strong>
+            ${profileUpdatedText ? '<small class="profile-updated-note">Profil güncelleme: ' + escapeHtml(profileUpdatedText) + '</small>' : ''}
           </div>
           <div class="why-institution-items">
             ${inst.offer ? '<span>✓ Dijiyer üzerinden teklif alabiliyor</span>' : ''}
             ${inst.video ? '<span>✓ Video ile kurumu önceden görebilirsiniz</span>' : ''}
             ${Number(inst.rating || 0) >= 4.5 && Number(inst.reviewCount || 0) > 0 ? '<span>✓ Kullanıcı puanı 4.5 ve üzeri</span>' : ''}
+            ${inst.website ? '<span>✓ Web sitesi bağlantısı mevcut</span>' : ''}
+            ${inst.instagram ? '<span>✓ Instagram bağlantısı mevcut</span>' : ''}
             <span>✓ Konum ve kurum bilgileri tek yerde</span>
+          </div>
+        </div>
+
+        ${currentCampaign ? `
+          <article class="institution-live-campaign">
+            <div class="institution-campaign-media">
+              ${safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '')
+                ? '<img src="' + safePublicProfileUrl(currentCampaign.imageUrl || currentCampaign.logoUrl || '') + '" alt="">'
+                : '<span>📣</span>'}
+            </div>
+            <div class="institution-campaign-copy">
+              <span>GÜNCEL KAMPANYA</span>
+              <strong>${escapeHtml(currentCampaign.headline || 'Kurumun güncel kampanyası')}</strong>
+              <p>${escapeHtml(currentCampaign.text || 'Kampanya detayları için kurumdan bilgi alabilirsiniz.')}</p>
+              <small>${escapeHtml([
+                currentCampaign.endAt ? 'Son gün ' + currentCampaign.endAt : '',
+                currentCampaign.city || currentCampaign.district
+                  ? [currentCampaign.city,currentCampaign.district].filter(Boolean).join(' / ')
+                  : ''
+              ].filter(Boolean).join(' · '))}</small>
+            </div>
+            <button type="button" id="campaignQuoteBtn">Kampanya İçin Fiyat Al</button>
+          </article>
+        ` : ''}
+
+        <div class="institution-faq">
+          <div class="institution-faq-head">
+            <div>
+              <span>HIZLI CEVAPLAR</span>
+              <strong>Merak edilenler</strong>
+            </div>
+            <small>Temel bilgileri kuruma sormadan önce hızlıca görün.</small>
+          </div>
+
+          <div class="institution-faq-list">
+            ${faqItems.map((item,index) => `
+              <details ${index === 0 ? 'open' : ''}>
+                <summary>${escapeHtml(item.q)}</summary>
+                <p>${escapeHtml(item.a)}</p>
+              </details>
+            `).join('')}
           </div>
         </div>
 
@@ -1416,6 +1554,39 @@ function renderDetail() {
       </section>
     </div>
 
+    ${similarInstitutions.length ? `
+      <section class="similar-institutions-section">
+        <div class="similar-institutions-head">
+          <div>
+            <span>BENZER KURUMLAR</span>
+            <strong>Aynı alanda başka seçenekler</strong>
+          </div>
+          <small>Karşılaştırmak için bir kuruma dokunun.</small>
+        </div>
+
+        <div class="similar-institutions-grid">
+          ${similarInstitutions.map(item => `
+            <article class="similar-institution-card" data-similar-id="${escapeHtml(String(item.id))}">
+              <div class="similar-institution-logo">
+                ${item.logoUrl
+                  ? '<img src="' + safePublicProfileUrl(item.logoUrl) + '" alt="">'
+                  : '<span>' + escapeHtml(item.emoji || '🏢') + '</span>'}
+              </div>
+              <div class="similar-institution-copy">
+                <strong>${escapeHtml(item.name)}</strong>
+                <small>⭐ ${Number(item.rating || 0).toFixed(1)} · ${escapeHtml(item.location || '')}</small>
+                <div>
+                  ${item.offer ? '<span>Teklif veriyor</span>' : ''}
+                  ${item.video ? '<span>Videolu</span>' : ''}
+                </div>
+              </div>
+              <button type="button" aria-label="${escapeHtml(item.name)} kurumunu görüntüle">→</button>
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    ` : ''}
+
     <section class="regional-banner-zone hidden professional-sponsored-zone" id="regionalBannerZone">
       <div class="regional-banner-head">
         <div>
@@ -1451,7 +1622,20 @@ function renderDetail() {
 
   document.getElementById('quoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
   document.getElementById('servicesQuoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
+  document.getElementById('campaignQuoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
   document.getElementById('reviewBtn2')?.addEventListener('click', () => openModal('reviewModal'));
+
+  document.querySelectorAll('[data-similar-id]').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedId = card.dataset.similarId;
+      renderList();
+
+      const marker = markers.get(String(selectedId));
+      if (marker) {
+        map.flyTo(marker.getLatLng(), 15, { duration: .45 });
+      }
+    });
+  });
 
   document.getElementById('routeBtn')?.addEventListener('click', () => {
     trackInstitutionEvent(inst, 'route_click');
@@ -1633,6 +1817,18 @@ function startRegionalBannerAds(){
   regionalBannerUnsubscribe=db.collection("bannerAds").where("active","==",true).onSnapshot(snapshot=>{
     regionalBannerAds=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
     regionalBannerIndex=0;
+
+    if(document.getElementById("detailPanel") && selectedId){
+      const activeTab =
+        document.querySelector('[data-profile-tab].active')?.dataset.profileTab || 'overview';
+
+      renderDetail();
+
+      const activeButton =
+        document.querySelector('[data-profile-tab="' + activeTab + '"]');
+      activeButton?.click();
+    }
+
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
   },error=>{
     console.warn("Banner reklamları yüklenemedi:",error);
@@ -2996,6 +3192,7 @@ async function loadApprovedInstitutions() {
         adHeadline: String(data.adHeadline || data.campaignTitle || ''),
         adText: String(data.adText || data.campaignText || ''),
         adCta: String(data.adCta || ''),
+        updatedAt: data.updatedAt || data.createdAt || '',
         lat: Number.isFinite(data.lat) ? data.lat : null,
         lng: Number.isFinite(data.lng) ? data.lng : null,
         emoji: data.emoji || '🏢'
