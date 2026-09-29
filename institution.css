@@ -5385,3 +5385,35 @@ body[data-panel-current="showcase"] .panel-heading-action{
 #promotionOrderFormView.hidden{
   display:none !important;
 }
+
+
+/* Tanıtım siparişi - kurum fiyat ve kapsam görünümü */
+.promotion-order-scope{
+  margin-top:9px;padding:9px;border:1px solid #e4eaf2;border-radius:9px;background:#fbfcfe;
+}
+.promotion-order-scope>span{
+  display:block;margin-bottom:4px;color:#1677ff;font-size:7.8px;font-weight:950;letter-spacing:.06em;
+}
+.promotion-order-scope p{margin:0;color:#526175;font-size:9.5px;line-height:1.5}
+.promotion-order-scope>div{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}
+.promotion-order-scope small{
+  padding:4px 6px;border-radius:6px;background:#fff;border:1px solid #e2e8f0;
+  color:#64748b;font-size:7.8px;
+}
+.promotion-customer-pricing{
+  margin-top:9px;padding:9px;border:1px solid #dbe7f5;border-radius:9px;background:#f7fbff;
+  display:grid;gap:5px;
+}
+.promotion-customer-pricing>div{display:flex;justify-content:space-between;gap:10px;font-size:8.8px}
+.promotion-customer-pricing span{color:#7c899a}
+.promotion-customer-pricing b{color:#46566b}
+.promotion-customer-pricing .discount b{color:#b45309}
+.promotion-customer-pricing .total{
+  margin-top:3px;padding-top:7px;border-top:1px solid #cfe0f7;align-items:center;
+}
+.promotion-customer-pricing .total span{color:#1268da;font-weight:900}
+.promotion-customer-pricing .total strong{color:#1268da;font-size:13px}
+.promotion-price-pending{
+  margin-top:9px;padding:8px;border-radius:8px;background:#fff8e8;color:#9a6c13;
+  font-size:8.8px;font-weight:800;text-align:center;
+}
