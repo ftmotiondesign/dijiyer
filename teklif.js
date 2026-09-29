@@ -20,10 +20,14 @@ const TRACKING_REFRESH_MS=15000;
 let currentAccess=null;
 let stopOffersListener=null;
 let stopLockListener=null;
+let stopEngagementListener=null;
 let liveOffers=[];
 let liveLock=null;
+let liveEngagement=[];
 const offerUpdateVersions=new Map();
+const engagementResponseVersions=new Map();
 let offerListenerInitialized=false;
+let engagementListenerInitialized=false;
 let offerSortMode=localStorage.getItem("dijiyerOfferSortMode")||"arrival";
 
 function safe(v){
@@ -143,6 +147,10 @@ function requestDetailHtml(access){
   const city=access.city||local.city||"";
   const district=access.district||local.district||"";
   const date=access.date||local.date||"";
+  const targetInstitutionName=
+    access.targetInstitutionName||
+    local.targetInstitutionName||
+    "";
 
   return `
     <details class="request-detail-box">
@@ -150,11 +158,128 @@ function requestDetailHtml(access){
       <div class="request-detail-grid">
         <div><span>Hizmet</span><strong>${safe(service)}</strong></div>
         <div><span>Kategori</span><strong>${safe([mainLabel,subLabel].filter(Boolean).join(" / ")||service)}</strong></div>
-        <div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>
+        ${targetInstitutionName
+          ? `<div><span>Talep Türü</span><strong>🎯 Doğrudan kurum talebi</strong></div>
+             <div><span>Hedef Kurum</span><strong>${safe(targetInstitutionName)}</strong></div>`
+          : `<div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>`}
         <div><span>Talep Tarihi</span><strong>${fmtDate(date)}</strong></div>
         <div class="request-detail-note"><span>Talep Notu</span><strong>${safe(note)}</strong></div>
       </div>
     </details>`;
+}
+
+function institutionResponseLabel(status){
+  if(status==="interested")return "İlgileniyor";
+  if(status==="not_interested")return "Şu anda teklif veremiyor";
+  return "İnceliyor";
+}
+
+function getDirectInstitutionResponse(access,engagementRows){
+  const targetId=String(access?.targetInstitutionId||"");
+  if(!targetId)return null;
+  return engagementRows.find(row=>String(row.institutionId||row.id||"")===targetId)||null;
+}
+
+function bulkResponseSummaryHtml(engagementRows,offers){
+  const responses=engagementRows.filter(row=>row.institutionResponse);
+  if(!responses.length)return "";
+
+  const interested=responses.filter(row=>row.institutionResponse==="interested").length;
+  const declined=responses.filter(row=>row.institutionResponse==="not_interested").length;
+
+  return `
+    <div class="customer-response-summary">
+      <strong>Talep hareketleri</strong>
+      <div>
+        ${interested?`<span class="response-pill interested">✓ ${interested} kurum ilgileniyor</span>`:""}
+        ${declined?`<span class="response-pill declined">${declined} kurum şu anda teklif veremiyor</span>`:""}
+        <span class="response-pill offers">₺ ${offers.length} fiyat teklifi geldi</span>
+      </div>
+      <small>Kurumların tek tek olumsuz yanıtları bildirim olarak gönderilmez; burada toplu özetlenir.</small>
+    </div>
+  `;
+}
+
+function directResponseHtml(access,engagementRows,offers){
+  if(!access?.targetInstitutionId)return "";
+
+  const response=getDirectInstitutionResponse(access,engagementRows);
+  const institutionName=
+    access.targetInstitutionName||
+    response?.institutionName||
+    "Seçtiğiniz kurum";
+
+  if(offers.length){
+    return `
+      <div class="direct-customer-status success">
+        <span class="direct-status-icon">₺</span>
+        <div>
+          <strong>${safe(institutionName)} fiyat teklifini gönderdi</strong>
+          <p>Teklif aşağıda hazır. Fiyatı ve şartları inceleyebilirsiniz.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  if(response?.institutionResponse==="not_interested"){
+    const bulkUrl=new URL("index.html",location.href);
+    bulkUrl.searchParams.set("kurum",String(access.targetInstitutionId));
+    bulkUrl.searchParams.set("teklif","1");
+
+    return `
+      <div class="direct-customer-status declined">
+        <span class="direct-status-icon">i</span>
+        <div>
+          <strong>${safe(institutionName)} şu anda bu talep için teklif veremiyor</strong>
+          <p>Talebiniz kapanmadı. Aynı kategorideki diğer uygun kurumlardan toplu teklif isteyebilirsiniz.</p>
+          <a href="${safe(bulkUrl.toString())}">Benzer Kurumlardan Teklif Al</a>
+        </div>
+      </div>
+    `;
+  }
+
+  if(response?.institutionResponse==="interested"){
+    return `
+      <div class="direct-customer-status interested">
+        <span class="direct-status-icon">✓</span>
+        <div>
+          <strong>${safe(institutionName)} talebinizle ilgileniyor</strong>
+          <p>Kurum talebi kabul etti. Fiyat teklifini hazırladığında bu ekranda görünecek.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="direct-customer-status pending">
+      <span class="direct-status-icon">…</span>
+      <div>
+        <strong>Talebiniz ${safe(institutionName)} kurumuna ulaştı</strong>
+        <p>Kurum henüz yanıt vermedi. Yanıt geldiğinde bu sayfa otomatik güncellenecek.</p>
+      </div>
+    </div>
+  `;
+}
+
+function notifyInstitutionResponseChange(access,row){
+  if(!row?.institutionResponse)return;
+
+  const direct=Boolean(access?.targetInstitutionId);
+  const name=row.institutionName||access?.targetInstitutionName||"Kurum";
+
+  if(direct){
+    const text=row.institutionResponse==="not_interested"
+      ? name+" şu anda bu talep için teklif veremiyor."
+      : name+" talebinizle ilgileniyor.";
+
+    toast(text);
+
+    try{
+      if("Notification" in window && Notification.permission==="granted" && document.hidden){
+        new Notification("Dijiyer teklif talebiniz güncellendi",{body:text,tag:"dijiyer-quote-response-"+String(row.institutionId||"")});
+      }
+    }catch(_){}
+  }
 }
 
 async function verifyAccess(code,phone){
@@ -171,22 +296,26 @@ async function verifyAccess(code,phone){
 
 async function loadBundle(access){
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
-  const [offersSnap,lockSnap]=await Promise.all([
+  const [offersSnap,lockSnap,engagementSnap]=await Promise.all([
     quoteRef.collection("offers").get(),
-    quoteRef.collection("locks").doc("main").get()
+    quoteRef.collection("locks").doc("main").get(),
+    quoteRef.collection("engagement").get()
   ]);
   return {
     access,
     offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
-    lock:lockSnap.exists?lockSnap.data():null
+    lock:lockSnap.exists?lockSnap.data():null,
+    engagement:engagementSnap.docs.map(d=>({id:d.id,...d.data()}))
   };
 }
 
 function stopLiveTracking(){
   if(typeof stopOffersListener==="function") stopOffersListener();
   if(typeof stopLockListener==="function") stopLockListener();
+  if(typeof stopEngagementListener==="function") stopEngagementListener();
   stopOffersListener=null;
   stopLockListener=null;
+  stopEngagementListener=null;
 }
 
 function renderLiveTracking(){
@@ -194,7 +323,8 @@ function renderLiveTracking(){
   render({
     access:currentAccess,
     offers:liveOffers,
-    lock:liveLock
+    lock:liveLock,
+    engagement:liveEngagement
   });
 }
 
@@ -249,6 +379,36 @@ function startLiveTracking(access){
       console.error("Fiyat kilidi canlı izlenemedi:",error);
     }
   );
+
+  stopEngagementListener=quoteRef.collection("engagement").onSnapshot(
+    snapshot=>{
+      const nextRows=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+
+      if(engagementListenerInitialized){
+        snapshot.docChanges().forEach(change=>{
+          if(change.type!=="added" && change.type!=="modified")return;
+          const row={id:change.doc.id,...change.doc.data()};
+          const previous=engagementResponseVersions.get(change.doc.id)||"";
+          const next=String(row.institutionResponseAt||"");
+
+          if(next && next!==previous){
+            notifyInstitutionResponseChange(access,row);
+          }
+        });
+      }
+
+      nextRows.forEach(row=>{
+        engagementResponseVersions.set(String(row.id),String(row.institutionResponseAt||""));
+      });
+
+      engagementListenerInitialized=true;
+      liveEngagement=nextRows;
+      renderLiveTracking();
+    },
+    error=>{
+      console.error("Kurum yanıtları canlı izlenemedi:",error);
+    }
+  );
 }
 
 async function refreshTracking(){
@@ -257,6 +417,7 @@ async function refreshTracking(){
     const bundle=await loadBundle(currentAccess);
     liveOffers=bundle.offers;
     liveLock=bundle.lock;
+    liveEngagement=bundle.engagement||[];
     renderLiveTracking();
     toast("Teklifler güncellendi.");
   }catch(error){
@@ -353,6 +514,9 @@ function offerFairnessToolbarHtml(count){
 function render(bundle){
   const access=bundle.access;
   const offers=sortOffersForCustomer(bundle.offers);
+  const engagementRows=Array.isArray(bundle.engagement)?bundle.engagement:[];
+  const directStatus=directResponseHtml(access,engagementRows,offers);
+  const bulkSummary=access.targetInstitutionId?"":bulkResponseSummaryHtml(engagementRows,offers);
   results.classList.remove("hidden");
   results.innerHTML=`
     <article class="request-summary">
@@ -373,6 +537,9 @@ function render(bundle){
 
       ${requestDetailHtml(access)}
     </article>
+
+    ${directStatus}
+    ${bulkSummary}
 
     ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
@@ -635,6 +802,11 @@ form.addEventListener("submit",async e=>{
     const initialBundle=await loadBundle(currentAccess);
     liveOffers=initialBundle.offers;
     liveLock=initialBundle.lock;
+    liveEngagement=initialBundle.engagement||[];
+    offerListenerInitialized=false;
+    engagementListenerInitialized=false;
+    offerUpdateVersions.clear();
+    engagementResponseVersions.clear();
     renderLiveTracking();
     startLiveTracking(currentAccess);
 
