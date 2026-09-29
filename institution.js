@@ -2780,6 +2780,22 @@ auth.onAuthStateChanged(async user => {
     startLiveSupportWatcher();
     startPromotionOrdersWatcher();
 
+    const requestedPanel =
+      new URLSearchParams(window.location.search).get("tab");
+
+    const allowedPanels = new Set([
+      "summary","quotes","verify","showcase",
+      "profile","stats","support","announcements","account"
+    ]);
+
+    if (requestedPanel && allowedPanels.has(requestedPanel)) {
+      setPanelTab(requestedPanel);
+
+      if (requestedPanel === "showcase") {
+        sessionStorage.removeItem("dijiyerInstitutionIntent");
+      }
+    }
+
   } catch (error) {
     console.error(error);
     showPanelError("Kurum paneli yüklenemedi.");
