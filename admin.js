@@ -493,8 +493,10 @@ function homeSectionEditorFieldHtml(field,value){
     return '<label class="'+(field.full?'full':'')+'">'+safeLabel+
       '<textarea data-home-content-field="'+field.key+'">'+safeValue+'</textarea>'+note+'</label>';
   }
+  const inputType=type==='url' ? 'text' : type;
+  const linkAttrs=type==='url' ? ' inputmode="url" autocomplete="off" placeholder="Örn: teklif-al.html veya https://..."' : '';
   return '<label class="'+(field.full?'full':'')+'">'+safeLabel+
-    '<input type="'+type+'" data-home-content-field="'+field.key+'" value="'+safeValue+'">'+note+'</label>';
+    '<input type="'+inputType+'"'+linkAttrs+' data-home-content-field="'+field.key+'" value="'+safeValue+'">'+note+'</label>';
 }
 
 async function openHomeSectionEditor(sectionKey){
