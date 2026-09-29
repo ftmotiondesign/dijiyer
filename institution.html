@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=31">
+  <link rel="stylesheet" href="institution.css?v=32">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -817,6 +817,20 @@
         </div>
       </section>
 
+      <section class="showcase-category-section promotion-orders-section" id="promotionOrdersSection">
+        <div class="showcase-section-heading">
+          <div>
+            <span class="showcase-eyebrow">SİPARİŞ TAKİBİ</span>
+            <h3>Tanıtım Siparişlerim</h3>
+            <p>Verdiğiniz tanıtım ve reklam siparişlerinin durumunu buradan takip edebilirsiniz.</p>
+          </div>
+          <span class="promotion-order-count" id="promotionOrderCount">0 sipariş</span>
+        </div>
+        <div id="promotionOrdersList" class="promotion-orders-list">
+          <div class="showcase-recommendation-loading">Siparişler yükleniyor...</div>
+        </div>
+      </section>
+
       <section class="showcase-how-card">
         <div class="showcase-how-head">
           <span class="showcase-eyebrow">NASIL İLERLİYOR?</span>
@@ -1313,6 +1327,91 @@
     <section id="panelError" class="panel-error" hidden></section>
   </main>
 
+  <div class="promotion-modal hidden" id="promotionDetailModal" role="dialog" aria-modal="true">
+    <div class="promotion-modal-card promotion-detail-card">
+      <button type="button" class="promotion-modal-close" id="promotionDetailClose" aria-label="Kapat">×</button>
+      <div class="promotion-detail-hero">
+        <span class="promotion-detail-icon" id="promotionDetailIcon">◎</span>
+        <div>
+          <span class="showcase-eyebrow">DİJİYER TANITIM HİZMETİ</span>
+          <h2 id="promotionDetailName">Hizmet</h2>
+          <p id="promotionDetailLead"></p>
+        </div>
+      </div>
+
+      <div class="promotion-detail-grid">
+        <section><span>BU HİZMET SİZE NE KAZANDIRIR?</span><p id="promotionDetailBenefit"></p></section>
+        <section><span>HİZMET KAPSAMI</span><ul id="promotionDetailIncludes"></ul></section>
+        <section><span>NASIL HAZIRLANIYOR?</span><p id="promotionDetailProcess"></p></section>
+        <section><span>SİZDEN GEREKENLER</span><p id="promotionDetailRequired"></p></section>
+        <section><span>TESLİM SÜRESİ</span><strong id="promotionDetailDelivery"></strong></section>
+        <section><span>REVİZYON</span><strong id="promotionDetailRevision"></strong></section>
+      </div>
+
+      <div class="promotion-detail-price">
+        <div><span>FİYAT</span><strong id="promotionDetailPrice"></strong></div>
+        <div id="promotionDetailExtrasWrap"><span>EK SEÇENEKLER</span><p id="promotionDetailExtras"></p></div>
+      </div>
+
+      <div class="promotion-detail-example">
+        <span>ÖRNEK ÇALIŞMA</span>
+        <p id="promotionDetailExample"></p>
+      </div>
+
+      <button type="button" class="promotion-order-primary" id="promotionDetailOrderBtn">Sipariş Ver</button>
+    </div>
+  </div>
+
+  <div class="promotion-modal hidden" id="promotionOrderModal" role="dialog" aria-modal="true">
+    <div class="promotion-modal-card promotion-order-card">
+      <button type="button" class="promotion-modal-close" id="promotionOrderClose" aria-label="Kapat">×</button>
+
+      <div id="promotionOrderFormView">
+        <span class="showcase-eyebrow">DOĞRUDAN SİPARİŞ</span>
+        <h2 id="promotionOrderTitle">Tanıtım Hizmeti Siparişi</h2>
+        <div class="promotion-order-target">
+          <span>🏢</span>
+          <div><small>Kurum</small><strong id="promotionOrderInstitution">-</strong></div>
+          <div><small>Hizmet</small><strong id="promotionOrderService">-</strong></div>
+        </div>
+
+        <form id="promotionOrderForm" class="promotion-order-form">
+          <label>Yetkili Kişi
+            <input id="promotionOrderContact" type="text" maxlength="100" required placeholder="Ad Soyad">
+          </label>
+          <label>Telefon
+            <input id="promotionOrderPhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+          </label>
+
+          <fieldset id="promotionOrderExtrasWrap" class="promotion-extra-fieldset hidden">
+            <legend>Ek Hizmetler</legend>
+            <div id="promotionOrderExtras" class="promotion-extra-options"></div>
+          </fieldset>
+
+          <label>Sipariş Notu
+            <textarea id="promotionOrderNote" rows="4" maxlength="1200" placeholder="Çekim, içerik veya yayınla ilgili özel isteğinizi yazabilirsiniz."></textarea>
+          </label>
+
+          <div class="promotion-order-price-row">
+            <span>Başlangıç fiyatı</span>
+            <strong id="promotionOrderPrice">-</strong>
+          </div>
+
+          <button type="submit" class="promotion-order-primary" id="promotionOrderSubmit">Siparişi Onayla</button>
+          <p class="form-message" id="promotionOrderMessage"></p>
+        </form>
+      </div>
+
+      <div class="promotion-order-success hidden" id="promotionOrderSuccess">
+        <span class="promotion-success-icon">✓</span>
+        <h2>Siparişiniz alındı</h2>
+        <p>Siparişinizin durumunu Tanıtım Hizmetleri bölümünden takip edebilirsiniz.</p>
+        <div><small>SİPARİŞ NO</small><strong id="promotionOrderSuccessCode">-</strong></div>
+        <button type="button" class="promotion-order-primary" id="promotionOrderSuccessClose">Siparişlerimi Gör</button>
+      </div>
+    </div>
+  </div>
+
   <div class="institution-mobile-menu hidden" id="institutionMobileMenu">
     <div class="institution-mobile-menu-card">
       <div class="mobile-menu-head">
@@ -1354,7 +1453,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=15"></script>
+  <script src="institution.js?v=16"></script>
   <script src="institution-layout.js?v=3"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
