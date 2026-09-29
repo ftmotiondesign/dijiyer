@@ -32,6 +32,10 @@ const accountsSection = document.getElementById("accountsSection");
 const overviewTabBtn = document.getElementById("overviewTabBtn");
 const dailyStatsVisibilityToggle = document.getElementById("dailyStatsVisibilityToggle");
 const dailyStatsVisibilityState = document.getElementById("dailyStatsVisibilityState");
+const bottomQuoteVisibilityToggle = document.getElementById("bottomQuoteVisibilityToggle");
+const bottomQuoteVisibilityState = document.getElementById("bottomQuoteVisibilityState");
+const earningsVisibilityToggle = document.getElementById("earningsVisibilityToggle");
+const earningsVisibilityState = document.getElementById("earningsVisibilityState");
 
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
@@ -316,6 +320,74 @@ dailyStatsVisibilityToggle?.addEventListener("change",()=>{
   saveDailyStatsVisibilitySetting(dailyStatsVisibilityToggle.checked);
 });
 
+function paintHomeSectionVisibility(toggle,state,visible){
+  if(toggle) toggle.checked=Boolean(visible);
+  if(state){
+    state.textContent=visible ? "Aktif · Görünüyor" : "Pasif · Gizli";
+    state.classList.toggle("active",Boolean(visible));
+    state.classList.toggle("passive",!visible);
+  }
+}
+
+async function loadHomeBottomVisibilitySettings(){
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    const data=snap.exists ? (snap.data() || {}) : {};
+
+    // Eski kurulumlarda alan yoksa mevcut görünüm bozulmasın: varsayılan aktif.
+    paintHomeSectionVisibility(
+      bottomQuoteVisibilityToggle,
+      bottomQuoteVisibilityState,
+      data.bottomQuoteVisible !== false
+    );
+    paintHomeSectionVisibility(
+      earningsVisibilityToggle,
+      earningsVisibilityState,
+      data.earningsVisible !== false
+    );
+  }catch(error){
+    console.error("Ana sayfa alt bölüm görünürlük ayarları okunamadı:",error);
+    paintHomeSectionVisibility(bottomQuoteVisibilityToggle,bottomQuoteVisibilityState,true);
+    paintHomeSectionVisibility(earningsVisibilityToggle,earningsVisibilityState,true);
+  }
+}
+
+async function saveHomeSectionVisibilitySetting(field,toggle,state,visible){
+  if(toggle) toggle.disabled=true;
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      [field]:Boolean(visible),
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+
+    paintHomeSectionVisibility(toggle,state,Boolean(visible));
+  }catch(error){
+    console.error("Ana sayfa bölüm görünürlük ayarı kaydedilemedi:",field,error);
+    paintHomeSectionVisibility(toggle,state,!visible);
+    alert("Görünürlük ayarı kaydedilemedi. Firestore Rules ayarını kontrol edin.");
+  }finally{
+    if(toggle) toggle.disabled=false;
+  }
+}
+
+bottomQuoteVisibilityToggle?.addEventListener("change",()=>{
+  saveHomeSectionVisibilitySetting(
+    "bottomQuoteVisible",
+    bottomQuoteVisibilityToggle,
+    bottomQuoteVisibilityState,
+    bottomQuoteVisibilityToggle.checked
+  );
+});
+
+earningsVisibilityToggle?.addEventListener("change",()=>{
+  saveHomeSectionVisibilitySetting(
+    "earningsVisible",
+    earningsVisibilityToggle,
+    earningsVisibilityState,
+    earningsVisibilityToggle.checked
+  );
+});
+
 auth.onAuthStateChanged(async (user) => {
   if (user && user.uid === ADMIN_UID) {
     loginSection.hidden = true;
@@ -326,6 +398,7 @@ auth.onAuthStateChanged(async (user) => {
     await loadQuoteRequests();
     await loadInstitutionAccounts();
     await loadDailyStatsVisibilitySetting();
+    await loadHomeBottomVisibilitySettings();
     refreshAdminOverview();
     renderIssueCenter();
     setTimeout(restoreSimpleAdminNavigation, 120);
