@@ -5849,7 +5849,7 @@ body[data-panel-current="showcase"] .panel-heading-action{
 
 .firm-profile-hero-media-grid{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
 }
 
@@ -6068,5 +6068,62 @@ body[data-panel-current="showcase"] .panel-heading-action{
 
   .firm-media-upload-box{
     grid-template-columns:34px minmax(0,1fr) auto!important;
+  }
+}
+
+
+/* PROFİL KAMPANYA VİDEOSU · ÜCRETLİ YAYIN ALANI */
+.firm-profile-hero-media-card.campaign{
+  border-top:3px solid #f59e0b;
+  background:linear-gradient(180deg,#fffdf8,#fff);
+}
+
+.firm-profile-hero-media-card.campaign .firm-profile-hero-media-icon{
+  background:#fff4dc;
+  color:#b86b00;
+}
+
+.firm-profile-campaign-status{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  padding:7px 8px;
+  border:1px solid #e4e9ef;
+  border-radius:8px;
+  background:#f7f9fb;
+  color:#758398;
+  font-size:8.5px;
+  line-height:1.4;
+}
+
+.firm-profile-campaign-status.active{
+  border-color:#bfe5cf;
+  background:#effaf3;
+  color:#15743c;
+  font-weight:850;
+}
+
+.firm-profile-campaign-note{
+  padding:8px;
+  border-radius:8px;
+  background:#fff8e8;
+  color:#8a6419;
+  font-size:8px;
+  line-height:1.45;
+}
+
+.firm-profile-hero-media-card.campaign .showcase-sales-actions{
+  margin-top:auto;
+}
+
+.firm-profile-hero-media-card.campaign .showcase-order-btn{
+  background:#f59e0b;
+  border-color:#f59e0b;
+  color:#fff;
+}
+
+@media(max-width:980px){
+  .firm-profile-hero-media-grid{
+    grid-template-columns:1fr;
   }
 }
