@@ -144,9 +144,11 @@ const ADMIN_TAB_META = {
   institutionsTabBtn:["institutions","Kurumlar","Yayındaki kurumları arayın, düzenleyin ve teklif durumlarını yönetin."],
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
-  bannerAdsTabBtn:["ads","Banner Reklamları","Bölge ve sektör hedefli banner reklamlarını yönetin."],
-  promotionOrdersTabBtn:["ads","Tanıtım Siparişleri","Kurumların Konum Videosu, 360° Sanal Tur ve reklam siparişlerini yönetin."],
-  promotionPackagesTabBtn:["ads","Paket Yönetimi","Kurumlara sunulan reklam ve tanıtım paketlerini oluşturun, fiyatlandırın ve yayına alın."],
+  bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
+  promotionOrdersTabBtn:["ads","Siparişler","Kurumların tanıtım ve reklam siparişlerini fiyatlandırın, ödeme ve yayın sürecini yönetin."],
+  promotionPackagesTabBtn:["ads","Paketler","Kurumlara sunulan reklam ve tanıtım paketlerini oluşturun ve fiyatlandırın."],
+  adCalendarTabBtn:["ads","Reklam Takvimi","Yayın tarihlerini, dolulukları ve yaklaşan reklam bitişlerini görün."],
+  adRevenueTabBtn:["ads","Gelir Raporu","Reklam gelirini, tahsilatı, performansı ve yenileme fırsatlarını izleyin."],
   supportTabBtn:["support","Destek Merkezi","Kurumların destek taleplerini takip edin ve yanıtlayın."],
   announcementsTabBtn:["support","Duyurular","Kurumlara yönetim duyuruları gönderin."],
   systemTabBtn:["system","Sistem","Sistem kontrollerini, ayarları ve yönetim işlem geçmişini görüntüleyin."]
@@ -3600,7 +3602,12 @@ function openAdminTabFromOverview(action) {
     quotes: quotesTabBtn,
     offers: offerReportTabBtn,
     issues: issuesTabBtn,
-    accounts: accountsTabBtn
+    accounts: accountsTabBtn,
+    bannerAds: document.getElementById("bannerAdsTabBtn"),
+    promotionOrders: document.getElementById("promotionOrdersTabBtn"),
+    adCalendar: document.getElementById("adCalendarTabBtn"),
+    adRevenue: document.getElementById("adRevenueTabBtn"),
+    support: document.getElementById("supportTabBtn")
   };
 
   map[action]?.click();
