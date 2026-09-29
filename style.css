@@ -7976,3 +7976,115 @@ button{cursor:pointer}
     gap:6px;
   }
 }
+
+
+/* =========================================================
+   DİJİYER KAZANÇ · PİLOT
+   ========================================================= */
+.dijiyer-earnings-card{
+  min-height:132px;padding:13px;display:grid;grid-template-columns:44px minmax(0,1fr);
+  gap:10px;border:1px solid #cae7da;border-radius:15px;
+  background:linear-gradient(145deg,#f7fffb,#f4f9ff);
+  box-shadow:0 7px 20px rgba(17,69,54,.06)
+}
+.dijiyer-earnings-icon{
+  width:44px;height:44px;display:grid;place-items:center;border-radius:13px;
+  background:linear-gradient(145deg,#0fb36f,#0a8c58);color:#fff;font-size:22px;font-weight:900
+}
+.dijiyer-earnings-kicker{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.dijiyer-earnings-kicker span{color:#0c8e5a;font-size:7.5px;font-weight:950;letter-spacing:.08em}
+.dijiyer-earnings-kicker b{padding:2px 5px;border-radius:999px;background:#e7f8ef;color:#0b8d58;font-size:6.7px}
+.dijiyer-earnings-copy>strong{display:block;color:#17314c;font-size:12.5px;line-height:1.25}
+.dijiyer-earnings-copy p{margin:5px 0 0;color:#66768b;font-size:8.8px;line-height:1.45}
+.dijiyer-earnings-copy p b{color:#0b8e58}
+.dijiyer-earnings-actions{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr;gap:6px}
+.dijiyer-earnings-actions button{
+  min-height:34px;border:1px solid #d7e5df;border-radius:9px;background:#fff;
+  color:#355269;font-size:8.7px;font-weight:900
+}
+.dijiyer-earnings-actions button.primary{border-color:#0aa566;background:#0aa566;color:#fff}
+
+.dijiyer-earnings-modal-card{width:min(620px,96vw);max-height:92vh;overflow-y:auto;border-top:4px solid #0aa566}
+.dijiyer-earnings-modal-head{padding-right:34px}
+.dijiyer-earnings-modal-head>span{color:#0a9c61;font-size:8px;font-weight:950;letter-spacing:.09em}
+.dijiyer-earnings-modal-head h2{margin:5px 0 6px;color:#172a45;font-size:22px;line-height:1.1}
+.dijiyer-earnings-modal-head p{margin:0;color:#6d7b8e;font-size:10px;line-height:1.55}
+.dijiyer-earnings-tabs{
+  margin:14px 0 10px;padding:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  border-radius:10px;background:#f1f5f8
+}
+.dijiyer-earnings-tabs button{
+  min-height:34px;border:0;border-radius:8px;background:transparent;color:#66768a;font-size:9px;font-weight:850
+}
+.dijiyer-earnings-tabs button.active{background:#fff;color:#0b8f59;box-shadow:0 2px 8px rgba(18,43,72,.07)}
+.dijiyer-earnings-pane{display:none}
+.dijiyer-earnings-pane.active{display:block}
+
+.dijiyer-referral-reward{
+  padding:12px;display:grid;grid-template-columns:130px minmax(0,1fr);align-items:center;gap:12px;
+  border:1px solid #cce9db;border-radius:12px;background:#f4fcf8
+}
+.dijiyer-referral-reward>div{display:grid;gap:1px}
+.dijiyer-referral-reward small{color:#0a9a60;font-size:7px;font-weight:950}
+.dijiyer-referral-reward strong{color:#0b8d58;font-size:24px;line-height:1}
+.dijiyer-referral-reward span{color:#6b7d70;font-size:8px}
+.dijiyer-referral-reward p{margin:0;color:#617185;font-size:8.8px;line-height:1.5}
+
+.dijiyer-referral-field{margin-top:9px;display:grid;gap:5px}
+.dijiyer-referral-field>span{color:#52647a;font-size:8px;font-weight:850}
+.dijiyer-referral-field>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+.dijiyer-referral-field input{
+  min-width:0;height:38px;padding:0 10px;border:1px solid #dce4ed;border-radius:9px;
+  background:#fbfcfe;color:#34475e;font-size:9px
+}
+.dijiyer-referral-field button{
+  min-width:70px;border:0;border-radius:9px;background:#eaf3ff;color:#1268da;font-size:8.5px;font-weight:850
+}
+
+.dijiyer-referral-share{margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.dijiyer-referral-share button{
+  min-height:38px;border:1px solid #dce4ed;border-radius:9px;background:#fff;color:#44566d;font-size:8.7px;font-weight:850
+}
+.dijiyer-referral-share button.whatsapp{border-color:#16b968;background:#16b968;color:#fff}
+
+.dijiyer-referral-steps{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.dijiyer-referral-steps>div{
+  padding:10px;display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;
+  border:1px solid #e4e9ef;border-radius:10px;background:#fafbfd
+}
+.dijiyer-referral-steps>div>b{
+  width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:#eaf8f1;color:#0a955c;font-size:8px
+}
+.dijiyer-referral-steps strong{display:block;color:#405269;font-size:8.3px}
+.dijiyer-referral-steps small{display:block;margin-top:2px;color:#7c899a;font-size:7.2px;line-height:1.4}
+
+.dijiyer-wallet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dijiyer-wallet-grid article{padding:12px;border:1px solid #e1e8ef;border-radius:11px;background:#fafbfd}
+.dijiyer-wallet-grid span{display:block;color:#8290a2;font-size:7.5px;font-weight:850}
+.dijiyer-wallet-grid strong{display:block;margin-top:4px;color:#17314c;font-size:18px}
+.dijiyer-wallet-grid small{display:block;margin-top:2px;color:#96a1af;font-size:7px}
+
+.dijiyer-wallet-code{
+  margin-top:9px;padding:10px 11px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid #dce5ee;border-radius:10px;background:#fff
+}
+.dijiyer-wallet-code span{color:#738197;font-size:8px;font-weight:800}
+.dijiyer-wallet-code strong{color:#0c8f5a;font-size:10px}
+
+.dijiyer-wallet-empty{
+  margin-top:9px;padding:12px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;
+  border:1px dashed #d8e2eb;border-radius:11px;background:#fbfcfd
+}
+.dijiyer-wallet-empty>span{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#eef7f2}
+.dijiyer-wallet-empty strong{display:block;color:#405269;font-size:9px}
+.dijiyer-wallet-empty p{margin:4px 0 0;color:#7b899b;font-size:8px;line-height:1.45}
+.dijiyer-earnings-note{margin-top:11px;padding:8px 9px;border-radius:8px;background:#f7f8fa;color:#8a96a5;font-size:7.3px;line-height:1.45}
+
+@media(max-width:520px){
+  .dijiyer-earnings-modal-card{width:100%;max-height:94vh;padding:14px}
+  .dijiyer-referral-reward{grid-template-columns:1fr}
+  .dijiyer-referral-steps{grid-template-columns:1fr}
+  .dijiyer-wallet-grid{grid-template-columns:1fr 1fr}
+  .dijiyer-wallet-grid article:first-child{grid-column:1/-1}
+  .dijiyer-referral-share{grid-template-columns:1fr}
+}
