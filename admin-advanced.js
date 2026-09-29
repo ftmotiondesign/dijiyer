@@ -798,7 +798,7 @@
     if($("bannerAdEditId"))$("bannerAdEditId").value="";
     if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
     if($("bannerAdActive"))$("bannerAdActive").checked=true;
-    if($("bannerAdDuration"))$("bannerAdDuration").value="5";
+    if($("bannerAdDuration"))$("bannerAdDuration").value="7";
     if($("bannerAdPlacement"))$("bannerAdPlacement").value="search";
     if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
     if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
@@ -3011,12 +3011,22 @@
     const activeToday = events.filter(event => event.active && adEventOnDay(event,new Date()));
     const premiumToday = activeToday.filter(event => event.placement === "premium_home").length;
     const bannerToday = activeToday.filter(event => event.source === "banner").length;
+    const monthStarts = events.filter(event => {
+      const date = adminParseDate(event.startAt);
+      return date && date >= monthStart && date <= monthEnd;
+    }).length;
+    const monthEnds = events.filter(event => {
+      const date = adminParseDate(event.endAt,true);
+      return date && date >= monthStart && date <= monthEnd;
+    }).length;
 
     if ($("adCalendarSummary")) {
       $("adCalendarSummary").innerHTML = `
         <article><span>Bugün Yayında</span><strong>${activeToday.length}</strong><small>Tüm reklam alanları</small></article>
         <article><span>Premium Vitrin</span><strong>${premiumToday}</strong><small>Bugünkü premium doluluk</small></article>
         <article><span>Banner</span><strong>${bannerToday}</strong><small>Bugün aktif banner</small></article>
+        <article><span>Bu Ay Başlayan</span><strong>${monthStarts}</strong><small>Yeni reklam dönemi</small></article>
+        <article><span>Bu Ay Bitecek</span><strong>${monthEnds}</strong><small>Yenileme planı</small></article>
         <article class="${expiring7 ? "warning" : ""}"><span>7 Günde Biten</span><strong>${expiring7}</strong><small>Yenileme fırsatı</small></article>
       `;
     }
@@ -3242,13 +3252,33 @@
     const revenueRows = revenueBusinessRows();
     const paid = revenueRows.filter(x=>x.paid).reduce((sum,x)=>sum+x.amount,0);
     const pending = revenueRows.filter(x=>x.pending).reduce((sum,x)=>sum+x.amount,0);
-    const activeAds =
-      institutionRecords.filter(adminInstitutionAdIsActive).length +
-      bannerAdRecords.filter(adminBannerIsActive).length;
+    const activeInstitutionAds = institutionRecords.filter(adminInstitutionAdIsActive);
+    const activeBanners = bannerAdRecords.filter(adminBannerIsActive);
+    const activeAds = activeInstitutionAds.length + activeBanners.length;
     const expiring = expiringAdvertisingRows(7);
     const analytics = adAnalyticsSummary();
 
+    const premiumInstitutions = new Set();
+    activeInstitutionAds
+      .filter(inst => String(inst.adPackage || "") === "premium")
+      .forEach(inst => premiumInstitutions.add(String(inst.id)));
+    activeBanners
+      .filter(ad => normalizeBannerPlacement(ad.placement) === "premium_home")
+      .forEach(ad => premiumInstitutions.add(String(ad.institutionId || ad.id)));
+
+    const sponsorInstitutions = new Set();
+    activeInstitutionAds
+      .filter(inst => String(inst.adPackage || "") !== "premium")
+      .forEach(inst => sponsorInstitutions.add(String(inst.id)));
+    activeBanners
+      .filter(ad => ["home_sponsor","mobile_sponsor","sidebar_sponsor"].includes(normalizeBannerPlacement(ad.placement)))
+      .forEach(ad => sponsorInstitutions.add(String(ad.institutionId || ad.id)));
+
     $("adRevenueActiveCount").textContent = activeAds;
+    $("adRevenuePremiumCount").textContent = premiumInstitutions.size;
+    $("adRevenueSponsorCount").textContent = sponsorInstitutions.size;
+    $("adRevenueBannerCount").textContent = activeBanners.length;
+    $("adRevenueTotal").textContent = money(paid + pending);
     $("adRevenuePaid").textContent = money(paid);
     $("adRevenuePending").textContent = money(pending);
     $("adRevenueExpiring").textContent = expiring.length;
@@ -3278,7 +3308,7 @@
 
     const renewalRoot=$("adRenewalList");
     renewalRoot.innerHTML=expiring.length ? expiring.map(row=>`
-      <div class="ad-renewal-row urgency-${row.daysLeft<=3?"high":"normal"}">
+      <div class="ad-renewal-row urgency-${row.daysLeft===0?"today":row.daysLeft<=3?"high":"normal"}">
         <div>
           <strong>${escapeHtml(row.name)}</strong>
           <span>${escapeHtml(row.label)} · ${row.daysLeft===0?"Bugün bitiyor":row.daysLeft+" gün kaldı"}</span>
@@ -3330,7 +3360,6 @@
       </div>
     ` : '<div class="advanced-empty">Henüz reklam gösterim / tıklama verisi oluşmadı.</div>';
 
-    addAudit;
   }
 
   $("adRevenueRefreshBtn")?.addEventListener("click",()=>renderAdRevenueCenter(true));
@@ -3510,7 +3539,10 @@
 
   const overviewRefresh = $("overviewRefreshBtn");
   overviewRefresh?.addEventListener("click", () => {
-    setTimeout(refreshAdminNotifications, 800);
+    setTimeout(()=>{
+      refreshAdminNotifications();
+      renderTodayTasks();
+    }, 800);
   });
 
   setTimeout(() => {
@@ -3519,6 +3551,7 @@
     renderAnnouncementHistory();
     renderSupportCenter();
     refreshAdminNotifications();
+    renderTodayTasks();
     renderAudit();
   }, 1200);
 })();
