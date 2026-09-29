@@ -6494,3 +6494,23 @@ window.addEventListener("resize",()=>{
     try{ renderMobileJobs(); }catch(_){}
   },120);
 });
+
+
+/* Mobil: sayfanın başına dön butonu */
+(function setupMobileBackToTop(){
+  const button=document.getElementById('mobileBackToTopBtn');
+  if(!button)return;
+
+  const updateVisibility=()=>{
+    const mobile=window.matchMedia('(max-width: 820px)').matches;
+    button.classList.toggle('is-visible',mobile && window.scrollY>520);
+  };
+
+  button.addEventListener('click',()=>{
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  window.addEventListener('scroll',updateVisibility,{passive:true});
+  window.addEventListener('resize',updateVisibility);
+  updateVisibility();
+})();
