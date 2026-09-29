@@ -3676,6 +3676,123 @@ function startRegionalBannerAds(){
   });
 }
 
+let externalAds=[];
+let externalAdIndex=0;
+let externalAdTimer=null;
+let externalAdUnsubscribe=null;
+let externalAdRandomized=false;
+
+function safeExternalAdUrl(value){
+  const raw=String(value||"").trim();
+  if(!raw)return "";
+  try{
+    const url=new URL(raw,window.location.href);
+    return ["http:","https:"].includes(url.protocol) ? url.href : "";
+  }catch(_){
+    return "";
+  }
+}
+
+function externalAdIsLive(item){
+  if(!item || item.active===false || item.rightsConfirmed!==true)return false;
+  const now=Date.now();
+  const start=item.startAt ? new Date(item.startAt).getTime() : 0;
+  const end=item.endAt ? new Date(item.endAt).getTime() : 0;
+  if(start && Number.isFinite(start) && start>now)return false;
+  if(end && Number.isFinite(end) && end<now)return false;
+  const target=safeExternalAdUrl(item.targetUrl);
+  const image=safeExternalAdUrl(item.imageUrl);
+  const video=safeExternalAdUrl(item.videoUrl);
+  if(!target)return false;
+  return item.mediaType==="video" ? Boolean(video) : Boolean(image);
+}
+
+function externalAdCardHtml(item){
+  const target=safeExternalAdUrl(item.targetUrl);
+  const image=safeExternalAdUrl(item.imageUrl);
+  const video=safeExternalAdUrl(item.videoUrl);
+  const isVideo=item.mediaType==="video" && Boolean(video);
+  const brand=String(item.brandName||"Reklam");
+  const headline=String(item.headline||"").trim();
+  return `
+    <a class="external-ad-card" href="${escapeHtml(target)}" target="_blank" rel="sponsored nofollow noopener noreferrer">
+      <div class="external-ad-public-media">
+        ${isVideo
+          ? '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline poster="'+escapeHtml(image)+'"></video>'
+          : '<img src="'+escapeHtml(image)+'" alt="'+escapeHtml(brand)+' reklamı">'}
+      </div>
+      <div class="external-ad-public-info">
+        <div>
+          <span>REKLAM</span>
+          <strong>${escapeHtml(brand)}</strong>
+          ${headline?'<small>'+escapeHtml(headline)+'</small>':""}
+        </div>
+        <b>Siteye Git →</b>
+      </div>
+    </a>
+  `;
+}
+
+function renderExternalAds(){
+  const zone=document.getElementById("externalAdZone");
+  const stage=document.getElementById("externalAdStage");
+  const dots=document.getElementById("externalAdDots");
+  if(!zone||!stage)return;
+
+  if(externalAdTimer){clearTimeout(externalAdTimer);externalAdTimer=null;}
+
+  const live=externalAds.filter(externalAdIsLive);
+  if(!live.length){
+    zone.classList.add("hidden");
+    stage.innerHTML="";
+    if(dots)dots.innerHTML="";
+    return;
+  }
+
+  zone.classList.remove("hidden");
+  if(!externalAdRandomized){
+    externalAdIndex=Math.floor(Math.random()*live.length);
+    externalAdRandomized=true;
+  }
+  if(externalAdIndex>=live.length)externalAdIndex=0;
+
+  const active=live[externalAdIndex];
+  stage.innerHTML=externalAdCardHtml(active);
+
+  if(dots){
+    dots.innerHTML=live.length>1
+      ? live.map((_,i)=>'<button type="button" class="'+(i===externalAdIndex?'active':'')+'" data-external-ad-dot="'+i+'" aria-label="'+(i+1)+'. reklam"></button>').join("")
+      : "";
+    dots.querySelectorAll("[data-external-ad-dot]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        externalAdIndex=Number(button.dataset.externalAdDot||0);
+        renderExternalAds();
+      });
+    });
+  }
+
+  if(live.length>1){
+    const seconds=Math.max(5,Math.min(60,Number(active.rotationSeconds||10)));
+    externalAdTimer=setTimeout(()=>{
+      externalAdIndex=(externalAdIndex+1)%live.length;
+      renderExternalAds();
+    },seconds*1000);
+  }
+}
+
+function startExternalAds(){
+  if(externalAdUnsubscribe)externalAdUnsubscribe();
+  externalAdUnsubscribe=db.collection("externalAds").where("active","==",true).onSnapshot(snapshot=>{
+    externalAds=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    externalAdRandomized=false;
+    renderExternalAds();
+  },error=>{
+    console.warn("Harici reklamlar yüklenemedi:",error);
+    externalAds=[];
+    document.getElementById("externalAdZone")?.classList.add("hidden");
+  });
+}
+
 function localDayKey(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -6478,6 +6595,7 @@ loadApprovedInstitutions();
 
 
 startRegionalBannerAds();
+startExternalAds();
 
 
 loadTodayPublicStats().catch(()=>{});
