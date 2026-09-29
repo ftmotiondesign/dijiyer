@@ -10904,3 +10904,196 @@ to{opacity:1;transform:none}
     background:#1677ff;
   }
 }
+
+
+/* =========================================================
+   MOBİL SPONSOR · 2 KART YAN YANA
+   Her sayfada 2 reklam; sayfalar yatay kayar.
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-sponsored-slot{
+    margin:8px 10px 10px;
+  }
+
+  .mobile-sponsored-track{
+    display:flex;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .mobile-sponsored-track::-webkit-scrollbar{
+    display:none;
+  }
+
+  .mobile-sponsored-page{
+    flex:0 0 100%;
+    min-width:100%;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+
+  .mobile-sponsored-pair{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .mobile-sponsor-mini-card{
+    min-width:0;
+    min-height:116px;
+    overflow:hidden;
+    border:1px solid #dbe6f2;
+    border-radius:13px;
+    background:#fff;
+    box-shadow:0 5px 15px rgba(19,44,79,.055);
+  }
+
+  .mobile-sponsor-mini-ad{
+    display:grid;
+    grid-template-rows:64px auto;
+    color:inherit;
+    text-decoration:none;
+    cursor:pointer;
+  }
+
+  .mobile-sponsor-mini-media{
+    position:relative;
+    min-height:64px;
+    overflow:hidden;
+    background:#eaf2fb;
+  }
+
+  .mobile-sponsor-mini-media img,
+  .mobile-sponsor-mini-media video{
+    width:100%;
+    height:64px;
+    display:block;
+    object-fit:cover;
+  }
+
+  .mobile-sponsor-mini-media>span{
+    position:absolute;
+    top:5px;
+    left:5px;
+    min-height:17px;
+    display:inline-flex;
+    align-items:center;
+    padding:0 5px;
+    border-radius:999px;
+    background:rgba(13,29,50,.78);
+    color:#fff;
+    font-size:5.8px;
+    font-weight:900;
+    letter-spacing:.06em;
+  }
+
+  .mobile-sponsor-mini-fallback{
+    height:64px;
+    display:grid;
+    place-items:center;
+    font-size:24px;
+    color:#315c88;
+  }
+
+  .mobile-sponsor-mini-copy{
+    min-width:0;
+    padding:8px 8px 9px;
+  }
+
+  .mobile-sponsor-mini-copy>span{
+    display:block;
+    margin-bottom:3px;
+    color:#7890ad;
+    font-size:5.8px;
+    font-weight:900;
+    letter-spacing:.06em;
+  }
+
+  .mobile-sponsor-mini-copy strong{
+    display:block;
+    overflow:hidden;
+    color:#1c3554;
+    font-size:9.4px;
+    line-height:1.2;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-sponsor-mini-copy small{
+    display:block;
+    margin-top:3px;
+    overflow:hidden;
+    color:#7a8798;
+    font-size:7px;
+    line-height:1.25;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-sponsor-mini-sales{
+    padding:9px;
+    display:grid;
+    grid-template-columns:28px minmax(0,1fr);
+    grid-template-rows:auto auto;
+    gap:6px 7px;
+    align-items:center;
+    background:
+      radial-gradient(circle at 100% 0%,rgba(22,119,255,.08),transparent 42%),
+      #f8fbff;
+  }
+
+  .mobile-sponsor-mini-sales .mobile-sponsor-mini-icon{
+    width:28px;
+    height:28px;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    background:#eaf3ff;
+    font-size:14px;
+  }
+
+  .mobile-sponsor-mini-sales .mobile-sponsor-mini-copy{
+    padding:0;
+  }
+
+  .mobile-sponsor-mini-sales button{
+    grid-column:1/-1;
+    width:100%;
+    min-height:29px;
+    border:0;
+    border-radius:8px;
+    background:#1677ff;
+    color:#fff;
+    font-size:7.7px;
+    font-weight:900;
+  }
+
+  .mobile-sponsored-dots{
+    height:13px;
+    margin-top:4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+  }
+
+  .mobile-sponsored-dots button{
+    width:6px;
+    height:6px;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:#cbd5e1;
+  }
+
+  .mobile-sponsored-dots button.active{
+    width:18px;
+    background:#1677ff;
+  }
+}
