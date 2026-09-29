@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=48" />
+  <link rel="stylesheet" href="style.css?v=49" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -110,6 +110,24 @@
         <span>ÜCRETSİZ · HIZLI · KARŞILAŞTIRILABİLİR</span>
         <h1>İhtiyacını yaz, uygun işletmeler sana teklif versin.</h1>
         <p>Tek tek işletme aramak yerine talebini bir kez oluştur. Bölgen ve ihtiyacınla eşleşen kurumların fiyatlarını tek yerde karşılaştır.</p>
+
+        <div class="standalone-quote-main-actions">
+          <button type="button" class="standalone-quote-main-btn primary" id="quotePageFreeQuoteBtn">
+            <span>🏷</span>
+            <div>
+              <strong>Ücretsiz Teklif Al</strong>
+              <small>Talebini oluştur, uygun işletmeler fiyat versin</small>
+            </div>
+          </button>
+
+          <button type="button" class="standalone-quote-main-btn secondary" id="quotePageAddBusinessBtn">
+            <span>🏢</span>
+            <div>
+              <strong>İşletmeni Ücretsiz Ekle</strong>
+              <small>İşletmeni Dijiyer'e ekle ve taleplere ulaş</small>
+            </div>
+          </button>
+        </div>
       </div>
 
       <a href="teklif.html?v=5" class="standalone-quote-track-link">
@@ -1465,6 +1483,14 @@
       if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
     }catch(_){}
   },true);
+
+  document.getElementById('quotePageFreeQuoteBtn')?.addEventListener('click',()=>{
+    openQuoteForm();
+  });
+
+  document.getElementById('quotePageAddBusinessBtn')?.addEventListener('click',()=>{
+    document.getElementById('institutionAddBtn')?.click();
+  });
 
   document.getElementById('quoteChoiceBackBtn')?.addEventListener('click',()=>{
     formCard?.classList.add('hidden');
