@@ -15707,3 +15707,12 @@ to{opacity:1;transform:none}
     font-size:6.2px;
   }
 }
+
+
+/* =========================================================
+   ANA SAYFA YÖNETİM GÖRÜNÜRLÜĞÜ V1
+   Yönetim panelinden kapatılan alt bölümler kesin olarak gizlenir.
+   ========================================================= */
+.site-section-disabled{
+  display:none !important;
+}
