@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=27">
+  <link rel="stylesheet" href="institution.css?v=26">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -503,7 +503,7 @@
           </div>
         </div>
 
-        <form id="institutionProfileForm" class="profile-form firm-profile-form">
+        <form id="institutionProfileForm" class="profile-form firm-profile-form" novalidate>
 
           <section class="firm-profile-section firm-profile-primary">
             <div class="firm-profile-section-head firm-profile-primary-head">
@@ -715,7 +715,7 @@
               <strong>Profiliniz müşterilere açık</strong>
               <span>Kaydettiğiniz bilgiler kurum detayında gösterilir.</span>
             </div>
-            <button class="primary-btn" type="submit">Değişiklikleri Kaydet</button>
+            <button class="primary-btn" type="submit" id="profileSaveBtn">Değişiklikleri Kaydet</button>
           </div>
 
           <p class="form-message" id="profileMessage"></p>
@@ -1008,7 +1008,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="institution.js?v=18"></script>
+  <script src="institution.js?v=10"></script>
   <script src="institution-layout.js?v=2"></script>
   <script src="institution-offers.js?v=10"></script>
   <script src="institution-communication.js?v=11"></script>
