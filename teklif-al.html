@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=50" />
+  <link rel="stylesheet" href="style.css?v=51" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -138,6 +138,13 @@
         </div>
       </a>
     </section>
+
+    <div class="quote-explore-lead">
+      <button type="button" id="quoteExploreLeadBtn">
+        <span>Önce kurumları incele</span>
+        <b>↓</b>
+      </button>
+    </div>
 
     <div class="standalone-quote-layout">
         <section class="mobile-discovery quote-page-discovery" aria-label="Mobil kategori seçimi">
@@ -1488,6 +1495,10 @@
       if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
     }catch(_){}
   },true);
+
+  document.getElementById('quoteExploreLeadBtn')?.addEventListener('click',()=>{
+    scrollToElement(discovery);
+  });
 
   document.getElementById('quotePageFreeQuoteBtn')?.addEventListener('click',()=>{
     openQuoteForm();
