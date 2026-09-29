@@ -7139,3 +7139,89 @@ button{cursor:pointer}
     height:28px;
   }
 }
+
+
+/* =========================================================
+   MOBİL KATEGORİ SONUÇ GERİ BİLDİRİMİ
+   Kategori seçiminin hemen sonuç ürettiğini görünür yapar.
+   ========================================================= */
+.mobile-category-result{
+  display:none;
+}
+
+@media(max-width:820px){
+  .mobile-category-result{
+    margin-top:9px;
+    padding:10px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:9px;
+    border:1px solid #bfd8fa;
+    border-radius:12px;
+    background:
+      radial-gradient(circle at 100% 0,rgba(22,119,255,.08),transparent 34%),
+      #f5f9ff;
+  }
+
+  .mobile-category-result.hidden{
+    display:none !important;
+  }
+
+  .mobile-category-result-copy{
+    min-width:0;
+  }
+
+  .mobile-category-result-copy>span{
+    display:block;
+    color:#1268da;
+    font-size:8px;
+    font-weight:950;
+    letter-spacing:.04em;
+  }
+
+  .mobile-category-result-copy>strong{
+    display:block;
+    margin-top:2px;
+    color:#18304f;
+    font-size:13px;
+    line-height:1.2;
+  }
+
+  .mobile-category-result-copy>strong b{
+    color:#1677ff;
+    font-size:16px;
+  }
+
+  .mobile-category-result-copy>small{
+    display:block;
+    margin-top:3px;
+    max-width:240px;
+    color:#728198;
+    font-size:8.5px;
+    line-height:1.35;
+  }
+
+  #mobileCategoryResultBtn{
+    min-height:37px;
+    padding:0 10px;
+    border:0;
+    border-radius:9px;
+    background:#1677ff;
+    color:#fff;
+    font-size:9px;
+    font-weight:900;
+    white-space:nowrap;
+    box-shadow:0 6px 14px rgba(22,119,255,.18);
+  }
+}
+
+@media(max-width:390px){
+  .mobile-category-result{
+    grid-template-columns:1fr;
+  }
+
+  #mobileCategoryResultBtn{
+    width:100%;
+  }
+}
