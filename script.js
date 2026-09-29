@@ -3681,6 +3681,9 @@ let externalAdIndex=0;
 let externalAdTimer=null;
 let externalAdUnsubscribe=null;
 let externalAdRandomized=false;
+let externalAdSwipeStartX=null;
+let externalAdSwipeStartY=null;
+let externalAdSuppressClickUntil=0;
 
 function safeExternalAdUrl(value){
   const raw=String(value||"").trim();
@@ -3733,6 +3736,64 @@ function externalAdCardHtml(item){
   `;
 }
 
+function moveExternalAd(direction){
+  const live=externalAds.filter(externalAdIsLive);
+  if(live.length<2)return;
+
+  externalAdIndex=(externalAdIndex+direction+live.length)%live.length;
+  externalAdRandomized=true;
+  renderExternalAds();
+}
+
+function bindExternalAdManualNavigation(liveLength){
+  const stage=document.getElementById("externalAdStage");
+  if(!stage || liveLength<2)return;
+
+  stage.querySelector('[data-external-ad-prev]')?.addEventListener("click",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    moveExternalAd(-1);
+  });
+
+  stage.querySelector('[data-external-ad-next]')?.addEventListener("click",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    moveExternalAd(1);
+  });
+
+  stage.onpointerdown=event=>{
+    if(event.pointerType==="mouse" && event.button!==0)return;
+    externalAdSwipeStartX=event.clientX;
+    externalAdSwipeStartY=event.clientY;
+  };
+
+  stage.onpointerup=event=>{
+    if(externalAdSwipeStartX===null || externalAdSwipeStartY===null)return;
+
+    const dx=event.clientX-externalAdSwipeStartX;
+    const dy=event.clientY-externalAdSwipeStartY;
+    externalAdSwipeStartX=null;
+    externalAdSwipeStartY=null;
+
+    if(Math.abs(dx)<45 || Math.abs(dx)<=Math.abs(dy))return;
+
+    externalAdSuppressClickUntil=Date.now()+400;
+    moveExternalAd(dx<0 ? 1 : -1);
+  };
+
+  stage.onpointercancel=()=>{
+    externalAdSwipeStartX=null;
+    externalAdSwipeStartY=null;
+  };
+
+  stage.onclick=event=>{
+    if(Date.now()<externalAdSuppressClickUntil){
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+}
+
 function renderExternalAds(){
   const zone=document.getElementById("externalAdZone");
   const stage=document.getElementById("externalAdStage");
@@ -3759,6 +3820,8 @@ function renderExternalAds(){
   const active=live[externalAdIndex];
   stage.innerHTML=externalAdCardHtml(active);
 
+  bindExternalAdManualNavigation(live.length);
+
   if(dots){
     dots.innerHTML=live.length>1
       ? live.map((_,i)=>'<button type="button" class="'+(i===externalAdIndex?'active':'')+'" data-external-ad-dot="'+i+'" aria-label="'+(i+1)+'. reklam"></button>').join("")
@@ -3766,6 +3829,7 @@ function renderExternalAds(){
     dots.querySelectorAll("[data-external-ad-dot]").forEach(button=>{
       button.addEventListener("click",()=>{
         externalAdIndex=Number(button.dataset.externalAdDot||0);
+        externalAdRandomized=true;
         renderExternalAds();
       });
     });
