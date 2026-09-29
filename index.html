@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=29" />
+  <link rel="stylesheet" href="style.css?v=30" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -385,16 +385,57 @@
             <div>
               <span>DİJİYER İŞ FIRSATLARI</span>
               <h2>Yakınındaki iş ve ek kazanç fırsatları</h2>
-              <p>Eleman arayanlarla iş arayanlar aynı yerde buluşsun.</p>
+              <p>İş ara, eleman bul veya yapabildiğin işi yayınla.</p>
             </div>
             <button type="button" class="mobile-jobs-post-btn" id="mobileJobsPostBtn">+ İlan Ver</button>
           </div>
 
+          <div class="mobile-jobs-search">
+            <span class="mobile-jobs-search-icon">⌕</span>
+            <input
+              id="mobileJobsSearchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="İş, yetenek veya anahtar kelime ara..."
+              aria-label="İş ilanlarında ara"
+            >
+            <button type="button" class="hidden" id="mobileJobsSearchClear" aria-label="Aramayı temizle">×</button>
+          </div>
+
+          <div class="mobile-jobs-context">
+            <span class="mobile-jobs-context-location">📍 <b id="mobileJobsLocationLabel">Bulunduğun bölge</b></span>
+            <span class="mobile-jobs-context-count"><b id="mobileJobsResultCount">0</b> ilan</span>
+          </div>
+
           <div class="mobile-jobs-switch" role="tablist" aria-label="İş ilanı türleri">
             <button type="button" class="active" data-job-filter="all">Tümü</button>
-            <button type="button" data-job-filter="hire">Eleman Arayan</button>
-            <button type="button" data-job-filter="work">İş Arayan</button>
-            <button type="button" data-job-filter="extra">Günlük / Ek İş</button>
+            <button type="button" data-job-filter="hire">🏢 Eleman Arayan</button>
+            <button type="button" data-job-filter="work">👤 İş Arayan</button>
+          </div>
+
+          <div class="mobile-jobs-quick-filters" aria-label="Hızlı iş filtreleri">
+            <button type="button" class="active" data-job-quick="all">Tüm çalışma türleri</button>
+            <button type="button" data-job-quick="extra">⚡ Günlük / Ek İş</button>
+            <button type="button" data-job-quick="home">🏠 Evden</button>
+            <button type="button" data-job-quick="parttime">◷ Part-time</button>
+            <button type="button" data-job-quick="local">📍 Bu şehir</button>
+          </div>
+
+          <div class="mobile-jobs-category-head">
+            <div>
+              <strong>Kategoriye göre keşfet</strong>
+              <span>İstersen kategori seç, istersen aramaya devam et.</span>
+            </div>
+            <button type="button" class="hidden" id="mobileJobsClearFilters">Temizle</button>
+          </div>
+
+          <div class="mobile-jobs-categories" id="mobileJobsCategories"></div>
+
+          <div class="mobile-jobs-results-head">
+            <div>
+              <strong id="mobileJobsResultsTitle">Tüm iş fırsatları</strong>
+              <span id="mobileJobsResultsHint">En yeni ilanlar önce gösteriliyor.</span>
+            </div>
           </div>
 
           <div class="mobile-jobs-list" id="mobileJobsList">
@@ -863,7 +904,7 @@
       <div class="job-post-modal-head">
         <span>DİJİYER İŞ FIRSATLARI</span>
         <h2>İlanını Oluştur</h2>
-        <p>Kısa süreli, günlük, part-time veya ek iş ilanını birkaç adımda yayınlanmak üzere gönder.</p>
+        <p>Kategori, çalışma şekli ve ilan süresini seç; arayanların seni daha kolay bulmasını sağla.</p>
       </div>
 
       <form id="jobPostForm" class="job-post-form">
@@ -875,6 +916,21 @@
           <label>
             <input type="radio" name="jobPostType" value="work">
             <span><b>👤 İş Arıyorum</b><small>Yapabileceğin işleri ve müsaitliğini paylaş.</small></span>
+          </label>
+        </div>
+
+        <div class="form-grid-2">
+          <label>Kategori
+            <select id="jobPostCategory" required>
+              <option value="">Kategori seçin</option>
+            </select>
+          </label>
+          <label>İlan Süresi
+            <select id="jobPostDuration" required>
+              <option value="7">7 gün</option>
+              <option value="15" selected>15 gün</option>
+              <option value="30">30 gün</option>
+            </select>
           </label>
         </div>
 
@@ -942,7 +998,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=48"></script>
+<script src="script.js?v=49"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
