@@ -353,6 +353,80 @@ function getSelectedMainCategory() {
   return checkedMain?.value || '';
 }
 
+function scrollToMobileResults() {
+  if (!window.matchMedia('(max-width: 820px)').matches) return;
+
+  const target = document.getElementById('resultsSection');
+  if (!target) return;
+
+  const top =
+    target.getBoundingClientRect().top +
+    window.scrollY -
+    76;
+
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior: 'smooth'
+  });
+}
+
+function updateMobileCategoryResult(options = {}) {
+  const root = document.getElementById('mobileCategoryResult');
+  if (!root) return;
+
+  const activeMain = getSelectedMainCategory();
+  const selectedSub = document.querySelector('.subCategoryFilter:checked');
+
+  if (!activeMain) {
+    root.classList.add('hidden');
+    return;
+  }
+
+  const mainLabel =
+    categoryTaxonomy[activeMain]?.label ||
+    activeMain;
+
+  const subLabel = selectedSub
+    ? categoryTaxonomy[activeMain]?.subs?.[selectedSub.value] || selectedSub.value
+    : '';
+
+  let count = 0;
+  try {
+    count = getFilteredInstitutions().length;
+  } catch (_) {
+    count = Number(document.getElementById('exploreResultCount')?.textContent || 0);
+  }
+
+  const label = document.getElementById('mobileCategoryResultLabel');
+  const countEl = document.getElementById('mobileCategoryResultCount');
+  const hint = document.getElementById('mobileCategoryResultHint');
+
+  root.classList.remove('hidden');
+
+  if (label) {
+    label.textContent = subLabel
+      ? subLabel + ' seçildi'
+      : mainLabel + ' seçildi';
+  }
+
+  if (countEl) countEl.textContent = String(count);
+
+  if (hint) {
+    const hasSubcategories =
+      Object.keys(categoryTaxonomy[activeMain]?.subs || {}).length > 0;
+
+    hint.textContent = subLabel || !hasSubcategories
+      ? 'Uygun kurumları harita ve listede göstereceğiz.'
+      : 'Alt kategoriyi seçerseniz sonuçlar daha da netleşir.';
+  }
+
+  if (options.scroll === true) {
+    setTimeout(scrollToMobileResults, 120);
+  }
+}
+
+document.getElementById('mobileCategoryResultBtn')?.addEventListener('click', scrollToMobileResults);
+
 function renderMobileSubcategories(mainKey) {
   const root = document.getElementById('mobileSubcategories');
   if (!root) return;
@@ -404,6 +478,7 @@ function renderMobileSubcategories(mainKey) {
 
       renderMobileCategories();
       renderList();
+      updateMobileCategoryResult({ scroll: Boolean(target?.checked) });
     });
   });
 }
@@ -439,6 +514,13 @@ function renderMobileCategories() {
 
       renderMobileCategories();
       renderList();
+
+      const hasSubcategories =
+        Object.keys(categoryTaxonomy[key]?.subs || {}).length > 0;
+
+      updateMobileCategoryResult({
+        scroll: !currentlyActive && !hasSubcategories
+      });
     });
   });
 
@@ -450,6 +532,7 @@ document.getElementById('mobileClearCategoriesBtn')?.addEventListener('click', (
   clearAllCategorySelections();
   renderMobileCategories();
   renderList();
+  updateMobileCategoryResult();
 });
 
 document.getElementById('mobileVideoOnlyBtn')?.addEventListener('click', () => {
@@ -975,6 +1058,7 @@ function renderList() {
   renderCompareBar();
   renderDecisionAlternatives();
   renderDetail();
+  updateMobileCategoryResult();
 }
 function toggleCompareInstitution(id) {
   const key = String(id || '');
