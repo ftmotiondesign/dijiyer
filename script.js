@@ -412,8 +412,13 @@ function updateMobileCategoryResult() {
 
   const activeMain = getSelectedMainCategory();
   const selectedSub = document.querySelector('.subCategoryFilter:checked');
+  const keyword = String(
+    document.getElementById('mobileDiscoverySearchInput')?.value ||
+    document.getElementById('searchInput')?.value ||
+    ''
+  ).trim();
 
-  if (!activeMain) {
+  if (!activeMain && !keyword) {
     root.classList.add('hidden');
     return;
   }
@@ -423,16 +428,17 @@ function updateMobileCategoryResult() {
 
   // Alt kategorisi olan bir ana kategoride, sonuç kutusunu
   // kullanıcı alt kategori seçtikten sonra göster.
-  if (hasSubcategories && !selectedSub) {
+  if (activeMain && hasSubcategories && !selectedSub && !keyword) {
     root.classList.add('hidden');
     return;
   }
 
   const mainLabel =
-    categoryTaxonomy[activeMain]?.label ||
-    activeMain;
+    activeMain
+      ? (categoryTaxonomy[activeMain]?.label || activeMain)
+      : '';
 
-  const subLabel = selectedSub
+  const subLabel = selectedSub && activeMain
     ? categoryTaxonomy[activeMain]?.subs?.[selectedSub.value] || selectedSub.value
     : '';
 
@@ -453,17 +459,26 @@ function updateMobileCategoryResult() {
   root.classList.remove('hidden');
 
   if (label) {
-    label.textContent = subLabel
-      ? mainLabel + ' · ' + subLabel
-      : mainLabel;
+    label.textContent = keyword
+      ? '“' + keyword + '” araması'
+      : (subLabel ? mainLabel + ' · ' + subLabel : mainLabel);
   }
 
   if (countEl) countEl.textContent = String(count);
 
   if (hint) {
-    hint.textContent = subLabel || !hasSubcategories
-      ? 'Uygun kurumları inceleyin, karşılaştırın veya teklif alın.'
-      : 'Alt kategori seçerek sonuçları daha da daraltabilirsiniz.';
+    const inferred = keyword ? inferQuoteCategory(keyword) : null;
+    const inferredLabel = inferred
+      ? categoryTaxonomy[inferred.mainCategory]?.subs?.[inferred.subCategory] || ''
+      : '';
+
+    hint.textContent = keyword
+      ? (inferredLabel
+          ? inferredLabel + ' dahil eşleşen kurumlar gösteriliyor.'
+          : 'Kurum adı, hizmet, kategori ve konuma göre eşleşen sonuçlar.')
+      : (subLabel || !hasSubcategories
+          ? 'Uygun kurumları inceleyin, karşılaştırın veya teklif alın.'
+          : 'Alt kategori seçerek sonuçları daha da daraltabilirsiniz.');
   }
 
   if (locationEl) {
@@ -475,6 +490,74 @@ function updateMobileCategoryResult() {
   offerBtn?.classList.toggle('active', Boolean(document.getElementById('offerOnly')?.checked));
   videoBtn?.classList.toggle('active', Boolean(document.getElementById('videoOnly')?.checked));
 }
+
+function setMobileDiscoverySearch(value, options = {}) {
+  const mobileInput = document.getElementById('mobileDiscoverySearchInput');
+  const desktopInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('mobileDiscoverySearchClear');
+  const nextValue = String(value || '');
+
+  if (mobileInput && mobileInput.value !== nextValue) mobileInput.value = nextValue;
+  if (desktopInput && desktopInput.value !== nextValue) desktopInput.value = nextValue;
+
+  clearButton?.classList.toggle('hidden', !nextValue.trim());
+
+  renderList();
+  updateMobileCategoryResult();
+
+  if (options.scroll === true && nextValue.trim()) {
+    setTimeout(scrollToMobileResults, 80);
+  }
+}
+
+const mobileDiscoverySearchInput = document.getElementById('mobileDiscoverySearchInput');
+
+mobileDiscoverySearchInput?.addEventListener('input', event => {
+  setMobileDiscoverySearch(event.target.value);
+});
+
+mobileDiscoverySearchInput?.addEventListener('keydown', event => {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+
+  const value = String(event.target.value || '').trim();
+  if (!value) return;
+
+  setMobileDiscoverySearch(value, { scroll:true });
+});
+
+document.getElementById('mobileDiscoverySearchBtn')?.addEventListener('click', () => {
+  const value = String(mobileDiscoverySearchInput?.value || '').trim();
+  if (!value) {
+    mobileDiscoverySearchInput?.focus();
+    return;
+  }
+
+  setMobileDiscoverySearch(value, { scroll:true });
+});
+
+document.getElementById('mobileDiscoverySearchClear')?.addEventListener('click', () => {
+  setMobileDiscoverySearch('');
+  mobileDiscoverySearchInput?.focus();
+});
+
+document.querySelectorAll('[data-mobile-search-example]').forEach(button => {
+  button.addEventListener('click', () => {
+    const value = button.dataset.mobileSearchExample || '';
+    setMobileDiscoverySearch(value, { scroll:true });
+  });
+});
+
+// Masaüstü aramasındaki değer mobil alana da yansısın.
+document.getElementById('searchInput')?.addEventListener('input', event => {
+  const mobileInput = document.getElementById('mobileDiscoverySearchInput');
+  const clearButton = document.getElementById('mobileDiscoverySearchClear');
+  if (mobileInput && document.activeElement !== mobileInput) {
+    mobileInput.value = event.target.value;
+  }
+  clearButton?.classList.toggle('hidden', !String(event.target.value || '').trim());
+  updateMobileCategoryResult();
+});
 
 document.getElementById('mobileCategoryResultBtn')?.addEventListener('click', scrollToMobileResults);
 
@@ -2412,7 +2495,9 @@ setTimeout(() => {
 }, 0);
 
 function getFilteredInstitutions() {
-  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  const queryRaw = document.getElementById('searchInput').value.trim();
+  const query = normalizeQuoteSearch(queryRaw);
+  const inferredQueryCategory = query ? inferQuoteCategory(queryRaw) : null;
   const checkedCategories = [...document.querySelectorAll('.categoryFilter:checked')].map(x => x.value);
   const checkedSubCategories = [...document.querySelectorAll('.subCategoryFilter:checked')].map(x => ({
     mainCategory: x.dataset.mainCategory,
@@ -2446,10 +2531,29 @@ function getFilteredInstitutions() {
     const mainLabel = categoryTaxonomy[mainCategory]?.label || '';
     const subLabel = categoryTaxonomy[mainCategory]?.subs?.[subCategory] || '';
 
+    const searchableText = normalizeQuoteSearch(
+      [
+        inst.name,
+        inst.location,
+        inst.address,
+        inst.city,
+        inst.district,
+        inst.classes,
+        inst.description,
+        mainLabel,
+        subLabel
+      ].filter(Boolean).join(' ')
+    );
+
+    const inferredCategoryMatch = Boolean(
+      inferredQueryCategory &&
+      inferredQueryCategory.mainCategory === mainCategory &&
+      inferredQueryCategory.subCategory === subCategory
+    );
+
     const matchesQuery = !query ||
-      `${inst.name} ${inst.location} ${inst.address} ${inst.classes} ${mainLabel} ${subLabel}`
-        .toLowerCase()
-        .includes(query);
+      searchableText.includes(query) ||
+      inferredCategoryMatch;
 
     const matchesVideo = !videoOnly || inst.video;
     const matchesOffer = !offerOnly || inst.offer;
@@ -4475,6 +4579,9 @@ document.getElementById('exploreClearFiltersBtn')?.addEventListener('click', () 
   const tour360Only = document.getElementById('tour360Only');
 
   if (search) search.value = '';
+  const mobileSearch = document.getElementById('mobileDiscoverySearchInput');
+  if (mobileSearch) mobileSearch.value = '';
+  document.getElementById('mobileDiscoverySearchClear')?.classList.add('hidden');
   if (videoOnly) videoOnly.checked = false;
   if (offerOnly) offerOnly.checked = false;
   if (tour360Only) tour360Only.checked = false;
