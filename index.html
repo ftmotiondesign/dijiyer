@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=24" />
+  <link rel="stylesheet" href="style.css?v=25" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -203,13 +203,22 @@
     <div class="mobile-discovery-head">
       <div>
         <strong>Ne arıyorsunuz?</strong>
-        <span>Kategori seçerek hızlıca bulun</span>
+        <span>Kategori seçin, uygun kurumları hemen görün</span>
       </div>
       <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
     </div>
 
     <div class="mobile-category-scroll" id="mobileCategories"></div>
     <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
+
+    <div class="mobile-category-result hidden" id="mobileCategoryResult">
+      <div class="mobile-category-result-copy">
+        <span id="mobileCategoryResultLabel">Kategori seçildi</span>
+        <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
+        <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
+      </div>
+      <button type="button" id="mobileCategoryResultBtn">Sonuçları Gör ↓</button>
+    </div>
 
     <input type="checkbox" id="videoOnly" hidden>
     <input type="checkbox" id="offerOnly" hidden>
@@ -308,7 +317,7 @@
     </div>
   </section>
 
-  <main class="app-layout">
+  <main class="app-layout" id="resultsSection">
     <aside class="sidebar">
       <div class="panel-title"><span class="filter-menu-icon" aria-hidden="true">☰</span><span>Filtreler</span></div>
 
@@ -807,7 +816,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=33"></script>
+<script src="script.js?v=34"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
