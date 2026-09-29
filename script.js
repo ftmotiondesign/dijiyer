@@ -1130,6 +1130,303 @@ renderDijiyerEarningsBottom();
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
 
+/* =========================================================
+   DİJİYER İŞ FIRSATLARI · MOBİL PİLOT
+   Yayındaki ilanları Firestore'dan okur; yeni ilanı onaya gönderir.
+   ========================================================= */
+const MOBILE_JOB_DEMOS = [
+  {
+    id:'demo-borek',
+    type:'hire',
+    title:'Evde börek sarabilecek kişi aranıyor',
+    city:'Çanakkale',
+    district:'Merkez',
+    workMode:'Evden',
+    wage:'Ücret görüşülür',
+    description:'Şarküteri için düzenli olarak evde börek sarabilecek, el işi hızlı ve temiz çalışan kişi aranıyor.',
+    contactName:'Örnek Şarküteri',
+    demo:true,
+    createdAt:Date.now()-15*60*1000
+  },
+  {
+    id:'demo-boyaci',
+    type:'hire',
+    title:'Boyacı yanına yardımcı aranıyor',
+    city:'Çanakkale',
+    district:'Kepez',
+    workMode:'Günlük / Ek İş',
+    wage:'Günlük 1.500 TL',
+    description:'3 günlük iç cephe boya işinde malzeme taşıma, bantlama ve boya hazırlığında yardımcı olacak kişi aranıyor.',
+    contactName:'Örnek İlan',
+    demo:true,
+    createdAt:Date.now()-55*60*1000
+  },
+  {
+    id:'demo-weekend',
+    type:'work',
+    title:'Hafta sonu ek iş arıyorum',
+    city:'Çanakkale',
+    district:'Merkez',
+    workMode:'Hafta sonu',
+    wage:'Görüşülür',
+    description:'Taşıma, montaj ve boya işlerinde yardımcı olabilirim. Cumartesi ve pazar günleri müsaitim.',
+    contactName:'Örnek İş Arayan',
+    demo:true,
+    createdAt:Date.now()-2*60*60*1000
+  }
+];
+
+let mobileJobPosts = [];
+let activeMobileJobFilter = 'all';
+
+function mobileJobTimestamp(value){
+  if(!value)return 0;
+  if(typeof value==='number')return value;
+  if(value?.toMillis)return value.toMillis();
+  const parsed=Date.parse(String(value));
+  return Number.isFinite(parsed)?parsed:0;
+}
+
+function mobileJobRelativeTime(value){
+  const ts=mobileJobTimestamp(value);
+  if(!ts)return 'Yeni';
+  const minutes=Math.max(1,Math.floor((Date.now()-ts)/60000));
+  if(minutes<60)return minutes+' dk önce';
+  const hours=Math.floor(minutes/60);
+  if(hours<24)return hours+' sa önce';
+  const days=Math.floor(hours/24);
+  return days+' gün önce';
+}
+
+function mobileJobTypeLabel(post){
+  return post.type==='work' ? 'İŞ ARIYOR' : 'ELEMAN ARIYOR';
+}
+
+function mobileJobTypeIcon(post){
+  return post.type==='work' ? '👤' : '🏢';
+}
+
+function isMobileJobExtra(post){
+  const mode=String(post.workMode||'').toLocaleLowerCase('tr-TR');
+  return ['günlük','ek iş','part-time','hafta sonu','proje'].some(key=>mode.includes(key));
+}
+
+function getFilteredMobileJobs(){
+  const rows=[...mobileJobPosts];
+
+  if(activeMobileJobFilter==='hire'){
+    return rows.filter(post=>post.type==='hire');
+  }
+  if(activeMobileJobFilter==='work'){
+    return rows.filter(post=>post.type==='work');
+  }
+  if(activeMobileJobFilter==='extra'){
+    return rows.filter(isMobileJobExtra);
+  }
+  return rows;
+}
+
+function mobileJobCardHtml(post){
+  const location=[post.city,post.district].filter(Boolean).join(' / ')||'Konum belirtilmedi';
+  const wage=String(post.wage||'').trim()||'Ücret görüşülür';
+
+  return `
+    <article class="mobile-job-card ${post.type==='work'?'worker':'employer'}" data-job-id="${escapeHtml(String(post.id||''))}">
+      <div class="mobile-job-card-top">
+        <span class="mobile-job-type">${mobileJobTypeIcon(post)} ${mobileJobTypeLabel(post)}</span>
+        <span class="mobile-job-time">${post.demo?'ÖRNEK · ':''}${mobileJobRelativeTime(post.createdAt||post.date)}</span>
+      </div>
+
+      <h3>${escapeHtml(String(post.title||'İş fırsatı'))}</h3>
+
+      <div class="mobile-job-meta">
+        <span>📍 ${escapeHtml(location)}</span>
+        <span>🕒 ${escapeHtml(String(post.workMode||'Çalışma şekli görüşülür'))}</span>
+      </div>
+
+      <p>${escapeHtml(String(post.description||''))}</p>
+
+      <div class="mobile-job-card-footer">
+        <div>
+          <small>ÜCRET</small>
+          <strong>${escapeHtml(wage)}</strong>
+        </div>
+        <button type="button" data-job-contact="${escapeHtml(String(post.id||''))}">
+          ${post.type==='work'?'İletişime Geç':'Başvur / İletişim'}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderMobileJobs(){
+  const list=document.getElementById('mobileJobsList');
+  if(!list)return;
+
+  const filtered=getFilteredMobileJobs();
+
+  list.innerHTML=filtered.length
+    ? filtered.slice(0,6).map(mobileJobCardHtml).join('')
+    : `
+      <div class="mobile-jobs-empty">
+        <span>💼</span>
+        <div>
+          <strong>Bu filtrede henüz ilan yok</strong>
+          <small>İlk ilanı sen verebilirsin.</small>
+        </div>
+        <button type="button" data-job-post-empty>İlan Ver</button>
+      </div>
+    `;
+
+  list.querySelectorAll('[data-job-contact]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const post=mobileJobPosts.find(item=>String(item.id)===String(button.dataset.jobContact));
+      if(!post)return;
+
+      if(post.demo){
+        showToast('Bu bir örnek ilan. Gerçek ilanlar yayınlandığında iletişim butonu aktif olacak.');
+        return;
+      }
+
+      const phone=normalizeWhatsappNumber(post.phone||'');
+      if(!phone){
+        showToast('Bu ilanda iletişim numarası bulunmuyor.');
+        return;
+      }
+
+      const text=encodeURIComponent(
+        'Merhaba, Dijiyer İş Fırsatları bölümündeki "'+String(post.title||'ilan')+'" ilanınız için yazıyorum.'
+      );
+      window.open('https://wa.me/'+phone+'?text='+text,'_blank','noopener');
+    });
+  });
+
+  list.querySelector('[data-job-post-empty]')?.addEventListener('click',()=>openJobPostModal('hire'));
+}
+
+async function loadMobileJobs(){
+  const list=document.getElementById('mobileJobsList');
+  if(!list)return;
+
+  try{
+    const snapshot=await db.collection('jobPosts')
+      .where('status','==','published')
+      .limit(30)
+      .get();
+
+    const published=snapshot.docs
+      .map(doc=>({id:doc.id,...doc.data()}))
+      .sort((a,b)=>mobileJobTimestamp(b.createdAt||b.date)-mobileJobTimestamp(a.createdAt||a.date));
+
+    mobileJobPosts=published.length ? published : MOBILE_JOB_DEMOS;
+  }catch(error){
+    console.warn('İş ilanları şu anda Firestore’dan okunamadı:',error);
+    mobileJobPosts=MOBILE_JOB_DEMOS;
+  }
+
+  renderMobileJobs();
+}
+
+function setMobileJobFilter(filter){
+  activeMobileJobFilter=filter||'all';
+  document.querySelectorAll('[data-job-filter]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.jobFilter===activeMobileJobFilter);
+  });
+  renderMobileJobs();
+}
+
+function openJobPostModal(type='hire'){
+  const modal=document.getElementById('jobPostModal');
+  const form=document.getElementById('jobPostForm');
+  if(!modal||!form)return;
+
+  form.reset();
+
+  const selected=form.querySelector('input[name="jobPostType"][value="'+(type==='work'?'work':'hire')+'"]');
+  if(selected)selected.checked=true;
+
+  const city=document.getElementById('jobPostCity');
+  const district=document.getElementById('jobPostDistrict');
+  const message=document.getElementById('jobPostMessage');
+
+  if(city)city.value=activeLocationCity||'';
+  if(district)district.value=activeLocationDistrict||'';
+  if(message)message.textContent='';
+
+  openModal('jobPostModal');
+}
+
+document.querySelectorAll('[data-job-filter]').forEach(button=>{
+  button.addEventListener('click',()=>setMobileJobFilter(button.dataset.jobFilter));
+});
+
+document.getElementById('mobileJobsPostBtn')?.addEventListener('click',()=>openJobPostModal('hire'));
+document.getElementById('mobileJobsHireBtn')?.addEventListener('click',()=>openJobPostModal('hire'));
+document.getElementById('mobileJobsWorkBtn')?.addEventListener('click',()=>openJobPostModal('work'));
+
+document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
+  event.preventDefault();
+
+  const form=event.currentTarget;
+  const submit=document.getElementById('jobPostSubmitBtn');
+  const message=document.getElementById('jobPostMessage');
+  const phone=normalizeQuoteTrackingPhone(document.getElementById('jobPostPhone')?.value||'');
+
+  if(phone.length<10){
+    if(message)message.textContent='Telefon numarasını kontrol edin.';
+    return;
+  }
+
+  const payload={
+    type:form.querySelector('input[name="jobPostType"]:checked')?.value==='work'?'work':'hire',
+    title:String(document.getElementById('jobPostTitle')?.value||'').trim(),
+    city:String(document.getElementById('jobPostCity')?.value||'').trim(),
+    district:String(document.getElementById('jobPostDistrict')?.value||'').trim(),
+    workMode:String(document.getElementById('jobPostWorkMode')?.value||'').trim(),
+    wage:String(document.getElementById('jobPostWage')?.value||'').trim(),
+    description:String(document.getElementById('jobPostDescription')?.value||'').trim(),
+    contactName:String(document.getElementById('jobPostContactName')?.value||'').trim(),
+    phone,
+    status:'pending',
+    date:new Date().toISOString(),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  const oldText=submit?.textContent||'İlanı Gönder';
+  if(submit){
+    submit.disabled=true;
+    submit.textContent='Gönderiliyor...';
+  }
+  if(message)message.textContent='';
+
+  try{
+    await db.collection('jobPosts').add(payload);
+
+    if(message){
+      message.textContent='İlanınız alındı. Kontrol sonrası İş Fırsatları bölümünde yayınlanacak.';
+      message.classList.add('success');
+    }
+
+    setTimeout(()=>{
+      closeModal('jobPostModal');
+      form.reset();
+    },1100);
+  }catch(error){
+    console.error('İş ilanı gönderilemedi:',error);
+    if(message){
+      message.textContent='İlan gönderilemedi. Firestore iş ilanı kuralının eklenmesi gerekiyor.';
+      message.classList.remove('success');
+    }
+  }finally{
+    if(submit){
+      submit.disabled=false;
+      submit.textContent=oldText;
+    }
+  }
+});
+
+loadMobileJobs();
+
 // Konum değişkenleri hazır olduktan sonra mobil filtreleri oluştur.
 renderMobileCategories();
 
