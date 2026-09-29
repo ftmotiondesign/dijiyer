@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=45" />
+  <link rel="stylesheet" href="style.css?v=46" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -103,6 +103,145 @@
   <div class="standalone-page-back">
     <a href="index.html">← Ana Sayfa</a>
   </div>
+
+  <main class="standalone-quote-shell">
+    <section class="standalone-quote-intro">
+      <div>
+        <span>ÜCRETSİZ · HIZLI · KARŞILAŞTIRILABİLİR</span>
+        <h1>İhtiyacını yaz, uygun işletmeler sana teklif versin.</h1>
+        <p>Tek tek işletme aramak yerine talebini bir kez oluştur. Bölgen ve ihtiyacınla eşleşen kurumların fiyatlarını tek yerde karşılaştır.</p>
+      </div>
+
+      <a href="teklif.html?v=5" class="standalone-quote-track-link">
+        <span>🔍</span>
+        <div>
+          <small>DAHA ÖNCE TALEP OLUŞTURDUN MU?</small>
+          <strong>Tekliflerini Takip Et →</strong>
+        </div>
+      </a>
+    </section>
+
+    <div class="standalone-quote-layout">
+      <section class="standalone-quote-form-card" id="quoteModal">
+    <div class="modal-card">
+      <h2>Toplu Teklif Talebi</h2>
+      <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
+
+      <form id="quoteForm">
+        <label>Ne arıyorsunuz?
+          <input
+            id="quoteSearch"
+            type="text"
+            placeholder="Örn. ehliyet, anaokulu, lastik, kiralık ev..."
+          >
+        </label>
+
+        <button
+          type="button"
+          class="btn btn-light full"
+          id="detectQuoteCategoryBtn"
+        >
+          🔎 Uygun Kategoriyi Bul
+        </button>
+
+        <p style="font-size:12px;color:#68758a;margin-top:-4px;">
+          Ne aradığınızı yazabilir veya ana kategori + alt kategori seçerek devam edebilirsiniz.
+        </p>
+
+        <label>Ana Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteCategory">
+            <option value="">Ana kategori seçin</option>
+          </select>
+        </label>
+
+        <label>Alt Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
+          <select id="quoteService" disabled>
+            <option value="">Önce ana kategori seçin</option>
+          </select>
+        </label>
+
+        <div class="form-grid-2">
+          <label>Şehir
+            <select id="quoteCity" required>
+              <option value="">Şehir seçin</option>
+            </select>
+          </label>
+
+          <label>İlçe <small style="font-weight:normal;">(isteğe bağlı)</small>
+            <select id="quoteDistrict" disabled>
+              <option value="">Önce şehir seçin</option>
+            </select>
+            <small style="display:block;margin-top:5px;color:#68758a;font-weight:normal;">
+              İlçe seçmezseniz talebiniz şehir genelindeki uygun kurumlara gönderilir.
+            </small>
+          </label>
+        </div>
+
+        <label>Ad Soyad
+          <input id="quoteName" required type="text" placeholder="Adınız ve soyadınız">
+        </label>
+
+        <label>Telefon
+          <input id="quotePhone" required type="tel" placeholder="05xx xxx xx xx">
+        </label>
+
+        <label>Not
+          <textarea id="quoteNote" rows="3" placeholder="Örn. otomatik vites, hafta sonu ders, bütçe aralığı..."></textarea>
+        </label>
+
+        <button class="btn btn-primary full" type="submit">
+          Uygun Kurumlara Teklif Gönder
+        </button>
+      </form>
+    </div>
+  </section>
+
+
+      <aside class="standalone-quote-side">
+        <div class="standalone-quote-side-head">
+          <span>NASIL ÇALIŞIR?</span>
+          <strong>3 adımda teklifini al</strong>
+        </div>
+
+        <div class="standalone-quote-step">
+          <b>1</b>
+          <div>
+            <strong>İhtiyacını anlat</strong>
+            <span>Hizmeti, konumu ve varsa özel isteğini yaz.</span>
+          </div>
+        </div>
+
+        <div class="standalone-quote-step">
+          <b>2</b>
+          <div>
+            <strong>Uygun kurumlarla eşleş</strong>
+            <span>Talebin ilgili işletmelere iletilsin.</span>
+          </div>
+        </div>
+
+        <div class="standalone-quote-step">
+          <b>3</b>
+          <div>
+            <strong>Fiyatları karşılaştır</strong>
+            <span>Gelen teklifleri tek ekranda gör ve uygun olanı seç.</span>
+          </div>
+        </div>
+
+        <div class="standalone-quote-trust">
+          <span>🔒</span>
+          <div>
+            <strong>Teklif takibi sende</strong>
+            <p>Takip kodunla gelen tekliflere daha sonra tekrar ulaşabilir, seçtiğin teklifin fiyat ve geçerlilik bilgisini kontrol edebilirsin.</p>
+          </div>
+        </div>
+
+        <div class="standalone-quote-free">
+          <b>0 TL</b>
+          <span>Teklif talebi oluşturmak ücretsizdir.</span>
+        </div>
+      </aside>
+    </div>
+  </main>
 
   <section class="home-hero">
     <div class="home-hero-inner">
@@ -803,80 +942,6 @@
     </div>
   </section>
 
-<div class="modal hidden" id="quoteModal">
-    <div class="modal-card">
-      <button type="button" class="modal-close" data-close="quoteModal" onclick="document.getElementById('quoteModal').classList.add('hidden'); return false;">×</button>
-      <h2>Toplu Teklif Talebi</h2>
-      <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
-
-      <form id="quoteForm">
-        <label>Ne arıyorsunuz?
-          <input
-            id="quoteSearch"
-            type="text"
-            placeholder="Örn. ehliyet, anaokulu, lastik, kiralık ev..."
-          >
-        </label>
-
-        <button
-          type="button"
-          class="btn btn-light full"
-          id="detectQuoteCategoryBtn"
-        >
-          🔎 Uygun Kategoriyi Bul
-        </button>
-
-        <p style="font-size:12px;color:#68758a;margin-top:-4px;">
-          Ne aradığınızı yazabilir veya ana kategori + alt kategori seçerek devam edebilirsiniz.
-        </p>
-
-        <label>Ana Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
-          <select id="quoteCategory">
-            <option value="">Ana kategori seçin</option>
-          </select>
-        </label>
-
-        <label>Alt Kategori <small style="font-weight:normal;">(isteğe bağlı)</small>
-          <select id="quoteService" disabled>
-            <option value="">Önce ana kategori seçin</option>
-          </select>
-        </label>
-
-        <div class="form-grid-2">
-          <label>Şehir
-            <select id="quoteCity" required>
-              <option value="">Şehir seçin</option>
-            </select>
-          </label>
-
-          <label>İlçe <small style="font-weight:normal;">(isteğe bağlı)</small>
-            <select id="quoteDistrict" disabled>
-              <option value="">Önce şehir seçin</option>
-            </select>
-            <small style="display:block;margin-top:5px;color:#68758a;font-weight:normal;">
-              İlçe seçmezseniz talebiniz şehir genelindeki uygun kurumlara gönderilir.
-            </small>
-          </label>
-        </div>
-
-        <label>Ad Soyad
-          <input id="quoteName" required type="text" placeholder="Adınız ve soyadınız">
-        </label>
-
-        <label>Telefon
-          <input id="quotePhone" required type="tel" placeholder="05xx xxx xx xx">
-        </label>
-
-        <label>Not
-          <textarea id="quoteNote" rows="3" placeholder="Örn. otomatik vites, hafta sonu ders, bütçe aralığı..."></textarea>
-        </label>
-
-        <button class="btn btn-primary full" type="submit">
-          Uygun Kurumlara Teklif Gönder
-        </button>
-      </form>
-    </div>
-  </div>
 
   <div class="modal hidden" id="quoteSuccessModal">
     <div class="modal-card quote-success-card">
