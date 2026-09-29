@@ -7887,3 +7887,90 @@ button{cursor:pointer}
     font-size:9.8px !important;
   }
 }
+
+
+/* =========================================================
+   MOBİL SATIR İÇİ ALT KATEGORİLER
+   Seçilen 3'lü kategori satırının hemen altında açılır
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-inline-subcategories{
+    grid-column:1 / -1;
+    position:relative;
+    margin:0 0 4px;
+    padding:11px;
+    border:1px solid #cfe2fb;
+    border-radius:13px;
+    background:#f5f9ff;
+    box-shadow:inset 0 0 0 1px rgba(22,119,255,.025);
+    animation:mobileInlineSubsIn .16s ease-out;
+  }
+
+  .mobile-inline-subcategories::before{
+    content:"";
+    position:absolute;
+    top:-7px;
+    left:50%;
+    width:12px;
+    height:12px;
+    border-left:1px solid #cfe2fb;
+    border-top:1px solid #cfe2fb;
+    background:#f5f9ff;
+    transform:translateX(-50%) rotate(45deg);
+  }
+
+  .mobile-inline-subcategories-head{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+
+  .mobile-inline-subcategories-head strong{
+    color:#183556;
+    font-size:11px;
+  }
+
+  .mobile-inline-subcategories-head span{
+    color:#7890aa;
+    font-size:9.5px;
+  }
+
+  .mobile-inline-subcategories-grid{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .mobile-inline-subcategories .mobile-subcategory-btn{
+    width:100% !important;
+    min-width:0 !important;
+    min-height:39px !important;
+    padding:7px 8px !important;
+    white-space:normal !important;
+  }
+
+  #mobileSubcategories{
+    display:none !important;
+  }
+
+  @keyframes mobileInlineSubsIn{
+    from{opacity:0;transform:translateY(-5px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+}
+
+@media(max-width:420px){
+  .mobile-inline-subcategories{
+    padding:9px;
+  }
+
+  .mobile-inline-subcategories-grid{
+    gap:6px;
+  }
+}
