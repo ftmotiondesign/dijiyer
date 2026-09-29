@@ -1134,10 +1134,25 @@ let activeLocationDistrict = 'Merkez';
    DİJİYER İŞ FIRSATLARI · MOBİL PİLOT
    Yayındaki ilanları Firestore'dan okur; yeni ilanı onaya gönderir.
    ========================================================= */
+const MOBILE_JOB_CATEGORIES = [
+  {key:'yeme_servis',icon:'🍽',label:'Yeme & Servis',keywords:['yemek','mutfak','garson','servis','aşçı','bulaşık','kafe','restoran','şarküteri','börek']},
+  {key:'usta_yardimci',icon:'🔧',label:'Usta & Yardımcı',keywords:['usta','boya','boyacı','elektrik','tesisat','marangoz','montaj','tadilat','kaynak','inşaat']},
+  {key:'temizlik',icon:'🧹',label:'Temizlik',keywords:['temizlik','temiz','apartman','ofis temizliği','ev temizliği']},
+  {key:'tasima_kurye',icon:'📦',label:'Taşıma & Kurye',keywords:['taşıma','nakliye','kurye','paket','depo','yükleme','şoför','dağıtım']},
+  {key:'satis_magaza',icon:'🛍',label:'Satış & Mağaza',keywords:['satış','mağaza','market','kasiyer','tezgahtar','reyon','müşteri']},
+  {key:'evden_uretim',icon:'🏠',label:'Evden İş',keywords:['evden','paketleme','dikiş','örgü','üretim','hazırlama']},
+  {key:'dijital_ofis',icon:'💻',label:'Dijital & Ofis',keywords:['ofis','bilgisayar','sosyal medya','tasarım','video','muhasebe','excel','çağrı','uzaktan']},
+  {key:'organizasyon',icon:'🎪',label:'Organizasyon',keywords:['organizasyon','düğün','etkinlik','fuar','stand','hostes','karşılama']},
+  {key:'bakim_egitim',icon:'🤝',label:'Bakım & Eğitim',keywords:['bakıcı','çocuk','yaşlı','evcil','hayvan','özel ders','öğretmen','eğitim']},
+  {key:'diger',icon:'➕',label:'Diğer',keywords:[]}
+];
+
 const MOBILE_JOB_DEMOS = [
   {
     id:'demo-borek',
     type:'hire',
+    category:'yeme_servis',
+    categoryLabel:'Yeme & Servis',
     title:'Evde börek sarabilecek kişi aranıyor',
     city:'Çanakkale',
     district:'Merkez',
@@ -1151,6 +1166,8 @@ const MOBILE_JOB_DEMOS = [
   {
     id:'demo-boyaci',
     type:'hire',
+    category:'usta_yardimci',
+    categoryLabel:'Usta & Yardımcı',
     title:'Boyacı yanına yardımcı aranıyor',
     city:'Çanakkale',
     district:'Kepez',
@@ -1164,6 +1181,8 @@ const MOBILE_JOB_DEMOS = [
   {
     id:'demo-weekend',
     type:'work',
+    category:'usta_yardimci',
+    categoryLabel:'Usta & Yardımcı',
     title:'Hafta sonu ek iş arıyorum',
     city:'Çanakkale',
     district:'Merkez',
@@ -1173,11 +1192,80 @@ const MOBILE_JOB_DEMOS = [
     contactName:'Örnek İş Arayan',
     demo:true,
     createdAt:Date.now()-2*60*60*1000
+  },
+  {
+    id:'demo-social',
+    type:'work',
+    category:'dijital_ofis',
+    categoryLabel:'Dijital & Ofis',
+    title:'Akşamları sosyal medya ve video işi yapabilirim',
+    city:'Çanakkale',
+    district:'Merkez',
+    workMode:'Proje bazlı',
+    wage:'İşe göre görüşülür',
+    description:'Reels düzenleme, sosyal medya görseli ve kısa video montajı için akşam saatlerinde ek iş alabilirim.',
+    contactName:'Örnek İş Arayan',
+    demo:true,
+    createdAt:Date.now()-3*60*60*1000
   }
 ];
 
 let mobileJobPosts = [];
 let activeMobileJobFilter = 'all';
+let activeMobileJobQuick = 'all';
+let activeMobileJobCategory = 'all';
+let mobileJobSearchQuery = '';
+let mobileJobSearchTimer = null;
+
+function normalizeMobileJobText(value){
+  return String(value||'')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/ı/g,'i')
+    .replace(/ş/g,'s')
+    .replace(/ğ/g,'g')
+    .replace(/ü/g,'u')
+    .replace(/ö/g,'o')
+    .replace(/ç/g,'c')
+    .replace(/[^a-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function mobileJobCategoryMeta(key){
+  return MOBILE_JOB_CATEGORIES.find(item=>item.key===key)
+    || MOBILE_JOB_CATEGORIES[MOBILE_JOB_CATEGORIES.length-1];
+}
+
+function inferMobileJobCategory(post){
+  const explicit=String(post?.category||'').trim();
+  if(MOBILE_JOB_CATEGORIES.some(item=>item.key===explicit))return explicit;
+
+  const haystack=normalizeMobileJobText([
+    post?.title,
+    post?.description,
+    post?.workMode
+  ].filter(Boolean).join(' '));
+
+  for(const item of MOBILE_JOB_CATEGORIES){
+    if(item.key==='diger')continue;
+    if(item.keywords.some(keyword=>haystack.includes(normalizeMobileJobText(keyword)))){
+      return item.key;
+    }
+  }
+  return 'diger';
+}
+
+function normalizeMobileJobPost(post){
+  const category=inferMobileJobCategory(post);
+  const meta=mobileJobCategoryMeta(category);
+  return {
+    ...post,
+    category,
+    categoryLabel:String(post?.categoryLabel||meta.label)
+  };
+}
 
 function mobileJobTimestamp(value){
   if(!value)return 0;
@@ -1185,6 +1273,11 @@ function mobileJobTimestamp(value){
   if(value?.toMillis)return value.toMillis();
   const parsed=Date.parse(String(value));
   return Number.isFinite(parsed)?parsed:0;
+}
+
+function isMobileJobExpired(post){
+  const ts=mobileJobTimestamp(post?.expiresAtTs||post?.expiresAt);
+  return Boolean(ts && ts<=Date.now());
 }
 
 function mobileJobRelativeTime(value){
@@ -1207,33 +1300,168 @@ function mobileJobTypeIcon(post){
 }
 
 function isMobileJobExtra(post){
-  const mode=String(post.workMode||'').toLocaleLowerCase('tr-TR');
-  return ['günlük','ek iş','part-time','hafta sonu','proje'].some(key=>mode.includes(key));
+  const mode=normalizeMobileJobText(post.workMode||'');
+  return ['gunluk','ek is','part time','hafta sonu','proje'].some(key=>mode.includes(key));
+}
+
+function mobileJobMatchesQuick(post){
+  const mode=normalizeMobileJobText(post.workMode||'');
+
+  if(activeMobileJobQuick==='extra')return isMobileJobExtra(post);
+  if(activeMobileJobQuick==='home')return mode.includes('evden')||mode.includes('uzaktan');
+  if(activeMobileJobQuick==='parttime')return mode.includes('part time');
+  if(activeMobileJobQuick==='local'){
+    if(!activeLocationCity)return true;
+    return normalizeMobileJobText(post.city)===normalizeMobileJobText(activeLocationCity);
+  }
+  return true;
+}
+
+function mobileJobMatchesSearch(post){
+  if(!mobileJobSearchQuery)return true;
+  const category=mobileJobCategoryMeta(inferMobileJobCategory(post));
+  const haystack=normalizeMobileJobText([
+    post.title,
+    post.description,
+    post.city,
+    post.district,
+    post.workMode,
+    post.wage,
+    post.contactName,
+    post.categoryLabel,
+    category.label,
+    ...category.keywords
+  ].filter(Boolean).join(' '));
+
+  const terms=normalizeMobileJobText(mobileJobSearchQuery).split(' ').filter(Boolean);
+  return terms.every(term=>haystack.includes(term));
+}
+
+function mobileJobFacetRows(){
+  return mobileJobPosts
+    .filter(post=>!isMobileJobExpired(post))
+    .filter(post=>activeMobileJobFilter==='all'||post.type===activeMobileJobFilter)
+    .filter(mobileJobMatchesQuick)
+    .filter(mobileJobMatchesSearch)
+    .sort((a,b)=>mobileJobTimestamp(b.createdAt||b.date)-mobileJobTimestamp(a.createdAt||a.date));
 }
 
 function getFilteredMobileJobs(){
-  const rows=[...mobileJobPosts];
+  return mobileJobFacetRows()
+    .filter(post=>activeMobileJobCategory==='all'||inferMobileJobCategory(post)===activeMobileJobCategory);
+}
 
-  if(activeMobileJobFilter==='hire'){
-    return rows.filter(post=>post.type==='hire');
+function renderMobileJobCategories(){
+  const root=document.getElementById('mobileJobsCategories');
+  if(!root)return;
+
+  const facetRows=mobileJobFacetRows();
+  const counts=new Map();
+
+  facetRows.forEach(post=>{
+    const category=inferMobileJobCategory(post);
+    counts.set(category,(counts.get(category)||0)+1);
+  });
+
+  const allButton=`
+    <button type="button" class="${activeMobileJobCategory==='all'?'active':''}" data-job-category="all">
+      <span>⌘</span>
+      <strong>Tümü</strong>
+      <small>${facetRows.length}</small>
+    </button>
+  `;
+
+  root.innerHTML=allButton+MOBILE_JOB_CATEGORIES.map(item=>`
+    <button
+      type="button"
+      class="${activeMobileJobCategory===item.key?'active':''}"
+      data-job-category="${item.key}"
+      ${(counts.get(item.key)||0)===0?'aria-disabled="true"':''}
+    >
+      <span>${item.icon}</span>
+      <strong>${escapeHtml(item.label)}</strong>
+      <small>${counts.get(item.key)||0}</small>
+    </button>
+  `).join('');
+
+  root.querySelectorAll('[data-job-category]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      activeMobileJobCategory=button.dataset.jobCategory||'all';
+      renderMobileJobs();
+    });
+  });
+}
+
+function updateMobileJobsUi(filtered){
+  const count=document.getElementById('mobileJobsResultCount');
+  const location=document.getElementById('mobileJobsLocationLabel');
+  const title=document.getElementById('mobileJobsResultsTitle');
+  const hint=document.getElementById('mobileJobsResultsHint');
+  const clear=document.getElementById('mobileJobsClearFilters');
+  const searchClear=document.getElementById('mobileJobsSearchClear');
+
+  if(count)count.textContent=String(filtered.length);
+
+  if(location){
+    location.textContent=[activeLocationCity,activeLocationDistrict]
+      .filter(Boolean)
+      .join(' / ') || 'Tüm Türkiye';
   }
-  if(activeMobileJobFilter==='work'){
-    return rows.filter(post=>post.type==='work');
+
+  const typeText=
+    activeMobileJobFilter==='hire' ? 'Eleman arayan ilanlar' :
+    activeMobileJobFilter==='work' ? 'İş arayan ilanlar' :
+    'Tüm iş fırsatları';
+
+  const categoryText=
+    activeMobileJobCategory==='all'
+      ? ''
+      : mobileJobCategoryMeta(activeMobileJobCategory).label;
+
+  if(title){
+    title.textContent=categoryText ? categoryText+' · '+typeText : typeText;
   }
-  if(activeMobileJobFilter==='extra'){
-    return rows.filter(isMobileJobExtra);
+
+  if(hint){
+    if(mobileJobSearchQuery){
+      hint.textContent='“'+mobileJobSearchQuery+'” aramasına uygun '+filtered.length+' ilan bulundu.';
+    }else if(activeMobileJobQuick==='local'&&activeLocationCity){
+      hint.textContent=activeLocationCity+' içindeki en yeni ilanlar gösteriliyor.';
+    }else{
+      hint.textContent='En yeni ilanlar önce gösteriliyor.';
+    }
   }
-  return rows;
+
+  const hasFilters=
+    activeMobileJobFilter!=='all' ||
+    activeMobileJobQuick!=='all' ||
+    activeMobileJobCategory!=='all' ||
+    Boolean(mobileJobSearchQuery);
+
+  clear?.classList.toggle('hidden',!hasFilters);
+  searchClear?.classList.toggle('hidden',!mobileJobSearchQuery);
+
+  document.querySelectorAll('[data-job-filter]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.jobFilter===activeMobileJobFilter);
+  });
+
+  document.querySelectorAll('[data-job-quick]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.jobQuick===activeMobileJobQuick);
+  });
 }
 
 function mobileJobCardHtml(post){
+  const category=mobileJobCategoryMeta(inferMobileJobCategory(post));
   const location=[post.city,post.district].filter(Boolean).join(' / ')||'Konum belirtilmedi';
   const wage=String(post.wage||'').trim()||'Ücret görüşülür';
 
   return `
     <article class="mobile-job-card ${post.type==='work'?'worker':'employer'}" data-job-id="${escapeHtml(String(post.id||''))}">
       <div class="mobile-job-card-top">
-        <span class="mobile-job-type">${mobileJobTypeIcon(post)} ${mobileJobTypeLabel(post)}</span>
+        <div class="mobile-job-card-badges">
+          <span class="mobile-job-type">${mobileJobTypeIcon(post)} ${mobileJobTypeLabel(post)}</span>
+          <span class="mobile-job-category-badge">${category.icon} ${escapeHtml(category.label)}</span>
+        </div>
         <span class="mobile-job-time">${post.demo?'ÖRNEK · ':''}${mobileJobRelativeTime(post.createdAt||post.date)}</span>
       </div>
 
@@ -1265,14 +1493,17 @@ function renderMobileJobs(){
 
   const filtered=getFilteredMobileJobs();
 
+  renderMobileJobCategories();
+  updateMobileJobsUi(filtered);
+
   list.innerHTML=filtered.length
-    ? filtered.slice(0,6).map(mobileJobCardHtml).join('')
+    ? filtered.slice(0,12).map(mobileJobCardHtml).join('')
     : `
       <div class="mobile-jobs-empty">
         <span>💼</span>
         <div>
-          <strong>Bu filtrede henüz ilan yok</strong>
-          <small>İlk ilanı sen verebilirsin.</small>
+          <strong>Aramana uygun ilan bulunamadı</strong>
+          <small>Filtreyi temizleyebilir veya ilk ilanı sen verebilirsin.</small>
         </div>
         <button type="button" data-job-post-empty>İlan Ver</button>
       </div>
@@ -1311,17 +1542,20 @@ async function loadMobileJobs(){
   try{
     const snapshot=await db.collection('jobPosts')
       .where('status','==','published')
-      .limit(30)
+      .limit(50)
       .get();
 
     const published=snapshot.docs
-      .map(doc=>({id:doc.id,...doc.data()}))
+      .map(doc=>normalizeMobileJobPost({id:doc.id,...doc.data()}))
+      .filter(post=>!isMobileJobExpired(post))
       .sort((a,b)=>mobileJobTimestamp(b.createdAt||b.date)-mobileJobTimestamp(a.createdAt||a.date));
 
-    mobileJobPosts=published.length ? published : MOBILE_JOB_DEMOS;
+    mobileJobPosts=published.length
+      ? published
+      : MOBILE_JOB_DEMOS.map(normalizeMobileJobPost);
   }catch(error){
     console.warn('İş ilanları şu anda Firestore’dan okunamadı:',error);
-    mobileJobPosts=MOBILE_JOB_DEMOS;
+    mobileJobPosts=MOBILE_JOB_DEMOS.map(normalizeMobileJobPost);
   }
 
   renderMobileJobs();
@@ -1329,10 +1563,22 @@ async function loadMobileJobs(){
 
 function setMobileJobFilter(filter){
   activeMobileJobFilter=filter||'all';
-  document.querySelectorAll('[data-job-filter]').forEach(button=>{
-    button.classList.toggle('active',button.dataset.jobFilter===activeMobileJobFilter);
-  });
   renderMobileJobs();
+}
+
+function setMobileJobQuickFilter(filter){
+  activeMobileJobQuick=filter||'all';
+  renderMobileJobs();
+}
+
+function populateMobileJobCategorySelect(){
+  const select=document.getElementById('jobPostCategory');
+  if(!select)return;
+
+  select.innerHTML='<option value="">Kategori seçin</option>'+
+    MOBILE_JOB_CATEGORIES.map(item=>
+      '<option value="'+item.key+'">'+item.icon+' '+escapeHtml(item.label)+'</option>'
+    ).join('');
 }
 
 function openJobPostModal(type='hire'){
@@ -1347,17 +1593,54 @@ function openJobPostModal(type='hire'){
 
   const city=document.getElementById('jobPostCity');
   const district=document.getElementById('jobPostDistrict');
+  const category=document.getElementById('jobPostCategory');
+  const duration=document.getElementById('jobPostDuration');
   const message=document.getElementById('jobPostMessage');
 
   if(city)city.value=activeLocationCity||'';
   if(district)district.value=activeLocationDistrict||'';
-  if(message)message.textContent='';
+  if(category && activeMobileJobCategory!=='all')category.value=activeMobileJobCategory;
+  if(duration)duration.value='15';
+  if(message){
+    message.textContent='';
+    message.classList.remove('success');
+  }
 
   openModal('jobPostModal');
 }
 
 document.querySelectorAll('[data-job-filter]').forEach(button=>{
   button.addEventListener('click',()=>setMobileJobFilter(button.dataset.jobFilter));
+});
+
+document.querySelectorAll('[data-job-quick]').forEach(button=>{
+  button.addEventListener('click',()=>setMobileJobQuickFilter(button.dataset.jobQuick));
+});
+
+document.getElementById('mobileJobsSearchInput')?.addEventListener('input',event=>{
+  clearTimeout(mobileJobSearchTimer);
+  mobileJobSearchTimer=setTimeout(()=>{
+    mobileJobSearchQuery=String(event.target.value||'').trim();
+    renderMobileJobs();
+  },140);
+});
+
+document.getElementById('mobileJobsSearchClear')?.addEventListener('click',()=>{
+  const input=document.getElementById('mobileJobsSearchInput');
+  if(input)input.value='';
+  mobileJobSearchQuery='';
+  renderMobileJobs();
+  input?.focus();
+});
+
+document.getElementById('mobileJobsClearFilters')?.addEventListener('click',()=>{
+  activeMobileJobFilter='all';
+  activeMobileJobQuick='all';
+  activeMobileJobCategory='all';
+  mobileJobSearchQuery='';
+  const input=document.getElementById('mobileJobsSearchInput');
+  if(input)input.value='';
+  renderMobileJobs();
 });
 
 document.getElementById('mobileJobsPostBtn')?.addEventListener('click',()=>openJobPostModal('hire'));
@@ -1371,14 +1654,26 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
   const submit=document.getElementById('jobPostSubmitBtn');
   const message=document.getElementById('jobPostMessage');
   const phone=normalizeQuoteTrackingPhone(document.getElementById('jobPostPhone')?.value||'');
+  const categoryKey=String(document.getElementById('jobPostCategory')?.value||'').trim();
+  const categoryMeta=mobileJobCategoryMeta(categoryKey);
+  const durationDays=Math.max(7,Math.min(30,Number(document.getElementById('jobPostDuration')?.value||15)));
+
+  if(!categoryKey){
+    if(message)message.textContent='Lütfen ilan kategorisini seçin.';
+    return;
+  }
 
   if(phone.length<10){
     if(message)message.textContent='Telefon numarasını kontrol edin.';
     return;
   }
 
+  const expiresDate=new Date(Date.now()+durationDays*24*60*60*1000);
+
   const payload={
     type:form.querySelector('input[name="jobPostType"]:checked')?.value==='work'?'work':'hire',
+    category:categoryKey,
+    categoryLabel:categoryMeta.label,
     title:String(document.getElementById('jobPostTitle')?.value||'').trim(),
     city:String(document.getElementById('jobPostCity')?.value||'').trim(),
     district:String(document.getElementById('jobPostDistrict')?.value||'').trim(),
@@ -1387,6 +1682,9 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
     description:String(document.getElementById('jobPostDescription')?.value||'').trim(),
     contactName:String(document.getElementById('jobPostContactName')?.value||'').trim(),
     phone,
+    durationDays,
+    expiresAt:expiresDate.toISOString(),
+    expiresAtTs:firebase.firestore.Timestamp.fromDate(expiresDate),
     status:'pending',
     date:new Date().toISOString(),
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -1397,7 +1695,10 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
     submit.disabled=true;
     submit.textContent='Gönderiliyor...';
   }
-  if(message)message.textContent='';
+  if(message){
+    message.textContent='';
+    message.classList.remove('success');
+  }
 
   try{
     await db.collection('jobPosts').add(payload);
@@ -1414,7 +1715,7 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
   }catch(error){
     console.error('İş ilanı gönderilemedi:',error);
     if(message){
-      message.textContent='İlan gönderilemedi. Firestore iş ilanı kuralının eklenmesi gerekiyor.';
+      message.textContent='İlan gönderilemedi. İş ilanı Firestore kuralının güncel olduğundan emin olun.';
       message.classList.remove('success');
     }
   }finally{
@@ -1425,6 +1726,7 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
   }
 });
 
+populateMobileJobCategorySelect();
 loadMobileJobs();
 
 // Konum değişkenleri hazır olduktan sonra mobil filtreleri oluştur.
@@ -3960,6 +4262,7 @@ applyMainLocationBtn?.addEventListener('click', () => {
   renderMobileCategories();
   renderList();
   updateMobileCategoryResult();
+  renderMobileJobs();
 
   const filtered = getFilteredInstitutions();
   const firstWithCoords = filtered.find(inst =>
@@ -3991,6 +4294,7 @@ clearMainLocationBtn?.addEventListener('click', () => {
   renderMobileCategories();
   renderList();
   updateMobileCategoryResult();
+  renderMobileJobs();
   map.setView([39.0, 35.0], 6);
   showToast('Tüm Türkiye gösteriliyor.');
 });
