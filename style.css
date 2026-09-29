@@ -9218,3 +9218,369 @@ button{cursor:pointer}
 .premium-showcase-card.banner-placement-card{
   text-decoration:none;
 }
+
+
+/* =========================================================
+   İŞ FIRSATLARI · PROFESYONEL ARAMA + KATEGORİ KEŞFİ
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-jobs-search{
+    position:relative;
+    margin-top:11px;
+  }
+
+  .mobile-jobs-search-icon{
+    position:absolute;
+    z-index:2;
+    left:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#68798f;
+    font-size:17px;
+    line-height:1;
+    pointer-events:none;
+  }
+
+  .mobile-jobs-search input{
+    width:100%;
+    min-height:44px;
+    padding:0 40px 0 38px;
+    border:1px solid #cfdceb;
+    border-radius:12px;
+    background:#f9fbfd;
+    color:#24364e;
+    font-size:10px;
+    font-weight:700;
+    outline:none;
+    box-shadow:inset 0 1px 2px rgba(18,44,78,.03);
+    transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+  }
+
+  .mobile-jobs-search input::placeholder{
+    color:#91a0b2;
+    font-weight:650;
+  }
+
+  .mobile-jobs-search input:focus{
+    border-color:#87b6f6;
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(22,119,255,.075);
+  }
+
+  .mobile-jobs-search>button{
+    position:absolute;
+    z-index:3;
+    right:7px;
+    top:50%;
+    transform:translateY(-50%);
+    width:30px;
+    height:30px;
+    border:0;
+    border-radius:8px;
+    background:#edf2f7;
+    color:#68798f;
+    font-size:16px;
+  }
+
+  .mobile-jobs-search>button.hidden{
+    display:none;
+  }
+
+  .mobile-jobs-context{
+    margin-top:7px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+
+  .mobile-jobs-context-location,
+  .mobile-jobs-context-count{
+    min-height:27px;
+    display:inline-flex;
+    align-items:center;
+    padding:0 8px;
+    border:1px solid #e0e7ef;
+    border-radius:8px;
+    background:#fbfcfe;
+    color:#708096;
+    font-size:7.5px;
+    font-weight:750;
+  }
+
+  .mobile-jobs-context-location{
+    min-width:0;
+    max-width:72%;
+  }
+
+  .mobile-jobs-context-location b{
+    margin-left:3px;
+    overflow:hidden;
+    color:#4b6079;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .mobile-jobs-context-count b{
+    margin-right:3px;
+    color:#1677ff;
+    font-size:9px;
+  }
+
+  .mobile-jobs-switch{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:5px;
+    overflow:visible;
+  }
+
+  .mobile-jobs-switch button{
+    width:100%;
+    min-width:0;
+    min-height:35px;
+    padding:0 6px;
+    border-radius:9px;
+    font-size:8px;
+  }
+
+  .mobile-jobs-quick-filters{
+    margin-top:7px;
+    display:flex;
+    gap:5px;
+    overflow-x:auto;
+    padding:1px 0 3px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .mobile-jobs-quick-filters::-webkit-scrollbar{
+    display:none;
+  }
+
+  .mobile-jobs-quick-filters button{
+    flex:0 0 auto;
+    min-height:29px;
+    padding:0 8px;
+    border:1px solid #e1e7ee;
+    border-radius:999px;
+    background:#fff;
+    color:#68788d;
+    font-size:7.5px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  .mobile-jobs-quick-filters button.active{
+    border-color:#aacbf6;
+    background:#edf5ff;
+    color:#1268d6;
+  }
+
+  .mobile-jobs-category-head{
+    margin-top:10px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .mobile-jobs-category-head>div{
+    min-width:0;
+  }
+
+  .mobile-jobs-category-head strong{
+    display:block;
+    color:#344960;
+    font-size:9.5px;
+  }
+
+  .mobile-jobs-category-head span{
+    display:block;
+    margin-top:2px;
+    color:#8895a6;
+    font-size:7.4px;
+    line-height:1.35;
+  }
+
+  .mobile-jobs-category-head>button{
+    flex:0 0 auto;
+    min-height:27px;
+    padding:0 8px;
+    border:1px solid #dce5ef;
+    border-radius:8px;
+    background:#fff;
+    color:#607188;
+    font-size:7.5px;
+    font-weight:850;
+  }
+
+  .mobile-jobs-category-head>button.hidden{
+    display:none;
+  }
+
+  .mobile-jobs-categories{
+    margin-top:7px;
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding:1px 1px 5px;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .mobile-jobs-categories::-webkit-scrollbar{
+    display:none;
+  }
+
+  .mobile-jobs-categories button{
+    position:relative;
+    flex:0 0 82px;
+    min-height:62px;
+    padding:7px 5px 6px;
+    display:grid;
+    grid-template-rows:21px auto 12px;
+    place-items:center;
+    border:1px solid #e0e7ef;
+    border-radius:11px;
+    background:#fff;
+    color:#51647b;
+    scroll-snap-align:start;
+    box-shadow:0 3px 9px rgba(18,44,78,.035);
+    transition:transform .14s ease,border-color .14s ease,background .14s ease;
+  }
+
+  .mobile-jobs-categories button:active{
+    transform:scale(.97);
+  }
+
+  .mobile-jobs-categories button>span{
+    font-size:15px;
+    line-height:1;
+  }
+
+  .mobile-jobs-categories button>strong{
+    align-self:start;
+    max-width:100%;
+    color:inherit;
+    font-size:7.5px;
+    line-height:1.2;
+    text-align:center;
+  }
+
+  .mobile-jobs-categories button>small{
+    min-width:18px;
+    height:16px;
+    display:grid;
+    place-items:center;
+    padding:0 4px;
+    border-radius:999px;
+    background:#f1f4f7;
+    color:#7a899b;
+    font-size:6.5px;
+    font-weight:900;
+  }
+
+  .mobile-jobs-categories button.active{
+    border-color:#7fb2f6;
+    background:linear-gradient(145deg,#1677ff,#1269d9);
+    color:#fff;
+    box-shadow:0 7px 16px rgba(22,119,255,.16);
+  }
+
+  .mobile-jobs-categories button.active>small{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+  }
+
+  .mobile-jobs-categories button[aria-disabled="true"]:not(.active){
+    opacity:.52;
+  }
+
+  .mobile-jobs-results-head{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid #edf1f5;
+  }
+
+  .mobile-jobs-results-head strong{
+    display:block;
+    color:#31455d;
+    font-size:9.5px;
+  }
+
+  .mobile-jobs-results-head span{
+    display:block;
+    margin-top:2px;
+    color:#8a97a8;
+    font-size:7.4px;
+  }
+
+  .mobile-job-card-badges{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex-wrap:wrap;
+  }
+
+  .mobile-job-category-badge{
+    min-height:22px;
+    display:inline-flex;
+    align-items:center;
+    padding:0 6px;
+    border:1px solid #e2e7ed;
+    border-radius:999px;
+    background:#f8fafc;
+    color:#67778a;
+    font-size:6.8px;
+    font-weight:850;
+  }
+
+  .mobile-job-card-top{
+    align-items:flex-start;
+  }
+
+  .mobile-job-time{
+    flex:0 0 auto;
+    padding-top:4px;
+  }
+
+  .mobile-job-card h3{
+    margin-top:8px;
+    font-size:12.5px;
+  }
+
+  .mobile-job-card-footer button{
+    min-width:96px;
+  }
+
+  .job-post-modal-card .form-grid-2{
+    gap:8px;
+  }
+
+  #jobPostCategory,
+  #jobPostDuration{
+    background-color:#fff;
+  }
+}
+
+@media(max-width:390px){
+  .mobile-jobs-switch button{
+    font-size:7.4px;
+    padding:0 4px;
+  }
+
+  .mobile-jobs-categories button{
+    flex-basis:78px;
+  }
+
+  .mobile-job-card-badges{
+    max-width:76%;
+  }
+
+  .mobile-job-time{
+    font-size:6.5px;
+  }
+}
