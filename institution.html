@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=24">
+  <link rel="stylesheet" href="institution.css?v=25">
   <link rel="stylesheet" href="institution-announcements.css?v=2">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -28,7 +28,12 @@
     <section class="welcome-card">
       <div>
         <div class="eyebrow">KURUM YÖNETİM PANELİ</div>
-        <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
+        <div class="welcome-title-row">
+          <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
+          <button type="button" class="welcome-profile-btn" data-panel-tab="profile">
+            ✎ Kurum Bilgileri
+          </button>
+        </div>
         <p id="panelInstitutionLocation"></p>
         <div class="welcome-meta">
           <span id="panelCategoryBadge">Kategori yükleniyor...</span>
@@ -152,14 +157,6 @@
         <div class="side-nav-group">
           <span class="side-nav-group-title">KURUMUM</span>
 
-          <button type="button" class="side-nav-item" data-panel-tab="profile">
-            <span class="side-nav-icon">✎</span>
-            <span class="side-nav-copy">
-              <strong>Kurum Bilgileri</strong>
-              <small>Profil ve iletişim</small>
-            </span>
-          </button>
-
           <button type="button" class="side-nav-item" data-panel-tab="stats">
             <span class="side-nav-icon">▥</span>
             <span class="side-nav-copy">
@@ -224,7 +221,6 @@
         <span class="tab-count message-tab-count" id="messageTabCount" title="Okunmamış müşteri mesajları">💬 0</span>
       </button>
       <button class="panel-tab" data-panel-tab="verify">✓ Teklif Doğrula</button>
-      <button class="panel-tab" data-panel-tab="profile">Kurum Bilgileri</button>
       <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
       <button class="panel-tab" data-panel-tab="support">
         🛟 Destek <span class="tab-count support-tab-count" id="supportTabCount">0</span>
