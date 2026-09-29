@@ -3306,3 +3306,48 @@ button{
     font-size:9px;
   }
 }
+
+
+/* ===== BANNER GÖSTERİM YERİ SEÇİMİ ===== */
+.banner-placement-box{
+  display:grid;
+  gap:10px;
+  margin:12px 0;
+  padding:12px;
+  border:1px solid #cfe0f5;
+  border-radius:12px;
+  background:#f8fbff;
+}
+
+.banner-placement-box label{
+  display:grid;
+  gap:6px;
+  color:#334155;
+  font-size:11px;
+  font-weight:800;
+}
+
+.banner-placement-box select{
+  min-height:42px;
+  padding:0 10px;
+  border:1px solid #cbd5e1;
+  border-radius:9px;
+  background:#fff;
+  color:#172033;
+  font-weight:800;
+}
+
+.banner-placement-help{
+  display:grid;
+  gap:5px;
+  padding:9px 10px;
+  border-radius:9px;
+  background:#fff;
+  color:#64748b;
+  font-size:9px;
+  line-height:1.45;
+}
+
+.banner-placement-help b{
+  color:#1d4ed8;
+}
