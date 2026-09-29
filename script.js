@@ -2771,6 +2771,10 @@ function renderList() {
       });
       renderDecisionAlternatives();
       renderDetail();
+      requestAnimationFrame(() => {
+        document.getElementById('detailPanel')
+          ?.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
     });
   });
 
@@ -3250,6 +3254,13 @@ function renderDetail() {
   ];
 
   panel.innerHTML = `
+    <div class="desktop-detail-heading">
+      <div>
+        <span>SEÇİLİ KURUM</span>
+        <strong>Kurum Detayı</strong>
+      </div>
+      <small>${escapeHtml(inst.name || "")}</small>
+    </div>
     ${isInstitutionPreviewMode() ? `
       <div class="public-preview-banner">
         <div>
@@ -3988,6 +3999,7 @@ async function loadTodayPublicStats(){
   if(!root)return;
 
   root.classList.add("stats-disabled");
+  root.closest(".workspace")?.classList.add("daily-stats-off");
 
   try{
     const settingSnap=await db.collection("siteSettings").doc("home").get();
@@ -3998,6 +4010,7 @@ async function loadTodayPublicStats(){
     }
 
     root.classList.remove("stats-disabled");
+    root.closest(".workspace")?.classList.remove("daily-stats-off");
   }catch(error){
     console.warn("Günlük istatistik görünürlük ayarı okunamadı:",error);
     return;
@@ -6055,6 +6068,13 @@ function renderMobileSponsorCarousel(mobileSlot,sponsored){
   }
 
   mobileSlot.innerHTML=`
+    <div class="pc-sponsored-heading">
+      <div>
+        <span>SPONSORLU İŞLETMELER</span>
+        <strong>Bölgenizde öne çıkan reklamlar</strong>
+      </div>
+      <small>Görsel ve video sponsorlu içerikler</small>
+    </div>
     <div class="mobile-sponsored-carousel" aria-label="Sponsorlu reklamlar">
       <div class="mobile-sponsored-track">
         ${pages.join('')}
