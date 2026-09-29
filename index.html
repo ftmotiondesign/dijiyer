@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=29" />
+  <link rel="stylesheet" href="style.css?v=30" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -328,6 +328,17 @@
         </div>
         <div id="map"></div>
       </div>
+
+      <section class="decision-alternatives" id="decisionAlternatives" aria-label="Aynı alanda başka seçenekler">
+        <div class="decision-alternatives-head">
+          <div>
+            <span>AYNI ALANDA BAŞKA SEÇENEKLER</span>
+            <strong>Haritadaki benzer kurumlara hızlıca göz at</strong>
+          </div>
+          <small>Bir kuruma dokununca sağdaki hızlı önizleme değişir.</small>
+        </div>
+        <div class="decision-alternatives-rail" id="decisionAlternativesRail"></div>
+      </section>
 
       <div class="content-grid">
         <section class="list-panel">
@@ -784,7 +795,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=43"></script>
+<script src="script.js?v=44"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
