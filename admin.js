@@ -3176,7 +3176,9 @@ function renderQuoteRequests() {
           "Merhaba, Dijiyer üzerinden yeni bir teklif talebi geldi.",
           "",
           "Hizmet: " + (request.service || "-"),
-          "Konum: " + [request.city, request.district].filter(Boolean).join(" / "),
+          request.targetInstitutionId
+            ? "Talep Türü: Doğrudan kurum profilinden"
+            : "Konum: " + [request.city, request.district].filter(Boolean).join(" / "),
           "Müşteri: " + (request.name || "-"),
           "Telefon: " + (request.phone || "-"),
           request.note ? "Not: " + request.note : "",
