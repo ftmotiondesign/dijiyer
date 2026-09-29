@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=46" />
+  <link rel="stylesheet" href="style.css?v=47" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -122,10 +122,72 @@
     </section>
 
     <div class="standalone-quote-layout">
-      <section class="standalone-quote-form-card" id="quoteModal">
+      <section class="quote-choice-card" id="quoteChoiceCard" aria-label="Teklif için hizmet seç">
+        <div class="quote-choice-head">
+          <div>
+            <h2>Ne arıyorsunuz?</h2>
+            <p>Kelimeyle arayın veya aşağıdan kategori seçin</p>
+          </div>
+          <button type="button" id="quoteChoiceAllBtn">Tümü</button>
+        </div>
+
+        <div class="quote-choice-search" role="search">
+          <span>⌕</span>
+          <input
+            id="quoteChoiceSearchInput"
+            type="search"
+            autocomplete="off"
+            enterkeyhint="search"
+            placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
+            aria-label="Teklif için hizmet ara"
+          >
+          <button type="button" id="quoteChoiceSearchBtn">Ara</button>
+        </div>
+
+        <div class="quote-choice-hints" aria-label="Hızlı aramalar">
+          <button type="button" data-quote-choice-search="ehliyet">Ehliyet</button>
+          <button type="button" data-quote-choice-search="anaokulu">Anaokulu</button>
+          <button type="button" data-quote-choice-search="oto servis">Oto Servis</button>
+          <button type="button" data-quote-choice-search="pizza">Pizza</button>
+        </div>
+
+        <div class="quote-choice-grid">
+          <button type="button" class="quote-choice-category" data-quote-choice-category="alisveris">
+            <span>🛒</span><strong>Alışveriş &amp; Yerel Esnaf</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="egitim">
+            <span>📚</span><strong>Eğitim</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="emlak">
+            <span>🏢</span><strong>Emlak</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="evyapi">
+            <span>🏠</span><strong>Ev &amp; Yapı</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="organizasyonmedya">
+            <span>📸</span><strong>Organizasyon &amp; Medya</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="otomotiv">
+            <span>🚗</span><strong>Otomotiv</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="profesyonel">
+            <span>💼</span><strong>Profesyonel Hizmetler</strong>
+          </button>
+          <button type="button" class="quote-choice-category" data-quote-choice-category="saglikguzellik">
+            <span>🩺</span><strong>Sağlık &amp; Güzellik</strong>
+          </button>
+        </div>
+      </section>
+
+      <section class="standalone-quote-form-card hidden" id="quoteModal">
     <div class="modal-card">
-      <h2>Toplu Teklif Talebi</h2>
-      <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
+      <div class="standalone-quote-form-heading">
+        <div>
+          <h2>Toplu Teklif Talebi</h2>
+          <p>Talebinizi konumunuza ve kategoriye uygun kurumlarla eşleştirelim.</p>
+        </div>
+        <button type="button" id="quoteChoiceBackBtn">← Seçimi Değiştir</button>
+      </div>
 
       <form id="quoteForm">
         <label>Ne arıyorsunuz?
@@ -1326,5 +1388,96 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="script.js?v=52"></script>
 <script src="offers.js?v=2"></script>
+<script>
+(function(){
+  const choiceCard=document.getElementById('quoteChoiceCard');
+  const formCard=document.getElementById('quoteModal');
+  const searchInput=document.getElementById('quoteChoiceSearchInput');
+  const quoteSearch=document.getElementById('quoteSearch');
+  const quoteCategory=document.getElementById('quoteCategory');
+  const quoteService=document.getElementById('quoteService');
+
+  function scrollToCard(el){
+    if(!el)return;
+    try{ document.activeElement?.blur?.(); }catch(_){}
+    setTimeout(()=>{
+      const top=el.getBoundingClientRect().top+window.scrollY-12;
+      window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+    },120);
+  }
+
+  function openQuoteForm(options={}){
+    const value=String(options.search || '').trim();
+    const main=options.main || '';
+    const sub=options.sub || '';
+
+    if(value && quoteSearch) quoteSearch.value=value;
+
+    if(main && quoteCategory){
+      quoteCategory.value=main;
+      if(typeof fillQuoteServices==='function') fillQuoteServices(main);
+      if(sub && quoteService) quoteService.value=sub;
+    }
+
+    choiceCard?.classList.add('hidden');
+    formCard?.classList.remove('hidden');
+    scrollToCard(formCard);
+  }
+
+  function submitChoiceSearch(value){
+    const q=String(value || searchInput?.value || '').trim();
+    if(!q){
+      searchInput?.focus();
+      return;
+    }
+
+    let inferred=null;
+    try{
+      if(typeof inferQuoteCategory==='function') inferred=inferQuoteCategory(q);
+    }catch(_){}
+
+    openQuoteForm({
+      search:q,
+      main:inferred?.mainCategory || '',
+      sub:inferred?.subCategory || ''
+    });
+  }
+
+  document.getElementById('quoteChoiceSearchBtn')?.addEventListener('click',()=>{
+    submitChoiceSearch(searchInput?.value);
+  });
+
+  searchInput?.addEventListener('keydown',event=>{
+    if(event.key!=='Enter')return;
+    event.preventDefault();
+    submitChoiceSearch(searchInput.value);
+  });
+
+  document.querySelectorAll('[data-quote-choice-search]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const value=button.dataset.quoteChoiceSearch || '';
+      if(searchInput) searchInput.value=value;
+      submitChoiceSearch(value);
+    });
+  });
+
+  document.querySelectorAll('[data-quote-choice-category]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      openQuoteForm({main:button.dataset.quoteChoiceCategory || ''});
+    });
+  });
+
+  document.getElementById('quoteChoiceAllBtn')?.addEventListener('click',()=>{
+    if(searchInput) searchInput.value='';
+    document.querySelectorAll('[data-quote-choice-category]').forEach(btn=>btn.classList.remove('active'));
+  });
+
+  document.getElementById('quoteChoiceBackBtn')?.addEventListener('click',()=>{
+    formCard?.classList.add('hidden');
+    choiceCard?.classList.remove('hidden');
+    scrollToCard(choiceCard);
+  });
+})();
+</script>
 </body>
 </html>
