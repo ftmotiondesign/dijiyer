@@ -1318,10 +1318,18 @@ function selectInstitution(id) {
 
   renderList();
   renderDetail();
+
   const marker = markers.get(String(id));
   if (marker) {
     map.flyTo(marker.getLatLng(), 15, {duration:.6});
     marker.openTooltip();
+  }
+
+  if (window.innerWidth <= 820) {
+    requestAnimationFrame(() => {
+      document.getElementById('detailPanel')
+        ?.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
   }
 }
 
