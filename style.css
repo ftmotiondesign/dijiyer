@@ -10760,3 +10760,79 @@ to{opacity:1;transform:none}
     display:none;
   }
 }
+
+
+/* =========================================================
+   SPONSORLU ALAN · 2'Lİ KAYDIRMALI VİTRİN
+   ========================================================= */
+.sponsored-section-head{
+  align-items:center;
+}
+
+.sponsored-slider-controls{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.sponsored-slider-controls.hidden{
+  display:none;
+}
+
+.sponsored-slider-controls button{
+  width:36px;
+  height:36px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid #d8e3ef;
+  border-radius:10px;
+  background:#fff;
+  color:#35506f;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 5px 14px rgba(18,48,84,.05);
+}
+
+.sponsored-slider-controls button:hover{
+  border-color:#9fc5f4;
+  background:#f5f9ff;
+  color:#1677ff;
+}
+
+#homeSponsoredRail.sponsored-rail{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+  overscroll-behavior-x:contain;
+  padding:2px 1px 8px;
+}
+
+#homeSponsoredRail.sponsored-rail::-webkit-scrollbar{
+  display:none;
+}
+
+#homeSponsoredRail .sponsored-card{
+  flex:0 0 calc((100% - 12px) / 2);
+  scroll-snap-align:start;
+}
+
+#homeSponsoredRail .sponsored-self-promo{
+  flex:0 0 100%;
+}
+
+@media(max-width:820px){
+  .sponsored-slider-controls{
+    display:none !important;
+  }
+
+  #homeSponsoredRail .sponsored-card{
+    flex:0 0 min(84vw,340px);
+  }
+}
