@@ -656,6 +656,308 @@ let selectedId = 1;
 let currentRating = 0;
 const compareInstitutionIds = new Set();
 
+/* =========================================================
+   DİJİYER KAZANÇ · PİLOT DAVET SİSTEMİ
+   Davet kodu cihazda tutulur; işletme başvurusuna referralCode eklenir.
+   ========================================================= */
+const DIJIYER_REFERRAL_PROFILE_KEY = 'dijiyerReferralProfileV1';
+const DIJIYER_REFERRAL_SOURCE_KEY = 'dijiyerReferralSourceV1';
+const DIJIYER_REFERRAL_REWARD = 250;
+const DIJIYER_REFERRAL_DAYS = 30;
+
+function makeDijiyerReferralCode(){
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes=new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  const body=Array.from(bytes)
+    .map(byte=>alphabet[byte%alphabet.length])
+    .join('');
+  return 'DJY-KZ-'+body.slice(0,4)+'-'+body.slice(4,8);
+}
+
+function getDijiyerReferralProfile(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(DIJIYER_REFERRAL_PROFILE_KEY)||'{}');
+    if(parsed.code){
+      return {
+        code:String(parsed.code),
+        pending:Number(parsed.pending||0),
+        approved:Number(parsed.approved||0),
+        invited:Number(parsed.invited||0)
+      };
+    }
+  }catch(_){}
+
+  const profile={
+    code:makeDijiyerReferralCode(),
+    pending:0,
+    approved:0,
+    invited:0
+  };
+
+  localStorage.setItem(DIJIYER_REFERRAL_PROFILE_KEY,JSON.stringify(profile));
+  return profile;
+}
+
+function getDijiyerReferralUrl(){
+  const profile=getDijiyerReferralProfile();
+  const url=new URL('index.html',window.location.href);
+  url.searchParams.set('ref',profile.code);
+  url.searchParams.set('davet','1');
+  return url.toString();
+}
+
+function captureDijiyerReferralSource(){
+  const params=new URLSearchParams(window.location.search);
+  const code=String(params.get('ref')||'').trim().toUpperCase();
+  if(!/^DJY-KZ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code))return;
+
+  const ownCode=getDijiyerReferralProfile().code;
+  if(code===ownCode)return;
+
+  const source={
+    code,
+    capturedAt:new Date().toISOString(),
+    expiresAt:Date.now()+(DIJIYER_REFERRAL_DAYS*24*60*60*1000)
+  };
+  localStorage.setItem(DIJIYER_REFERRAL_SOURCE_KEY,JSON.stringify(source));
+
+  if(params.get('davet')==='1'){
+    setTimeout(()=>{
+      const addButton=document.getElementById('institutionAddBtn');
+      if(addButton){
+        addButton.click();
+        showToast('Davet kodu uygulandı. İşletme başvurusunu tamamlayabilirsiniz.');
+      }
+    },700);
+  }
+}
+
+function getActiveDijiyerReferralSource(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(DIJIYER_REFERRAL_SOURCE_KEY)||'{}');
+    if(!parsed.code)return null;
+    if(Number(parsed.expiresAt||0)<Date.now()){
+      localStorage.removeItem(DIJIYER_REFERRAL_SOURCE_KEY);
+      return null;
+    }
+    return parsed;
+  }catch(_){
+    return null;
+  }
+}
+
+function dijiyerEarningsCardHtml(){
+  return `
+    <article class="dijiyer-earnings-card" aria-label="Dijiyer Kazanç pilot programı">
+      <div class="dijiyer-earnings-icon">₺</div>
+      <div class="dijiyer-earnings-copy">
+        <div class="dijiyer-earnings-kicker">
+          <span>DİJİYER KAZANÇ</span>
+          <b>PİLOT</b>
+        </div>
+        <strong>İşletme tavsiye et, kazanç fırsatı yakala</strong>
+        <p>Davet ettiğin işletme ilk ücretli Dijiyer hizmetini onayladığında <b>${DIJIYER_REFERRAL_REWARD} TL Dijiyer bakiyesi</b> kazan.</p>
+      </div>
+      <div class="dijiyer-earnings-actions">
+        <button type="button" class="primary" data-dijiyer-invite>İşletme Davet Et</button>
+        <button type="button" data-dijiyer-earnings>Kazancım</button>
+      </div>
+    </article>
+  `;
+}
+
+function ensureDijiyerEarningsModal(){
+  let modal=document.getElementById('dijiyerEarningsModal');
+  if(modal)return modal;
+
+  modal=document.createElement('div');
+  modal.id='dijiyerEarningsModal';
+  modal.className='modal hidden dijiyer-earnings-modal';
+  modal.innerHTML=`
+    <div class="modal-card dijiyer-earnings-modal-card">
+      <button type="button" class="modal-close" data-dijiyer-earnings-close aria-label="Kapat">×</button>
+
+      <div class="dijiyer-earnings-modal-head">
+        <span>DİJİYER KAZANÇ · PİLOT</span>
+        <h2>İşletme davet et, Dijiyer bakiyesi kazan</h2>
+        <p>Davet bağlantını tanıdığın işletmelerle paylaş. İşletme ücretsiz başvuru yapar; ilk ücretli tanıtım veya reklam siparişi onaylandığında ödül hesabına tanımlanır.</p>
+      </div>
+
+      <div class="dijiyer-earnings-tabs">
+        <button type="button" class="active" data-earnings-tab="invite">Davet Et</button>
+        <button type="button" data-earnings-tab="wallet">Kazancım</button>
+      </div>
+
+      <section class="dijiyer-earnings-pane active" data-earnings-pane="invite">
+        <div class="dijiyer-referral-reward">
+          <div><small>PİLOT ÖDÜL</small><strong>${DIJIYER_REFERRAL_REWARD} TL</strong><span>Dijiyer bakiyesi</span></div>
+          <p>Ödül, davet edilen işletmenin ilk ücretli Dijiyer hizmeti yönetim tarafından onaylandığında geçerli olur.</p>
+        </div>
+
+        <label class="dijiyer-referral-field">
+          <span>Davet Kodun</span>
+          <div><input id="dijiyerReferralCode" readonly><button type="button" id="copyDijiyerReferralCode">Kopyala</button></div>
+        </label>
+
+        <label class="dijiyer-referral-field">
+          <span>Özel Davet Linkin</span>
+          <div><input id="dijiyerReferralUrl" readonly><button type="button" id="copyDijiyerReferralUrl">Kopyala</button></div>
+        </label>
+
+        <div class="dijiyer-referral-share">
+          <button type="button" class="whatsapp" id="shareDijiyerReferralWhatsapp">WhatsApp'ta Paylaş</button>
+          <button type="button" id="shareDijiyerReferralNative">Diğer Uygulamalar</button>
+        </div>
+
+        <div class="dijiyer-referral-steps">
+          <div><b>1</b><span><strong>Linkini paylaş</strong><small>Tanıdığın işletmeye özel davet linkini gönder.</small></span></div>
+          <div><b>2</b><span><strong>İşletme başvursun</strong><small>Davet kodu işletme başvurusuna otomatik eklenir.</small></span></div>
+          <div><b>3</b><span><strong>Ücretli hizmet alsın</strong><small>İlk onaylı reklam / tanıtım siparişinden sonra ödül oluşur.</small></span></div>
+        </div>
+      </section>
+
+      <section class="dijiyer-earnings-pane" data-earnings-pane="wallet">
+        <div class="dijiyer-wallet-grid">
+          <article><span>Toplam Kazanç</span><strong id="dijiyerWalletApproved">0 TL</strong><small>Onaylanan bakiye</small></article>
+          <article><span>Bekleyen</span><strong id="dijiyerWalletPending">0 TL</strong><small>Onay sürecindeki ödül</small></article>
+          <article><span>Davetler</span><strong id="dijiyerWalletInvited">0</strong><small>Takip edilen işletme</small></article>
+        </div>
+
+        <div class="dijiyer-wallet-code">
+          <span>Davet Kodun</span>
+          <strong id="dijiyerWalletCode">-</strong>
+        </div>
+
+        <div class="dijiyer-wallet-empty">
+          <span>💸</span>
+          <div>
+            <strong>Kazançlar burada görünecek</strong>
+            <p>Pilot aşamada başvurular davet koduyla eşleştiriliyor. İşletmenin ücretli hizmeti onaylandığında ödül durumu güncellenecek.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="dijiyer-earnings-note">
+        Pilot program koşulları ve ödül tutarı daha sonra güncellenebilir. Sahte / mükerrer başvurular ödüle dahil edilmez.
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click',event=>{
+    if(event.target===modal)modal.classList.add('hidden');
+  });
+
+  modal.querySelector('[data-dijiyer-earnings-close]')?.addEventListener('click',()=>{
+    modal.classList.add('hidden');
+  });
+
+  modal.querySelectorAll('[data-earnings-tab]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const tab=button.dataset.earningsTab;
+      modal.querySelectorAll('[data-earnings-tab]').forEach(item=>item.classList.toggle('active',item===button));
+      modal.querySelectorAll('[data-earnings-pane]').forEach(pane=>pane.classList.toggle('active',pane.dataset.earningsPane===tab));
+    });
+  });
+
+  modal.querySelector('#copyDijiyerReferralCode')?.addEventListener('click',async()=>{
+    const value=document.getElementById('dijiyerReferralCode')?.value||'';
+    try{await navigator.clipboard.writeText(value);}catch(_){
+      const input=document.getElementById('dijiyerReferralCode');
+      input?.select();
+      document.execCommand('copy');
+    }
+    showToast('Davet kodu kopyalandı.');
+  });
+
+  modal.querySelector('#copyDijiyerReferralUrl')?.addEventListener('click',async()=>{
+    const value=document.getElementById('dijiyerReferralUrl')?.value||'';
+    try{await navigator.clipboard.writeText(value);}catch(_){
+      const input=document.getElementById('dijiyerReferralUrl');
+      input?.select();
+      document.execCommand('copy');
+    }
+    showToast('Davet linki kopyalandı.');
+  });
+
+  modal.querySelector('#shareDijiyerReferralWhatsapp')?.addEventListener('click',()=>{
+    const url=getDijiyerReferralUrl();
+    const message=encodeURIComponent(
+      'Dijiyer\'e işletmeni ücretsiz ekleyebilirsin. Bu davet linkinden başvurunu oluştur:\n'+url
+    );
+    window.open('https://wa.me/?text='+message,'_blank','noopener');
+  });
+
+  modal.querySelector('#shareDijiyerReferralNative')?.addEventListener('click',async()=>{
+    const url=getDijiyerReferralUrl();
+    if(navigator.share){
+      try{
+        await navigator.share({
+          title:'Dijiyer İşletme Daveti',
+          text:'İşletmeni Dijiyer\'e ücretsiz eklemek için davet linki:',
+          url
+        });
+        return;
+      }catch(_){}
+    }
+    try{await navigator.clipboard.writeText(url);}catch(_){}
+    showToast('Davet linki kopyalandı.');
+  });
+
+  return modal;
+}
+
+function openDijiyerEarningsModal(tab='invite'){
+  const modal=ensureDijiyerEarningsModal();
+  const profile=getDijiyerReferralProfile();
+  const url=getDijiyerReferralUrl();
+
+  const codeInput=modal.querySelector('#dijiyerReferralCode');
+  const urlInput=modal.querySelector('#dijiyerReferralUrl');
+  const walletCode=modal.querySelector('#dijiyerWalletCode');
+  const approved=modal.querySelector('#dijiyerWalletApproved');
+  const pending=modal.querySelector('#dijiyerWalletPending');
+  const invited=modal.querySelector('#dijiyerWalletInvited');
+
+  if(codeInput)codeInput.value=profile.code;
+  if(urlInput)urlInput.value=url;
+  if(walletCode)walletCode.textContent=profile.code;
+  if(approved)approved.textContent=new Intl.NumberFormat('tr-TR').format(profile.approved)+' TL';
+  if(pending)pending.textContent=new Intl.NumberFormat('tr-TR').format(profile.pending)+' TL';
+  if(invited)invited.textContent=String(profile.invited||0);
+
+  modal.querySelectorAll('[data-earnings-tab]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.earningsTab===tab);
+  });
+  modal.querySelectorAll('[data-earnings-pane]').forEach(pane=>{
+    pane.classList.toggle('active',pane.dataset.earningsPane===tab);
+  });
+
+  modal.classList.remove('hidden');
+}
+
+function bindDijiyerEarningsActions(){
+  document.querySelectorAll('[data-dijiyer-invite]').forEach(button=>{
+    button.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      openDijiyerEarningsModal('invite');
+    });
+  });
+
+  document.querySelectorAll('[data-dijiyer-earnings]').forEach(button=>{
+    button.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      openDijiyerEarningsModal('wallet');
+    });
+  });
+}
+
+captureDijiyerReferralSource();
+
 let activeLocationCity = 'Çanakkale';
 let activeLocationDistrict = 'Merkez';
 
@@ -1016,7 +1318,7 @@ function renderList() {
   syncExploreQuickFilterState();
   renderSponsoredAds();
 
-  list.innerHTML = data.map(inst => {
+  const institutionCards = data.map(inst => {
     const compared = compareInstitutionIds.has(String(inst.id));
     return `
       <article class="institution-card ${String(inst.id) === String(selectedId) ? 'active' : ''}" data-id="${escapeHtml(String(inst.id))}">
@@ -1045,7 +1347,18 @@ function renderList() {
         </div>
       </article>
     `;
-  }).join('') || `<div class="institution-list-empty">Filtreye uygun kurum bulunamadı.</div>`;
+  });
+
+  if (institutionCards.length >= 2) {
+    institutionCards.splice(2, 0, dijiyerEarningsCardHtml());
+  } else if (institutionCards.length) {
+    institutionCards.push(dijiyerEarningsCardHtml());
+  }
+
+  list.innerHTML = institutionCards.join('') ||
+    `<div class="institution-list-empty">Filtreye uygun kurum bulunamadı.</div>`;
+
+  bindDijiyerEarningsActions();
 
   document.querySelectorAll('.institution-card').forEach(card => {
     card.addEventListener('click', e => {
@@ -2417,6 +2730,8 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
     address: document.getElementById('institutionAddress').value,
     phone: document.getElementById('institutionPhone').value,
     website: document.getElementById('institutionWebsite').value,
+    referralCode: getActiveDijiyerReferralSource()?.code || '',
+    referralCapturedAt: getActiveDijiyerReferralSource()?.capturedAt || '',
     date: new Date().toISOString(),
     lat,
     lng
