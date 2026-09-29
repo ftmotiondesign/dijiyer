@@ -7,7 +7,7 @@
   <meta name="description" content="İhtiyacınızı oluşturun, uygun işletmelerden ücretsiz fiyat teklifleri alın ve karşılaştırın." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=47" />
+  <link rel="stylesheet" href="style.css?v=48" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -122,62 +122,100 @@
     </section>
 
     <div class="standalone-quote-layout">
-      <section class="quote-choice-card" id="quoteChoiceCard" aria-label="Teklif için hizmet seç">
-        <div class="quote-choice-head">
-          <div>
-            <h2>Ne arıyorsunuz?</h2>
-            <p>Kelimeyle arayın veya aşağıdan kategori seçin</p>
+        <section class="mobile-discovery quote-page-discovery" aria-label="Mobil kategori seçimi">
+          <button type="button" class="mobile-search-location" id="mobileSearchLocationBtn">
+            <span class="mobile-search-location-icon">📍</span>
+            <span class="mobile-search-location-copy">
+              <small>NEREDE ARIYORSUNUZ?</small>
+              <strong id="mobileSearchLocationText">Konum seçiliyor...</strong>
+              <em id="mobileSearchLocationHint">Sonuçlar bu bölgeye göre gösterilir</em>
+            </span>
+            <span class="mobile-search-location-action">Değiştir ›</span>
+          </button>
+      
+          <div class="mobile-search-quick-filters" aria-label="Hızlı kurum filtreleri">
+            <button type="button" id="mobileOfferOnlyBtn">
+              <span>🏷</span>
+              <strong>Teklif Verenler</strong>
+            </button>
+            <button type="button" id="mobileVideoOnlyBtn">
+              <span>🎥</span>
+              <strong>Videolu Kurumlar</strong>
+            </button>
+            <button type="button" id="mobileTour360Btn">
+              <span>🧭</span>
+              <strong>360° Turu Olanlar</strong>
+            </button>
           </div>
-          <button type="button" id="quoteChoiceAllBtn">Tümü</button>
-        </div>
-
-        <div class="quote-choice-search" role="search">
-          <span>⌕</span>
-          <input
-            id="quoteChoiceSearchInput"
-            type="search"
-            autocomplete="off"
-            enterkeyhint="search"
-            placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
-            aria-label="Teklif için hizmet ara"
-          >
-          <button type="button" id="quoteChoiceSearchBtn">Ara</button>
-        </div>
-
-        <div class="quote-choice-hints" aria-label="Hızlı aramalar">
-          <button type="button" data-quote-choice-search="ehliyet">Ehliyet</button>
-          <button type="button" data-quote-choice-search="anaokulu">Anaokulu</button>
-          <button type="button" data-quote-choice-search="oto servis">Oto Servis</button>
-          <button type="button" data-quote-choice-search="pizza">Pizza</button>
-        </div>
-
-        <div class="quote-choice-grid">
-          <button type="button" class="quote-choice-category" data-quote-choice-category="alisveris">
-            <span>🛒</span><strong>Alışveriş &amp; Yerel Esnaf</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="egitim">
-            <span>📚</span><strong>Eğitim</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="emlak">
-            <span>🏢</span><strong>Emlak</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="evyapi">
-            <span>🏠</span><strong>Ev &amp; Yapı</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="organizasyonmedya">
-            <span>📸</span><strong>Organizasyon &amp; Medya</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="otomotiv">
-            <span>🚗</span><strong>Otomotiv</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="profesyonel">
-            <span>💼</span><strong>Profesyonel Hizmetler</strong>
-          </button>
-          <button type="button" class="quote-choice-category" data-quote-choice-category="saglikguzellik">
-            <span>🩺</span><strong>Sağlık &amp; Güzellik</strong>
-          </button>
-        </div>
-      </section>
+      
+          <div class="mobile-discovery-head">
+            <div>
+              <strong>Ne arıyorsunuz?</strong>
+              <span>Kelimeyle arayın veya aşağıdan kategori seçin</span>
+            </div>
+            <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
+          </div>
+      
+          <div class="mobile-keyword-search" role="search" aria-label="Hizmet veya kurum ara">
+            <span class="mobile-keyword-search-icon">⌕</span>
+            <input
+              id="mobileDiscoverySearchInput"
+              type="search"
+              autocomplete="off"
+              enterkeyhint="search"
+              placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
+              aria-label="Hizmet veya kurum adı yazın"
+            >
+            <button type="button" class="mobile-keyword-clear hidden" id="mobileDiscoverySearchClear" aria-label="Aramayı temizle">×</button>
+            <button type="button" class="mobile-keyword-submit" id="mobileDiscoverySearchBtn">Ara</button>
+          </div>
+      
+          <div class="mobile-keyword-hints" aria-label="Örnek aramalar">
+            <button type="button" data-mobile-search-example="ehliyet">Ehliyet</button>
+            <button type="button" data-mobile-search-example="anaokulu">Anaokulu</button>
+            <button type="button" data-mobile-search-example="oto servis">Oto Servis</button>
+            <button type="button" data-mobile-search-example="pizza">Pizza</button>
+          </div>
+      
+          <div class="mobile-category-scroll" id="mobileCategories"></div>
+          <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
+      
+          <div class="mobile-category-result hidden" id="mobileCategoryResult">
+            <div class="mobile-category-result-top">
+              <div class="mobile-category-result-copy">
+                <span id="mobileCategoryResultLabel">Kategori seçildi</span>
+                <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
+                <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
+              </div>
+              <div class="mobile-category-result-location">
+                <span>📍</span>
+                <div>
+                  <small>Konum</small>
+                  <strong id="mobileCategoryResultLocation">Çanakkale / Merkez</strong>
+                </div>
+              </div>
+            </div>
+      
+            <div class="mobile-category-result-actions compact">
+              <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
+            </div>
+          </div>
+      
+          <section class="mobile-instant-results hidden" id="mobileInstantResults" aria-label="Eşleşen kurumlar">
+            <div class="mobile-instant-results-head">
+              <div>
+                <span>ARAMA SONUÇLARI</span>
+                <strong id="mobileInstantResultsTitle">Eşleşen kurumlar</strong>
+              </div>
+              <button type="button" id="mobileInstantResultsClose" aria-label="Sonuçları kapat">×</button>
+            </div>
+            <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
+          </section>
+      
+          <input type="checkbox" id="videoOnly" hidden>
+          <input type="checkbox" id="offerOnly" hidden>
+          <input type="checkbox" id="tour360Only" hidden>
+        </section>
 
       <section class="standalone-quote-form-card hidden" id="quoteModal">
     <div class="modal-card">
@@ -460,101 +498,6 @@
       <button type="button" class="section-primary-btn" id="howQuoteBtn">Hemen Ücretsiz Teklif Al</button>
       <button type="button" class="section-link-btn" id="exploreScrollBtn">Önce kurumları incele ↓</button>
     </div>
-  </section>
-
-  <section class="mobile-discovery" aria-label="Mobil kategori seçimi">
-    <button type="button" class="mobile-search-location" id="mobileSearchLocationBtn">
-      <span class="mobile-search-location-icon">📍</span>
-      <span class="mobile-search-location-copy">
-        <small>NEREDE ARIYORSUNUZ?</small>
-        <strong id="mobileSearchLocationText">Konum seçiliyor...</strong>
-        <em id="mobileSearchLocationHint">Sonuçlar bu bölgeye göre gösterilir</em>
-      </span>
-      <span class="mobile-search-location-action">Değiştir ›</span>
-    </button>
-
-    <div class="mobile-search-quick-filters" aria-label="Hızlı kurum filtreleri">
-      <button type="button" id="mobileOfferOnlyBtn">
-        <span>🏷</span>
-        <strong>Teklif Verenler</strong>
-      </button>
-      <button type="button" id="mobileVideoOnlyBtn">
-        <span>🎥</span>
-        <strong>Videolu Kurumlar</strong>
-      </button>
-      <button type="button" id="mobileTour360Btn">
-        <span>🧭</span>
-        <strong>360° Turu Olanlar</strong>
-      </button>
-    </div>
-
-    <div class="mobile-discovery-head">
-      <div>
-        <strong>Ne arıyorsunuz?</strong>
-        <span>Kelimeyle arayın veya aşağıdan kategori seçin</span>
-      </div>
-      <button type="button" id="mobileClearCategoriesBtn">Tümü</button>
-    </div>
-
-    <div class="mobile-keyword-search" role="search" aria-label="Hizmet veya kurum ara">
-      <span class="mobile-keyword-search-icon">⌕</span>
-      <input
-        id="mobileDiscoverySearchInput"
-        type="search"
-        autocomplete="off"
-        enterkeyhint="search"
-        placeholder="Örn. ehliyet, anaokulu, lastik, pizza, emlak..."
-        aria-label="Hizmet veya kurum adı yazın"
-      >
-      <button type="button" class="mobile-keyword-clear hidden" id="mobileDiscoverySearchClear" aria-label="Aramayı temizle">×</button>
-      <button type="button" class="mobile-keyword-submit" id="mobileDiscoverySearchBtn">Ara</button>
-    </div>
-
-    <div class="mobile-keyword-hints" aria-label="Örnek aramalar">
-      <button type="button" data-mobile-search-example="ehliyet">Ehliyet</button>
-      <button type="button" data-mobile-search-example="anaokulu">Anaokulu</button>
-      <button type="button" data-mobile-search-example="oto servis">Oto Servis</button>
-      <button type="button" data-mobile-search-example="pizza">Pizza</button>
-    </div>
-
-    <div class="mobile-category-scroll" id="mobileCategories"></div>
-    <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
-
-    <div class="mobile-category-result hidden" id="mobileCategoryResult">
-      <div class="mobile-category-result-top">
-        <div class="mobile-category-result-copy">
-          <span id="mobileCategoryResultLabel">Kategori seçildi</span>
-          <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
-          <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
-        </div>
-        <div class="mobile-category-result-location">
-          <span>📍</span>
-          <div>
-            <small>Konum</small>
-            <strong id="mobileCategoryResultLocation">Çanakkale / Merkez</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="mobile-category-result-actions compact">
-        <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
-      </div>
-    </div>
-
-    <section class="mobile-instant-results hidden" id="mobileInstantResults" aria-label="Eşleşen kurumlar">
-      <div class="mobile-instant-results-head">
-        <div>
-          <span>ARAMA SONUÇLARI</span>
-          <strong id="mobileInstantResultsTitle">Eşleşen kurumlar</strong>
-        </div>
-        <button type="button" id="mobileInstantResultsClose" aria-label="Sonuçları kapat">×</button>
-      </div>
-      <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
-    </section>
-
-    <input type="checkbox" id="videoOnly" hidden>
-    <input type="checkbox" id="offerOnly" hidden>
-    <input type="checkbox" id="tour360Only" hidden>
   </section>
 
   <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
@@ -1388,16 +1331,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="script.js?v=52"></script>
 <script src="offers.js?v=2"></script>
+
 <script>
 (function(){
-  const choiceCard=document.getElementById('quoteChoiceCard');
+  const discovery=document.querySelector('.quote-page-discovery');
   const formCard=document.getElementById('quoteModal');
-  const searchInput=document.getElementById('quoteChoiceSearchInput');
-  const quoteSearch=document.getElementById('quoteSearch');
-  const quoteCategory=document.getElementById('quoteCategory');
-  const quoteService=document.getElementById('quoteService');
+  const side=document.querySelector('.standalone-quote-side');
+  const shell=document.querySelector('.standalone-quote-shell');
 
-  function scrollToCard(el){
+  function scrollToElement(el){
     if(!el)return;
     try{ document.activeElement?.blur?.(); }catch(_){}
     setTimeout(()=>{
@@ -1406,76 +1348,121 @@
     },120);
   }
 
-  function openQuoteForm(options={}){
-    const value=String(options.search || '').trim();
-    const main=options.main || '';
-    const sub=options.sub || '';
+  function syncQuoteFormFromDiscovery(){
+    const keyword=String(document.getElementById('mobileDiscoverySearchInput')?.value || '').trim();
+    const quoteSearch=document.getElementById('quoteSearch');
+    const quoteCategory=document.getElementById('quoteCategory');
+    const quoteService=document.getElementById('quoteService');
 
-    if(value && quoteSearch) quoteSearch.value=value;
+    if(quoteSearch) quoteSearch.value=keyword;
+
+    let main='';
+    let sub='';
+
+    try{
+      main=typeof getSelectedMainCategory==='function' ? getSelectedMainCategory() : '';
+      sub=document.querySelector('.subCategoryFilter:checked')?.value || '';
+    }catch(_){}
+
+    if(!main && keyword){
+      try{
+        const inferred=typeof inferQuoteCategory==='function' ? inferQuoteCategory(keyword) : null;
+        main=inferred?.mainCategory || '';
+        sub=inferred?.subCategory || '';
+      }catch(_){}
+    }
 
     if(main && quoteCategory){
       quoteCategory.value=main;
-      if(typeof fillQuoteServices==='function') fillQuoteServices(main);
+      try{ if(typeof fillQuoteServices==='function') fillQuoteServices(main); }catch(_){}
       if(sub && quoteService) quoteService.value=sub;
     }
 
-    choiceCard?.classList.add('hidden');
-    formCard?.classList.remove('hidden');
-    scrollToCard(formCard);
+    try{
+      const city=document.getElementById('quoteCity');
+      const district=document.getElementById('quoteDistrict');
+
+      if(city && typeof activeLocationCity!=='undefined' && activeLocationCity){
+        const cityOption=[...city.options].find(o=>o.value===activeLocationCity || o.textContent===activeLocationCity);
+        if(cityOption){
+          city.value=cityOption.value;
+          city.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+      }
+
+      setTimeout(()=>{
+        if(district && typeof activeLocationDistrict!=='undefined' && activeLocationDistrict){
+          const districtOption=[...district.options].find(o=>o.value===activeLocationDistrict || o.textContent===activeLocationDistrict);
+          if(districtOption) district.value=districtOption.value;
+        }
+      },80);
+    }catch(_){}
   }
 
-  function submitChoiceSearch(value){
-    const q=String(value || searchInput?.value || '').trim();
-    if(!q){
-      searchInput?.focus();
+  function openQuoteForm(){
+    syncQuoteFormFromDiscovery();
+    document.getElementById('mobileInstantResults')?.classList.add('hidden');
+    discovery?.classList.add('quote-selection-complete');
+    formCard?.classList.remove('hidden');
+    shell?.classList.add('quote-form-open');
+    scrollToElement(formCard);
+  }
+
+  // Arama butonu / Enter burada sadece sonucu hazırlar; ana sayfadaki gibi
+  // aşağıdaki kurum kartlarına otomatik atlamaz.
+  document.addEventListener('click',event=>{
+    const searchBtn=event.target.closest('#mobileDiscoverySearchBtn');
+    if(searchBtn && discovery?.contains(searchBtn)){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const value=String(document.getElementById('mobileDiscoverySearchInput')?.value || '').trim();
+      if(!value){
+        document.getElementById('mobileDiscoverySearchInput')?.focus();
+        return;
+      }
+      try{
+        if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
+      }catch(_){}
       return;
     }
 
-    let inferred=null;
-    try{
-      if(typeof inferQuoteCategory==='function') inferred=inferQuoteCategory(q);
-    }catch(_){}
+    const exampleBtn=event.target.closest('[data-mobile-search-example]');
+    if(exampleBtn && discovery?.contains(exampleBtn)){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const value=exampleBtn.dataset.mobileSearchExample || '';
+      const input=document.getElementById('mobileDiscoverySearchInput');
+      if(input) input.value=value;
+      try{
+        if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
+      }catch(_){}
+      return;
+    }
 
-    openQuoteForm({
-      search:q,
-      main:inferred?.mainCategory || '',
-      sub:inferred?.subCategory || ''
-    });
-  }
+    const resultBtn=event.target.closest('#mobileCategoryResultBtn');
+    if(resultBtn && discovery?.contains(resultBtn)){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openQuoteForm();
+    }
+  },true);
 
-  document.getElementById('quoteChoiceSearchBtn')?.addEventListener('click',()=>{
-    submitChoiceSearch(searchInput?.value);
-  });
-
-  searchInput?.addEventListener('keydown',event=>{
-    if(event.key!=='Enter')return;
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Enter' || event.target?.id!=='mobileDiscoverySearchInput' || !discovery?.contains(event.target))return;
     event.preventDefault();
-    submitChoiceSearch(searchInput.value);
-  });
-
-  document.querySelectorAll('[data-quote-choice-search]').forEach(button=>{
-    button.addEventListener('click',()=>{
-      const value=button.dataset.quoteChoiceSearch || '';
-      if(searchInput) searchInput.value=value;
-      submitChoiceSearch(value);
-    });
-  });
-
-  document.querySelectorAll('[data-quote-choice-category]').forEach(button=>{
-    button.addEventListener('click',()=>{
-      openQuoteForm({main:button.dataset.quoteChoiceCategory || ''});
-    });
-  });
-
-  document.getElementById('quoteChoiceAllBtn')?.addEventListener('click',()=>{
-    if(searchInput) searchInput.value='';
-    document.querySelectorAll('[data-quote-choice-category]').forEach(btn=>btn.classList.remove('active'));
-  });
+    event.stopImmediatePropagation();
+    const value=String(event.target.value || '').trim();
+    if(!value)return;
+    try{
+      if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
+    }catch(_){}
+  },true);
 
   document.getElementById('quoteChoiceBackBtn')?.addEventListener('click',()=>{
     formCard?.classList.add('hidden');
-    choiceCard?.classList.remove('hidden');
-    scrollToCard(choiceCard);
+    shell?.classList.remove('quote-form-open');
+    discovery?.classList.remove('quote-selection-complete');
+    scrollToElement(discovery);
   });
 })();
 </script>
