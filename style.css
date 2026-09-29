@@ -5913,3 +5913,14 @@ button{cursor:pointer}
     grid-template-columns:repeat(2,1fr);
   }
 }
+
+
+/* Karşılaştırma barı açıkken sabit Teklif Takip butonu yukarı taşınır. */
+.tracking-floating-btn.compare-active{
+  bottom:92px;
+}
+@media(max-width:640px){
+  .tracking-floating-btn.compare-active{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 78px);
+  }
+}
