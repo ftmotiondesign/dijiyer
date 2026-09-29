@@ -6,7 +6,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=23">
+  <link rel="stylesheet" href="admin.css?v=24">
   <link rel="stylesheet" href="admin-advanced.css?v=5">
 </head>
 
@@ -940,6 +940,20 @@
           </label>
         </div>
 
+        <section class="admin-showcase-edit">
+          <div class="admin-showcase-edit-head">
+            <span>DİJİYER TANITIM HİZMETLERİ</span>
+            <strong>Satın alınan içerikleri kuruma bağla</strong>
+            <small>Bu alanlar sadece yönetim panelinden düzenlenir.</small>
+          </div>
+          <label>Konum Videosu URL
+            <input type="url" id="editLocationVideoUrl" placeholder="https://.../konum-video.mp4 veya YouTube bağlantısı">
+          </label>
+          <label>360° Sanal Tur URL
+            <input type="url" id="editVirtualTourUrl" placeholder="https://... 3DVista / Kuula / Matterport bağlantısı">
+          </label>
+        </section>
+
         <div class="check-grid">
           <label><input type="checkbox" id="editVip"> VIP kurum</label>
           <label><input type="checkbox" id="editVideo"> Videolu</label>
@@ -961,7 +975,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 
-  <script src="admin.js?v=29"></script>
+  <script src="admin.js?v=30"></script>
   <script src="admin-advanced.js?v=8"></script>
 
 </body>
