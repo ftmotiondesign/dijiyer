@@ -1,128 +1,465 @@
-/* Dijiyer gelir odaklı medya vitrini: Konum Videosu + 360° Sanal Tur */
-.kp-badge.tour{color:#6d28d9}
-.kp-premium-discover{
-  background:#f4f0ff!important;
-  border-color:#ddd6fe!important;
-  color:#6d28d9!important;
+/* =========================================================
+   DİJİYER KURUM SAYFASI · SADE / PROFESYONEL V2
+   360° tur üst medya alanında öncelikli gösterilir.
+   ========================================================= */
+
+body{
+  background:#f6f8fb;
 }
-.kp-premium-experience{
-  border-color:#cfe1fa!important;
-  background:linear-gradient(180deg,#fff,#fbfdff)!important;
+
+.kp-shell{
+  width:min(1180px,calc(100% - 28px));
+  margin:18px auto 76px;
 }
-.kp-premium-head{align-items:center}
-.kp-premium-label{
-  padding:6px 8px;
-  border-radius:999px;
-  background:#eef5ff;
-  color:#1d4ed8;
-  font-size:8px;
-  font-weight:900;
-  white-space:nowrap;
+
+.kp-topbar{
+  min-height:62px;
+  border-bottom:1px solid #e7ebf0;
+  background:rgba(255,255,255,.96);
+  box-shadow:none;
 }
-.kp-premium-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-}
-.kp-premium-card{
-  min-width:0;
-  padding:10px;
-  border:1px solid #e2e8f0;
-  border-radius:11px;
-  background:#fff;
-}
-.kp-premium-title{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:8px;
-}
-.kp-premium-icon{
-  width:38px;
-  height:38px;
-  flex:0 0 38px;
-  display:grid;
-  place-items:center;
+
+.kp-brand-mark{
   border-radius:10px;
-  font-size:9px;
-  font-weight:950;
 }
-.kp-premium-icon.video{
-  background:#eef5ff;
-  color:#1677ff;
-}
-.kp-premium-icon.tour{
-  background:#f4f0ff;
-  color:#6d28d9;
-}
-.kp-premium-title>div{display:grid;gap:2px}
-.kp-premium-title strong{font-size:10.5px}
-.kp-premium-title small{
-  font-size:8.5px;
-  color:#64748b;
-  line-height:1.35;
-}
-.kp-premium-frame{
-  position:relative;
+
+.kp-hero{
   overflow:hidden;
-  width:100%;
-  aspect-ratio:16/9;
-  border-radius:9px;
-  background:#0f172a;
+  border:1px solid #e1e6ec;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 28px rgba(15,23,42,.055);
 }
-.kp-premium-frame iframe,
-.kp-premium-frame video{
+
+.kp-cover{
+  height:365px;
+  background:#101828;
+}
+
+.kp-cover:after{
+  display:none;
+}
+
+.kp-cover-experience{
+  position:relative;
+  isolation:isolate;
+}
+
+.kp-hero-media-stage{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:#0d1627;
+}
+
+.kp-hero-media-stage iframe,
+.kp-hero-media-stage video,
+.kp-hero-media-stage img{
   width:100%;
   height:100%;
-  border:0;
   display:block;
+  border:0;
   object-fit:cover;
 }
-.kp-premium-link-card{
-  min-height:145px;
+
+.kp-hero-tour-frame{
+  background:#0d1627;
+}
+
+.kp-hero-fallback-image{
+  object-fit:cover;
+}
+
+.kp-cover-empty{
+  position:absolute;
+  inset:0;
   display:grid;
-  grid-template-columns:auto 1fr;
-  gap:8px;
+  place-items:center;
+  color:#fff;
+  font-size:54px;
+  background:linear-gradient(135deg,#344966,#18263b);
+}
+
+.kp-premium-badges{
+  top:14px;
+  left:14px;
+  z-index:8;
+}
+
+.kp-badge{
+  padding:6px 9px;
+  border:1px solid rgba(255,255,255,.68);
+  background:rgba(255,255,255,.94);
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  backdrop-filter:blur(8px);
+}
+
+.kp-badge.tour{
+  color:#6d28d9;
+}
+
+.kp-hero-media-tabs{
+  position:absolute;
+  z-index:9;
+  top:14px;
+  right:14px;
+  display:flex;
+  gap:4px;
+  padding:4px;
+  border:1px solid rgba(255,255,255,.4);
+  border-radius:10px;
+  background:rgba(15,23,42,.72);
+  backdrop-filter:blur(10px);
+}
+
+.kp-hero-media-tabs button{
+  min-height:30px;
+  padding:0 9px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:rgba(255,255,255,.76);
+  font-size:8.5px;
+  font-weight:850;
+  cursor:pointer;
+}
+
+.kp-hero-media-tabs button.active{
+  background:#fff;
+  color:#172033;
+}
+
+.kp-hero-guide{
+  position:absolute;
+  z-index:7;
+  left:14px;
+  bottom:14px;
+  max-width:min(360px,calc(100% - 150px));
+  display:flex;
   align-items:center;
-  padding:12px;
-  border:1px dashed #bfdbfe;
+  gap:9px;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:11px;
+  background:rgba(8,18,33,.72);
+  color:#fff;
+  backdrop-filter:blur(9px);
+  pointer-events:none;
+}
+
+.kp-hero-guide>span{
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  display:grid;
+  place-items:center;
   border-radius:9px;
+  background:rgba(255,255,255,.12);
+  font-size:11px;
+  font-weight:950;
+}
+
+.kp-hero-guide>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.kp-hero-guide strong{
+  font-size:9.5px;
+}
+
+.kp-hero-guide small{
+  overflow:hidden;
+  color:rgba(255,255,255,.76);
+  font-size:7.8px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.kp-hero-fullscreen{
+  position:absolute;
+  z-index:9;
+  right:14px;
+  bottom:14px;
+  min-height:34px;
+  padding:0 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.42);
+  border-radius:9px;
+  background:rgba(8,18,33,.72);
+  color:#fff;
+  font-size:8.5px;
+  font-weight:850;
+  backdrop-filter:blur(9px);
+}
+
+/* Kimlik alanı */
+.kp-identity{
+  margin-top:0;
+  padding:15px 18px 16px;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  gap:13px;
+  align-items:center;
+  border-top:1px solid #edf0f4;
+}
+
+.kp-logo{
+  width:72px;
+  height:72px;
+  border:1px solid #e1e6ec;
+  border-radius:16px;
+  box-shadow:none;
+}
+
+.kp-title h1{
+  margin-bottom:6px;
+  font-size:23px;
+  letter-spacing:-.3px;
+}
+
+.kp-meta{
+  gap:5px;
+}
+
+.kp-meta>span{
+  padding:5px 7px;
+  border:1px solid #e8edf3;
+  border-radius:7px;
+  background:#f8fafc;
+  color:#617083;
+}
+
+.kp-actions{
+  gap:6px;
+}
+
+.kp-btn{
+  min-height:38px;
+  padding:0 11px;
+  border-radius:8px;
+  box-shadow:none;
+}
+
+.kp-btn.primary{
+  background:#1677ff;
+}
+
+.kp-premium-discover{
+  border-color:#ddd6fe!important;
+  background:#f5f3ff!important;
+  color:#6d28d9!important;
+}
+
+/* İçerik alanı */
+.kp-grid{
+  margin-top:12px;
+  grid-template-columns:minmax(0,1.55fr) minmax(280px,.62fr);
+  gap:12px;
+}
+
+.kp-main,
+.kp-side{
+  gap:10px;
+}
+
+.kp-card{
+  padding:16px;
+  border:1px solid #e5e9ef;
+  border-radius:13px;
+  box-shadow:none;
+}
+
+.kp-head{
+  margin-bottom:10px;
+}
+
+.kp-head h2{
+  font-size:15px;
+}
+
+.kp-about{
+  color:#556478;
+  font-size:11px;
+  line-height:1.65;
+}
+
+.kp-service{
+  border-color:#e4e9ef;
+  background:#f7f9fb;
+}
+
+.kp-trust{
+  border-color:#dbe5f1;
   background:#f8fbff;
 }
-.kp-premium-play{
-  width:36px;
-  height:36px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  background:#1677ff;
-  color:#fff;
+
+.kp-media{
+  gap:6px;
 }
-.kp-premium-link-card>div{display:grid;gap:3px}
-.kp-premium-link-card strong{font-size:10px}
-.kp-premium-link-card small{font-size:8px;color:#64748b}
-.kp-premium-link-card>a{
-  grid-column:1/-1;
-  display:grid;
-  place-items:center;
-  min-height:32px;
-  border-radius:8px;
-  background:#1677ff;
-  color:#fff;
-  font-size:9px;
-  font-weight:850;
+
+.kp-photo{
+  border-radius:9px;
 }
-.kp-premium-tour-open{
-  display:grid;
-  place-items:center;
-  min-height:34px;
-  margin-top:7px;
-  border-radius:8px;
-  background:#6d28d9;
-  color:#fff;
-  font-size:9px;
-  font-weight:900;
+
+.kp-special{
+  display:none!important;
 }
-@media(max-width:760px){
-  .kp-premium-grid{grid-template-columns:1fr}
+
+/* Eski aşağıdaki premium medya vitrini artık kullanılmıyor. */
+.kp-premium-experience{
+  display:none!important;
+}
+
+@media(max-width:900px){
+  .kp-cover{
+    height:320px;
+  }
+
+  .kp-identity{
+    grid-template-columns:66px minmax(0,1fr);
+  }
+
+  .kp-logo{
+    width:66px;
+    height:66px;
+  }
+
+  .kp-actions{
+    grid-column:1/-1;
+    justify-content:flex-start;
+  }
+
+  .kp-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:640px){
+  .kp-shell{
+    width:calc(100% - 12px);
+    margin:6px auto 68px;
+  }
+
+  .kp-hero{
+    border-radius:14px;
+  }
+
+  .kp-cover{
+    height:245px;
+  }
+
+  .kp-premium-badges{
+    top:8px;
+    left:8px;
+    max-width:68%;
+    gap:4px;
+  }
+
+  .kp-badge{
+    padding:5px 6px;
+    font-size:7px;
+  }
+
+  .kp-hero-media-tabs{
+    top:8px;
+    right:8px;
+    padding:3px;
+  }
+
+  .kp-hero-media-tabs button{
+    min-height:28px;
+    padding:0 7px;
+    font-size:7.3px;
+  }
+
+  .kp-hero-guide{
+    left:8px;
+    bottom:8px;
+    max-width:calc(100% - 108px);
+    gap:6px;
+    padding:6px 7px;
+    border-radius:9px;
+  }
+
+  .kp-hero-guide>span{
+    width:28px;
+    height:28px;
+    flex-basis:28px;
+    border-radius:7px;
+    font-size:8px;
+  }
+
+  .kp-hero-guide strong{
+    font-size:8px;
+  }
+
+  .kp-hero-guide small{
+    font-size:6.8px;
+  }
+
+  .kp-hero-fullscreen{
+    right:8px;
+    bottom:8px;
+    min-height:30px;
+    padding:0 7px;
+    font-size:7.2px;
+  }
+
+  .kp-identity{
+    margin-top:0;
+    padding:10px;
+    grid-template-columns:58px minmax(0,1fr);
+    gap:9px;
+  }
+
+  .kp-logo{
+    width:58px;
+    height:58px;
+    border-radius:13px;
+    border-width:1px;
+  }
+
+  .kp-title h1{
+    font-size:18px;
+  }
+
+  .kp-meta{
+    font-size:8px;
+  }
+
+  .kp-meta>span{
+    padding:4px 5px;
+  }
+
+  .kp-actions{
+    display:none;
+  }
+
+  .kp-grid,
+  .kp-main,
+  .kp-side{
+    gap:7px;
+  }
+
+  .kp-card{
+    padding:12px;
+    border-radius:11px;
+  }
+}
+
+@media(max-width:390px){
+  .kp-cover{
+    height:225px;
+  }
+
+  .kp-hero-guide small{
+    display:none;
+  }
+
+  .kp-hero-guide{
+    max-width:175px;
+  }
 }
