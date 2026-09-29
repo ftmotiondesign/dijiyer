@@ -3946,6 +3946,22 @@ async function loadTodayPublicStats(){
   const root=document.getElementById("mobileDailyStats");
   if(!root)return;
 
+  root.classList.add("stats-disabled");
+
+  try{
+    const settingSnap=await db.collection("siteSettings").doc("home").get();
+    const visible=settingSnap.exists && settingSnap.data()?.dailyStatsVisible === true;
+
+    if(!visible){
+      return;
+    }
+
+    root.classList.remove("stats-disabled");
+  }catch(error){
+    console.warn("Günlük istatistik görünürlük ayarı okunamadı:",error);
+    return;
+  }
+
   const requestEl=document.getElementById("dailyQuoteRequestCount");
   const offerEl=document.getElementById("dailyOfferCount");
   const acceptedEl=document.getElementById("dailyAcceptedCount");
