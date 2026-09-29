@@ -1084,7 +1084,10 @@ const PROMOTION_SERVICES = {
 
 let activePromotionServiceKey="";
 let promotionOrdersUnsubscribe=null;
+let promotionPackagesUnsubscribe=null;
 let promotionOrderRecords=[];
+let promotionPackageRecords=[];
+const dynamicPromotionServices={};
 
 function promotionStatusLabel(status){
   return {
@@ -1104,14 +1107,102 @@ function makePromotionOrderCode(){
   return "DJY-H-" + String(Date.now()).slice(-6);
 }
 
+function normalizePromotionExtras(service){
+  return (Array.isArray(service?.extras)?service.extras:[])
+    .map(item=>typeof item==="string" ? {name:item,price:0} : {
+      name:String(item?.name||"").trim(),
+      price:Math.max(0,Number(item?.price||0))
+    })
+    .filter(item=>item.name);
+}
+
 function getPromotionConfig(type){
-  return PROMOTION_SERVICES[type] || PROMOTION_SERVICES.consultation;
+  return dynamicPromotionServices[type] || PROMOTION_SERVICES[type] || PROMOTION_SERVICES.consultation;
+}
+
+function dynamicPromotionConfig(record){
+  return {
+    id:"promotion_package_"+record.id,
+    packageId:record.id,
+    name:record.name||"Tanıtım Paketi",
+    icon:record.featured?"★":"▦",
+    lead:record.description||"",
+    benefit:record.benefit||record.description||"",
+    includes:Array.isArray(record.includes)?record.includes:[],
+    process:record.process||"Paket içeriği ve yayın/üretim planı sipariş sonrasında netleştirilir.",
+    required:record.required||"Kurum bilgileri ve pakette kullanılacak içerikler.",
+    delivery:record.delivery||record.duration||"Planlamaya göre",
+    revision:record.revision||"Planlamaya göre",
+    price:Number(record.basePrice||0),
+    priceLabel:record.priceLabel || (Number(record.basePrice||0)>0
+      ? new Intl.NumberFormat("tr-TR").format(Number(record.basePrice))+" TL"
+      : "Fiyat planlamada netleşir"),
+    extras:normalizePromotionExtras(record),
+    example:record.example||"Paket kapsamındaki hizmetler kurumunuz için birlikte planlanır."
+  };
+}
+
+function renderDynamicPromotionPackages(records,hasCatalog){
+  const root=document.getElementById("showcasePackageGrid");
+  if(!root)return;
+
+  Object.keys(dynamicPromotionServices).forEach(key=>delete dynamicPromotionServices[key]);
+
+  if(!hasCatalog)return;
+
+  const active=records
+    .filter(item=>item.active!==false)
+    .sort((a,b)=>(Number(a.sortOrder||50)-Number(b.sortOrder||50)));
+
+  active.forEach(item=>{
+    dynamicPromotionServices[item.serviceKey]=dynamicPromotionConfig(item);
+  });
+
+  if(!active.length){
+    root.innerHTML='<div class="showcase-recommendation-loading">Şu anda yayında reklam paketi bulunmuyor.</div>';
+    return;
+  }
+
+  root.innerHTML=active.map(item=>{
+    const cfg=dynamicPromotionServices[item.serviceKey];
+    const classes=["showcase-package-card"];
+    if(item.featured)classes.push("recommended");
+    if(String(item.badge||"").toLocaleUpperCase("tr-TR").includes("PREMIUM"))classes.push("premium");
+
+    return `
+      <article class="${classes.join(" ")}">
+        ${item.featured?'<span class="package-recommended">ÖNERİLEN</span>':""}
+        <span class="package-type">${escapeHtml(item.badge||"PAKET")}</span>
+        <h4>${escapeHtml(item.name||"Tanıtım Paketi")}</h4>
+        <p>${escapeHtml(item.description||"")}</p>
+        <ul>${(item.includes||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join("")}</ul>
+        <div class="dynamic-package-price">${escapeHtml(cfg.priceLabel)}</div>
+        <div class="showcase-sales-actions">
+          <button type="button" class="showcase-detail-btn" data-promotion-detail="${escapeHtml(item.serviceKey)}">Detaylı Bilgi</button>
+          <button type="button" class="showcase-order-btn" data-promotion-order="${escapeHtml(item.serviceKey)}">Sipariş Ver</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function startPromotionPackagesWatcher(){
+  if(promotionPackagesUnsubscribe)promotionPackagesUnsubscribe();
+
+  promotionPackagesUnsubscribe=db.collection("promotionPackages").onSnapshot(snapshot=>{
+    promotionPackageRecords=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    renderDynamicPromotionPackages(promotionPackageRecords,!snapshot.empty);
+  },error=>{
+    console.error("Reklam paketleri yüklenemedi:",error);
+  });
 }
 
 function openPromotionDetail(type){
   closePromotionOrder();
   const service=getPromotionConfig(type);
-  activePromotionServiceKey=type in PROMOTION_SERVICES ? type : "consultation";
+  activePromotionServiceKey=dynamicPromotionServices[type]
+    ? type
+    : (type in PROMOTION_SERVICES ? type : "consultation");
 
   document.getElementById("promotionDetailIcon").textContent=service.icon;
   document.getElementById("promotionDetailName").textContent=service.name;
@@ -1124,8 +1215,11 @@ function openPromotionDetail(type){
   document.getElementById("promotionDetailDelivery").textContent=service.delivery;
   document.getElementById("promotionDetailRevision").textContent=service.revision;
   document.getElementById("promotionDetailPrice").textContent=service.priceLabel;
+  const detailExtras=normalizePromotionExtras(service);
   document.getElementById("promotionDetailExtras").textContent=
-    service.extras.length ? service.extras.join(" · ") : "Ek seçenek bulunmuyor.";
+    detailExtras.length
+      ? detailExtras.map(item=>item.name+(item.price>0?" (+"+new Intl.NumberFormat("tr-TR").format(item.price)+" TL)":"")).join(" · ")
+      : "Ek seçenek bulunmuyor.";
   document.getElementById("promotionDetailExample").textContent=service.example;
 
   document.getElementById("promotionDetailModal").classList.remove("hidden");
@@ -1137,7 +1231,9 @@ function closePromotionDetail(){
 
 function openPromotionOrder(type){
   const service=getPromotionConfig(type);
-  activePromotionServiceKey=type in PROMOTION_SERVICES ? type : "consultation";
+  activePromotionServiceKey=dynamicPromotionServices[type]
+    ? type
+    : (type in PROMOTION_SERVICES ? type : "consultation");
 
   closePromotionDetail();
 
@@ -1158,12 +1254,13 @@ function openPromotionOrder(type){
 
   const wrap=document.getElementById("promotionOrderExtrasWrap");
   const extras=document.getElementById("promotionOrderExtras");
-  if(service.extras.length){
+  const serviceExtras=normalizePromotionExtras(service);
+  if(serviceExtras.length){
     wrap.classList.remove("hidden");
-    extras.innerHTML=service.extras.map((item,index)=>`
+    extras.innerHTML=serviceExtras.map(item=>`
       <label>
-        <input type="checkbox" value="${escapeHtml(item)}">
-        <span>${escapeHtml(item)}</span>
+        <input type="checkbox" value="${escapeHtml(item.name)}" data-extra-price="${Number(item.price||0)}">
+        <span>${escapeHtml(item.name)}${item.price>0?" · +"+new Intl.NumberFormat("tr-TR").format(item.price)+" TL":""}</span>
       </label>
     `).join("");
   }else{
@@ -2807,6 +2904,7 @@ auth.onAuthStateChanged(async user => {
     updateSupportBrowserNotificationUi();
     startLiveQuoteWatcher();
     startLiveSupportWatcher();
+    startPromotionPackagesWatcher();
     startPromotionOrdersWatcher();
 
     const requestedPanel =
@@ -2861,6 +2959,11 @@ document.getElementById("institutionLogoutBtn").addEventListener("click", async 
   if (promotionOrdersUnsubscribe) {
     promotionOrdersUnsubscribe();
     promotionOrdersUnsubscribe = null;
+  }
+
+  if (promotionPackagesUnsubscribe) {
+    promotionPackagesUnsubscribe();
+    promotionPackagesUnsubscribe = null;
   }
 
   await auth.signOut();
