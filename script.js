@@ -11,6 +11,13 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 
+let regionalBannerAds = [];
+let regionalBannerUnsubscribe = null;
+let regionalBannerTimer = null;
+let regionalBannerIndex = 0;
+let regionalBannerRegionFilter = "";
+let regionalBannerSectorFilter = "";
+
 const institutionSessionApp =
   firebase.apps.find(app => app.name === 'institutionSession') ||
   firebase.initializeApp(firebaseConfig, 'institutionSession');
@@ -996,6 +1003,24 @@ function renderDetail() {
         : '<div class="gallery-empty">Kurum henüz galeri görseli eklemedi.</div>'}
     </div>
 
+    <section class="regional-banner-zone hidden" id="regionalBannerZone">
+      <div class="regional-banner-head">
+        <div>
+          <span>SPONSORLU</span>
+          <strong>Bölgenizde Öne Çıkanlar</strong>
+        </div>
+        <div class="regional-banner-filters">
+          <select id="regionalBannerRegionFilter" aria-label="Reklam bölgesi">
+            <option value="">Tüm Bölgeler</option>
+          </select>
+          <select id="regionalBannerSectorFilter" aria-label="Reklam sektörü">
+            <option value="">Tüm Sektörler</option>
+          </select>
+        </div>
+      </div>
+      <div id="regionalBannerStage" class="regional-banner-stage"></div>
+    </section>
+
     <div class="reviews">
       <div class="review-summary">
         <div id="reviewSummaryText"><strong>Yorumlar</strong> · ${inst.rating} / 5</div>
@@ -1059,8 +1084,136 @@ function renderDetail() {
     localStorage.setItem('favorites', JSON.stringify(favs));
     showToast('Kurum favorilere eklendi.');
   };
+
+  setupRegionalBannerZone();
 }
 
+
+function bannerCategoryLabel(value){
+  if(!value)return "Tüm Sektörler";
+  for(const [mainKey,main] of Object.entries(categoryTaxonomy)){
+    if(mainKey===value)return main.label||value;
+    if(main.subs?.[value])return main.subs[value];
+  }
+  return value;
+}
+
+function activeRegionalBannerAds(){
+  const today=localDayKey();
+  return regionalBannerAds.filter(ad=>{
+    if(ad.active===false)return false;
+    if(ad.startAt && String(ad.startAt)>today)return false;
+    if(ad.endAt && String(ad.endAt)<today)return false;
+    return true;
+  });
+}
+
+function regionalBannerRegionValue(ad){
+  return [ad.city||"",ad.district||""].join("|");
+}
+
+function populateRegionalBannerFilters(){
+  const region=document.getElementById("regionalBannerRegionFilter");
+  const sector=document.getElementById("regionalBannerSectorFilter");
+  if(!region||!sector)return;
+  const ads=activeRegionalBannerAds();
+  const regionMap=new Map();
+  ads.filter(ad=>ad.city).forEach(ad=>regionMap.set(regionalBannerRegionValue(ad),[ad.city,ad.district].filter(Boolean).join(" / ")));
+  const regions=[...regionMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"tr"));
+  const sectorMap=new Map();
+  ads.filter(ad=>ad.category).forEach(ad=>sectorMap.set(String(ad.category),String(ad.categoryLabel||bannerCategoryLabel(ad.category))));
+  const sectors=[...sectorMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"tr"));
+
+  region.innerHTML='<option value="">Tüm Bölgeler</option>'+regions.map(([value,label])=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(label)+'</option>').join("");
+  sector.innerHTML='<option value="">Tüm Sektörler</option>'+sectors.map(([value,label])=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(label)+'</option>').join("");
+  region.value=regions.some(([value])=>value===regionalBannerRegionFilter)?regionalBannerRegionFilter:"";
+  sector.value=sectors.some(([value])=>value===regionalBannerSectorFilter)?regionalBannerSectorFilter:"";
+}
+
+function filteredRegionalBannerAds(){
+  let rows=activeRegionalBannerAds();
+  if(regionalBannerRegionFilter){
+    const parts=regionalBannerRegionFilter.split("|");
+    const city=parts[0]||"";
+    const district=parts[1]||"";
+    rows=rows.filter(ad=>{
+      if(!ad.city)return true;
+      if(String(ad.city)!==String(city))return false;
+      if(ad.district && String(ad.district)!==String(district))return false;
+      return true;
+    });
+  }
+  if(regionalBannerSectorFilter){
+    rows=rows.filter(ad=>!ad.category||String(ad.category)===String(regionalBannerSectorFilter));
+  }
+  return rows;
+}
+
+function renderRegionalBannerCarousel(reset=false){
+  const zone=document.getElementById("regionalBannerZone");
+  const stage=document.getElementById("regionalBannerStage");
+  if(!zone||!stage)return;
+  clearTimeout(regionalBannerTimer);
+  regionalBannerTimer=null;
+  const active=activeRegionalBannerAds();
+  if(!active.length){zone.classList.add("hidden");return;}
+  zone.classList.remove("hidden");
+  populateRegionalBannerFilters();
+  const ads=filteredRegionalBannerAds();
+  if(!ads.length){stage.innerHTML='<div class="regional-banner-empty">Bu bölge / sektör seçimi için aktif banner reklamı bulunmuyor.</div>';return;}
+  if(reset||regionalBannerIndex>=ads.length)regionalBannerIndex=0;
+  const ad=ads[regionalBannerIndex];
+  const image=safePublicProfileUrl(ad.imageUrl||ad.logoUrl||"");
+  const href="kurum.html?id="+encodeURIComponent(ad.institutionId||"");
+  const regionText=[ad.city,ad.district].filter(Boolean).join(" / ");
+  const sectorText=ad.categoryLabel||bannerCategoryLabel(ad.category);
+  const duration=Number(ad.durationSeconds)===3?3:5;
+
+  stage.innerHTML=
+    '<a class="regional-banner-card '+(image?"has-image":"")+'" href="'+href+'">'+
+      (image?'<img src="'+image+'" alt="'+escapeHtml(ad.institutionName||"Sponsorlu kurum")+'">':"")+
+      '<div class="regional-banner-overlay"></div>'+
+      '<div class="regional-banner-copy">'+
+        '<span class="regional-banner-sponsored">SPONSORLU</span>'+
+        '<strong>'+escapeHtml(ad.headline||ad.institutionName||"Sponsorlu Kurum")+'</strong>'+
+        '<p>'+escapeHtml(ad.text||"")+'</p>'+
+        '<small>'+escapeHtml([regionText,sectorText].filter(Boolean).join(" · "))+'</small>'+
+      '</div>'+
+      '<span class="regional-banner-cta">Kurumu Gör →</span>'+
+      '<i class="regional-banner-progress" style="--banner-duration:'+duration+'s"></i>'+
+    '</a>'+
+    (ads.length>1?'<div class="regional-banner-dots">'+ads.map((_,index)=>'<button type="button" data-banner-index="'+index+'" class="'+(index===regionalBannerIndex?"active":"")+'" aria-label="Reklam '+(index+1)+'"></button>').join("")+'</div>':"");
+
+  stage.querySelectorAll("[data-banner-index]").forEach(button=>{
+    button.addEventListener("click",()=>{regionalBannerIndex=Number(button.dataset.bannerIndex||0);renderRegionalBannerCarousel(false);});
+  });
+  if(ads.length>1){
+    regionalBannerTimer=setTimeout(()=>{regionalBannerIndex=(regionalBannerIndex+1)%ads.length;renderRegionalBannerCarousel(false);},duration*1000);
+  }
+}
+
+function setupRegionalBannerZone(){
+  const region=document.getElementById("regionalBannerRegionFilter");
+  const sector=document.getElementById("regionalBannerSectorFilter");
+  if(!region||!sector)return;
+  populateRegionalBannerFilters();
+  region.onchange=()=>{regionalBannerRegionFilter=region.value||"";regionalBannerIndex=0;renderRegionalBannerCarousel(true);};
+  sector.onchange=()=>{regionalBannerSectorFilter=sector.value||"";regionalBannerIndex=0;renderRegionalBannerCarousel(true);};
+  renderRegionalBannerCarousel(true);
+}
+
+function startRegionalBannerAds(){
+  if(regionalBannerUnsubscribe)regionalBannerUnsubscribe();
+  regionalBannerUnsubscribe=db.collection("bannerAds").where("active","==",true).onSnapshot(snapshot=>{
+    regionalBannerAds=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    regionalBannerIndex=0;
+    if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
+  },error=>{
+    console.warn("Banner reklamları yüklenemedi:",error);
+    regionalBannerAds=[];
+    document.getElementById("regionalBannerZone")?.classList.add("hidden");
+  });
+}
 
 function localDayKey(date = new Date()) {
   const y = date.getFullYear();
@@ -2992,3 +3145,6 @@ loadInstitutionRegistrationOptions();
 renderList();
 renderDetail();
 loadApprovedInstitutions();
+
+
+startRegionalBannerAds();
