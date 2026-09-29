@@ -589,6 +589,20 @@ function render(bundle){
   updateCountdowns();
 }
 
+async function recordPublicAcceptedEvent(quoteId,date){
+  try{
+    const ref=db.collection("publicAcceptedEvents").doc(String(quoteId));
+    const existing=await ref.get();
+    if(existing.exists)return;
+    await ref.set({
+      quoteId:String(quoteId),
+      date:String(date||"")
+    });
+  }catch(error){
+    console.warn("Günlük kabul istatistiği kaydedilemedi:",error);
+  }
+}
+
 function confirmOfferLock(offer){
   const validity=offerValidityText(offer);
   const lines=[
@@ -615,6 +629,7 @@ async function lockOffer(quoteId,institutionId,button){
     if(!confirmOfferLock(previewOffer))return;
     button.disabled=true;
     button.textContent="Kilitleniyor...";
+    const publicLockedAt=new Date().toISOString();
 
     await db.runTransaction(async tx=>{
       const [offerSnap,lockSnap]=await Promise.all([tx.get(offerRef),tx.get(lockRef)]);
@@ -635,13 +650,14 @@ async function lockOffer(quoteId,institutionId,button){
         expiresAt:offer.expiresAt,
         expiresAtTs:offer.expiresAtTs,
         status:"locked",
-        lockedAt:new Date().toISOString(),
+        lockedAt:publicLockedAt,
         lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
         lockedPrice:Number(offer.price),
         lockedScope:offer.scope||""
       });
     });
 
+    await recordPublicAcceptedEvent(quoteId,publicLockedAt);
     toast("Fiyat kilitlendi.");
     await refreshTracking();
   }catch(error){
