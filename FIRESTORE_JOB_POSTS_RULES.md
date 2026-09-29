@@ -20,6 +20,7 @@ match /jobPosts/{jobId} {
       "category",
       "categoryLabel",
       "title",
+      "locationMode",
       "city",
       "district",
       "workMode",
@@ -58,9 +59,19 @@ match /jobPosts/{jobId} {
     && request.resource.data.title.size() >= 5
     && request.resource.data.title.size() <= 100
 
+    && request.resource.data.locationMode in [
+      "onsite",
+      "remote",
+      "home",
+      "hybrid"
+    ]
+
     && request.resource.data.city is string
-    && request.resource.data.city.size() >= 2
     && request.resource.data.city.size() <= 60
+    && (
+      request.resource.data.locationMode == "remote"
+      || request.resource.data.city.size() >= 2
+    )
 
     && request.resource.data.district is string
     && request.resource.data.district.size() <= 60
@@ -127,12 +138,27 @@ Mobil İş Fırsatları alanı aynı anda şu filtreleri destekler:
 - Anahtar kelime araması
 - Eleman Arayan / İş Arayan
 - Günlük / Ek İş
-- Evden
 - Part-time
-- Bulunulan şehir
+- Hafta sonu / proje bazlı
+- Yerel il / ilçe seçimi
+- Online / Uzaktan
+- Evden üretim / sipariş
+- Hibrit
+- Tüm Türkiye
 - Kategori filtresi
 - Süresi dolmuş ilanları otomatik gizleme
 
 İlan formunda kategori zorunludur ve yayın süresi 7, 15 veya 30 gün seçilir.
 Telefon numarası ilan kartında metin olarak gösterilmez; iletişim butonunda WhatsApp
 bağlantısı için kullanılır.
+
+
+## Çalışma yeri türleri
+
+- `onsite` – İş yerinde / sahada; il seçimi zorunludur.
+- `remote` – Online / uzaktan; il ve ilçe zorunlu değildir.
+- `home` – Evden üretim / sipariş; hizmet veya teslim bölgesi seçilir.
+- `hybrid` – Hibrit; yüz yüze çalışılacak ana bölge seçilir.
+
+İl ve ilçe alanları kullanıcı tarafından yazılmaz. Arayüz Türkiye il ve ilçe listesini yükler
+ve seçim yaptırır. Böylece konum verisi standart tutulur.
