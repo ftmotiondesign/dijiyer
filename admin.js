@@ -1299,19 +1299,52 @@ clearInstitutionFilters.addEventListener("click", () => {
 });
 
 function openInstitutionEdit(id, data) {
+  const form=document.getElementById("institutionEditForm");
+  const saveMessage=document.getElementById("institutionEditSaveMessage");
+  const saveBtn=document.getElementById("institutionEditSaveBtn");
+  const categorySelect=document.getElementById("editCategory");
+  const currentCategory=String(data.category || "diger").trim() || "diger";
+
   document.getElementById("editInstitutionId").value = id;
   document.getElementById("editName").value = data.name || "";
-  document.getElementById("editCategory").value = data.category || "diger";
+
+  // Eski veya yeni kategori değeri listede yoksa sessizce boş kalmasın.
+  // Mevcut değeri geçici seçenek olarak koruyoruz.
+  [...categorySelect.querySelectorAll('option[data-current-category="true"]')]
+    .forEach(option=>option.remove());
+
+  const categoryExists=[...categorySelect.options].some(option=>option.value===currentCategory);
+  if(!categoryExists){
+    const option=document.createElement("option");
+    option.value=currentCategory;
+    option.textContent="Mevcut kategori · "+currentCategory;
+    option.dataset.currentCategory="true";
+    categorySelect.appendChild(option);
+  }
+  categorySelect.value=currentCategory;
+
   document.getElementById("editCity").value = data.city || "";
   document.getElementById("editDistrict").value = data.district || "";
   document.getElementById("editAddress").value = data.address || "";
   document.getElementById("editPhone").value = data.phone || "";
   document.getElementById("editWebsite").value = data.website || "";
-  document.getElementById("editLat").value = Number.isFinite(data.lat) ? data.lat : "";
-  document.getElementById("editLng").value = Number.isFinite(data.lng) ? data.lng : "";
+  document.getElementById("editLat").value =
+    data.lat === null || data.lat === undefined || data.lat === "" ? "" : data.lat;
+  document.getElementById("editLng").value =
+    data.lng === null || data.lng === undefined || data.lng === "" ? "" : data.lng;
   document.getElementById("editVip").checked = Boolean(data.vip);
   document.getElementById("editVideo").checked = Boolean(data.video);
   document.getElementById("editOffer").checked = data.offer !== false;
+
+  if(form)form.dataset.originalName=String(data.name||"");
+  if(saveMessage){
+    saveMessage.textContent="";
+    saveMessage.className="institution-edit-save-message";
+  }
+  if(saveBtn){
+    saveBtn.disabled=false;
+    saveBtn.textContent="Değişiklikleri Kaydet";
+  }
 
   institutionEditModal.classList.remove("hidden");
 }
@@ -1329,37 +1362,113 @@ institutionEditModal.addEventListener("click", (e) => {
 document.getElementById("institutionEditForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const id = document.getElementById("editInstitutionId").value;
-  const city = document.getElementById("editCity").value.trim();
-  const district = document.getElementById("editDistrict").value.trim();
-  const latValue = document.getElementById("editLat").value;
-  const lngValue = document.getElementById("editLng").value;
+  const form=e.currentTarget;
+  const saveBtn=document.getElementById("institutionEditSaveBtn");
+  const saveMessage=document.getElementById("institutionEditSaveMessage");
+  const id=String(document.getElementById("editInstitutionId").value||"").trim();
+  const name=String(document.getElementById("editName").value||"").trim();
+  const category=String(document.getElementById("editCategory").value||"").trim();
+  const city=String(document.getElementById("editCity").value||"").trim();
+  const district=String(document.getElementById("editDistrict").value||"").trim();
+  const latValue=String(document.getElementById("editLat").value||"").trim();
+  const lngValue=String(document.getElementById("editLng").value||"").trim();
 
-  const updates = {
-    name: document.getElementById("editName").value.trim(),
-    category: document.getElementById("editCategory").value,
-    city,
-    district,
-    location: [city, district].filter(Boolean).join(", "),
-    address: document.getElementById("editAddress").value.trim(),
-    phone: document.getElementById("editPhone").value.trim(),
-    website: document.getElementById("editWebsite").value.trim(),
-    lat: latValue === "" ? null : Number(latValue),
-    lng: lngValue === "" ? null : Number(lngValue),
-    vip: document.getElementById("editVip").checked,
-    video: document.getElementById("editVideo").checked,
-    offer: document.getElementById("editOffer").checked,
-    updatedAt: new Date().toISOString()
+  const showSaveMessage=(text,state="")=>{
+    if(!saveMessage)return;
+    saveMessage.textContent=text;
+    saveMessage.className="institution-edit-save-message"+(state?" "+state:"");
   };
 
-  try {
-    await db.collection("institutions").doc(id).update(updates);
-    institutionEditModal.classList.add("hidden");
-    alert("Kurum bilgileri güncellendi.");
-    await loadInstitutions();
-  } catch (error) {
-    console.error("Kurum güncellenemedi:", error);
-    alert("Kurum güncellenemedi.");
+  if(!id){
+    showSaveMessage("Kurum kimliği bulunamadı. Pencereyi kapatıp kurumu yeniden açın.","error");
+    return;
+  }
+  if(!name){
+    showSaveMessage("Kurum adı boş bırakılamaz.","error");
+    document.getElementById("editName").focus();
+    return;
+  }
+  if(!category){
+    showSaveMessage("Kategori seçimi boş bırakılamaz.","error");
+    document.getElementById("editCategory").focus();
+    return;
+  }
+
+  const lat=latValue==="" ? null : Number(latValue);
+  const lng=lngValue==="" ? null : Number(lngValue);
+
+  if(lat!==null && (!Number.isFinite(lat) || lat < -90 || lat > 90)){
+    showSaveMessage("Enlem (lat) -90 ile 90 arasında olmalıdır.","error");
+    document.getElementById("editLat").focus();
+    return;
+  }
+  if(lng!==null && (!Number.isFinite(lng) || lng < -180 || lng > 180)){
+    showSaveMessage("Boylam (lng) -180 ile 180 arasında olmalıdır.","error");
+    document.getElementById("editLng").focus();
+    return;
+  }
+
+  const updates={
+    name,
+    category,
+    city,
+    district,
+    location:[city,district].filter(Boolean).join(", "),
+    address:String(document.getElementById("editAddress").value||"").trim(),
+    phone:String(document.getElementById("editPhone").value||"").trim(),
+    website:String(document.getElementById("editWebsite").value||"").trim(),
+    lat,
+    lng,
+    vip:document.getElementById("editVip").checked,
+    video:document.getElementById("editVideo").checked,
+    offer:document.getElementById("editOffer").checked,
+    updatedAt:new Date().toISOString()
+  };
+
+  const oldText=saveBtn?.textContent || "Değişiklikleri Kaydet";
+  if(saveBtn){
+    saveBtn.disabled=true;
+    saveBtn.textContent="Kaydediliyor...";
+  }
+  showSaveMessage("Değişiklikler kaydediliyor...","saving");
+
+  try{
+    const ref=db.collection("institutions").doc(id);
+    const fresh=await ref.get();
+
+    if(!fresh.exists){
+      showSaveMessage("Bu kurum kaydı artık bulunamıyor. Listeyi yenileyin.","error");
+      return;
+    }
+
+    await ref.update(updates);
+
+    const record=institutionRecords.find(item=>String(item.id)===id);
+    if(record)Object.assign(record,updates);
+
+    showSaveMessage("✓ Değişiklikler kaydedildi.","success");
+    renderManagedInstitutions();
+    refreshAdminOverview();
+
+    setTimeout(()=>{
+      institutionEditModal.classList.add("hidden");
+    },650);
+  }catch(error){
+    console.error("Kurum güncellenemedi:",error);
+
+    let message="Değişiklikler kaydedilemedi.";
+    if(String(error?.code||"").includes("permission-denied")){
+      message="Kaydetme yetkisi reddedildi. Yönetici oturumunu yenileyip tekrar deneyin.";
+    }else if(String(error?.code||"").includes("unavailable")){
+      message="Firebase'e şu anda ulaşılamıyor. İnternet bağlantısını kontrol edip tekrar deneyin.";
+    }
+
+    showSaveMessage(message,"error");
+  }finally{
+    if(saveBtn){
+      saveBtn.disabled=false;
+      saveBtn.textContent=oldText;
+    }
   }
 });
 
