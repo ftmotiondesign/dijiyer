@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=30">
+  <link rel="stylesheet" href="institution.css?v=31">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -567,17 +567,16 @@
       <section class="showcase-sales-hero">
         <div class="showcase-hero-mark">◎</div>
         <div class="showcase-sales-copy">
-          <span class="showcase-eyebrow">DİJİYER TANITIM HİZMETLERİ</span>
-          <h2>Müşteri sizi bulduğunda, mekanınızı da hemen görebilsin.</h2>
+          <span class="showcase-eyebrow">DİJİYER REKLAM & TANITIM MERKEZİ</span>
+          <h2>Kurumunuzu daha görünür, daha anlaşılır ve daha güçlü gösterin.</h2>
           <p>
-            Kurum profilinizi yalnızca iletişim bilgilerinin olduğu bir sayfa olmaktan çıkarın.
-            <strong>Konum Videosu</strong> ile “nasıl giderim?”, <strong>360° Sanal Tur</strong> ile
-            “içerisi nasıl?” sorusuna doğrudan cevap verin.
+            İçeriğinizi hazırlayalım, Dijiyer içinde doğru alanlarda yayınlayalım ve müşterinin
+            kurum sayfanızda daha fazla bilgiye ulaşmasını sağlayalım.
           </p>
           <div class="showcase-hero-chips">
-            <span>✓ Kurum sayfanızda yayınlanır</span>
-            <span>✓ Mobilde görüntülenir</span>
-            <span>✓ Paylaşılabilir</span>
+            <span>✓ İçerik üretimi</span>
+            <span>✓ Dijiyer reklam alanları</span>
+            <span>✓ Kuruma özel paketler</span>
           </div>
         </div>
         <div class="showcase-live-status">
@@ -589,78 +588,166 @@
             <span>360° Sanal Tur</span>
             <strong id="showcaseTourStatus">Kontrol ediliyor...</strong>
           </div>
+          <div>
+            <span>Dijiyer Reklamı</span>
+            <strong id="showcaseAdStatus">Kontrol ediliyor...</strong>
+          </div>
           <button type="button" id="showcasePreviewBtn">👁 Müşteri Sayfamı Gör</button>
         </div>
       </section>
 
-      <section class="showcase-benefit-row">
-        <article>
-          <span>01</span>
-          <div><strong>Konumu daha kolay anlatın</strong><small>Adres tarifini video ile daha anlaşılır hale getirin.</small></div>
-        </article>
-        <article>
-          <span>02</span>
-          <div><strong>Mekanı önceden gösterin</strong><small>Müşteri gelmeden önce ortamı inceleyebilsin.</small></div>
-        </article>
-        <article>
-          <span>03</span>
-          <div><strong>İçeriği tekrar kullanın</strong><small>Hazırlanan tanıtımı sosyal medya ve WhatsApp'ta da paylaşın.</small></div>
-        </article>
+      <nav class="showcase-section-nav" aria-label="Tanıtım hizmetleri bölümleri">
+        <button type="button" data-showcase-section-target="showcaseRecommendations">★ Size Özel</button>
+        <button type="button" data-showcase-section-target="showcaseContentServices">🎬 İçerik Üretimi</button>
+        <button type="button" data-showcase-section-target="showcaseAdServices">📣 Dijiyer'de Reklam Ver</button>
+        <button type="button" data-showcase-section-target="showcasePackages">▦ Paketler</button>
+      </nav>
+
+      <section class="showcase-recommendation-panel" id="showcaseRecommendations">
+        <div class="showcase-section-heading">
+          <div>
+            <span class="showcase-eyebrow">KURUMUNUZA ÖZEL</span>
+            <h3>Görünürlüğünüzü artırmak için öneriler</h3>
+            <p>Mevcut kurum profilinize göre eksik veya değerlendirilebilecek tanıtım alanları.</p>
+          </div>
+          <span class="showcase-recommendation-score" id="showcaseRecommendationScore">Kontrol ediliyor...</span>
+        </div>
+        <div class="showcase-recommendation-list" id="showcaseRecommendationList">
+          <div class="showcase-recommendation-loading">Kurum profiliniz analiz ediliyor...</div>
+        </div>
       </section>
 
-      <div class="showcase-product-grid">
-        <article class="showcase-product-card location-video">
-          <div class="showcase-card-top">
-            <div class="showcase-product-icon">▶</div>
-            <span class="showcase-card-label">KONUM & ULAŞIM</span>
+      <section class="showcase-category-section" id="showcaseContentServices">
+        <div class="showcase-section-heading">
+          <div>
+            <span class="showcase-eyebrow">01 · İÇERİK ÜRETİMİ</span>
+            <h3>İşletmenizi anlatan içerikleri biz hazırlayalım.</h3>
+            <p>Hazırlanan içerikleri kurum sayfanızda, sosyal medyada ve reklam çalışmalarınızda kullanabilirsiniz.</p>
           </div>
-          <div class="showcase-product-body">
-            <span class="showcase-product-kicker">KONUM VİDEOSU</span>
-            <h3>Müşteri sizi aramadan önce yolu görsün.</h3>
-            <p>İşletmenizin konumunu, yaklaşım güzergahını ve adresini kısa bir tanıtım videosunda gösterin.</p>
-            <div class="showcase-use-cases">
-              <span>🗺️ Harita / rota anlatımı</span>
-              <span>📍 Adres ve çevre vurgusu</span>
-              <span>▶ Kurum profilinde video alanı</span>
-              <span>📱 Reels / WhatsApp kullanımı</span>
-            </div>
-          </div>
-          <div class="showcase-card-result">
-            <strong>Kurum sayfanızda:</strong>
-            <span>“▶ Konum Videosu” alanı müşterinin karşısına çıkar.</span>
-          </div>
-          <button type="button" data-showcase-request="location">Konum Videosu İçin Bilgi Al</button>
-        </article>
+        </div>
 
-        <article class="showcase-product-card virtual-tour">
-          <div class="showcase-card-top">
-            <div class="showcase-product-icon">360°</div>
-            <span class="showcase-card-label">MEKAN DENEYİMİ</span>
+        <div class="showcase-service-cards">
+          <article class="showcase-service-card orange">
+            <div class="showcase-service-icon">▶</div>
+            <span>Konum Videosu</span>
+            <h4>Müşteri sizi aramadan yolu görsün.</h4>
+            <p>Harita, rota, adres ve kurum bilgilerini kısa bir tanıtım videosunda birleştirelim.</p>
+            <ul>
+              <li>Dijiyer kurum sayfasında özel video alanı</li>
+              <li>Reels ve WhatsApp'ta tekrar kullanım</li>
+              <li>Adres ve ulaşım anlatımı</li>
+            </ul>
+            <button type="button" data-showcase-request="location">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-service-card purple">
+            <div class="showcase-service-icon">360°</div>
+            <span>360° Sanal Tur</span>
+            <h4>Müşteri gelmeden önce mekanı gezsin.</h4>
+            <p>Sınıf, salon, oda veya işletme alanlarını çevrimiçi gezilebilir hale getirelim.</p>
+            <ul>
+              <li>Kurum sayfasında 360° tur alanı</li>
+              <li>QR / NFC ile açılabilir bağlantı</li>
+              <li>Web sitesi ve sosyal medya paylaşımı</li>
+            </ul>
+            <button type="button" data-showcase-request="tour">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-service-card blue">
+            <div class="showcase-service-icon">▸</div>
+            <span>Reels Tanıtım Videosu</span>
+            <h4>Kurumunuzu kısa videoyla anlatın.</h4>
+            <p>Hizmetlerinizi, kampanyanızı veya kurumunuzu seslendirmeli kısa videoya dönüştürelim.</p>
+            <ul>
+              <li>Dikey sosyal medya formatı</li>
+              <li>Seslendirmeli veya müzikli kurgu</li>
+              <li>Kampanya ve hizmet tanıtımı</li>
+            </ul>
+            <button type="button" data-showcase-request="reels">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-service-card green">
+            <div class="showcase-service-icon">▣</div>
+            <span>Reklam Banner Tasarımı</span>
+            <h4>Dijiyer reklam alanına hazır banner.</h4>
+            <p>Kurumunuza ve kampanyanıza uygun reklam görselini Dijiyer için hazırlayalım.</p>
+            <ul>
+              <li>Markanıza uygun tasarım</li>
+              <li>Reklam alanına uygun ölçü</li>
+              <li>Kampanya mesajı ve çağrı butonu</li>
+            </ul>
+            <button type="button" data-showcase-request="bannerDesign">Bilgi Al</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="showcase-category-section showcase-ad-section" id="showcaseAdServices">
+        <div class="showcase-section-heading">
+          <div>
+            <span class="showcase-eyebrow">02 · DİJİYER'DE REKLAM VER</span>
+            <h3>Kurumunuzu müşterilerin daha çok gördüğü alanlarda yayınlayın.</h3>
+            <p>Reklam satın almak teklif sıralamasını değiştirmez. Sponsorlu alanlar açıkça belirtilir.</p>
           </div>
-          <div class="showcase-product-body">
-            <span class="showcase-product-kicker">360° SANAL TUR</span>
-            <h3>Müşteri mekana gelmeden önce içeriyi gezsin.</h3>
-            <p>Sınıf, salon, oda veya işletme alanlarını çevrimiçi gezilebilir bir deneyime dönüştürün.</p>
-            <div class="showcase-use-cases">
-              <span>◎ Telefon ve bilgisayarda gezinti</span>
-              <span>🏢 Mekanın farklı bölümlerini gösterme</span>
-              <span>🔗 Kurum sayfasında 360° bağlantısı</span>
-              <span>▣ QR / NFC / web sitesi kullanımı</span>
-            </div>
-          </div>
-          <div class="showcase-card-result">
-            <strong>Kurum sayfanızda:</strong>
-            <span>“360° Sanal Turu Aç” alanı müşterinin karşısına çıkar.</span>
-          </div>
-          <button type="button" data-showcase-request="tour">360° Sanal Tur İçin Bilgi Al</button>
-        </article>
-      </div>
+          <span class="showcase-neutral-badge">Tarafsız teklif sıralaması korunur</span>
+        </div>
+
+        <div class="showcase-ad-grid">
+          <article class="showcase-ad-card featured">
+            <div class="showcase-ad-label">EN GÖRÜNÜR ALAN</div>
+            <div class="showcase-ad-icon">⌂</div>
+            <h4>Ana Sayfa Vitrini</h4>
+            <p>Kurumunuz Dijiyer ana sayfasındaki sponsorlu vitrin alanında gösterilir.</p>
+            <div class="showcase-ad-benefit">Amaç: daha fazla profil ziyareti ve marka görünürlüğü.</div>
+            <button type="button" data-showcase-request="homepage">Ana Sayfada Görün</button>
+          </article>
+
+          <article class="showcase-ad-card">
+            <div class="showcase-ad-icon">📍</div>
+            <h4>Şehir / İlçe Vitrini</h4>
+            <p>Belirli şehir veya ilçede kurum arayan kullanıcılara sponsorlu alanda görünün.</p>
+            <div class="showcase-ad-benefit">Amaç: bölgesel müşterilere daha görünür olmak.</div>
+            <button type="button" data-showcase-request="regionalAd">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-ad-card">
+            <div class="showcase-ad-icon">🏷️</div>
+            <h4>Kategori Vitrini</h4>
+            <p>Kendi sektörünüzü inceleyen müşterilerin karşısına sponsorlu kurum olarak çıkın.</p>
+            <div class="showcase-ad-benefit">Amaç: hizmetinizi arayan kullanıcıya ulaşmak.</div>
+            <button type="button" data-showcase-request="categoryAd">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-ad-card">
+            <div class="showcase-ad-icon">▰</div>
+            <h4>Banner Reklamı</h4>
+            <p>Kampanyanızı veya kurumunuzu Dijiyer içindeki reklam banner alanlarında yayınlayın.</p>
+            <div class="showcase-ad-benefit">Bannerınız yoksa tasarımını da hazırlayabiliriz.</div>
+            <button type="button" data-showcase-request="bannerAd">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-ad-card">
+            <div class="showcase-ad-icon">📣</div>
+            <h4>Kampanya Duyurusu</h4>
+            <p>Kayıt, indirim, yeni hizmet veya dönemsel kampanyanızı görünür bir duyuruya dönüştürün.</p>
+            <div class="showcase-ad-benefit">Kurum sayfası + uygun reklam alanlarında kullanılabilir.</div>
+            <button type="button" data-showcase-request="campaign">Bilgi Al</button>
+          </article>
+
+          <article class="showcase-ad-card">
+            <div class="showcase-ad-icon">▶</div>
+            <h4>Video Vitrin Reklamı</h4>
+            <p>Kısa tanıtım videonuzu Dijiyer'de sponsorlu video alanında kullanın.</p>
+            <div class="showcase-ad-benefit">Videonuz yoksa içerik üretimini de birlikte planlayabiliriz.</div>
+            <button type="button" data-showcase-request="videoAd">Bilgi Al</button>
+          </article>
+        </div>
+      </section>
 
       <section class="showcase-page-preview">
         <div class="showcase-page-preview-copy">
           <span class="showcase-eyebrow">MÜŞTERİ NE GÖRECEK?</span>
-          <h3>Tanıtım hizmetleri kurum sayfanızın içinde özel bir bölümde gösterilir.</h3>
-          <p>Hizmet aktif olduğunda müşterinin karşısına ayrı bir “Mekanı Keşfet” alanı çıkar.</p>
+          <h3>Satın aldığınız içerikler doğrudan kurum sayfanızda değer üretir.</h3>
+          <p>Konum Videosu ve 360° Sanal Tur aktif olduğunda müşterinin karşısına özel “Mekanı Keşfet” alanı çıkar.</p>
           <button type="button" id="showcasePreviewBtn2">Kendi Sayfamı Önizle →</button>
         </div>
         <div class="showcase-profile-mock">
@@ -677,44 +764,78 @@
         </div>
       </section>
 
-      <section class="showcase-combo-card">
-        <div class="showcase-combo-badge">BİRLİKTE DAHA GÜÇLÜ</div>
-        <div>
-          <span class="showcase-eyebrow">DİJİYER MEKAN TANITIM PAKETİ</span>
-          <h3>Konum Videosu + 360° Sanal Tur</h3>
-          <p>
-            Müşteriye hem işletmenize nasıl ulaşacağını hem de içeride nasıl bir ortam olduğunu
-            aynı kurum sayfasında gösterin.
-          </p>
+      <section class="showcase-category-section" id="showcasePackages">
+        <div class="showcase-section-heading">
+          <div>
+            <span class="showcase-eyebrow">03 · PAKETLER</span>
+            <h3>İhtiyacınıza göre tek hizmet veya birleşik paket seçin.</h3>
+            <p>Fiyat ve yayın süresi kurumunuza, bölgenize ve seçilen reklam alanına göre netleştirilir.</p>
+          </div>
         </div>
-        <div class="showcase-combo-features">
-          <span>✓ Konum Videosu</span>
-          <span>✓ 360° Sanal Tur</span>
-          <span>✓ Kurum profilinde özel gösterim</span>
-          <span>✓ Paylaşılabilir kurum sayfası</span>
+
+        <div class="showcase-package-grid">
+          <article class="showcase-package-card">
+            <span class="package-type">BAŞLANGIÇ</span>
+            <h4>Başlangıç Görünürlüğü</h4>
+            <p>İlk kez Dijiyer reklamı deneyecek kurumlar için.</p>
+            <ul><li>Reklam banner tasarımı</li><li>Kategori vitrini</li></ul>
+            <button type="button" data-showcase-request="packageStarter">Paket Bilgisi Al</button>
+          </article>
+
+          <article class="showcase-package-card">
+            <span class="package-type">BÖLGESEL</span>
+            <h4>Bölgesel Görünürlük</h4>
+            <p>Şehir ve ilçe bazında müşteri arayan kurumlar için.</p>
+            <ul><li>Banner tasarımı</li><li>Şehir / ilçe vitrini</li><li>Kampanya duyurusu</li></ul>
+            <button type="button" data-showcase-request="packageRegional">Paket Bilgisi Al</button>
+          </article>
+
+          <article class="showcase-package-card recommended">
+            <span class="package-recommended">ÖNERİLEN</span>
+            <span class="package-type">MEKAN TANITIM</span>
+            <h4>Dijiyer Mekan Tanıtım</h4>
+            <p>Kurumunuzu hem konum hem mekan deneyimiyle anlatın.</p>
+            <ul><li>Konum Videosu</li><li>360° Sanal Tur</li><li>Kurum profilinde özel gösterim</li></ul>
+            <button type="button" data-showcase-request="combo">Paket Bilgisi Al</button>
+          </article>
+
+          <article class="showcase-package-card">
+            <span class="package-type">GÖRÜNÜRLÜK PLUS</span>
+            <h4>Görünürlük Plus</h4>
+            <p>İçerik üretimiyle ana sayfa görünürlüğünü birleştirin.</p>
+            <ul><li>Konum Videosu</li><li>Banner tasarımı</li><li>Ana Sayfa Vitrini</li></ul>
+            <button type="button" data-showcase-request="packagePlus">Paket Bilgisi Al</button>
+          </article>
+
+          <article class="showcase-package-card premium">
+            <span class="package-type">PREMIUM</span>
+            <h4>Premium Tanıtım</h4>
+            <p>İçerik ve Dijiyer görünürlüğünü tek pakette toplayın.</p>
+            <ul><li>Konum Videosu + 360° Tur</li><li>Ana sayfa vitrini</li><li>Kategori vitrini</li><li>Şehir / ilçe vitrini</li></ul>
+            <button type="button" data-showcase-request="packagePremium">Paket Bilgisi Al</button>
+          </article>
         </div>
-        <button type="button" data-showcase-request="combo">Paket İçin Bilgi Al →</button>
       </section>
 
       <section class="showcase-how-card">
         <div class="showcase-how-head">
           <span class="showcase-eyebrow">NASIL İLERLİYOR?</span>
-          <h3>3 adımda kurum sayfanızda</h3>
+          <h3>Talep → Planlama → Yayın</h3>
         </div>
         <div class="showcase-how-steps">
-          <div class="showcase-how-step"><b>1</b><span><strong>Talep oluşturun</strong><small>İlgilendiğiniz hizmeti bize iletin.</small></span></div>
-          <div class="showcase-how-step"><b>2</b><span><strong>Çekim / içerik planlansın</strong><small>Konum ve mekanınıza göre çalışma belirlenir.</small></span></div>
-          <div class="showcase-how-step"><b>3</b><span><strong>Kurum sayfanızda yayınlansın</strong><small>Hazırlanan içerik profilinize eklenir.</small></span></div>
+          <div class="showcase-how-step"><b>1</b><span><strong>Hizmeti seçin</strong><small>Tek hizmet veya paket için bilgi talebi bırakın.</small></span></div>
+          <div class="showcase-how-step"><b>2</b><span><strong>Planlama yapılsın</strong><small>Çekim, tasarım ve reklam alanı birlikte netleştirilsin.</small></span></div>
+          <div class="showcase-how-step"><b>3</b><span><strong>Yayına alınsın</strong><small>Hazırlanan içerik kurum sayfanıza ve seçilen reklam alanına eklensin.</small></span></div>
         </div>
       </section>
 
       <section class="showcase-final-cta">
         <div>
           <span>HANGİSİ BANA UYGUN?</span>
-          <strong>Konum Videosu mu, 360° Tur mu, ikisi birden mi?</strong>
-          <small>Kurumunuza uygun seçeneği konuşmak için bilgi talebi bırakabilirsiniz.</small>
+          <strong>Kurumunuza uygun tanıtım planını birlikte belirleyelim.</strong>
+          <small>Tek bir hizmetle başlayabilir veya içerik + reklam paketini birlikte seçebilirsiniz.</small>
         </div>
-        <button type="button" data-showcase-request="combo">Tanıtım Hizmetleri Hakkında Bilgi Al</button>
+        <button type="button" data-showcase-request="consultation">Bana Uygun Paketi Sor</button>
       </section>
     </section>
     <section class="panel-view" data-panel-view="profile">
