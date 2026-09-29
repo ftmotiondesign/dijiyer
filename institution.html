@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=29">
+  <link rel="stylesheet" href="institution.css?v=30">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
 </head>
@@ -30,6 +30,9 @@
         <div class="eyebrow">KURUM YÖNETİM PANELİ</div>
         <div class="welcome-title-row">
           <h1 id="panelInstitutionName">Kurum bilgileri yükleniyor...</h1>
+          <button type="button" class="welcome-showcase-btn" data-panel-tab="showcase">
+            ★ Tanıtım Hizmetleri
+          </button>
           <button type="button" class="welcome-profile-btn" data-panel-tab="profile">
             ✎ Kurum Bilgileri
           </button>
@@ -48,6 +51,20 @@
         <span class="approved-badge">✓ Onaylı Hesap</span>
         <span class="offer-badge" id="panelOfferBadge">Teklif durumu yükleniyor</span>
       </div>
+    </section>
+
+    <section class="top-showcase-banner" aria-label="Dijiyer Tanıtım Hizmetleri">
+      <div class="top-showcase-icon">◎</div>
+      <div class="top-showcase-copy">
+        <span>DİJİYER TANITIM HİZMETLERİ</span>
+        <strong>Kurumunuzu müşteriye daha görünür ve daha anlaşılır gösterin.</strong>
+        <small>Konum Videosu ile yolu gösterin · 360° Sanal Tur ile mekanınızı gezdirin.</small>
+      </div>
+      <div class="top-showcase-tags">
+        <span>▶ Konum Videosu</span>
+        <span>360° Sanal Tur</span>
+      </div>
+      <button type="button" data-panel-tab="showcase">Hizmetleri İncele →</button>
     </section>
 
     <section class="seller-trust-card" aria-label="Dijiyer Güvencesi">
@@ -159,6 +176,18 @@
           <strong>Kurum Paneli</strong>
         </div>
 
+        <div class="side-nav-group side-nav-showcase-group">
+          <span class="side-nav-group-title">ÖNE ÇIKAR</span>
+          <button type="button" class="side-nav-item showcase-nav-item" data-panel-tab="showcase">
+            <span class="side-nav-icon">◎</span>
+            <span class="side-nav-copy">
+              <strong>Tanıtım Hizmetleri</strong>
+              <small>Konum videosu & 360° tur</small>
+            </span>
+            <span class="showcase-nav-badge">YENİ</span>
+          </button>
+        </div>
+
         <div class="side-nav-group">
           <span class="side-nav-group-title">İŞİM</span>
 
@@ -188,16 +217,10 @@
           </button>
         </div>
 
+
+
         <div class="side-nav-group">
           <span class="side-nav-group-title">KURUMUM</span>
-
-          <button type="button" class="side-nav-item showcase-nav-item" data-panel-tab="showcase">
-            <span class="side-nav-icon">◎</span>
-            <span class="side-nav-copy">
-              <strong>Tanıtım Hizmetleri</strong>
-              <small>Konum videosu & 360° tur</small>
-            </span>
-          </button>
 
           <button type="button" class="side-nav-item" data-panel-tab="stats">
             <span class="side-nav-icon">▥</span>
@@ -540,43 +563,160 @@
       </article>
     </section>
 
-    <section class="panel-view" data-panel-view="showcase">
+    <section class="panel-view showcase-page" data-panel-view="showcase">
       <section class="showcase-sales-hero">
+        <div class="showcase-hero-mark">◎</div>
         <div class="showcase-sales-copy">
-          <span class="eyebrow">DİJİYER TANITIM HİZMETLERİ</span>
-          <h2>Kurum sayfanızı müşterinin gezebileceği bir vitrine dönüştürün.</h2>
-          <p>İlk odak noktamız iki hizmet: <strong>Konum Videosu</strong> ile müşteriye nerede olduğunuzu hızlıca gösterin; <strong>360° Sanal Tur</strong> ile mekana gelmeden önce içeriyi gezdirin.</p>
+          <span class="showcase-eyebrow">DİJİYER TANITIM HİZMETLERİ</span>
+          <h2>Müşteri sizi bulduğunda, mekanınızı da hemen görebilsin.</h2>
+          <p>
+            Kurum profilinizi yalnızca iletişim bilgilerinin olduğu bir sayfa olmaktan çıkarın.
+            <strong>Konum Videosu</strong> ile “nasıl giderim?”, <strong>360° Sanal Tur</strong> ile
+            “içerisi nasıl?” sorusuna doğrudan cevap verin.
+          </p>
+          <div class="showcase-hero-chips">
+            <span>✓ Kurum sayfanızda yayınlanır</span>
+            <span>✓ Mobilde görüntülenir</span>
+            <span>✓ Paylaşılabilir</span>
+          </div>
         </div>
         <div class="showcase-live-status">
-          <div><span>Konum Videosu</span><strong id="showcaseLocationStatus">Kontrol ediliyor...</strong></div>
-          <div><span>360° Sanal Tur</span><strong id="showcaseTourStatus">Kontrol ediliyor...</strong></div>
+          <div>
+            <span>Konum Videosu</span>
+            <strong id="showcaseLocationStatus">Kontrol ediliyor...</strong>
+          </div>
+          <div>
+            <span>360° Sanal Tur</span>
+            <strong id="showcaseTourStatus">Kontrol ediliyor...</strong>
+          </div>
           <button type="button" id="showcasePreviewBtn">👁 Müşteri Sayfamı Gör</button>
         </div>
       </section>
+
+      <section class="showcase-benefit-row">
+        <article>
+          <span>01</span>
+          <div><strong>Konumu daha kolay anlatın</strong><small>Adres tarifini video ile daha anlaşılır hale getirin.</small></div>
+        </article>
+        <article>
+          <span>02</span>
+          <div><strong>Mekanı önceden gösterin</strong><small>Müşteri gelmeden önce ortamı inceleyebilsin.</small></div>
+        </article>
+        <article>
+          <span>03</span>
+          <div><strong>İçeriği tekrar kullanın</strong><small>Hazırlanan tanıtımı sosyal medya ve WhatsApp'ta da paylaşın.</small></div>
+        </article>
+      </section>
+
       <div class="showcase-product-grid">
         <article class="showcase-product-card location-video">
-          <div class="showcase-product-icon">▶</div>
-          <div class="showcase-product-body"><span class="showcase-product-kicker">KONUM VİDEOSU</span><h3>Müşteri sizi aramadan önce yolu görsün.</h3><p>İşletmenizin konumunu ve ulaşımını kısa, anlaşılır bir video ile anlatın.</p><ul><li>Harita / rota üzerinden konum anlatımı</li><li>Kurum adı, adres ve ulaşım vurgusu</li><li>Dijiyer kurum sayfasında özel video alanı</li><li>Sosyal medya ve WhatsApp’ta tekrar kullanılabilir içerik</li></ul></div>
+          <div class="showcase-card-top">
+            <div class="showcase-product-icon">▶</div>
+            <span class="showcase-card-label">KONUM & ULAŞIM</span>
+          </div>
+          <div class="showcase-product-body">
+            <span class="showcase-product-kicker">KONUM VİDEOSU</span>
+            <h3>Müşteri sizi aramadan önce yolu görsün.</h3>
+            <p>İşletmenizin konumunu, yaklaşım güzergahını ve adresini kısa bir tanıtım videosunda gösterin.</p>
+            <div class="showcase-use-cases">
+              <span>🗺️ Harita / rota anlatımı</span>
+              <span>📍 Adres ve çevre vurgusu</span>
+              <span>▶ Kurum profilinde video alanı</span>
+              <span>📱 Reels / WhatsApp kullanımı</span>
+            </div>
+          </div>
+          <div class="showcase-card-result">
+            <strong>Kurum sayfanızda:</strong>
+            <span>“▶ Konum Videosu” alanı müşterinin karşısına çıkar.</span>
+          </div>
           <button type="button" data-showcase-request="location">Konum Videosu İçin Bilgi Al</button>
         </article>
+
         <article class="showcase-product-card virtual-tour">
-          <div class="showcase-product-icon">360°</div>
-          <div class="showcase-product-body"><span class="showcase-product-kicker">360° SANAL TUR</span><h3>Müşteri mekana gelmeden önce içeriyi gezsin.</h3><p>Kurumunuzu çevrimiçi olarak gezilebilir hale getirerek mekan güvenini güçlendirin.</p><ul><li>Telefon ve bilgisayardan 360° gezinti</li><li>Sınıf, oda, salon veya işletme bölümlerini gösterme</li><li>Dijiyer kurum sayfasında “360° Turu Aç” alanı</li><li>Web sitesi, QR ve NFC yönlendirmelerinde kullanılabilir</li></ul></div>
+          <div class="showcase-card-top">
+            <div class="showcase-product-icon">360°</div>
+            <span class="showcase-card-label">MEKAN DENEYİMİ</span>
+          </div>
+          <div class="showcase-product-body">
+            <span class="showcase-product-kicker">360° SANAL TUR</span>
+            <h3>Müşteri mekana gelmeden önce içeriyi gezsin.</h3>
+            <p>Sınıf, salon, oda veya işletme alanlarını çevrimiçi gezilebilir bir deneyime dönüştürün.</p>
+            <div class="showcase-use-cases">
+              <span>◎ Telefon ve bilgisayarda gezinti</span>
+              <span>🏢 Mekanın farklı bölümlerini gösterme</span>
+              <span>🔗 Kurum sayfasında 360° bağlantısı</span>
+              <span>▣ QR / NFC / web sitesi kullanımı</span>
+            </div>
+          </div>
+          <div class="showcase-card-result">
+            <strong>Kurum sayfanızda:</strong>
+            <span>“360° Sanal Turu Aç” alanı müşterinin karşısına çıkar.</span>
+          </div>
           <button type="button" data-showcase-request="tour">360° Sanal Tur İçin Bilgi Al</button>
         </article>
       </div>
-      <section class="showcase-combo-card">
-        <div><span class="eyebrow">ÖNERİLEN BAŞLANGIÇ PAKETİ</span><h3>Dijiyer Mekan Tanıtım Paketi</h3><p>Konum Videosu + 360° Sanal Tur birlikte kullanıldığında kurum sayfanız müşteriye “nasıl giderim?” ve “içerisi nasıl?” sorularının ikisini de yanıtlar.</p></div>
-        <div class="showcase-combo-features"><span>✓ Konum Videosu</span><span>✓ 360° Sanal Tur</span><span>✓ Kurum profilinde özel gösterim</span><span>✓ Paylaşılabilir kurum sayfası</span></div>
-        <button type="button" data-showcase-request="combo">Paket İçin Bilgi Al</button>
+
+      <section class="showcase-page-preview">
+        <div class="showcase-page-preview-copy">
+          <span class="showcase-eyebrow">MÜŞTERİ NE GÖRECEK?</span>
+          <h3>Tanıtım hizmetleri kurum sayfanızın içinde özel bir bölümde gösterilir.</h3>
+          <p>Hizmet aktif olduğunda müşterinin karşısına ayrı bir “Mekanı Keşfet” alanı çıkar.</p>
+          <button type="button" id="showcasePreviewBtn2">Kendi Sayfamı Önizle →</button>
+        </div>
+        <div class="showcase-profile-mock">
+          <div class="mock-browser"><i></i><i></i><i></i><span>kurumunuz · Dijiyer</span></div>
+          <div class="mock-profile-head">
+            <span class="mock-logo">D</span>
+            <div><strong>Kurumunuz</strong><small>📍 Şehir / İlçe</small></div>
+          </div>
+          <div class="mock-experience-title">MEKANI KEŞFET</div>
+          <div class="mock-experience-grid">
+            <div><b>▶</b><strong>Konum Videosu</strong><span>Videoyu izle</span></div>
+            <div><b>360°</b><strong>Sanal Tur</strong><span>Mekanı gez</span></div>
+          </div>
+        </div>
       </section>
+
+      <section class="showcase-combo-card">
+        <div class="showcase-combo-badge">BİRLİKTE DAHA GÜÇLÜ</div>
+        <div>
+          <span class="showcase-eyebrow">DİJİYER MEKAN TANITIM PAKETİ</span>
+          <h3>Konum Videosu + 360° Sanal Tur</h3>
+          <p>
+            Müşteriye hem işletmenize nasıl ulaşacağını hem de içeride nasıl bir ortam olduğunu
+            aynı kurum sayfasında gösterin.
+          </p>
+        </div>
+        <div class="showcase-combo-features">
+          <span>✓ Konum Videosu</span>
+          <span>✓ 360° Sanal Tur</span>
+          <span>✓ Kurum profilinde özel gösterim</span>
+          <span>✓ Paylaşılabilir kurum sayfası</span>
+        </div>
+        <button type="button" data-showcase-request="combo">Paket İçin Bilgi Al →</button>
+      </section>
+
       <section class="showcase-how-card">
-        <div class="showcase-how-step"><b>1</b><span><strong>Talep oluşturun</strong><small>İlgilendiğiniz hizmeti bize iletin.</small></span></div>
-        <div class="showcase-how-step"><b>2</b><span><strong>Çekim / içerik planlansın</strong><small>Konum ve mekanınıza göre çalışma belirlenir.</small></span></div>
-        <div class="showcase-how-step"><b>3</b><span><strong>Kurum sayfanızda yayınlansın</strong><small>Hazırlanan içerik profilinize eklenir.</small></span></div>
+        <div class="showcase-how-head">
+          <span class="showcase-eyebrow">NASIL İLERLİYOR?</span>
+          <h3>3 adımda kurum sayfanızda</h3>
+        </div>
+        <div class="showcase-how-steps">
+          <div class="showcase-how-step"><b>1</b><span><strong>Talep oluşturun</strong><small>İlgilendiğiniz hizmeti bize iletin.</small></span></div>
+          <div class="showcase-how-step"><b>2</b><span><strong>Çekim / içerik planlansın</strong><small>Konum ve mekanınıza göre çalışma belirlenir.</small></span></div>
+          <div class="showcase-how-step"><b>3</b><span><strong>Kurum sayfanızda yayınlansın</strong><small>Hazırlanan içerik profilinize eklenir.</small></span></div>
+        </div>
+      </section>
+
+      <section class="showcase-final-cta">
+        <div>
+          <span>HANGİSİ BANA UYGUN?</span>
+          <strong>Konum Videosu mu, 360° Tur mu, ikisi birden mi?</strong>
+          <small>Kurumunuza uygun seçeneği konuşmak için bilgi talebi bırakabilirsiniz.</small>
+        </div>
+        <button type="button" data-showcase-request="combo">Tanıtım Hizmetleri Hakkında Bilgi Al</button>
       </section>
     </section>
-
     <section class="panel-view" data-panel-view="profile">
       <article class="panel-card profile-card">
         <div class="card-head">
@@ -1063,8 +1203,8 @@
       </div>
 
       <div class="mobile-menu-grid">
+        <button type="button" class="mobile-showcase-btn" data-panel-tab="showcase">◎ <span>Tanıtım Hizmetleri</span><b>YENİ</b></button>
         <button type="button" data-panel-tab="profile">✎ <span>Kurum Bilgileri</span></button>
-        <button type="button" data-panel-tab="showcase">◎ <span>Tanıtım Hizmetleri</span></button>
         <button type="button" data-panel-tab="stats">▥ <span>İstatistikler</span></button>
         <button type="button" data-panel-tab="announcements">📣 <span>Duyurular</span></button>
         <button type="button" data-panel-tab="support">? <span>Destek</span></button>
