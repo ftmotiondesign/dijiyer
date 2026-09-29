@@ -1300,7 +1300,7 @@ function renderPromotionOrders(){
           `).join("")}
         </div>
         <div class="promotion-order-row-meta">
-          <span>Fiyat <b>${escapeHtml(order.priceLabel|| (order.price ? new Intl.NumberFormat("tr-TR").format(order.price)+" TL" : "Netleştirilecek"))}</b></span>
+          <span>Fiyat <b>${escapeHtml(Number(order.price||0)>0 ? new Intl.NumberFormat("tr-TR").format(Number(order.price))+" TL" : (order.priceLabel||"Netleştirilecek"))}</b></span>
           <span>Ödeme <b>${order.paymentStatus==="paid"?"Ödendi":"Bekliyor"}</b></span>
           ${order.note?'<span class="promotion-order-note">Sipariş Notu <b>'+escapeHtml(order.note)+'</b></span>':""}
           ${order.adminNote?'<span class="promotion-order-note admin-update">Dijiyer Notu <b>'+escapeHtml(order.adminNote)+'</b></span>':""}
