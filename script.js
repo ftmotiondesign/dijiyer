@@ -1156,7 +1156,8 @@ const MOBILE_JOB_DEMOS = [
     title:'Evde börek sarabilecek kişi aranıyor',
     city:'Çanakkale',
     district:'Merkez',
-    workMode:'Evden',
+    locationMode:'home',
+    workMode:'Esnek',
     wage:'Ücret görüşülür',
     description:'Şarküteri için düzenli olarak evde börek sarabilecek, el işi hızlı ve temiz çalışan kişi aranıyor.',
     contactName:'Örnek Şarküteri',
@@ -1171,6 +1172,7 @@ const MOBILE_JOB_DEMOS = [
     title:'Boyacı yanına yardımcı aranıyor',
     city:'Çanakkale',
     district:'Kepez',
+    locationMode:'onsite',
     workMode:'Günlük / Ek İş',
     wage:'Günlük 1.500 TL',
     description:'3 günlük iç cephe boya işinde malzeme taşıma, bantlama ve boya hazırlığında yardımcı olacak kişi aranıyor.',
@@ -1186,6 +1188,7 @@ const MOBILE_JOB_DEMOS = [
     title:'Hafta sonu ek iş arıyorum',
     city:'Çanakkale',
     district:'Merkez',
+    locationMode:'onsite',
     workMode:'Hafta sonu',
     wage:'Görüşülür',
     description:'Taşıma, montaj ve boya işlerinde yardımcı olabilirim. Cumartesi ve pazar günleri müsaitim.',
@@ -1200,7 +1203,8 @@ const MOBILE_JOB_DEMOS = [
     categoryLabel:'Dijital & Ofis',
     title:'Akşamları sosyal medya ve video işi yapabilirim',
     city:'Çanakkale',
-    district:'Merkez',
+    district:'',
+    locationMode:'remote',
     workMode:'Proje bazlı',
     wage:'İşe göre görüşülür',
     description:'Reels düzenleme, sosyal medya görseli ve kısa video montajı için akşam saatlerinde ek iş alabilirim.',
@@ -1217,6 +1221,13 @@ let activeMobileJobCategory = 'all';
 let mobileJobCategoryShowAll = false;
 let mobileJobSearchQuery = '';
 let mobileJobSearchTimer = null;
+
+let activeMobileJobLocationMode = 'local';
+let activeMobileJobCity = activeLocationCity || 'Çanakkale';
+let activeMobileJobDistrict = activeLocationDistrict || 'Merkez';
+
+let mobileJobProvinceCache = null;
+const mobileJobDistrictCache = new Map();
 
 function normalizeMobileJobText(value){
   return String(value||'')
@@ -1268,6 +1279,227 @@ function normalizeMobileJobPost(post){
   };
 }
 
+function mobileJobLocationMode(post){
+  const explicit=String(post?.locationMode||'').trim();
+  if(['onsite','remote','home','hybrid'].includes(explicit))return explicit;
+
+  const text=normalizeMobileJobText([
+    post?.title,
+    post?.description,
+    post?.workMode
+  ].filter(Boolean).join(' '));
+
+  if(text.includes('online')||text.includes('uzaktan'))return 'remote';
+  if(text.includes('evden'))return 'home';
+  if(text.includes('hibrit'))return 'hybrid';
+  return 'onsite';
+}
+
+function mobileJobLocationLabel(post){
+  const mode=mobileJobLocationMode(post);
+  const place=[post?.city,post?.district].filter(Boolean).join(' / ');
+
+  if(mode==='remote')return '🌐 Online / Uzaktan';
+  if(mode==='home')return place ? '🏠 Evden · '+place : '🏠 Evden / Sipariş';
+  if(mode==='hybrid')return place ? '🔄 Hibrit · '+place : '🔄 Hibrit';
+  return place ? '📍 '+place : '📍 Konum belirtilmedi';
+}
+
+function mobileJobMatchesLocation(post){
+  const mode=mobileJobLocationMode(post);
+
+  if(activeMobileJobLocationMode==='remote'){
+    return ['remote','home','hybrid'].includes(mode);
+  }
+
+  if(activeMobileJobLocationMode==='all'){
+    return true;
+  }
+
+  // Yerel aramada tamamen online ilanları dışarıda tut.
+  if(mode==='remote')return false;
+
+  const cityMatches=
+    !activeMobileJobCity ||
+    normalizeMobileJobText(post?.city)===normalizeMobileJobText(activeMobileJobCity);
+
+  const districtMatches=
+    !activeMobileJobDistrict ||
+    normalizeMobileJobText(post?.district)===normalizeMobileJobText(activeMobileJobDistrict);
+
+  return cityMatches && districtMatches;
+}
+
+async function fetchMobileJobProvinces(){
+  if(Array.isArray(mobileJobProvinceCache))return mobileJobProvinceCache;
+
+  const response=await fetch(
+    'https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=81'
+  );
+  if(!response.ok)throw new Error('İl verisi alınamadı');
+
+  const result=await response.json();
+  mobileJobProvinceCache=Array.isArray(result.data)?result.data:[];
+  return mobileJobProvinceCache;
+}
+
+async function fetchMobileJobDistricts(provinceId){
+  if(!provinceId)return [];
+  if(mobileJobDistrictCache.has(String(provinceId))){
+    return mobileJobDistrictCache.get(String(provinceId));
+  }
+
+  const response=await fetch(
+    'https://api.turkiyeapi.dev/v2/provinces/'+encodeURIComponent(provinceId)+'/districts?fields=id,name&limit=100'
+  );
+  if(!response.ok)throw new Error('İlçe verisi alınamadı');
+
+  const result=await response.json();
+  const rows=Array.isArray(result.data)?result.data:[];
+  mobileJobDistrictCache.set(String(provinceId),rows);
+  return rows;
+}
+
+async function fillMobileJobProvinceSelect(select,selectedCity='',allowAll=false){
+  if(!select)return;
+
+  select.disabled=true;
+  select.innerHTML='<option value="">İller yükleniyor...</option>';
+
+  try{
+    const provinces=await fetchMobileJobProvinces();
+    select.innerHTML='<option value="">'+(allowAll?'Tüm İller':'İl seçin')+'</option>';
+
+    provinces.forEach(city=>{
+      const option=document.createElement('option');
+      option.value=city.name;
+      option.textContent=city.name;
+      option.dataset.id=city.id;
+      select.appendChild(option);
+    });
+
+    const wanted=[...select.options].find(
+      option=>normalizeMobileJobText(option.value)===normalizeMobileJobText(selectedCity)
+    );
+    if(wanted)select.value=wanted.value;
+    select.disabled=false;
+  }catch(error){
+    console.error('İş fırsatları il listesi yüklenemedi:',error);
+    select.innerHTML='<option value="">İller yüklenemedi</option>';
+  }
+}
+
+async function fillMobileJobDistrictSelect(citySelect,districtSelect,selectedDistrict='',allowAll=false){
+  if(!citySelect||!districtSelect)return;
+
+  const option=citySelect.options[citySelect.selectedIndex];
+  const provinceId=option?.dataset?.id||'';
+
+  districtSelect.disabled=true;
+
+  if(!provinceId){
+    districtSelect.innerHTML='<option value="">'+(allowAll?'Tüm İlçeler':'Önce il seçin')+'</option>';
+    return;
+  }
+
+  districtSelect.innerHTML='<option value="">İlçeler yükleniyor...</option>';
+
+  try{
+    const districts=await fetchMobileJobDistricts(provinceId);
+    districtSelect.innerHTML='<option value="">'+(allowAll?'Tüm İlçeler':'İlçe seçin')+'</option>';
+
+    districts.forEach(district=>{
+      const item=document.createElement('option');
+      item.value=district.name;
+      item.textContent=district.name;
+      districtSelect.appendChild(item);
+    });
+
+    const wanted=[...districtSelect.options].find(
+      item=>normalizeMobileJobText(item.value)===normalizeMobileJobText(selectedDistrict)
+    );
+    if(wanted)districtSelect.value=wanted.value;
+
+    districtSelect.disabled=false;
+  }catch(error){
+    console.error('İş fırsatları ilçe listesi yüklenemedi:',error);
+    districtSelect.innerHTML='<option value="">İlçeler yüklenemedi</option>';
+  }
+}
+
+function syncMobileJobLocationControls(){
+  const selects=document.getElementById('mobileJobsLocationSelects');
+  const note=document.getElementById('mobileJobsLocationNote');
+  const label=document.getElementById('mobileJobsLocationLabel');
+
+  document.querySelectorAll('[data-job-location-mode]').forEach(button=>{
+    button.classList.toggle('active',button.dataset.jobLocationMode===activeMobileJobLocationMode);
+  });
+
+  selects?.classList.toggle('hidden',activeMobileJobLocationMode!=='local');
+
+  if(label){
+    if(activeMobileJobLocationMode==='remote'){
+      label.textContent='Online / Evden';
+    }else if(activeMobileJobLocationMode==='all'){
+      label.textContent='Tüm Türkiye';
+    }else{
+      label.textContent=[activeMobileJobCity,activeMobileJobDistrict].filter(Boolean).join(' / ')||'Yerel';
+    }
+  }
+
+  if(note){
+    note.innerHTML=
+      activeMobileJobLocationMode==='remote'
+        ? '🌐 <b>Online / Evden</b> yapılabilen, şehir bağımsız veya evden sipariş alınabilen işler gösteriliyor.'
+        : activeMobileJobLocationMode==='all'
+          ? '🇹🇷 <b>Tüm Türkiye</b> içindeki yerel, online ve evden iş ilanları birlikte gösteriliyor.'
+          : '📍 <b>'+escapeHtml([activeMobileJobCity,activeMobileJobDistrict].filter(Boolean).join(' / ')||'Seçili bölge')+'</b> içindeki yerel ilanlar gösteriliyor.';
+  }
+}
+
+async function initializeMobileJobLocationControls(){
+  const city=document.getElementById('mobileJobsCitySelect');
+  const district=document.getElementById('mobileJobsDistrictSelect');
+
+  if(city){
+    await fillMobileJobProvinceSelect(city,activeMobileJobCity,true);
+    await fillMobileJobDistrictSelect(city,district,activeMobileJobDistrict,true);
+  }
+
+  syncMobileJobLocationControls();
+}
+
+async function syncJobPostLocationForm(mode){
+  const city=document.getElementById('jobPostCity');
+  const district=document.getElementById('jobPostDistrict');
+  const selects=document.getElementById('jobPostLocationSelects');
+  const helper=document.getElementById('jobPostLocationHelper');
+
+  const isRemote=mode==='remote';
+
+  selects?.classList.toggle('is-remote',isRemote);
+
+  if(city){
+    city.required=!isRemote;
+    city.disabled=isRemote;
+  }
+  if(district){
+    district.disabled=isRemote || !city?.value;
+  }
+
+  if(helper){
+    helper.textContent=
+      mode==='remote'
+        ? 'Online / uzaktan ilanlarda il ve ilçe seçmeniz gerekmez.'
+        : mode==='home'
+          ? 'Evden üretim / sipariş işlerinde teslim veya hizmet bölgenizi seçin.'
+          : mode==='hybrid'
+            ? 'Hibrit işler için yüz yüze çalışılacak ana bölgeyi seçin.'
+            : 'Yerel ilanlarda il seçimi zorunludur.';
+  }
+}
+
 function mobileJobTimestamp(value){
   if(!value)return 0;
   if(typeof value==='number')return value;
@@ -1309,12 +1541,9 @@ function mobileJobMatchesQuick(post){
   const mode=normalizeMobileJobText(post.workMode||'');
 
   if(activeMobileJobQuick==='extra')return isMobileJobExtra(post);
-  if(activeMobileJobQuick==='home')return mode.includes('evden')||mode.includes('uzaktan');
   if(activeMobileJobQuick==='parttime')return mode.includes('part time');
-  if(activeMobileJobQuick==='local'){
-    if(!activeLocationCity)return true;
-    return normalizeMobileJobText(post.city)===normalizeMobileJobText(activeLocationCity);
-  }
+  if(activeMobileJobQuick==='weekend')return mode.includes('hafta sonu');
+  if(activeMobileJobQuick==='project')return mode.includes('proje');
   return true;
 }
 
@@ -1327,6 +1556,7 @@ function mobileJobMatchesSearch(post){
     post.city,
     post.district,
     post.workMode,
+    mobileJobLocationLabel(post),
     post.wage,
     post.contactName,
     post.categoryLabel,
@@ -1342,6 +1572,7 @@ function mobileJobFacetRows(){
   return mobileJobPosts
     .filter(post=>!isMobileJobExpired(post))
     .filter(post=>activeMobileJobFilter==='all'||post.type===activeMobileJobFilter)
+    .filter(mobileJobMatchesLocation)
     .filter(mobileJobMatchesQuick)
     .filter(mobileJobMatchesSearch)
     .sort((a,b)=>mobileJobTimestamp(b.createdAt||b.date)-mobileJobTimestamp(a.createdAt||a.date));
@@ -1492,10 +1723,15 @@ function updateMobileJobsUi(filtered){
   if(count)count.textContent=String(filtered.length);
 
   if(location){
-    location.textContent=[activeLocationCity,activeLocationDistrict]
-      .filter(Boolean)
-      .join(' / ') || 'Tüm Türkiye';
+    location.textContent=
+      activeMobileJobLocationMode==='remote'
+        ? 'Online / Evden'
+        : activeMobileJobLocationMode==='all'
+          ? 'Tüm Türkiye'
+          : ([activeMobileJobCity,activeMobileJobDistrict].filter(Boolean).join(' / ')||'Yerel');
   }
+
+  syncMobileJobLocationControls();
 
   const typeText=
     activeMobileJobFilter==='hire' ? 'Eleman arayan ilanlar' :
@@ -1514,8 +1750,10 @@ function updateMobileJobsUi(filtered){
   if(hint){
     if(mobileJobSearchQuery){
       hint.textContent='“'+mobileJobSearchQuery+'” aramasına uygun '+filtered.length+' ilan bulundu.';
-    }else if(activeMobileJobQuick==='local'&&activeLocationCity){
-      hint.textContent=activeLocationCity+' içindeki en yeni ilanlar gösteriliyor.';
+    }else if(activeMobileJobLocationMode==='remote'){
+      hint.textContent='Online, uzaktan ve evden yapılabilen ilanlar gösteriliyor.';
+    }else if(activeMobileJobLocationMode==='local'&&activeMobileJobCity){
+      hint.textContent=activeMobileJobCity+' içindeki en yeni ilanlar gösteriliyor.';
     }else{
       hint.textContent='En yeni ilanlar önce gösteriliyor.';
     }
@@ -1541,7 +1779,7 @@ function updateMobileJobsUi(filtered){
 
 function mobileJobCardHtml(post){
   const category=mobileJobCategoryMeta(inferMobileJobCategory(post));
-  const location=[post.city,post.district].filter(Boolean).join(' / ')||'Konum belirtilmedi';
+  const locationLabel=mobileJobLocationLabel(post);
   const wage=String(post.wage||'').trim()||'Ücret görüşülür';
 
   return `
@@ -1557,7 +1795,7 @@ function mobileJobCardHtml(post){
       <h3>${escapeHtml(String(post.title||'İş fırsatı'))}</h3>
 
       <div class="mobile-job-meta">
-        <span>📍 ${escapeHtml(location)}</span>
+        <span>${escapeHtml(locationLabel)}</span>
         <span>🕒 ${escapeHtml(String(post.workMode||'Çalışma şekli görüşülür'))}</span>
       </div>
 
@@ -1687,7 +1925,7 @@ function populateMobileJobCategorySelect(){
     ).join('');
 }
 
-function openJobPostModal(type='hire'){
+async function openJobPostModal(type='hire'){
   const modal=document.getElementById('jobPostModal');
   const form=document.getElementById('jobPostForm');
   if(!modal||!form)return;
@@ -1697,14 +1935,15 @@ function openJobPostModal(type='hire'){
   const selected=form.querySelector('input[name="jobPostType"][value="'+(type==='work'?'work':'hire')+'"]');
   if(selected)selected.checked=true;
 
+  const onsite=form.querySelector('input[name="jobPostLocationMode"][value="onsite"]');
+  if(onsite)onsite.checked=true;
+
   const city=document.getElementById('jobPostCity');
   const district=document.getElementById('jobPostDistrict');
   const category=document.getElementById('jobPostCategory');
   const duration=document.getElementById('jobPostDuration');
   const message=document.getElementById('jobPostMessage');
 
-  if(city)city.value=activeLocationCity||'';
-  if(district)district.value=activeLocationDistrict||'';
   if(category && activeMobileJobCategory!=='all')category.value=activeMobileJobCategory;
   if(duration)duration.value='15';
   if(message){
@@ -1713,6 +1952,10 @@ function openJobPostModal(type='hire'){
   }
 
   openModal('jobPostModal');
+
+  await fillMobileJobProvinceSelect(city,activeMobileJobCity||activeLocationCity||'',false);
+  await fillMobileJobDistrictSelect(city,district,activeMobileJobDistrict||activeLocationDistrict||'',false);
+  await syncJobPostLocationForm('onsite');
 }
 
 document.querySelectorAll('[data-job-filter]').forEach(button=>{
@@ -1749,6 +1992,48 @@ document.getElementById('mobileJobsClearFilters')?.addEventListener('click',()=>
   renderMobileJobs();
 });
 
+document.querySelectorAll('[data-job-location-mode]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    activeMobileJobLocationMode=button.dataset.jobLocationMode||'local';
+    activeMobileJobCategory='all';
+    mobileJobCategoryShowAll=false;
+    renderMobileJobs();
+  });
+});
+
+document.getElementById('mobileJobsCitySelect')?.addEventListener('change',async function(){
+  activeMobileJobCity=this.value||'';
+  activeMobileJobDistrict='';
+  await fillMobileJobDistrictSelect(
+    this,
+    document.getElementById('mobileJobsDistrictSelect'),
+    '',
+    true
+  );
+  renderMobileJobs();
+});
+
+document.getElementById('mobileJobsDistrictSelect')?.addEventListener('change',function(){
+  activeMobileJobDistrict=this.value||'';
+  renderMobileJobs();
+});
+
+document.querySelectorAll('input[name="jobPostLocationMode"]').forEach(input=>{
+  input.addEventListener('change',async()=>{
+    const mode=document.querySelector('input[name="jobPostLocationMode"]:checked')?.value||'onsite';
+    await syncJobPostLocationForm(mode);
+  });
+});
+
+document.getElementById('jobPostCity')?.addEventListener('change',async function(){
+  await fillMobileJobDistrictSelect(
+    this,
+    document.getElementById('jobPostDistrict'),
+    '',
+    false
+  );
+});
+
 document.getElementById('mobileJobsPostBtn')?.addEventListener('click',()=>openJobPostModal('hire'));
 document.getElementById('mobileJobsHireBtn')?.addEventListener('click',()=>openJobPostModal('hire'));
 document.getElementById('mobileJobsWorkBtn')?.addEventListener('click',()=>openJobPostModal('work'));
@@ -1763,9 +2048,21 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
   const categoryKey=String(document.getElementById('jobPostCategory')?.value||'').trim();
   const categoryMeta=mobileJobCategoryMeta(categoryKey);
   const durationDays=Math.max(7,Math.min(30,Number(document.getElementById('jobPostDuration')?.value||15)));
+  const locationMode=form.querySelector('input[name="jobPostLocationMode"]:checked')?.value||'onsite';
+  const cityValue=locationMode==='remote'
+    ? ''
+    : String(document.getElementById('jobPostCity')?.value||'').trim();
+  const districtValue=locationMode==='remote'
+    ? ''
+    : String(document.getElementById('jobPostDistrict')?.value||'').trim();
 
   if(!categoryKey){
     if(message)message.textContent='Lütfen ilan kategorisini seçin.';
+    return;
+  }
+
+  if(locationMode!=='remote' && !cityValue){
+    if(message)message.textContent='Lütfen il seçin veya Online / Uzaktan seçeneğini kullanın.';
     return;
   }
 
@@ -1781,8 +2078,9 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
     category:categoryKey,
     categoryLabel:categoryMeta.label,
     title:String(document.getElementById('jobPostTitle')?.value||'').trim(),
-    city:String(document.getElementById('jobPostCity')?.value||'').trim(),
-    district:String(document.getElementById('jobPostDistrict')?.value||'').trim(),
+    locationMode,
+    city:cityValue,
+    district:districtValue,
     workMode:String(document.getElementById('jobPostWorkMode')?.value||'').trim(),
     wage:String(document.getElementById('jobPostWage')?.value||'').trim(),
     description:String(document.getElementById('jobPostDescription')?.value||'').trim(),
@@ -1833,6 +2131,7 @@ document.getElementById('jobPostForm')?.addEventListener('submit',async event=>{
 });
 
 populateMobileJobCategorySelect();
+initializeMobileJobLocationControls();
 loadMobileJobs();
 
 // Konum değişkenleri hazır olduktan sonra mobil filtreleri oluştur.
