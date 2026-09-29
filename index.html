@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=26" />
+  <link rel="stylesheet" href="style.css?v=27" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -212,28 +212,30 @@
     <div class="mobile-subcategory-scroll hidden" id="mobileSubcategories"></div>
 
     <div class="mobile-category-result hidden" id="mobileCategoryResult">
-      <div class="mobile-category-result-copy">
-        <span id="mobileCategoryResultLabel">Kategori seçildi</span>
-        <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
-        <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
+      <div class="mobile-category-result-top">
+        <div class="mobile-category-result-copy">
+          <span id="mobileCategoryResultLabel">Kategori seçildi</span>
+          <strong><b id="mobileCategoryResultCount">0</b> kurum bulundu</strong>
+          <small id="mobileCategoryResultHint">Sonuçları harita ve kurum listesinde görüntüleyin.</small>
+        </div>
+        <div class="mobile-category-result-location">
+          <span>📍</span>
+          <div>
+            <small>Konum</small>
+            <strong id="mobileCategoryResultLocation">Çanakkale / Merkez</strong>
+          </div>
+        </div>
       </div>
-      <button type="button" id="mobileCategoryResultBtn">Sonuçları Gör ↓</button>
+
+      <div class="mobile-category-result-actions">
+        <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
+        <button type="button" id="mobileCategoryOfferBtn">🏷 Teklif Verenler</button>
+        <button type="button" id="mobileCategoryVideoBtn">🎥 Videolu</button>
+      </div>
     </div>
 
     <input type="checkbox" id="videoOnly" hidden>
     <input type="checkbox" id="offerOnly" hidden>
-  </section>
-
-  <section class="mobile-sponsored-slot" id="mobileSponsoredSlot" aria-label="Mobil sponsorlu işletme">
-    <div class="mobile-sponsored-placeholder">
-      <div class="mobile-sponsored-placeholder-icon">📣</div>
-      <div class="mobile-sponsored-placeholder-copy">
-        <span>SPONSORLU ALAN</span>
-        <strong>İşletmeni burada göster</strong>
-        <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
-      </div>
-      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
-    </div>
   </section>
 
   <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
@@ -250,6 +252,18 @@
     </div>
 
     <div class="premium-showcase-dots" id="premiumShowcaseDots" aria-label="Premium reklam geçişleri"></div>
+  </section>
+
+  <section class="mobile-sponsored-slot" id="mobileSponsoredSlot" aria-label="Mobil sponsorlu işletme">
+    <div class="mobile-sponsored-placeholder">
+      <div class="mobile-sponsored-placeholder-icon">📣</div>
+      <div class="mobile-sponsored-placeholder-copy">
+        <span>SPONSORLU ALAN</span>
+        <strong>İşletmeni burada göster</strong>
+        <small>Bölgenizdeki müşterilere mobilde daha görünür olun.</small>
+      </div>
+      <button type="button" data-advertise-home data-ad-service="regionalAd" data-ad-order="1">Reklam Ver</button>
+    </div>
   </section>
 
   <section class="home-sponsored-section" id="sponsoredSection" aria-label="Sponsorlu işletmeler">
@@ -816,7 +830,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=35"></script>
+<script src="script.js?v=36"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
