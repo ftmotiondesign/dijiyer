@@ -1198,6 +1198,8 @@ function renderQuotes() {
 async function saveQuoteResponse(quoteId, status) {
   const existing = responseMap.get(quoteId);
   const docId = existing?.id || `${quoteId}_${currentUser.uid}`;
+  const now = new Date().toISOString();
+  const quote = quoteRecords.find(item => String(item.id) === String(quoteId));
 
   try {
     await db.collection("quoteResponses").doc(docId).set({
@@ -1205,8 +1207,30 @@ async function saveQuoteResponse(quoteId, status) {
       institutionId: currentAccount.institutionId,
       userId: currentUser.uid,
       status,
-      date: new Date().toISOString()
+      date: now
     });
+
+    // Müşterinin teklif takip ekranında görebileceği kurum yanıtı.
+    // Müşteri bilgisi içermez; yalnızca kurumun talebe verdiği durum paylaşılır.
+    try {
+      await db.collection("quoteRequests")
+        .doc(quoteId)
+        .collection("engagement")
+        .doc(String(currentAccount.institutionId))
+        .set({
+          institutionId: String(currentAccount.institutionId),
+          institutionName: String(currentInstitution?.name || currentAccount?.institutionName || "Kurum"),
+          institutionResponse: status,
+          institutionResponseAt: now,
+          lastInstitutionActionAt: now
+        }, { merge:true });
+    } catch (engagementError) {
+      console.error("Müşteri durum bildirimi kaydedilemedi:", engagementError);
+      // Ana kurum cevabını geri alma; panelde cevap kaydı korunur.
+      if (quote?.targetInstitutionId) {
+        alert("Cevabınız kaydedildi ancak müşteriye canlı durum iletilemedi. Firestore kuralını güncelleyin.");
+      }
+    }
 
     responseMap.set(quoteId, {
       id: docId,
@@ -1214,7 +1238,7 @@ async function saveQuoteResponse(quoteId, status) {
       institutionId: currentAccount.institutionId,
       userId: currentUser.uid,
       status,
-      date: new Date().toISOString()
+      date: now
     });
 
     renderQuotes();
