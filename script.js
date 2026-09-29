@@ -792,6 +792,53 @@ function renderList() {
   renderDetail();
 }
 
+function isInstitutionPreviewMode(){
+  const params=new URLSearchParams(window.location.search);
+  return params.get("onizleme")==="1" && Boolean(params.get("kurum"));
+}
+
+function getRequestedInstitutionId(){
+  const params=new URLSearchParams(window.location.search);
+  return String(params.get("kurum")||"").trim();
+}
+
+function applyRequestedInstitutionPreview(){
+  const requestedId=getRequestedInstitutionId();
+  if(!requestedId)return false;
+
+  const inst=institutions.find(item=>String(item.id)===requestedId);
+  if(!inst)return false;
+
+  // Önizlemede kurumun kendi şehri/ilçesi seçilsin; varsayılan filtre seçimi
+  // profil görünümünü yanlışlıkla başka kuruma çevirmesin.
+  activeLocationCity=inst.city || "";
+  activeLocationDistrict=inst.district || "";
+
+  document.querySelectorAll(".categoryFilter,.subCategoryFilter").forEach(input=>{
+    input.checked=false;
+  });
+  const videoOnlyInput=document.getElementById("videoOnly");
+  const offerOnlyInput=document.getElementById("offerOnly");
+  if(videoOnlyInput)videoOnlyInput.checked=false;
+  if(offerOnlyInput)offerOnlyInput.checked=false;
+
+  selectedId=inst.id;
+  updateMainLocationButton();
+  renderMobileCategories();
+  renderList();
+  renderDetail();
+
+  requestAnimationFrame(()=>{
+    const panel=document.getElementById("detailPanel");
+    if(panel){
+      panel.id="kurum-profili";
+      panel.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+  });
+
+  return true;
+}
+
 function safePublicProfileUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -856,6 +903,15 @@ function renderDetail() {
       `).join('');
 
   panel.innerHTML = `
+    ${isInstitutionPreviewMode() ? `
+      <div class="public-preview-banner">
+        <div>
+          <strong>👁 Önizleme Modu</strong>
+          <span>Müşteriler kurum profilinizi bu şekilde görür.</span>
+        </div>
+        <button type="button" id="closePublicPreviewBtn">Önizlemeyi Kapat</button>
+      </div>
+    ` : ""}
     <div class="detail-top">
       <div class="video-box profile-cover-box ${inst.coverUrl ? 'has-cover' : ''}">
         ${inst.coverUrl
@@ -941,6 +997,14 @@ function renderDetail() {
     loadInstitutionReviews(inst);
   }
 
+  document.getElementById('closePublicPreviewBtn')?.addEventListener('click',()=>{
+    const url=new URL(window.location.href);
+    url.searchParams.delete("onizleme");
+    url.searchParams.delete("kurum");
+    url.hash="";
+    window.location.href=url.toString();
+  });
+
   document.getElementById('quoteBtn').onclick = () => openModal('quoteModal');
   document.getElementById('reviewBtn').onclick = () => openModal('reviewModal');
   document.getElementById('reviewBtn2').onclick = () => openModal('reviewModal');
@@ -987,6 +1051,7 @@ function localDayKey(date = new Date()) {
 
 async function trackInstitutionEvent(inst, type, deduplicate = false) {
   if (!inst || inst.source !== 'firestore') return;
+  if (isInstitutionPreviewMode()) return;
 
   if (deduplicate && type === 'profile_view') {
     const key = `dijiyer_view_${inst.id}`;
@@ -2323,8 +2388,10 @@ async function loadApprovedInstitutions() {
     });
 
     addMarkers();
-    renderList();
-    renderDetail();
+    if(!applyRequestedInstitutionPreview()){
+      renderList();
+      renderDetail();
+    }
   } catch (error) {
     console.error('Onaylı kurumlar yüklenemedi:', error);
   }
