@@ -22,6 +22,9 @@ let premiumShowcaseTimer = null;
 let premiumShowcaseIndex = 0;
 const PREMIUM_SHOWCASE_DURATION = 5500;
 
+let pageTopMiniBannerTimer = null;
+let pageTopMiniBannerIndex = 0;
+
 const institutionSessionApp =
   firebase.apps.find(app => app.name === 'institutionSession') ||
   firebase.initializeApp(firebaseConfig, 'institutionSession');
@@ -3702,7 +3705,8 @@ function normalizePublicBannerPlacement(value){
     'premium_home',
     'mobile_sponsor',
     'sidebar_sponsor',
-    'detail_banner'
+    'detail_banner',
+    'page_top_mini'
   ]);
   return allowed.has(raw)?raw:'search';
 }
@@ -3783,6 +3787,65 @@ function bannerPlacementMediaHtml(ad, fallbackClass){
     return '<img src="'+image+'" alt="'+escapeHtml(ad?.institutionName || 'Sponsorlu kurum')+'">';
   }
   return '<div class="'+fallbackClass+'">📣</div>';
+}
+
+function renderPageTopMiniBanner(reset=false){
+  const root=document.getElementById('pageTopMiniBanner');
+  if(!root)return;
+
+  if(pageTopMiniBannerTimer){
+    clearTimeout(pageTopMiniBannerTimer);
+    pageTopMiniBannerTimer=null;
+  }
+
+  const ads=getBannerAdsForPlacement('page_top_mini');
+  if(!ads.length){
+    root.innerHTML='';
+    root.classList.add('hidden');
+    return;
+  }
+
+  if(reset || pageTopMiniBannerIndex>=ads.length)pageTopMiniBannerIndex=0;
+  const ad=ads[pageTopMiniBannerIndex] || ads[0];
+  const duration=[3,5,7].includes(Number(ad?.durationSeconds))
+    ? Number(ad.durationSeconds)
+    : 7;
+
+  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const video=safePublicProfileUrl(ad.videoUrl || '');
+  const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
+  const meta=[ad.city,ad.district].filter(Boolean).join(' / ') || ad.categoryLabel || 'Sponsorlu';
+
+  root.innerHTML=
+    '<a class="page-top-mini-banner-card" data-banner-ad-id="'+escapeHtml(String(ad.id||''))+'" href="'+bannerPlacementHref(ad)+'">'+
+      '<div class="page-top-mini-media">'+
+        (isVideo
+          ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
+          : (image
+              ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
+              : '<span>📣</span>'))+
+      '</div>'+
+      '<div class="page-top-mini-copy">'+
+        '<small>SPONSORLU</small>'+
+        '<strong>'+escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')+'</strong>'+
+        '<span>'+escapeHtml(ad.text || meta)+'</span>'+
+      '</div>'+
+      '<b>İncele →</b>'+
+      (ads.length>1
+        ? '<div class="page-top-mini-dots">'+ads.map((_,i)=>'<i class="'+(i===pageTopMiniBannerIndex?'active':'')+'"></i>').join('')+'</div>'
+        : '')+
+      '<em class="page-top-mini-progress" style="--page-mini-duration:'+duration+'s"></em>'+
+    '</a>';
+
+  root.classList.remove('hidden');
+  trackBannerAdImpression(ad);
+
+  if(ads.length>1){
+    pageTopMiniBannerTimer=setTimeout(()=>{
+      pageTopMiniBannerIndex=(pageTopMiniBannerIndex+1)%ads.length;
+      renderPageTopMiniBanner(false);
+    },duration*1000);
+  }
 }
 
 function regionalBannerRegionValue(ad){
@@ -3906,10 +3969,12 @@ function startRegionalBannerAds(){
     }
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
+    if(document.getElementById("pageTopMiniBanner"))renderPageTopMiniBanner(true);
   },error=>{
     console.warn("Banner reklamları yüklenemedi:",error);
     regionalBannerAds=[];
     document.getElementById("regionalBannerZone")?.classList.add("hidden");
+    document.getElementById("pageTopMiniBanner")?.classList.add("hidden");
   });
 }
 
