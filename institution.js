@@ -1100,6 +1100,7 @@ function getShowcaseServiceState() {
   const locationVideo=String(institution.locationVideoUrl || institution.profileVideoUrl || institution.videoUrl || "").trim();
   const panorama360=String(institution.panorama360Url || "").trim();
   const virtualTour=String(institution.virtualTourUrl || institution.tour360Url || institution.tourUrl || "").trim();
+  const campaignVideo=String(institution.campaignVideoUrl || "").trim();
   const adStatus=String(institution.adStatus || "none");
   const adEndAt=String(institution.adEndAt || "");
   const adEnd=adEndAt ? new Date(adEndAt.length<=10 ? adEndAt+"T23:59:59" : adEndAt) : null;
@@ -1110,8 +1111,10 @@ function getShowcaseServiceState() {
     locationVideo,
     panorama360,
     virtualTour,
+    campaignVideo,
     hasLocationVideo:Boolean(locationVideo),
     hasVirtualTour:Boolean(panorama360 || virtualTour),
+    hasCampaignVideo:Boolean(campaignVideo),
     adStatus,
     adActive,
     adExpired,
@@ -1134,6 +1137,14 @@ function updateShowcaseServiceStatus() {
   setStatus("showcaseTourStatus",state.hasVirtualTour,"✓ Aktif · Kurum sayfanızda yayınlanıyor","Henüz eklenmedi");
   setStatus("summaryLocationStatus",state.hasLocationVideo,"▶ Konum & Çevre Videosu · Aktif","▶ Konum & Çevre Videosu · Henüz yok");
   setStatus("summaryTourStatus",state.hasVirtualTour,"◉ 360° Tur · Aktif","◉ 360° Tur · Henüz yok");
+
+  const campaignStatus=document.getElementById("profileCampaignStatus");
+  if(campaignStatus){
+    campaignStatus.textContent=state.hasCampaignVideo
+      ? "✓ Kampanya videosu aktif · kurum profilinizde yayınlanıyor."
+      : "Bu alanda şu anda Dijiyer tanıtımı gösteriliyor.";
+    campaignStatus.classList.toggle("active",state.hasCampaignVideo);
+  }
 
   const adNode=document.getElementById("showcaseAdStatus");
   if(adNode){
@@ -1205,6 +1216,19 @@ function renderShowcaseRecommendations(state=getShowcaseServiceState()) {
     rows.push({status:"done",icon:"✓",title:"360° Sanal Tur aktif",text:"Kurum sayfanızda mekan deneyimi sunuluyor."});
   }
 
+  if(!state.hasCampaignVideo){
+    rows.push({
+      status:"opportunity",
+      icon:"🎁",
+      title:"Profil Kampanya Videosu yayınlayın",
+      text:"Kayıt, indirim veya özel duyurunuzu profilinizi ziyaret eden müşterilere video olarak gösterin.",
+      action:"videoAd",
+      button:"Video Talep Et"
+    });
+  }else{
+    rows.push({status:"done",icon:"✓",title:"Kampanya videosu yayında",text:"Profilinizin Kampanya sekmesinde video reklamınız gösteriliyor."});
+  }
+
   if(!state.adActive){
     rows.push({
       status:"opportunity",
@@ -1240,8 +1264,8 @@ function renderShowcaseRecommendations(state=getShowcaseServiceState()) {
     });
   }
 
-  const completed=[state.hasLocationVideo,state.hasVirtualTour,state.adActive,state.hasBanner,profileReady>=5].filter(Boolean).length;
-  if(score) score.textContent=completed+"/5 alan aktif";
+  const completed=[state.hasLocationVideo,state.hasVirtualTour,state.hasCampaignVideo,state.adActive,state.hasBanner,profileReady>=5].filter(Boolean).length;
+  if(score) score.textContent=completed+"/6 alan aktif";
 
   list.innerHTML=rows.map(row=>`
     <article class="showcase-recommendation-item ${row.status}">
@@ -1309,7 +1333,7 @@ const PROMOTION_SERVICES = {
   categoryAd:{id:"category_showcase",name:"Kategori Vitrini",icon:"🏷️",lead:"Hizmetinizi arayan kullanıcıların karşısına sponsorlu kurum olarak çıkın.",benefit:"Reklamınızı genel kitle yerine doğrudan sektörünüzü inceleyen kullanıcılara gösterir.",includes:["Kategori sponsorlu alanı","Kurum sayfasına yönlendirme","Sponsorlu etiketi"],process:"Kurum kategorisi doğrulanır ve uygun yayın dönemi belirlenir.",required:"Logo ve kısa kurum tanıtımı.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi içerik kontrolü",price:0,priceLabel:"Kategori ve süreye göre fiyatlandırılır",extras:["Banner tasarımı"],example:"Sürücü kursları kategorisinde sponsorlu kurum kartı."},
   bannerAd:{id:"banner_ad",name:"Dijiyer Banner Reklamı",icon:"▰",lead:"Kampanyanızı Dijiyer içindeki banner alanlarında yayınlayın.",benefit:"Kayıt, indirim ve dönemsel kampanyalarınıza ek görünürlük sağlar.",includes:["Dijiyer banner alanı","Tıklamada kurum profiline yönlendirme","Yayın süresi takibi"],process:"Banner kontrol edilir veya tasarlanır, alan ve tarih planlanır.",required:"Hazır banner veya tasarım için logo ve kampanya bilgisi.",delivery:"Onay sonrası planlanan tarihte",revision:"Yayın öncesi 1 kontrol",price:0,priceLabel:"Alan ve süreye göre fiyatlandırılır",extras:["Banner tasarımı","Hareketli banner"],example:"Dijiyer sayfasında kampanya görselinin sponsorlu banner olarak yayınlanması."},
   campaign:{id:"campaign_announcement",name:"Kampanya Duyurusu",icon:"📣",lead:"Kayıt, indirim veya yeni hizmet duyurunuzu daha görünür hale getirin.",benefit:"Kurum profilinizi ziyaret eden veya ilgili alana bakan müşteriye güncel kampanyanızı anlatır.",includes:["Kampanya duyuru kartı","Kurum sayfasına bağlantı","Yayın dönemi planlama"],process:"Duyuru metni ve tarih bilgisi alınır, yayın alanına göre hazırlanır.",required:"Kampanya metni, başlangıç/bitiş tarihi ve varsa görsel.",delivery:"İçerik onayı sonrası",revision:"1 metin/görsel düzenlemesi",price:0,priceLabel:"Yayın kapsamına göre fiyatlandırılır",extras:["Banner tasarımı","Reels videosu"],example:"'Ekim kayıtları başladı' veya '%20 erken kayıt' duyuru alanı."},
-  videoAd:{id:"video_showcase_ad",name:"Video Vitrin Reklamı",icon:"▶",lead:"Kısa tanıtım videonuzu sponsorlu video alanında gösterin.",benefit:"Hareketli içerikle daha fazla dikkat çekerek kurumunuzu hızlı anlatmanızı sağlar.",includes:["Sponsorlu video alanı","Kurum profiline yönlendirme","Yayın süresi takibi"],process:"Video teknik olarak kontrol edilir, yayın alanı ve tarih planlanır.",required:"Hazır video veya video hazırlanacaksa içerik materyalleri.",delivery:"Onay sonrası planlanan tarihte",revision:"Hazır video için teknik kontrol",price:0,priceLabel:"Süre ve alana göre fiyatlandırılır",extras:["Reels video üretimi"],example:"Kısa tanıtım videosunun Dijiyer sponsorlu video alanında gösterilmesi."},
+  videoAd:{id:"profile_campaign_video",name:"Profil Kampanya Videosu",icon:"🎁",lead:"Duyurmak istediğiniz kampanyayı kurum profilinizin üst bölümünde video olarak yayınlayın.",benefit:"Profilinizi ziyaret eden ilgili müşteriye kayıt, indirim, yeni hizmet veya dönemsel duyurunuzu doğrudan video ile gösterir.",includes:["Kurum profilinde Kampanya sekmesi","Video yayın alanı","Yayın süresi planlama","Dijiyer yönetimiyle yayın kontrolü"],process:"Kampanya içeriği alınır; hazır video kontrol edilir veya video hazırlanır, ardından kurum profilinizde Kampanya sekmesine yayınlanır.",required:"Kampanya mesajı, yayın dönemi ve hazır video varsa video dosyası. Video yoksa hazırlanması için logo, görsel ve metinler.",delivery:"İçerik onayı sonrası planlanan tarihte",revision:"Hazırlanan videoda 1 revizyon",price:0,priceLabel:"Video üretimi ve yayın süresine göre fiyatlandırılır",extras:["Reels video üretimi","Ek yayın süresi","Kampanya bannerı"],example:"'Ekim kayıtları başladı', '%20 erken kayıt' veya yeni hizmet duyurusunun kurum profilindeki Kampanya sekmesinde video olarak yayınlanması."},
   packageStarter:{id:"package_starter",name:"Başlangıç Görünürlüğü",icon:"★",lead:"Dijiyer reklamını ilk kez deneyecek kurumlar için başlangıç paketi.",benefit:"Tek tasarım ve kategori görünürlüğünü birlikte kullanarak düşük adımla reklam deneyimi başlatır.",includes:["Reklam banner tasarımı","Kategori vitrini"],process:"İçerik hazırlanır ve kategori yayın dönemi planlanır.",required:"Logo, tanıtım metni ve kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Paket fiyatı planlamada netleşir",extras:["Ek yayın süresi"],example:"Banner + kategori içinde sponsorlu kurum gösterimi."},
   packageRegional:{id:"package_regional",name:"Bölgesel Görünürlük",icon:"📍",lead:"Bölgesel müşteri arayan kurumlar için içerik + yerel reklam paketi.",benefit:"Şehir/ilçe hedeflemesiyle kampanyanızı yerel kullanıcılara daha görünür kılar.",includes:["Banner tasarımı","Şehir / ilçe vitrini","Kampanya duyurusu"],process:"Bölge ve kampanya planlanır, tasarım hazırlanır ve yayınlanır.",required:"Logo, hedef bölge, kampanya bilgisi.",delivery:"Planlamaya göre",revision:"İçerikte 1 revizyon",price:0,priceLabel:"Bölge ve süreye göre paket fiyatı",extras:["Kategori vitrini"],example:"Yerel banner + bölgesel sponsorlu görünürlük + kampanya duyurusu."},
   combo:{id:"location_tour_combo",name:"Dijiyer Mekan Tanıtım Paketi",icon:"360°",lead:"Konum videosu ve 360° sanal turu tek pakette birleştirin.",benefit:"Müşteriye hem size nasıl ulaşacağını hem de mekanda ne göreceğini tek kurum profilinde gösterir.",includes:["Konum Tanıtım Videosu","360° Sanal Tur","Kurum profilinde özel gösterim"],process:"Konum ve mekan çekimi birlikte planlanır, iki içerik hazırlanıp kurum profilinize eklenir.",required:"Kurum adresi, çekim günü, logo ve mekan erişimi.",delivery:"Çekim sonrası ortalama 5–10 iş günü",revision:"1 düzenleme turu",price:0,priceLabel:"Mekan ve çekim kapsamına göre fiyatlandırılır",extras:["Reels tanıtım videosu","QR/NFC yönlendirme"],example:"Profilde 'Konum & Çevre Videosu' ve '360° Sanal Tur' alanlarının birlikte aktif olması."},
@@ -1353,7 +1377,7 @@ function normalizePromotionExtras(service){
 }
 
 const PROMOTION_AD_SERVICE_KEYS = new Set([
-  "homepage","regionalAd","categoryAd","bannerAd","campaign"
+  "homepage","regionalAd","categoryAd","bannerAd","campaign","videoAd"
 ]);
 
 function isPromotionAdvertisingService(key){
