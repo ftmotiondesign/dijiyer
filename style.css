@@ -3506,10 +3506,58 @@ button{cursor:pointer}
     font-size:9.5px;
   }
 
-  /* Mobil ana sayfada tam profil ayrıntısını tekrar göstermeyiz.
-     Kart tıklanınca kurumun kendi mobil sayfası açılır. */
+  /* Mobilde kurum seçildiğinde detay profili liste altında göster. */
   .detail-panel{
-    display:none;
+    display:block;
+    width:100%;
+    min-width:0;
+    min-height:0;
+    margin-top:10px;
+    padding:10px;
+    border-radius:16px;
+    scroll-margin-top:12px;
+  }
+
+  .detail-top{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  .video-box{
+    min-height:220px;
+  }
+
+  .profile-title-row{
+    align-items:flex-start;
+  }
+
+  .detail-info h1{
+    font-size:20px;
+  }
+
+  .info-boxes{
+    grid-template-columns:1fr;
+  }
+
+  .cta-row{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .secondary-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  .secondary-actions button{
+    width:100%;
+  }
+
+  .gallery{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .gallery-item{
+    height:120px;
   }
 }
 
