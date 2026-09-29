@@ -1480,7 +1480,9 @@ function getInstitutionListSponsorAds(){
   const activeCity=normalizeQuoteSearch(activeLocationCity || '');
   const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
 
-  return activeRegionalBannerAds().filter(ad=>{
+  return activeRegionalBannerAds()
+    .filter(ad => String(ad.placement || 'search') === 'search')
+    .filter(ad=>{
     const adCity=normalizeQuoteSearch(ad.city || '');
     const adDistrict=normalizeQuoteSearch(ad.district || '');
     const adCategory=String(ad.category || '').trim();
@@ -2335,7 +2337,8 @@ function populateRegionalBannerFilters(){
 }
 
 function filteredRegionalBannerAds(){
-  let rows=activeRegionalBannerAds();
+  let rows=activeRegionalBannerAds()
+    .filter(ad => String(ad.placement || 'search') === 'sponsor');
   if(regionalBannerRegionFilter){
     const parts=regionalBannerRegionFilter.split("|");
     const city=parts[0]||"";
@@ -2423,6 +2426,10 @@ function startRegionalBannerAds(){
 
     if(document.getElementById("institutionList")){
       renderList();
+    }
+
+    if(document.getElementById("homeSponsoredRail")){
+      renderSponsoredAds();
     }
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
@@ -4312,6 +4319,69 @@ function bindHomepageAdvertiseButtons() {
   });
 }
 
+function getHomepageSponsorBannerAds(){
+  const activeMain=getSelectedMainCategory();
+  const selectedSub=document.querySelector('.subCategoryFilter:checked')?.value || '';
+  const activeCity=normalizeQuoteSearch(activeLocationCity || '');
+  const activeDistrict=normalizeQuoteSearch(activeLocationDistrict || '');
+
+  return activeRegionalBannerAds()
+    .filter(ad => String(ad.placement || '') === 'sponsor')
+    .filter(ad => {
+      const adCity=normalizeQuoteSearch(ad.city || '');
+      const adDistrict=normalizeQuoteSearch(ad.district || '');
+      const adCategory=String(ad.category || '').trim();
+
+      if(adCity && activeCity && adCity!==activeCity)return false;
+      if(adDistrict && activeDistrict && adDistrict!==activeDistrict)return false;
+
+      if(adCategory && (activeMain || selectedSub)){
+        const matchesCategory=
+          adCategory===String(activeMain || '') ||
+          adCategory===String(selectedSub || '');
+        if(!matchesCategory)return false;
+      }
+
+      return true;
+    });
+}
+
+function homepageSponsorBannerHtml(ad){
+  const image=safePublicProfileUrl(ad.imageUrl || ad.logoUrl || '');
+  const video=safePublicProfileUrl(ad.videoUrl || '');
+  const isVideo=String(ad.mediaType || '')==='video' && Boolean(video);
+  const href='kurum.html?id='+encodeURIComponent(ad.institutionId || '');
+  const region=[ad.city,ad.district].filter(Boolean).join(' / ');
+  const sector=ad.categoryLabel || bannerCategoryLabel(ad.category);
+
+  return `
+    <article class="sponsored-card sponsor-banner-card">
+      <a href="${href}" class="sponsor-banner-link">
+        <div class="sponsored-media">
+          ${isVideo
+            ? '<video src="'+video+'" autoplay muted loop playsinline poster="'+image+'"></video>'
+            : (image
+                ? '<img src="'+image+'" alt="'+escapeHtml(ad.institutionName || 'Sponsorlu kurum')+'">'
+                : '<div class="sponsored-media-fallback">📣</div>')}
+          <span class="sponsored-label">SPONSORLU</span>
+          <span class="sponsored-package">${isVideo ? 'Video Reklam' : 'Sponsor Bannerı'}</span>
+        </div>
+        <div class="sponsored-body">
+          <div class="sponsored-title-copy">
+            <strong>${escapeHtml(ad.headline || ad.institutionName || 'Sponsorlu Kurum')}</strong>
+            <small>${escapeHtml([region,sector].filter(Boolean).join(' · '))}</small>
+          </div>
+          <p class="sponsored-description">${escapeHtml(ad.text || '')}</p>
+          <div class="sponsored-meta">
+            <span>Reklam</span>
+            <span class="sponsored-profile-link">İncele →</span>
+          </div>
+        </div>
+      </a>
+    </article>
+  `;
+}
+
 function renderSponsoredAds() {
   const rail = document.getElementById('homeSponsoredRail');
   const sidebar = document.getElementById('sidebarSponsoredSlot');
@@ -4324,11 +4394,13 @@ function renderSponsoredAds() {
   const sponsored = getHomepageSponsoredInstitutions();
 
   if (rail) {
-    rail.innerHTML = sponsored.length
-      ? sponsored.map(homepageSponsoredCardHtml).join('')
+    const sponsorBanners = getHomepageSponsorBannerAds();
+
+    rail.innerHTML = sponsorBanners.length
+      ? sponsorBanners.slice(0,3).map(homepageSponsorBannerHtml).join('')
       : homepageAdSalesHtml();
 
-    bindHomepageSponsoredCards(rail);
+    bindHomepageAdvertiseButtons();
   }
 
   if (sidebar) {
