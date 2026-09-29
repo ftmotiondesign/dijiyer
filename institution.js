@@ -13,7 +13,6 @@ const institutionSessionApp =
 
 const auth = institutionSessionApp.auth();
 const db = institutionSessionApp.firestore();
-const storage = institutionSessionApp.storage();
 
 let currentUser = null;
 let currentAccount = null;
@@ -218,68 +217,87 @@ function validateProfileImage(file) {
   }
 }
 
-function profileFileExtension(file) {
-  const byType = {
-    "image/jpeg":"jpg",
-    "image/png":"png",
-    "image/webp":"webp",
-    "video/mp4":"mp4",
-    "video/webm":"webm"
-  };
-  return byType[file?.type] || "bin";
+const CLOUDINARY_PROFILE_CONFIG = {
+  cloudName:"okefpzsy",
+  uploadPreset:"dijiyer_upload"
+};
+
+function profileCloudinaryFolder(kind){
+  const institutionId=String(currentAccount?.institutionId||"kurum");
+  return "dijiyer/institutions/"+institutionId+"/"+String(kind||"media");
 }
 
-function profileStoragePath(kind, file) {
-  const userId = String(currentUser?.uid || "");
-  const institutionId = String(currentAccount?.institutionId || "");
-  const random = Math.random().toString(36).slice(2, 9);
-  return [
-    "institution-media",
-    userId,
-    institutionId,
-    kind,
-    Date.now() + "_" + random + "." + profileFileExtension(file)
-  ].join("/");
+async function uploadProfileFileToCloudinary(file,kind,statusId,label){
+  if(!file)throw new Error("Dosya seçilmedi.");
+
+  const cloudName=CLOUDINARY_PROFILE_CONFIG.cloudName;
+  const uploadPreset=CLOUDINARY_PROFILE_CONFIG.uploadPreset;
+
+  if(!cloudName||!uploadPreset){
+    throw new Error("Cloudinary yükleme ayarı bulunamadı.");
+  }
+
+  const formData=new FormData();
+  formData.append("file",file);
+  formData.append("upload_preset",uploadPreset);
+  formData.append("folder",profileCloudinaryFolder(kind));
+
+  setProfileUploadStatus(
+    statusId,
+    label+" Cloudinary'ye yükleniyor · %0",
+    "is-uploading"
+  );
+
+  return await new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+
+    xhr.open(
+      "POST",
+      "https://api.cloudinary.com/v1_1/"+encodeURIComponent(cloudName)+"/auto/upload",
+      true
+    );
+
+    xhr.upload.onprogress=event=>{
+      if(!event.lengthComputable)return;
+      const percent=Math.round((event.loaded/event.total)*100);
+      setProfileUploadStatus(
+        statusId,
+        label+" yükleniyor · %"+percent,
+        "is-uploading"
+      );
+    };
+
+    xhr.onerror=()=>reject(new Error("Cloudinary bağlantısı kurulamadı."));
+
+    xhr.onload=()=>{
+      let data={};
+      try{data=JSON.parse(xhr.responseText||"{}");}catch(_){}
+
+      if(xhr.status>=200&&xhr.status<300&&data.secure_url){
+        resolve(String(data.secure_url));
+        return;
+      }
+
+      const errorMessage=
+        data?.error?.message ||
+        "Cloudinary yüklemesi başarısız oldu.";
+      reject(new Error(errorMessage));
+    };
+
+    xhr.send(formData);
+  });
 }
 
-async function uploadInstitutionProfileImage(file, kind, statusId, label) {
+async function uploadInstitutionProfileImage(file,kind,statusId,label){
   validateProfileImage(file);
 
-  if (!currentUser?.uid || !currentAccount?.institutionId) {
+  if(!currentUser?.uid||!currentAccount?.institutionId){
     throw new Error("Kurum oturumu bulunamadı. Tekrar giriş yapın.");
   }
 
-  const ref = storage.ref().child(profileStoragePath(kind, file));
-  const task = ref.put(file, {
-    contentType:file.type,
-    customMetadata:{
-      institutionId:String(currentAccount.institutionId)
-    }
-  });
-
-  return await new Promise((resolve, reject) => {
-    task.on(
-      "state_changed",
-      snapshot => {
-        const percent = snapshot.totalBytes
-          ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
-          : 0;
-        setProfileUploadStatus(
-          statusId,
-          label + " yükleniyor · %" + percent,
-          "is-uploading"
-        );
-      },
-      error => reject(error),
-      async () => {
-        try {
-          resolve(await task.snapshot.ref.getDownloadURL());
-        } catch (error) {
-          reject(error);
-        }
-      }
-    );
-  });
+  return await uploadProfileFileToCloudinary(
+    file,kind,statusId,label
+  );
 }
 
 function validateProfilePanorama(file) {
@@ -308,48 +326,18 @@ function validateProfileVideo(file) {
   }
 }
 
-async function uploadInstitutionProfileRichMedia(file, kind, statusId, label, mediaType) {
-  if (mediaType === "video") validateProfileVideo(file);
-  else if (mediaType === "panorama") validateProfilePanorama(file);
+async function uploadInstitutionProfileRichMedia(file,kind,statusId,label,mediaType){
+  if(mediaType==="video")validateProfileVideo(file);
+  else if(mediaType==="panorama")validateProfilePanorama(file);
   else throw new Error("Geçersiz medya türü.");
 
-  if (!currentUser?.uid || !currentAccount?.institutionId) {
+  if(!currentUser?.uid||!currentAccount?.institutionId){
     throw new Error("Kurum oturumu bulunamadı. Tekrar giriş yapın.");
   }
 
-  const ref = storage.ref().child(profileStoragePath(kind, file));
-  const task = ref.put(file, {
-    contentType:file.type,
-    customMetadata:{
-      institutionId:String(currentAccount.institutionId),
-      mediaType:String(mediaType)
-    }
-  });
-
-  return await new Promise((resolve, reject) => {
-    task.on(
-      "state_changed",
-      snapshot => {
-        const percent = snapshot.totalBytes
-          ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
-          : 0;
-
-        setProfileUploadStatus(
-          statusId,
-          label + " yükleniyor · %" + percent,
-          "is-uploading"
-        );
-      },
-      error => reject(error),
-      async () => {
-        try {
-          resolve(await task.snapshot.ref.getDownloadURL());
-        } catch (error) {
-          reject(error);
-        }
-      }
-    );
-  });
+  return await uploadProfileFileToCloudinary(
+    file,kind,statusId,label
+  );
 }
 
 async function saveUploadedProfileMedia({
@@ -476,21 +464,24 @@ async function clearProfileHeroMedia(fieldName) {
 }
 
 async function deleteOwnProfileStorageUrl(url) {
-  const safe = safeProfileUrl(url);
-  if (!safe || !safe.includes("firebasestorage.googleapis.com")) return;
-  try {
-    await storage.refFromURL(safe).delete();
-  } catch (_) {}
+  // Cloudinary unsigned yüklemelerde tarayıcıdan güvenli silme yapılmaz.
+  // Profil bağlantısı Firestore'dan kaldırılır; eski Cloudinary dosyası
+  // gerektiğinde Cloudinary Media Library üzerinden yönetilebilir.
+  return;
 }
 
 function profileUploadErrorText(error) {
-  if (error?.code === "storage/unauthorized") {
-    return "Yükleme yetkisi kapalı. Firebase Storage kurallarını yayınlayın.";
+  const text=String(error?.message||"").trim();
+
+  if(text.toLowerCase().includes("upload preset")){
+    return "Cloudinary Upload Preset bulunamadı veya unsigned değil.";
   }
-  if (error?.code === "storage/canceled") {
-    return "Yükleme iptal edildi.";
+
+  if(text.toLowerCase().includes("file size")||text.toLowerCase().includes("too large")){
+    return "Dosya Cloudinary yükleme sınırını aşıyor.";
   }
-  return error?.message || "Medya yüklenemedi.";
+
+  return text || "Medya Cloudinary'ye yüklenemedi.";
 }
 
 async function saveUploadedSingleImage(file, kind, fieldName, inputId, statusId, label) {
