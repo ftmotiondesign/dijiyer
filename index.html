@@ -7,7 +7,7 @@
   <meta name="description" content="Hizmet ara, kurumları karşılaştır, videolarını izle ve teklif al." />
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=25" />
+  <link rel="stylesheet" href="style.css?v=26" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body>
@@ -210,6 +210,21 @@
       <span class="mobile-search-location-action">Değiştir ›</span>
     </button>
 
+    <div class="mobile-search-quick-filters" aria-label="Hızlı kurum filtreleri">
+      <button type="button" id="mobileOfferOnlyBtn">
+        <span>🏷</span>
+        <strong>Teklif Verenler</strong>
+      </button>
+      <button type="button" id="mobileVideoOnlyBtn">
+        <span>🎥</span>
+        <strong>Videolu Kurumlar</strong>
+      </button>
+      <button type="button" id="mobileTour360Btn">
+        <span>🧭</span>
+        <strong>360° Turu Olanlar</strong>
+      </button>
+    </div>
+
     <div class="mobile-discovery-head">
       <div>
         <strong>Ne arıyorsunuz?</strong>
@@ -237,15 +252,14 @@
         </div>
       </div>
 
-      <div class="mobile-category-result-actions">
+      <div class="mobile-category-result-actions compact">
         <button type="button" class="primary" id="mobileCategoryResultBtn">Sonuçları Gör</button>
-        <button type="button" id="mobileCategoryOfferBtn">🏷 Teklif Verenler</button>
-        <button type="button" id="mobileCategoryVideoBtn">🎥 Videolu</button>
       </div>
     </div>
 
     <input type="checkbox" id="videoOnly" hidden>
     <input type="checkbox" id="offerOnly" hidden>
+    <input type="checkbox" id="tour360Only" hidden>
   </section>
 
   <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
@@ -840,7 +854,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=43"></script>
+<script src="script.js?v=44"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
