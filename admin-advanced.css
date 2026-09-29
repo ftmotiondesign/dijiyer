@@ -1518,3 +1518,904 @@
   .cloudinary-config-actions{align-items:stretch;flex-direction:column}
   .cloudinary-config-actions button{width:100%}
 }
+
+
+/* =========================================================
+   ADMIN REKLAM GELİR MERKEZİ
+   Bugün yapılacaklar + reklam takvimi + gelir + yayın akışı
+   ========================================================= */
+
+.admin-today-board{
+  margin:0 0 14px;
+  padding:15px;
+  border:1px solid #dbe6f4;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(22,119,255,.07),transparent 30%),
+    #fff;
+  box-shadow:0 6px 20px rgba(18,44,78,.045);
+}
+
+.admin-today-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:10px;
+}
+
+.admin-today-head>div:first-child{
+  min-width:0;
+}
+
+.admin-today-head span{
+  color:#1677ff;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+
+.admin-today-head h4{
+  margin:3px 0 2px;
+  color:#1f314a;
+  font-size:17px;
+}
+
+.admin-today-head p{
+  margin:0;
+  color:#728096;
+  font-size:10.5px;
+}
+
+.admin-today-head-side{
+  min-width:64px;
+  min-height:56px;
+  display:grid;
+  place-items:center;
+  align-content:center;
+  border:1px solid #dbe8f8;
+  border-radius:12px;
+  background:#f7fbff;
+}
+
+.admin-today-head-side strong{
+  color:#1268da;
+  font-size:23px;
+  line-height:1;
+}
+
+.admin-today-head-side small{
+  margin-top:3px;
+  color:#7e8da0;
+  font-size:8px;
+  font-weight:800;
+}
+
+.admin-today-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+
+.admin-today-task{
+  min-width:0;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  padding:9px;
+  border:1px solid #e4e9f0;
+  border-radius:10px;
+  background:#fbfcfe;
+}
+
+.admin-today-task-count{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#edf5ff;
+  color:#1268da;
+  font-size:13px;
+  font-weight:950;
+}
+
+.admin-today-task>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.admin-today-task strong{
+  color:#30445e;
+  font-size:9.5px;
+}
+
+.admin-today-task small{
+  color:#7a889a;
+  font-size:8px;
+  line-height:1.35;
+}
+
+.admin-today-task button{
+  min-height:31px;
+  padding:0 9px;
+  border:1px solid #cadcf4;
+  border-radius:8px;
+  background:#fff;
+  color:#1268da;
+  font-size:8px;
+  font-weight:900;
+}
+
+.admin-today-task.level-warning{
+  border-color:#f6dba0;
+  background:#fffaf0;
+}
+.admin-today-task.level-warning .admin-today-task-count{
+  background:#fff1c9;color:#9a6a08;
+}
+
+.admin-today-task.level-money{
+  border-color:#bee6ce;
+  background:#f3fbf6;
+}
+.admin-today-task.level-money .admin-today-task-count{
+  background:#e4f7eb;color:#15803d;
+}
+
+.admin-today-task.level-urgent{
+  border-color:#fecaca;
+  background:#fff7f7;
+}
+.admin-today-task.level-urgent .admin-today-task-count{
+  background:#fee2e2;color:#b91c1c;
+}
+
+/* Sipariş -> reklam yayın akışı */
+.promotion-workflow-guide{
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+}
+
+.promotion-ad-workflow{
+  margin-top:12px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  border:1px solid #dce6f2;
+  border-radius:11px;
+  background:#f8fafc;
+}
+
+.promotion-ad-workflow span{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:6px 7px;
+  border-radius:8px;
+  background:#fff;
+  color:#8190a3;
+  font-size:7.5px;
+  font-weight:800;
+}
+
+.promotion-ad-workflow i{
+  width:18px;
+  height:18px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:999px;
+  background:#edf1f5;
+  color:#8794a6;
+  font-style:normal;
+  font-size:8px;
+}
+
+.promotion-ad-workflow span.done{
+  background:#eefaf3;
+  color:#15803d;
+}
+
+.promotion-ad-workflow span.done i{
+  background:#d9f3e4;
+  color:#15803d;
+}
+
+.promotion-ad-publish-box{
+  margin-top:9px;
+  padding:11px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  border:1px solid #bfdbfe;
+  border-radius:11px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(22,119,255,.08),transparent 30%),
+    #f5f9ff;
+}
+
+.promotion-ad-publish-box>div{
+  display:grid;
+  gap:2px;
+}
+
+.promotion-ad-publish-box span{
+  color:#1677ff;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+
+.promotion-ad-publish-box strong{
+  color:#253a56;
+  font-size:11px;
+}
+
+.promotion-ad-publish-box small{
+  max-width:560px;
+  color:#728096;
+  font-size:8px;
+  line-height:1.4;
+}
+
+.promotion-ad-publish-box button{
+  min-height:38px;
+  padding:0 12px;
+  border:0;
+  border-radius:9px;
+  background:#1677ff;
+  color:#fff;
+  font-size:8.5px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.promotion-ad-publish-box.published{
+  border-color:#bfe5ce;
+  background:#f2fbf5;
+}
+.promotion-ad-publish-box.published span,
+.promotion-ad-publish-box.published strong{
+  color:#15803d;
+}
+.promotion-ad-publish-box button:disabled{
+  background:#9bd0b0;
+  cursor:default;
+}
+
+/* Kurum sağlık alanı */
+.institution-health-actionable{
+  grid-template-columns:1.05fr 1.45fr .8fr auto;
+  align-items:stretch;
+  gap:9px;
+}
+
+.institution-health-summary,
+.institution-health-missing,
+.institution-health-activity{
+  padding:8px;
+  border:1px solid #e5eaf1;
+  border-radius:9px;
+  background:#fff;
+}
+
+.institution-health-summary>div:first-child,
+.institution-health-activity{
+  display:grid;
+  gap:2px;
+}
+
+.institution-health-summary span,
+.institution-health-missing>span,
+.institution-health-activity>span{
+  color:#8896a8;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.05em;
+}
+
+.institution-health-summary strong{
+  color:#34465e;
+  font-size:11px;
+}
+
+.institution-health-summary small,
+.institution-health-activity small{
+  color:#8794a5;
+  font-size:7px;
+}
+
+.institution-health-progress{
+  height:6px;
+  margin:7px 0 4px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#eaf0f6;
+}
+
+.institution-health-progress i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#1677ff,#55a0ff);
+}
+
+.institution-health-missing>div{
+  margin-top:5px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+
+.institution-health-missing b{
+  padding:4px 6px;
+  border-radius:999px;
+  background:#fff3f3;
+  color:#b45353;
+  font-size:6.8px;
+  font-weight:800;
+}
+
+.institution-health-missing b.complete{
+  background:#effaf3;
+  color:#15803d;
+}
+
+.institution-health-activity strong{
+  margin-top:4px;
+  color:#34465e;
+  font-size:9px;
+}
+
+.institution-health-actions{
+  display:grid;
+  align-content:center;
+  gap:5px;
+}
+
+.institution-health-actions button{
+  min-height:31px;
+  padding:0 8px;
+  border:1px solid #cadcf4;
+  border-radius:8px;
+  background:#fff;
+  color:#1268da;
+  font-size:7.5px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.institution-health-actions button.sales{
+  border-color:#c2e5d0;
+  background:#effaf3;
+  color:#15803d;
+}
+
+.ad-recommendation.attention{
+  animation:adRecommendationPulse .55s ease 3;
+}
+
+@keyframes adRecommendationPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(22,119,255,0)}
+  50%{box-shadow:0 0 0 4px rgba(22,119,255,.18)}
+}
+
+/* Reklam takvimi */
+.ad-business-title{
+  align-items:center;
+}
+
+.ad-calendar-nav{
+  display:flex;
+  gap:5px;
+}
+
+.ad-calendar-nav button{
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #d8e1ec;
+  border-radius:8px;
+  background:#fff;
+  color:#4f6075;
+  font-size:9px;
+  font-weight:850;
+}
+
+.ad-calendar-summary,
+.ad-revenue-kpis{
+  margin-bottom:12px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+
+.ad-calendar-summary article,
+.ad-revenue-kpis article{
+  min-width:0;
+  padding:12px;
+  border:1px solid #e0e7ef;
+  border-radius:11px;
+  background:#fff;
+}
+
+.ad-calendar-summary span,
+.ad-revenue-kpis span{
+  display:block;
+  color:#7f8da0;
+  font-size:8px;
+  font-weight:850;
+}
+
+.ad-calendar-summary strong,
+.ad-revenue-kpis strong{
+  display:block;
+  margin-top:4px;
+  color:#1f314a;
+  font-size:21px;
+}
+
+.ad-calendar-summary small,
+.ad-revenue-kpis small{
+  display:block;
+  margin-top:2px;
+  color:#8d99a9;
+  font-size:7.5px;
+}
+
+.ad-calendar-summary article.warning,
+.ad-revenue-kpis article.warning{
+  border-color:#f3d997;
+  background:#fffaf0;
+}
+
+.ad-revenue-kpis article.success{
+  border-color:#c6e8d3;
+  background:#f3fbf6;
+}
+
+.ad-calendar-card{
+  padding:12px;
+  border:1px solid #e0e6ee;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(15,23,42,.035);
+}
+
+.ad-calendar-month-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  padding:2px 2px 10px;
+}
+
+.ad-calendar-month-head strong{
+  color:#26384f;
+  font-size:16px;
+}
+
+.ad-calendar-month-head small{
+  color:#8794a6;
+  font-size:8.5px;
+}
+
+.ad-calendar-weekdays,
+.ad-calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+}
+
+.ad-calendar-weekdays{
+  gap:4px;
+  margin-bottom:4px;
+}
+
+.ad-calendar-weekdays span{
+  padding:5px;
+  color:#8b98aa;
+  font-size:7px;
+  font-weight:900;
+  text-align:center;
+}
+
+.ad-calendar-grid{
+  gap:4px;
+}
+
+.ad-calendar-day{
+  min-width:0;
+  min-height:98px;
+  padding:6px;
+  overflow:hidden;
+  border:1px solid #e6ebf1;
+  border-radius:9px;
+  background:#fff;
+  text-align:left;
+  vertical-align:top;
+}
+
+.ad-calendar-day:hover{
+  border-color:#b8d1ef;
+  background:#fbfdff;
+}
+
+.ad-calendar-day.outside{
+  opacity:.42;
+  background:#fafafa;
+}
+
+.ad-calendar-day.today{
+  border-color:#8ab8f7;
+  box-shadow:inset 0 0 0 1px #8ab8f7;
+}
+
+.ad-calendar-day.selected{
+  background:#f1f7ff;
+}
+
+.ad-calendar-day>b{
+  display:block;
+  margin-bottom:5px;
+  color:#53657c;
+  font-size:9px;
+}
+
+.ad-calendar-day-events{
+  display:grid;
+  gap:3px;
+}
+
+.ad-calendar-day-events span{
+  overflow:hidden;
+  padding:3px 4px;
+  border-radius:5px;
+  background:#eef5ff;
+  color:#2d5f9d;
+  font-size:6px;
+  font-weight:800;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.ad-calendar-day-events .placement-premium_home{
+  background:#fff3cc;color:#8a6208;
+}
+.ad-calendar-day-events .placement-home_sponsor{
+  background:#eaf8ef;color:#14743a;
+}
+.ad-calendar-day-events .placement-search{
+  background:#eef5ff;color:#2d5f9d;
+}
+.ad-calendar-day-events .placement-detail_banner{
+  background:#f4efff;color:#6b45a7;
+}
+
+.ad-calendar-day-events em{
+  color:#8b98aa;
+  font-size:6px;
+  font-style:normal;
+}
+
+.ad-calendar-detail-card{
+  margin-top:10px;
+}
+
+.ad-calendar-selected-row{
+  display:grid;
+  grid-template-columns:10px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:8px 0;
+  border-bottom:1px solid #edf1f5;
+}
+
+.ad-calendar-selected-row:last-child{
+  border-bottom:0;
+}
+
+.ad-calendar-event-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#1677ff;
+}
+
+.ad-calendar-selected-row>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.ad-calendar-selected-row strong{
+  color:#34465d;
+  font-size:9px;
+}
+
+.ad-calendar-selected-row small{
+  color:#8592a3;
+  font-size:7.5px;
+}
+
+.ad-calendar-selected-row button{
+  min-height:29px;
+  padding:0 8px;
+  border:1px solid #d5e1ef;
+  border-radius:8px;
+  background:#fff;
+  color:#1268da;
+  font-size:7.5px;
+  font-weight:850;
+}
+
+/* Gelir merkezi */
+.ad-revenue-kpis{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+
+.ad-revenue-kpis strong{
+  font-size:19px;
+}
+
+.ad-revenue-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.ad-revenue-breakdown-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid #edf1f5;
+}
+
+.ad-revenue-breakdown-row:last-child{
+  border-bottom:0;
+}
+
+.ad-revenue-breakdown-row>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.ad-revenue-breakdown-row strong{
+  color:#34465d;
+  font-size:9px;
+}
+
+.ad-revenue-breakdown-row small{
+  color:#8b98a9;
+  font-size:7px;
+}
+
+.ad-revenue-breakdown-row>span{
+  color:#607087;
+  font-size:8px;
+  white-space:nowrap;
+}
+
+.ad-revenue-breakdown-row>span b{
+  color:#15803d;
+}
+
+.ad-revenue-breakdown-row>span.pending{
+  color:#b06a0c;
+}
+
+.ad-renewal-row{
+  padding:9px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  border:1px solid #f2dfa9;
+  border-radius:9px;
+  background:#fffaf0;
+}
+
+.ad-renewal-row + .ad-renewal-row{
+  margin-top:6px;
+}
+
+.ad-renewal-row.urgency-high{
+  border-color:#fdc7a7;
+  background:#fff6f0;
+}
+
+.ad-renewal-row>div:first-child{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+
+.ad-renewal-row strong{
+  color:#3c4d62;
+  font-size:8.8px;
+}
+
+.ad-renewal-row span{
+  color:#b06a0c;
+  font-size:7.6px;
+  font-weight:800;
+}
+
+.ad-renewal-row small{
+  color:#8c98a8;
+  font-size:6.8px;
+}
+
+.ad-renewal-row>div:last-child{
+  display:flex;
+  gap:4px;
+}
+
+.ad-renewal-row button{
+  min-height:29px;
+  padding:0 7px;
+  border:1px solid #d8e1ec;
+  border-radius:7px;
+  background:#fff;
+  color:#53657c;
+  font-size:7px;
+  font-weight:850;
+}
+
+.ad-performance-table{
+  overflow:hidden;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+}
+
+.ad-performance-head,
+.ad-performance-row{
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) repeat(3,.65fr);
+  align-items:center;
+}
+
+.ad-performance-head{
+  background:#f7f9fc;
+  color:#7a889b;
+  font-size:7px;
+  font-weight:900;
+}
+
+.ad-performance-head span,
+.ad-performance-row>*{
+  padding:8px 9px;
+  border-right:1px solid #edf1f5;
+}
+
+.ad-performance-head span:last-child,
+.ad-performance-row>*:last-child{
+  border-right:0;
+}
+
+.ad-performance-row{
+  border-top:1px solid #edf1f5;
+}
+
+.ad-performance-row strong{
+  color:#34465d;
+  font-size:8.5px;
+}
+
+.ad-performance-row span{
+  color:#64748b;
+  font-size:8px;
+}
+
+@media(max-width:1100px){
+  .ad-revenue-kpis{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .institution-health-actionable{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .institution-health-actions{
+    grid-column:1/-1;
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:850px){
+  .admin-today-list,
+  .ad-revenue-grid{
+    grid-template-columns:1fr;
+  }
+
+  .ad-calendar-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .promotion-workflow-guide,
+  .promotion-ad-workflow{
+    grid-template-columns:1fr !important;
+  }
+
+  .ad-calendar-card{
+    overflow-x:auto;
+  }
+
+  .ad-calendar-weekdays,
+  .ad-calendar-grid{
+    min-width:760px;
+  }
+}
+
+@media(max-width:650px){
+  .admin-today-head,
+  .ad-business-title,
+  .ad-calendar-month-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .admin-today-task{
+    grid-template-columns:32px minmax(0,1fr);
+  }
+
+  .admin-today-task button{
+    grid-column:1/-1;
+    width:100%;
+  }
+
+  .ad-revenue-kpis,
+  .ad-calendar-summary{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .institution-health-actionable{
+    grid-template-columns:1fr;
+  }
+
+  .institution-health-actions{
+    grid-column:auto;
+    grid-template-columns:1fr;
+  }
+
+  .promotion-ad-publish-box{
+    grid-template-columns:1fr;
+  }
+
+  .promotion-ad-publish-box button{
+    width:100%;
+  }
+
+  .ad-revenue-breakdown-row{
+    grid-template-columns:1fr;
+    gap:3px;
+  }
+
+  .ad-renewal-row{
+    grid-template-columns:1fr;
+  }
+
+  .ad-renewal-row>div:last-child{
+    width:100%;
+  }
+
+  .ad-renewal-row button{
+    flex:1;
+  }
+
+  .ad-performance-table{
+    overflow-x:auto;
+  }
+
+  .ad-performance-head,
+  .ad-performance-row{
+    min-width:560px;
+  }
+}
