@@ -23,7 +23,10 @@ let responseMap = new Map();
 let supportTicketRecords = [];
 
 let liveQuoteUnsubscribe = null;
+let liveSupportUnsubscribe = null;
 let liveQuoteWatcherReady = false;
+let liveSupportWatcherReady = false;
+let activeSupportReplyTicketId = "";
 let panelAudioUnlocked = false;
 
 const panelError = document.getElementById("panelError");
@@ -728,6 +731,7 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     if (btn.dataset.panelTab === "support" && currentAccount) {
       populateSupportQuoteReferences();
       await loadSupportTickets();
+      markAllSupportRepliesRead();
     }
   });
 });
@@ -738,7 +742,10 @@ document.getElementById("goVerifyBtn")?.addEventListener("click", () => setPanel
 document.getElementById("goSupportBtn")?.addEventListener("click", async () => {
   setPanelTab("support");
   populateSupportQuoteReferences();
-  if (currentAccount) await loadSupportTickets();
+  if (currentAccount) {
+    await loadSupportTickets();
+    markAllSupportRepliesRead();
+  }
 });
 document.getElementById("openNewQuotesBtn")?.addEventListener("click", () => {
   quotePanelFilter.value = "new";
@@ -1416,6 +1423,235 @@ document.getElementById("supportReferenceSelect")?.addEventListener(
   renderSupportReferencePreview
 );
 
+function supportReplyReadStorageKey() {
+  const identity = currentUser?.uid || currentAccount?.institutionId || "guest";
+  return "dijiyer_support_reply_reads_" + identity;
+}
+
+function getSupportReplyReads() {
+  try {
+    return JSON.parse(localStorage.getItem(supportReplyReadStorageKey()) || "{}");
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveSupportReplyReads(reads) {
+  try {
+    localStorage.setItem(supportReplyReadStorageKey(), JSON.stringify(reads || {}));
+  } catch (_) {}
+}
+
+function isSupportReplyUnread(ticket, reads = getSupportReplyReads()) {
+  const replyAt = String(ticket?.adminReplyAt || "");
+  if (!ticket?.adminReply || !replyAt) return false;
+  return String(reads[ticket.id] || "") !== replyAt;
+}
+
+function updateSupportReplyIndicators(records = supportTicketRecords) {
+  const unread = records.filter(ticket => isSupportReplyUnread(ticket));
+  const tabCount = document.getElementById("supportTabCount");
+
+  if (tabCount) {
+    tabCount.textContent = unread.length;
+    tabCount.classList.toggle("has-unread", unread.length > 0);
+    tabCount.title = unread.length
+      ? unread.length + " okunmamış destek yanıtı"
+      : "Yeni destek yanıtı yok";
+  }
+
+  return unread;
+}
+
+function markSupportReplyRead(ticketId) {
+  const ticket = supportTicketRecords.find(item => String(item.id) === String(ticketId));
+  if (!ticket?.adminReplyAt) return;
+
+  const reads = getSupportReplyReads();
+  reads[ticket.id] = ticket.adminReplyAt;
+  saveSupportReplyReads(reads);
+  updateSupportReplyIndicators();
+}
+
+function markAllSupportRepliesRead() {
+  const reads = getSupportReplyReads();
+
+  supportTicketRecords.forEach(ticket => {
+    if (ticket.adminReply && ticket.adminReplyAt) {
+      reads[ticket.id] = ticket.adminReplyAt;
+    }
+  });
+
+  saveSupportReplyReads(reads);
+  updateSupportReplyIndicators();
+}
+
+function showSupportReplyAlert(ticket) {
+  if (!ticket) return;
+
+  activeSupportReplyTicketId = ticket.id;
+
+  const alert = document.getElementById("supportReplyAlert");
+  const text = document.getElementById("supportReplyAlertText");
+
+  if (text) {
+    const subject = ticket.subject || "Destek Talebi";
+    const preview = String(ticket.adminReply || "").replace(/\s+/g," ").trim();
+    text.textContent = subject + (preview ? " · " + preview.slice(0,120) : "");
+  }
+
+  alert?.classList.remove("hidden");
+  playNewQuoteSound();
+
+  try {
+    if ("Notification" in window &&
+        Notification.permission === "granted" &&
+        (document.hidden || !document.hasFocus())) {
+      const notification = new Notification("Dijiyer Destek yanıtladı", {
+        body: (ticket.subject || "Destek Talebi") + " · " +
+          String(ticket.adminReply || "").slice(0,140),
+        tag: "dijiyer-support-" + ticket.id
+      });
+      notification.onclick = () => {
+        window.focus();
+        openSupportReplyTicket(ticket.id);
+        notification.close();
+      };
+    }
+  } catch (_) {}
+}
+
+async function openSupportReplyTicket(ticketId) {
+  document.getElementById("supportReplyAlert")?.classList.add("hidden");
+  setPanelTab("support");
+  populateSupportQuoteReferences();
+  await loadSupportTickets();
+
+  const id = ticketId || activeSupportReplyTicketId;
+  if (id) {
+    markSupportReplyRead(id);
+    const card = document.querySelector(
+      '.support-ticket-card[data-support-ticket-id="' + CSS.escape(String(id)) + '"]'
+    );
+    card?.scrollIntoView({ behavior:"smooth", block:"center" });
+    card?.classList.add("support-reply-focus");
+    setTimeout(() => card?.classList.remove("support-reply-focus"), 1800);
+  } else {
+    markAllSupportRepliesRead();
+  }
+}
+
+function updateSupportBrowserNotificationUi() {
+  const button = document.getElementById("supportBrowserNotificationBtn");
+  const status = document.getElementById("supportNotificationStatus");
+  if (!button || !status) return;
+
+  if (!("Notification" in window)) {
+    button.disabled = true;
+    button.textContent = "Bildirim desteklenmiyor";
+    status.textContent = "Panel içi destek bildirimleri aktif.";
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    button.disabled = true;
+    button.textContent = "✓ Masaüstü Bildirimleri Açık";
+    status.textContent = "Panel içi ve masaüstü destek bildirimleri aktif.";
+  } else if (Notification.permission === "denied") {
+    button.disabled = true;
+    button.textContent = "Bildirim izni engelli";
+    status.textContent = "Panel içi bildirimler aktif. Masaüstü izni tarayıcı ayarlarından açılabilir.";
+  } else {
+    button.disabled = false;
+    button.textContent = "🔔 Masaüstü Bildirimlerini Aç";
+    status.textContent = "Panel içi bildirimler aktif. İsterseniz masaüstü bildirimlerini de açabilirsiniz.";
+  }
+}
+
+async function enableSupportBrowserNotifications() {
+  if (!("Notification" in window)) return;
+
+  try {
+    await Notification.requestPermission();
+  } catch (_) {}
+
+  updateSupportBrowserNotificationUi();
+}
+
+function startLiveSupportWatcher() {
+  if (!currentAccount || !currentUser) return;
+
+  if (liveSupportUnsubscribe) {
+    liveSupportUnsubscribe();
+    liveSupportUnsubscribe = null;
+  }
+
+  const knownReplies = new Map();
+
+  liveSupportUnsubscribe = db.collection("supportTickets")
+    .where("institutionId", "==", currentAccount.institutionId)
+    .where("userId", "==", currentUser.uid)
+    .onSnapshot(async snapshot => {
+      const records = snapshot.docs
+        .map(doc => ({ id:doc.id, ...doc.data() }))
+        .sort((a,b) =>
+          new Date(b.updatedAt || b.date || 0) -
+          new Date(a.updatedAt || a.date || 0)
+        );
+
+      if (!liveSupportWatcherReady) {
+        records.forEach(ticket => {
+          knownReplies.set(ticket.id, String(ticket.adminReplyAt || ""));
+        });
+        supportTicketRecords = records;
+        updateSupportReplyIndicators(records);
+        liveSupportWatcherReady = true;
+        return;
+      }
+
+      const changedReplies = [];
+
+      records.forEach(ticket => {
+        const replyAt = String(ticket.adminReplyAt || "");
+        const previous = knownReplies.get(ticket.id) || "";
+
+        if (ticket.adminReply && replyAt && replyAt !== previous) {
+          changedReplies.push(ticket);
+        }
+
+        knownReplies.set(ticket.id, replyAt);
+      });
+
+      supportTicketRecords = records;
+      updateSupportReplyIndicators(records);
+
+      if (changedReplies.length) {
+        const newest = changedReplies.sort((a,b) =>
+          new Date(b.adminReplyAt || b.updatedAt || 0) -
+          new Date(a.adminReplyAt || a.updatedAt || 0)
+        )[0];
+
+        showSupportReplyAlert(newest);
+        await loadSupportTickets();
+      }
+    }, error => {
+      console.error("Canlı destek yanıtı takibi başlatılamadı:", error);
+    });
+}
+
+document.getElementById("supportReplyAlertBtn")?.addEventListener("click", () => {
+  openSupportReplyTicket(activeSupportReplyTicketId);
+});
+
+document.getElementById("supportReplyAlertClose")?.addEventListener("click", () => {
+  document.getElementById("supportReplyAlert")?.classList.add("hidden");
+});
+
+document.getElementById("supportBrowserNotificationBtn")?.addEventListener(
+  "click",
+  enableSupportBrowserNotifications
+);
+
 function getSupportStatusMeta(status) {
   const map = {
     new: ["Yeni", "new"],
@@ -1449,7 +1685,7 @@ async function loadSupportTickets() {
       String(item.status || "new") !== "resolved"
     );
 
-    if (tabCount) tabCount.textContent = open.length;
+    updateSupportReplyIndicators(supportTicketRecords);
     if (openCount) openCount.textContent = open.length + " açık";
 
     if (!supportTicketRecords.length) {
@@ -1462,7 +1698,7 @@ async function loadSupportTickets() {
       const [statusText, statusClass] = getSupportStatusMeta(ticket.status);
 
       return `
-        <article class="support-ticket-card">
+        <article class="support-ticket-card ${isSupportReplyUnread(ticket) ? "has-unread-reply" : ""}" data-support-ticket-id="${escapeHtml(ticket.id)}">
           <div class="support-ticket-head">
             <div>
               <span class="support-ticket-category">${escapeHtml(ticket.category || "Destek")}</span>
@@ -1857,7 +2093,9 @@ auth.onAuthStateChanged(async user => {
     ]);
 
     populateSupportQuoteReferences();
+    updateSupportBrowserNotificationUi();
     startLiveQuoteWatcher();
+    startLiveSupportWatcher();
 
   } catch (error) {
     console.error(error);
@@ -1870,6 +2108,12 @@ document.getElementById("institutionLogoutBtn").addEventListener("click", async 
     liveQuoteUnsubscribe();
     liveQuoteUnsubscribe = null;
   }
+
+  if (liveSupportUnsubscribe) {
+    liveSupportUnsubscribe();
+    liveSupportUnsubscribe = null;
+  }
+  liveSupportWatcherReady = false;
 
   await auth.signOut();
   window.location.replace("index.html");
