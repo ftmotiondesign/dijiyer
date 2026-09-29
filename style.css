@@ -8203,3 +8203,74 @@ button{cursor:pointer}
     box-shadow:none;
   }
 }
+
+
+/* =========================================================
+   MOBİL KONUM ALTI HIZLI FİLTRELER
+   ========================================================= */
+@media(max-width:820px){
+  .mobile-search-quick-filters{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+    margin:-4px 0 14px;
+  }
+
+  .mobile-search-quick-filters button{
+    min-width:0;
+    min-height:58px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    padding:7px 5px;
+    border:1px solid #dce5ef;
+    border-radius:11px;
+    background:#fff;
+    color:#40536b;
+    text-align:center;
+    transition:.16s ease;
+  }
+
+  .mobile-search-quick-filters button > span{
+    font-size:16px;
+    line-height:1;
+  }
+
+  .mobile-search-quick-filters button > strong{
+    font-size:8.8px;
+    line-height:1.2;
+    font-weight:850;
+  }
+
+  .mobile-search-quick-filters button.active{
+    border-color:#91bfff;
+    background:#eaf3ff;
+    color:#0e67d4;
+    box-shadow:0 4px 12px rgba(22,119,255,.09);
+  }
+
+  .mobile-category-result-actions.compact{
+    grid-template-columns:1fr !important;
+  }
+
+  .mobile-category-result-actions.compact #mobileCategoryResultBtn{
+    width:100%;
+  }
+}
+
+@media(max-width:390px){
+  .mobile-search-quick-filters{
+    gap:5px;
+  }
+
+  .mobile-search-quick-filters button{
+    min-height:54px;
+    padding:6px 4px;
+  }
+
+  .mobile-search-quick-filters button > strong{
+    font-size:8px;
+  }
+}
