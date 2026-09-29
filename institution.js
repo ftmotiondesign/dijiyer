@@ -2907,8 +2907,10 @@ auth.onAuthStateChanged(async user => {
     startPromotionPackagesWatcher();
     startPromotionOrdersWatcher();
 
-    const requestedPanel =
-      new URLSearchParams(window.location.search).get("tab");
+    const panelParams = new URLSearchParams(window.location.search);
+    const requestedPanel = panelParams.get("tab");
+    const requestedService = String(panelParams.get("service") || "").trim();
+    const requestedOrder = panelParams.get("order") === "1";
 
     const allowedPanels = new Set([
       "summary","quotes","verify","showcase",
@@ -2917,9 +2919,32 @@ auth.onAuthStateChanged(async user => {
 
     if (requestedPanel && allowedPanels.has(requestedPanel)) {
       setPanelTab(requestedPanel);
+    }
 
-      if (requestedPanel === "showcase") {
-        sessionStorage.removeItem("dijiyerInstitutionIntent");
+    if (
+      requestedPanel === "showcase" &&
+      requestedService &&
+      PROMOTION_SERVICES[requestedService]
+    ) {
+      setTimeout(() => {
+        document.getElementById("showcaseAdServices")
+          ?.scrollIntoView({ behavior:"smooth", block:"start" });
+
+        if (requestedOrder) openPromotionOrder(requestedService);
+        else openPromotionDetail(requestedService);
+      }, 140);
+    }
+
+    if (requestedPanel === "showcase") {
+      sessionStorage.removeItem("dijiyerInstitutionIntent");
+      sessionStorage.removeItem("dijiyerInstitutionAdService");
+      sessionStorage.removeItem("dijiyerInstitutionAdOrder");
+
+      if (requestedService || requestedOrder) {
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("service");
+        cleanUrl.searchParams.delete("order");
+        window.history.replaceState({}, "", cleanUrl.toString());
       }
     }
 
