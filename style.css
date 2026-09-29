@@ -15494,8 +15494,8 @@ to{opacity:1;transform:none}
 
 
 /* =========================================================
-   SAYFA ÜSTÜ MİNİ BANNER V1
-   Teklif / İş / Bayi sayfalarında Ana Sayfa butonunun yanında.
+   SAYFA ÜSTÜ MİNİ BANNER V2
+   Sol: kurum logosu · Sağ: kampanya görseli / video.
    ========================================================= */
 .standalone-page-back{
   display:grid;
@@ -15504,120 +15504,148 @@ to{opacity:1;transform:none}
   gap:10px;
 }
 
-.page-top-mini-banner{
-  min-width:0;
-}
-
-.page-top-mini-banner.hidden{
-  display:none !important;
-}
+.page-top-mini-banner{min-width:0}
+.page-top-mini-banner.hidden{display:none !important}
 
 .page-top-mini-banner-card{
   position:relative;
   min-width:0;
-  min-height:52px;
+  min-height:68px;
   display:grid;
-  grid-template-columns:48px minmax(0,1fr) auto;
-  align-items:center;
-  gap:9px;
+  grid-template-columns:66px minmax(0,1fr);
+  gap:7px;
+  align-items:stretch;
   overflow:hidden;
-  padding:5px 11px 5px 5px;
+  padding:5px;
   border:1px solid #dbe5ef;
-  border-radius:11px;
+  border-radius:12px;
   background:#fff;
   color:#2c425e;
   text-decoration:none;
   box-shadow:0 4px 12px rgba(19,44,79,.05);
 }
 
-.page-top-mini-media{
-  width:48px;
-  height:40px;
+.page-top-mini-logo{
+  width:66px;
+  min-height:58px;
   display:grid;
   place-items:center;
   overflow:hidden;
-  border-radius:8px;
-  background:#edf4fb;
+  border:1px solid #edf1f5;
+  border-radius:9px;
+  background:#fff;
 }
 
-.page-top-mini-media img,
-.page-top-mini-media video{
+.page-top-mini-logo img{
   width:100%;
   height:100%;
+  display:block;
+  object-fit:contain;
+  padding:5px;
+}
+
+.page-top-mini-logo>span{font-size:20px}
+
+.page-top-mini-campaign{
+  position:relative;
+  min-width:0;
+  min-height:58px;
+  overflow:hidden;
+  border-radius:9px;
+  background:#f4f7fb;
+}
+
+.page-top-mini-campaign>img,
+.page-top-mini-campaign>video{
+  width:100%;
+  height:100%;
+  min-height:58px;
   display:block;
   object-fit:cover;
 }
 
-.page-top-mini-media>span{
-  font-size:17px;
-}
-
-.page-top-mini-copy{
-  min-width:0;
-}
-
-.page-top-mini-copy small{
-  display:block;
-  color:#8a96a6;
-  font-size:5.8px;
+.page-top-mini-sponsored{
+  position:absolute;
+  left:6px;
+  top:6px;
+  z-index:2;
+  padding:3px 5px;
+  border-radius:999px;
+  background:rgba(15,23,42,.66);
+  color:#fff;
+  font-size:5.5px;
   font-weight:950;
-  letter-spacing:.09em;
+  letter-spacing:.08em;
+  backdrop-filter:blur(4px);
 }
 
-.page-top-mini-copy strong{
-  display:block;
-  margin-top:1px;
-  overflow:hidden;
-  color:#253b56;
-  font-size:9.5px;
-  line-height:1.2;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.page-top-mini-copy span{
-  display:block;
-  margin-top:2px;
-  overflow:hidden;
-  color:#7a899b;
-  font-size:7px;
-  line-height:1.25;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.page-top-mini-banner-card>b{
-  position:relative;
-  z-index:1;
-  min-height:30px;
+.page-top-mini-cta{
+  position:absolute;
+  right:6px;
+  bottom:6px;
+  z-index:2;
+  min-height:25px;
   display:inline-flex;
   align-items:center;
-  padding:0 9px;
-  border-radius:8px;
-  background:#edf5ff;
+  padding:0 8px;
+  border-radius:7px;
+  background:rgba(255,255,255,.93);
   color:#1677ff;
-  font-size:7.5px;
+  font-size:7px;
+  font-weight:900;
+  box-shadow:0 2px 8px rgba(15,23,42,.12);
+}
+
+.page-top-mini-campaign-fallback{
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:8px 70px 8px 10px;
+  background:linear-gradient(100deg,#edf5ff,#f8fbff);
+}
+
+.page-top-mini-campaign-fallback small{
+  color:#1677ff;
+  font-size:5.5px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.page-top-mini-campaign-fallback strong{
+  margin-top:2px;
+  overflow:hidden;
+  color:#253b56;
+  font-size:9px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.page-top-mini-campaign-fallback span{
+  margin-top:2px;
+  overflow:hidden;
+  color:#718097;
+  font-size:6.5px;
+  text-overflow:ellipsis;
   white-space:nowrap;
 }
 
 .page-top-mini-dots{
   position:absolute;
-  right:11px;
-  bottom:4px;
+  right:10px;
+  top:7px;
+  z-index:3;
   display:flex;
   gap:3px;
 }
-
 .page-top-mini-dots i{
   width:4px;
   height:4px;
   border-radius:99px;
-  background:#d3dce7;
+  background:rgba(255,255,255,.55);
+  box-shadow:0 0 0 1px rgba(15,23,42,.10);
 }
-
 .page-top-mini-dots i.active{
   width:11px;
-  background:#1677ff;
+  background:#fff;
 }
 
 .page-top-mini-progress{
@@ -15630,7 +15658,6 @@ to{opacity:1;transform:none}
   transform-origin:left center;
   animation:pageTopMiniProgress var(--page-mini-duration,7s) linear forwards;
 }
-
 @keyframes pageTopMiniProgress{
   from{transform:scaleX(0)}
   to{transform:scaleX(1)}
@@ -15641,34 +15668,30 @@ to{opacity:1;transform:none}
     grid-template-columns:1fr;
     gap:7px;
   }
-
-  .standalone-page-back > a{
-    width:max-content;
-  }
-
+  .standalone-page-back > a{width:max-content}
   .page-top-mini-banner-card{
-    min-height:50px;
-    grid-template-columns:44px minmax(0,1fr) auto;
-    gap:8px;
-    padding:5px 8px 5px 5px;
+    min-height:74px;
+    grid-template-columns:60px minmax(0,1fr);
+    gap:6px;
+    padding:5px;
   }
-
-  .page-top-mini-media{
-    width:44px;
-    height:38px;
+  .page-top-mini-logo{
+    width:60px;
+    min-height:64px;
   }
-
-  .page-top-mini-copy strong{
-    font-size:8.5px;
+  .page-top-mini-campaign{min-height:64px}
+  .page-top-mini-campaign>img,
+  .page-top-mini-campaign>video{min-height:64px}
+  .page-top-mini-sponsored{
+    left:5px;
+    top:5px;
+    font-size:5px;
   }
-
-  .page-top-mini-copy span{
-    font-size:6.5px;
-  }
-
-  .page-top-mini-banner-card>b{
-    min-height:28px;
-    padding:0 7px;
-    font-size:6.8px;
+  .page-top-mini-cta{
+    right:5px;
+    bottom:5px;
+    min-height:23px;
+    padding:0 6px;
+    font-size:6.3px;
   }
 }
