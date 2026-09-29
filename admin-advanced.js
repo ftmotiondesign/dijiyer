@@ -783,7 +783,8 @@
       "premium_home",
       "mobile_sponsor",
       "sidebar_sponsor",
-      "detail_banner"
+      "detail_banner",
+      "page_top_mini"
     ]);
     return allowed.has(raw)?raw:"search";
   }
@@ -795,7 +796,8 @@
       premium_home:"Ana Sayfa Premium Vitrini",
       mobile_sponsor:"Mobil 2’li Sponsor Alanı",
       sidebar_sponsor:"Masaüstü Yan Sponsor",
-      detail_banner:"Kurum Hızlı Önizleme Altı"
+      detail_banner:"Kurum Hızlı Önizleme Altı",
+      page_top_mini:"Sayfa Üstü Mini Banner"
     };
     return labels[normalizeBannerPlacement(value)]||labels.search;
   }
