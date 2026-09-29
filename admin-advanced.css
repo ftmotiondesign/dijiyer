@@ -1203,3 +1203,112 @@
   .promotion-package-list-head{align-items:stretch;flex-direction:column}
   .promotion-package-list-head input{width:100%;min-width:0}
 }
+
+
+/* =========================================================
+   Bölgesel Banner Reklamları
+   ========================================================= */
+.banner-admin-title{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+}
+.banner-admin-guide{
+  margin-bottom:9px;padding:8px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  border:1px solid #dbe7f5;border-radius:11px;background:#f8fbff;
+}
+.banner-admin-guide>div{display:grid;grid-template-columns:25px 1fr;gap:7px;align-items:center;padding:6px}
+.banner-admin-guide b{
+  width:25px;height:25px;border-radius:8px;display:grid;place-items:center;
+  background:#1677ff;color:#fff;font-size:9px;
+}
+.banner-admin-guide span{display:grid;gap:2px}
+.banner-admin-guide strong{font-size:9px;color:#334155}
+.banner-admin-guide small{font-size:8px;color:#8491a2}
+.banner-admin-layout{
+  display:grid;grid-template-columns:minmax(350px,.85fr) minmax(420px,1.15fr);
+  gap:10px;align-items:start;
+}
+.banner-ad-editor,.banner-ad-list-panel{
+  padding:14px;border:1px solid #e1e7ef;border-radius:12px;background:#fff;
+}
+.banner-ad-editor{display:grid;gap:10px}
+.banner-editor-head{
+  padding-bottom:9px;border-bottom:1px solid #edf1f5;
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+}
+.banner-editor-head>div{display:grid;gap:2px}
+.banner-editor-head>div>span{font-size:8px;color:#1677ff;font-weight:950;letter-spacing:.07em}
+.banner-editor-head>div>strong{font-size:13px}
+.banner-ad-editor>label,.banner-form-grid label{
+  display:grid;gap:4px;color:#64748b;font-size:8.5px;font-weight:850;
+}
+.banner-ad-editor input,.banner-ad-editor select{
+  width:100%;padding:8px 9px;border:1px solid #d7e0ea;border-radius:8px;
+  background:#fff;color:#334155;font-size:9.5px;
+}
+.banner-ad-editor label small{font-size:7.5px;color:#94a3b8;font-weight:600}
+.banner-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.banner-target-box{
+  padding:10px;border:1px solid #dbe7f5;border-radius:10px;background:#f8fbff;
+}
+.banner-target-head{margin-bottom:8px;display:flex;justify-content:space-between;gap:10px}
+.banner-target-head strong{font-size:9.5px}
+.banner-target-head small{font-size:7.8px;color:#8491a2}
+.banner-preview-admin{
+  min-height:125px;padding:14px;border-radius:11px;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:4px;
+  background:linear-gradient(135deg,#173a70,#1677ff);
+  background-size:cover;background-position:center;color:#fff;overflow:hidden;
+}
+.banner-preview-admin>span{
+  width:max-content;padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.18);
+  font-size:7px;font-weight:950;letter-spacing:.07em;
+}
+.banner-preview-admin strong{font-size:15px;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.banner-preview-admin small{font-size:8.5px;color:rgba(255,255,255,.88)}
+.banner-ad-admin-list{display:grid;gap:8px}
+.banner-admin-card{
+  overflow:hidden;border:1px solid #e1e7ef;border-radius:10px;background:#fff;
+}
+.banner-admin-card.is-passive{opacity:.62}
+.banner-admin-card-visual{
+  min-height:105px;padding:11px;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
+  background:linear-gradient(135deg,#173a70,#1677ff);
+  background-size:cover;background-position:center;color:#fff;
+}
+.banner-admin-card-visual span{
+  width:max-content;padding:3px 5px;border-radius:999px;background:rgba(255,255,255,.18);
+  font-size:6.8px;font-weight:950;
+}
+.banner-admin-card-visual strong{font-size:12px;text-shadow:0 2px 7px rgba(0,0,0,.28)}
+.banner-admin-card-visual small{font-size:8px;color:rgba(255,255,255,.9)}
+.banner-admin-card-meta{
+  padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;
+}
+.banner-admin-card-meta>div{
+  padding:6px;border-radius:7px;background:#f8fafc;display:grid;gap:2px;
+}
+.banner-admin-card-meta span{font-size:7px;color:#94a3b8;font-weight:900}
+.banner-admin-card-meta strong{font-size:8.5px;color:#475569}
+.banner-admin-card-actions{
+  padding:8px;border-top:1px solid #eef2f6;
+  display:flex;gap:5px;align-items:center;justify-content:flex-end;
+}
+.banner-admin-card-actions button{
+  padding:6px 8px;border:1px solid #d7e0ea;border-radius:7px;background:#fff;
+  color:#475569;font-size:8px;font-weight:850;cursor:pointer;
+}
+.banner-admin-card-actions button.danger{border-color:#fecaca;color:#b91c1c;background:#fff8f8}
+.banner-state{
+  margin-right:auto;padding:4px 6px;border-radius:999px;font-size:7.5px;font-weight:900;
+}
+.banner-state.active{background:#dcfce7;color:#15803d}
+.banner-state.passive{background:#eef2f7;color:#64748b}
+@media(max-width:980px){.banner-admin-layout{grid-template-columns:1fr}}
+@media(max-width:650px){
+  .banner-admin-title{flex-direction:column}
+  .banner-admin-guide{grid-template-columns:1fr}
+  .banner-form-grid{grid-template-columns:1fr}
+  .banner-admin-card-meta{grid-template-columns:1fr 1fr}
+}
