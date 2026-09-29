@@ -704,17 +704,25 @@
     )?.value.trim() || "";
 
     const now = new Date().toISOString();
+    const replyChanged =
+      reply !== String(ticket.adminReply || "");
+    const effectiveStatus =
+      replyChanged && reply && status !== "resolved"
+        ? "answered"
+        : status;
 
     await db.collection("supportTickets").doc(ticketId).update({
-      status,
+      status:effectiveStatus,
       adminReply:reply,
-      adminReplyAt: reply ? now : (ticket.adminReplyAt || ""),
+      adminReplyAt: replyChanged && reply
+        ? now
+        : (ticket.adminReplyAt || ""),
       updatedAt:now
     });
 
     addAudit(
-      "Destek talebi güncellendi",
-      (ticket.institutionName || "Kurum") + " · " + ticketId + " · " + status
+      replyChanged && reply ? "Destek yanıtı gönderildi" : "Destek talebi güncellendi",
+      (ticket.institutionName || "Kurum") + " · " + ticketId + " · " + effectiveStatus
     );
 
     await renderSupportCenter();
