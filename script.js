@@ -1352,9 +1352,11 @@ renderDijiyerEarningsBottom();
 function applyHomeBottomSectionVisibility(data={}){
   const bottomQuote=document.querySelector('.business-cta-section');
   const earnings=document.getElementById('dijiyerEarningsBottom');
+  const homeFooter=document.getElementById('homeFooterSection') || document.querySelector('.home-footer');
 
   const bottomQuoteVisible=data.bottomQuoteVisible !== false;
   const earningsVisible=data.earningsVisible === true;
+  const homeFooterVisible=data.homeFooterVisible === true;
 
   if(bottomQuote){
     bottomQuote.hidden=!bottomQuoteVisible;
@@ -1367,6 +1369,12 @@ function applyHomeBottomSectionVisibility(data={}){
     earnings.classList.toggle('site-section-disabled',!earningsVisible);
     earnings.style.display=earningsVisible ? '' : 'none';
   }
+
+  if(homeFooter){
+    homeFooter.hidden=!homeFooterVisible;
+    homeFooter.classList.toggle('site-section-disabled',!homeFooterVisible);
+    homeFooter.style.display=homeFooterVisible ? '' : 'none';
+  }
 }
 
 function watchHomeBottomSectionVisibility(){
@@ -1375,7 +1383,7 @@ function watchHomeBottomSectionVisibility(){
       applyHomeBottomSectionVisibility(snap.exists ? (snap.data() || {}) : {});
     },error=>{
       console.warn('Ana sayfa alt bölüm görünürlük ayarları dinlenemedi:',error);
-      applyHomeBottomSectionVisibility({earningsVisible:false});
+      applyHomeBottomSectionVisibility({earningsVisible:false,homeFooterVisible:false});
     });
   }catch(error){
     console.warn('Ana sayfa alt bölüm görünürlük ayarı başlatılamadı:',error);
