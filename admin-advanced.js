@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["promotionOrdersSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["promotionOrdersTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -14,6 +14,7 @@
   const selectedInstitutionIds = new Set();
   let announcementSelectedIds = [];
   let supportAdminRecords = [];
+  let promotionAdminRecords = [];
   let adminSettings = loadAdminSettings();
 
   function safeText(value) {
@@ -128,6 +129,12 @@
 
   baseTabIds.forEach(id => {
     $(id)?.addEventListener("click", hideAdvancedSections);
+  });
+
+  $("promotionOrdersTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("promotionOrdersSection","promotionOrdersTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionOrdersTabBtn");
+    await renderPromotionOrdersAdmin(true);
   });
 
   $("supportTabBtn")?.addEventListener("click", async () => {
@@ -391,6 +398,223 @@
       console.error(error);
       alert("Toplu işlem tamamlanamadı.");
     }
+  });
+
+  function promotionOrderStatusLabel(status) {
+    return {
+      new:"Yeni Sipariş",
+      contacting:"Görüşülüyor",
+      preparing:"Hazırlanıyor",
+      approval:"Onay Bekliyor",
+      completed:"Tamamlandı"
+    }[status] || "Yeni Sipariş";
+  }
+
+  async function loadPromotionAdminRecords() {
+    try {
+      const snapshot = await db.collection("promotionOrders").get();
+      promotionAdminRecords = snapshot.docs
+        .map(doc => ({ id:doc.id, ...doc.data() }))
+        .sort((a,b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+    } catch (error) {
+      console.error("Tanıtım siparişleri yüklenemedi:", error);
+      promotionAdminRecords = [];
+      const root = $("promotionAdminList");
+      if (root) root.innerHTML = '<div class="advanced-empty">Siparişler yüklenemedi. Firestore promotionOrders kuralını kontrol edin.</div>';
+    }
+    return promotionAdminRecords;
+  }
+
+  async function savePromotionOrderAdmin(orderId) {
+    const order = promotionAdminRecords.find(item => item.id === orderId);
+    if (!order) return;
+
+    const status = document.querySelector('[data-promotion-status="' + CSS.escape(orderId) + '"]')?.value || order.status || "new";
+    const paymentStatus = document.querySelector('[data-promotion-payment="' + CSS.escape(orderId) + '"]')?.value || order.paymentStatus || "pending";
+    const adminNote = document.querySelector('[data-promotion-admin-note="' + CSS.escape(orderId) + '"]')?.value.trim() || "";
+    const priceInput = document.querySelector('[data-promotion-price="' + CSS.escape(orderId) + '"]');
+    const price = Math.max(0, Number(priceInput?.value || order.price || 0));
+    const now = new Date().toISOString();
+
+    try {
+      await db.collection("promotionOrders").doc(orderId).update({
+        status,
+        paymentStatus,
+        adminNote,
+        price,
+        updatedAt:now
+      });
+      addAudit(
+        "Tanıtım siparişi güncellendi",
+        (order.orderCode || orderId) + " · " + (order.institutionName || "Kurum") + " · " + promotionOrderStatusLabel(status)
+      );
+      await renderPromotionOrdersAdmin(true);
+    } catch (error) {
+      console.error("Tanıtım siparişi güncellenemedi:", error);
+      alert("Sipariş güncellenemedi.");
+    }
+  }
+
+  async function renderPromotionOrdersAdmin(reload = false) {
+    const root = $("promotionAdminList");
+    if (!root) return;
+
+    if (reload || !promotionAdminRecords.length) {
+      root.innerHTML = '<div class="advanced-empty">Tanıtım siparişleri yükleniyor...</div>';
+      await loadPromotionAdminRecords();
+    }
+
+    const counts = {
+      new: promotionAdminRecords.filter(x => (x.status || "new") === "new").length,
+      contacting: promotionAdminRecords.filter(x => x.status === "contacting").length,
+      preparing: promotionAdminRecords.filter(x => x.status === "preparing").length,
+      approval: promotionAdminRecords.filter(x => x.status === "approval").length,
+      completed: promotionAdminRecords.filter(x => x.status === "completed").length
+    };
+
+    Object.entries(counts).forEach(([key,value]) => {
+      const id = {
+        new:"promotionKpiNew",
+        contacting:"promotionKpiContacting",
+        preparing:"promotionKpiPreparing",
+        approval:"promotionKpiApproval",
+        completed:"promotionKpiCompleted"
+      }[key];
+      if ($(id)) $(id).textContent = value;
+    });
+
+    const openCount = promotionAdminRecords.filter(x => (x.status || "new") !== "completed").length;
+    if ($("promotionOrdersTabCount")) $("promotionOrdersTabCount").textContent = openCount;
+    if ($("quickPromotionOrderCount")) $("quickPromotionOrderCount").textContent = openCount;
+    if ($("promotionAdminCount")) $("promotionAdminCount").textContent = promotionAdminRecords.length + " sipariş · " + openCount + " açık";
+
+    const q = normalize($("promotionAdminSearch")?.value || "");
+    const statusFilter = $("promotionAdminStatus")?.value || "";
+    const paymentFilter = $("promotionAdminPayment")?.value || "";
+    const sort = $("promotionAdminSort")?.value || "newest";
+
+    let rows = promotionAdminRecords.filter(item => {
+      const haystack = normalize([
+        item.orderCode,item.institutionName,item.serviceName,item.contactName,
+        item.phone,item.note,item.adminNote,item.serviceId
+      ].join(" "));
+      return (!q || haystack.includes(q))
+        && (!statusFilter || (item.status || "new") === statusFilter)
+        && (!paymentFilter || (item.paymentStatus || "pending") === paymentFilter);
+    });
+
+    rows = [...rows].sort((a,b) => {
+      if (sort === "oldest") return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      if (sort === "active") {
+        const ac = a.status === "completed" ? 1 : 0;
+        const bc = b.status === "completed" ? 1 : 0;
+        if (ac !== bc) return ac - bc;
+      }
+      return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+    });
+
+    if ($("promotionFilterSummary")) {
+      $("promotionFilterSummary").textContent =
+        rows.length + " sipariş gösteriliyor" +
+        (statusFilter ? " · " + promotionOrderStatusLabel(statusFilter) : "") +
+        (paymentFilter ? " · " + (paymentFilter === "paid" ? "Ödendi" : "Ödeme bekliyor") : "");
+    }
+
+    root.innerHTML = rows.length ? rows.map(order => {
+      const orderNo = escapeHtml(order.orderCode || order.id.slice(0,10).toUpperCase());
+      const priceText = Number(order.price || 0) > 0 ? money(order.price) : (order.priceLabel || "Netleştirilecek");
+      const extras = Array.isArray(order.extras) ? order.extras : [];
+
+      return `
+        <details class="promotion-admin-row" data-promotion-id="${escapeHtml(order.id)}">
+          <summary>
+            <div class="promotion-admin-summary-main">
+              <span class="promotion-admin-service-icon">🛍️</span>
+              <div>
+                <strong>${escapeHtml(order.serviceName || "Tanıtım Hizmeti")}</strong>
+                <small>${escapeHtml(order.institutionName || "Kurum")} · ${orderNo} · ${formatDateLocal(order.createdAt)}</small>
+              </div>
+            </div>
+            <div class="promotion-admin-summary-side">
+              <span class="promotion-admin-price">${escapeHtml(priceText)}</span>
+              <span class="promotion-admin-state state-${escapeHtml(order.status || "new")}">${escapeHtml(promotionOrderStatusLabel(order.status))}</span>
+            </div>
+          </summary>
+
+          <div class="promotion-admin-detail">
+            <div class="promotion-admin-info-grid">
+              <div><span>Kurum</span><strong>${escapeHtml(order.institutionName || "-")}</strong></div>
+              <div><span>Sipariş No</span><strong>${orderNo}</strong></div>
+              <div><span>Yetkili</span><strong>${escapeHtml(order.contactName || "-")}</strong></div>
+              <div><span>Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
+              <div><span>Hizmet</span><strong>${escapeHtml(order.serviceName || "-")}</strong></div>
+              <div><span>Ödeme</span><strong>${order.paymentStatus === "paid" ? "Ödendi" : "Bekliyor"}</strong></div>
+            </div>
+
+            ${extras.length ? '<div class="promotion-admin-note"><span>Ek Hizmetler</span><strong>'+extras.map(escapeHtml).join(" · ")+'</strong></div>' : ""}
+            ${order.note ? '<div class="promotion-admin-note"><span>Kurum Notu</span><strong>'+escapeHtml(order.note)+'</strong></div>' : ""}
+
+            <div class="promotion-admin-controls">
+              <label>Durum
+                <select data-promotion-status="${escapeHtml(order.id)}">
+                  <option value="new" ${(order.status||"new")==="new"?"selected":""}>Yeni Sipariş</option>
+                  <option value="contacting" ${order.status==="contacting"?"selected":""}>Görüşülüyor</option>
+                  <option value="preparing" ${order.status==="preparing"?"selected":""}>Hazırlanıyor</option>
+                  <option value="approval" ${order.status==="approval"?"selected":""}>Onay Bekliyor</option>
+                  <option value="completed" ${order.status==="completed"?"selected":""}>Tamamlandı</option>
+                </select>
+              </label>
+
+              <label>Ödeme
+                <select data-promotion-payment="${escapeHtml(order.id)}">
+                  <option value="pending" ${(order.paymentStatus||"pending")==="pending"?"selected":""}>Ödeme Bekliyor</option>
+                  <option value="paid" ${order.paymentStatus==="paid"?"selected":""}>Ödendi</option>
+                </select>
+              </label>
+
+              <label>Net Fiyat
+                <input type="number" min="0" step="1" data-promotion-price="${escapeHtml(order.id)}" value="${Number(order.price||0)}">
+              </label>
+
+              <label class="promotion-admin-note-input">Yönetim Notu
+                <textarea rows="2" data-promotion-admin-note="${escapeHtml(order.id)}" placeholder="Kurumun görebileceği kısa süreç notu...">${escapeHtml(order.adminNote||"")}</textarea>
+              </label>
+
+              <button type="button" data-promotion-save="${escapeHtml(order.id)}">Değişiklikleri Kaydet</button>
+            </div>
+          </div>
+        </details>
+      `;
+    }).join("") : '<div class="advanced-empty">Filtreye uygun tanıtım siparişi yok.</div>';
+
+    root.querySelectorAll("[data-promotion-save]").forEach(button => {
+      button.addEventListener("click", () => savePromotionOrderAdmin(button.dataset.promotionSave));
+    });
+
+    root.querySelectorAll("details.promotion-admin-row").forEach(row => {
+      row.addEventListener("toggle", () => {
+        if (!row.open) return;
+        root.querySelectorAll("details.promotion-admin-row[open]").forEach(other => {
+          if (other !== row) other.open = false;
+        });
+      });
+    });
+  }
+
+  ["promotionAdminSearch","promotionAdminStatus","promotionAdminPayment","promotionAdminSort"].forEach(id => {
+    $(id)?.addEventListener(id === "promotionAdminSearch" ? "input" : "change", () => renderPromotionOrdersAdmin(false));
+  });
+
+  $("promotionAdminRefresh")?.addEventListener("click", () => renderPromotionOrdersAdmin(true));
+
+  document.querySelectorAll("[data-promotion-kpi]").forEach(button => {
+    button.addEventListener("click", () => {
+      const select = $("promotionAdminStatus");
+      if (!select) return;
+      const next = button.dataset.promotionKpi || "";
+      select.value = select.value === next ? "" : next;
+      renderPromotionOrdersAdmin(false);
+    });
   });
 
   async function loadSupportAdminRecords() {
