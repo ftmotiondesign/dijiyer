@@ -3351,3 +3351,7 @@ button{
 .banner-placement-help b{
   color:#1d4ed8;
 }
+
+.banner-placement-help span{
+  display:block;
+}
