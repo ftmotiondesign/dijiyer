@@ -527,90 +527,119 @@
       const isOverdue = supportTicketIsOverdue(ticket);
       const ticketNo = String(ticket.id || "").slice(0,8).toUpperCase();
 
+      const preview = String(ticket.message || "").replace(/\s+/g," ").trim();
+
       return `
-      <article class="support-admin-card ${isOverdue ? "overdue" : ""}" data-support-ticket-id="${escapeHtml(ticket.id)}">
-        <div class="support-admin-head">
-          <div class="support-admin-title-wrap">
-            <div class="support-admin-labels">
-              <span class="support-category-chip">${escapeHtml(ticket.category || "Destek")}</span>
-              <span class="support-ticket-no">#${escapeHtml(ticketNo)}</span>
-              ${isOverdue ? '<span class="support-overdue-chip">Gecikiyor</span>' : ""}
+      <details class="support-ticket-row ${isOverdue ? "overdue" : ""}" data-support-ticket-id="${escapeHtml(ticket.id)}">
+        <summary class="support-ticket-summary">
+          <div class="support-row-left">
+            <span class="support-category-chip">${escapeHtml(ticket.category || "Destek")}</span>
+            <div class="support-row-copy">
+              <div class="support-row-title">
+                <strong>${escapeHtml(ticket.subject || "Destek Talebi")}</strong>
+                <span class="support-ticket-no">#${escapeHtml(ticketNo)}</span>
+                ${isOverdue ? '<span class="support-overdue-chip">Gecikiyor</span>' : ""}
+              </div>
+              <div class="support-row-meta">
+                <b>${escapeHtml(ticket.institutionName || "Kurum")}</b>
+                <span>·</span>
+                <span>${formatDateLocal(ticket.date)}</span>
+                <span class="support-row-preview">${escapeHtml(preview || "Mesaj yok")}</span>
+              </div>
             </div>
-            <h4>${escapeHtml(ticket.subject || "Destek Talebi")}</h4>
-            <p>
-              <b>${escapeHtml(ticket.institutionName || "Kurum")}</b>
-              · ${formatDateLocal(ticket.date)}
-              ${ticket.email ? " · " + escapeHtml(ticket.email) : ""}
-            </p>
           </div>
-          <div class="support-admin-state-column">
+
+          <div class="support-row-right">
             <span class="support-state state-${escapeHtml(ticket.status || "new")}">
               ${supportStatusLabel(ticket.status)}
             </span>
             <small class="${isOverdue ? "overdue-text" : ""}">${escapeHtml(supportAgeLabel(ticket))}</small>
+            <span class="support-row-chevron" aria-hidden="true">⌄</span>
           </div>
-        </div>
+        </summary>
 
-        ${ticket.relatedRequestId ? `
-          <div class="support-admin-reference">
-            <div class="support-admin-reference-head">
-              <div>
-                <span>İLGİLİ TALEP / TEKLİF</span>
-                <strong>${escapeHtml(ticket.relatedService || "Teklif Talebi")}</strong>
+        <div class="support-ticket-detail">
+          <div class="support-ticket-detail-head">
+            <div>
+              <span>DESTEK KAYDI</span>
+              <strong>#${escapeHtml(ticketNo)} · ${escapeHtml(ticket.institutionName || "Kurum")}</strong>
+            </div>
+            <div class="support-contact-meta">
+              ${ticket.email ? '<span>' + escapeHtml(ticket.email) + '</span>' : ""}
+              <span>${formatDateLocal(ticket.date)}</span>
+            </div>
+          </div>
+
+          ${ticket.relatedRequestId ? `
+            <div class="support-admin-reference">
+              <div class="support-admin-reference-head">
+                <div>
+                  <span>İLGİLİ TALEP / TEKLİF</span>
+                  <strong>${escapeHtml(ticket.relatedService || "Teklif Talebi")}</strong>
+                </div>
+                <button
+                  type="button"
+                  data-support-open-quote="${escapeHtml(ticket.relatedRequestId)}"
+                >Talebi Aç</button>
               </div>
-              <button
-                type="button"
-                data-support-open-quote="${escapeHtml(ticket.relatedRequestId)}"
-              >Talebi Aç</button>
+              <div class="support-admin-reference-grid">
+                <span>Talep No <b>${escapeHtml(String(ticket.relatedRequestId).slice(0,10).toUpperCase())}</b></span>
+                <span>Teklif No <b>${escapeHtml(ticket.relatedOfferCode || "-")}</b></span>
+                <span>Durum <b>${escapeHtml(ticket.relatedOfferStatusLabel || ticket.relatedOfferStatus || "-")}</b></span>
+                ${ticket.relatedOfferPrice
+                  ? `<span>Fiyat <b>${money(ticket.relatedOfferPrice)}</b></span>`
+                  : ""}
+                ${ticket.relatedLocation
+                  ? `<span>Konum <b>${escapeHtml(ticket.relatedLocation)}</b></span>`
+                  : ""}
+              </div>
             </div>
-            <div class="support-admin-reference-grid">
-              <span>Talep No <b>${escapeHtml(String(ticket.relatedRequestId).slice(0,10).toUpperCase())}</b></span>
-              <span>Teklif No <b>${escapeHtml(ticket.relatedOfferCode || "-")}</b></span>
-              <span>Durum <b>${escapeHtml(ticket.relatedOfferStatusLabel || ticket.relatedOfferStatus || "-")}</b></span>
-              ${ticket.relatedOfferPrice
-                ? `<span>Fiyat <b>${money(ticket.relatedOfferPrice)}</b></span>`
-                : ""}
-              ${ticket.relatedLocation
-                ? `<span>Konum <b>${escapeHtml(ticket.relatedLocation)}</b></span>`
-                : ""}
+          ` : ""}
+
+          <div class="support-admin-message">
+            <strong>Kurumun mesajı</strong>
+            <p>${escapeHtml(ticket.message || "")}</p>
+          </div>
+
+          ${ticket.adminReply ? `
+            <div class="support-admin-existing-reply">
+              <strong>Son Dijiyer yanıtı · ${formatDateLocal(ticket.adminReplyAt || ticket.updatedAt)}</strong>
+              <p>${escapeHtml(ticket.adminReply)}</p>
             </div>
+          ` : ""}
+
+          <div class="support-admin-controls">
+            <select data-support-status="${escapeHtml(ticket.id)}" aria-label="Destek durumu">
+              <option value="new" ${(ticket.status||"new")==="new"?"selected":""}>Yeni</option>
+              <option value="reviewing" ${ticket.status==="reviewing"?"selected":""}>İnceleniyor</option>
+              <option value="answered" ${ticket.status==="answered"?"selected":""}>Cevaplandı</option>
+              <option value="resolved" ${ticket.status==="resolved"?"selected":""}>Çözüldü</option>
+            </select>
+            <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma verilecek yanıtı yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
+            <button type="button" data-support-save="${escapeHtml(ticket.id)}">Yanıtı Kaydet</button>
           </div>
-        ` : ""}
 
-        <div class="support-admin-message">
-          <strong>Kurumun mesajı</strong>
-          <p>${escapeHtml(ticket.message || "")}</p>
-        </div>
-
-        ${ticket.adminReply ? `
-          <div class="support-admin-existing-reply">
-            <strong>Son Dijiyer yanıtı · ${formatDateLocal(ticket.adminReplyAt || ticket.updatedAt)}</strong>
-            <p>${escapeHtml(ticket.adminReply)}</p>
+          <div class="support-quick-actions">
+            ${String(ticket.status || "new") === "new"
+              ? `<button type="button" data-support-quick="reviewing" data-support-id="${escapeHtml(ticket.id)}">İncelemeye Al</button>`
+              : ""}
+            ${String(ticket.status || "new") !== "resolved"
+              ? `<button type="button" class="success" data-support-quick="resolved" data-support-id="${escapeHtml(ticket.id)}">Çözüldü Yap</button>`
+              : `<span class="support-done-note">✓ Bu destek talebi kapatıldı.</span>`}
           </div>
-        ` : ""}
-
-        <div class="support-admin-controls">
-          <select data-support-status="${escapeHtml(ticket.id)}" aria-label="Destek durumu">
-            <option value="new" ${(ticket.status||"new")==="new"?"selected":""}>Yeni</option>
-            <option value="reviewing" ${ticket.status==="reviewing"?"selected":""}>İnceleniyor</option>
-            <option value="answered" ${ticket.status==="answered"?"selected":""}>Cevaplandı</option>
-            <option value="resolved" ${ticket.status==="resolved"?"selected":""}>Çözüldü</option>
-          </select>
-          <textarea data-support-reply="${escapeHtml(ticket.id)}" placeholder="Kuruma verilecek yanıtı yazın...">${escapeHtml(ticket.adminReply || "")}</textarea>
-          <button type="button" data-support-save="${escapeHtml(ticket.id)}">Yanıtı Kaydet</button>
         </div>
-
-        <div class="support-quick-actions">
-          ${String(ticket.status || "new") === "new"
-            ? `<button type="button" data-support-quick="reviewing" data-support-id="${escapeHtml(ticket.id)}">İncelemeye Al</button>`
-            : ""}
-          ${String(ticket.status || "new") !== "resolved"
-            ? `<button type="button" class="success" data-support-quick="resolved" data-support-id="${escapeHtml(ticket.id)}">Çözüldü Yap</button>`
-            : `<span class="support-done-note">✓ Bu destek talebi kapatıldı.</span>`}
-        </div>
-      </article>
+      </details>
     `;
     }).join("") : '<div class="advanced-empty">Filtreye uygun destek talebi yok.</div>';
+
+    root.querySelectorAll("details.support-ticket-row").forEach(row => {
+      row.addEventListener("toggle", () => {
+        if (!row.open) return;
+        root.querySelectorAll("details.support-ticket-row[open]").forEach(other => {
+          if (other !== row) other.open = false;
+        });
+      });
+    });
 
     root.querySelectorAll("[data-support-save]").forEach(button => {
       button.addEventListener("click", () =>
