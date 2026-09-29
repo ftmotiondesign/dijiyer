@@ -6683,11 +6683,30 @@ window.addEventListener("resize",()=>{
 /* Mobil: sayfanın başına dön butonu */
 (function setupMobileBackToTop(){
   const button=document.getElementById('mobileBackToTopBtn');
+  const trackingButton=document.getElementById('trackingMainBtn');
   if(!button)return;
+
+  const updatePosition=()=>{
+    const mobile=window.matchMedia('(max-width: 820px)').matches;
+    if(!mobile){
+      button.style.removeProperty('--mobile-back-top-bottom');
+      return;
+    }
+
+    if(trackingButton){
+      const rect=trackingButton.getBoundingClientRect();
+      const gap=10;
+      const bottom=Math.max(62,Math.round(window.innerHeight-rect.top+gap));
+      button.style.setProperty('--mobile-back-top-bottom',bottom+'px');
+    }else{
+      button.style.setProperty('--mobile-back-top-bottom','62px');
+    }
+  };
 
   const updateVisibility=()=>{
     const mobile=window.matchMedia('(max-width: 820px)').matches;
-    button.classList.toggle('is-visible',mobile && window.scrollY>520);
+    updatePosition();
+    button.classList.toggle('is-visible',mobile && window.scrollY>360);
   };
 
   button.addEventListener('click',()=>{
@@ -6696,6 +6715,7 @@ window.addEventListener("resize",()=>{
 
   window.addEventListener('scroll',updateVisibility,{passive:true});
   window.addEventListener('resize',updateVisibility);
+  window.setTimeout(updateVisibility,120);
   updateVisibility();
 })();
 
