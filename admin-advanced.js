@@ -720,6 +720,7 @@
     if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
     if($("bannerAdActive"))$("bannerAdActive").checked=true;
     if($("bannerAdDuration"))$("bannerAdDuration").value="5";
+    if($("bannerAdPlacement"))$("bannerAdPlacement").value="search";
     if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
     if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
     if($("bannerAdVideoUrlManual"))$("bannerAdVideoUrlManual").value="";
@@ -766,6 +767,7 @@
     $("bannerAdDistrict").value=item.district||"";
     $("bannerAdCategory").value=item.category||"";
     $("bannerAdDuration").value=String(Number(item.durationSeconds)===3?3:5);
+    if($("bannerAdPlacement"))$("bannerAdPlacement").value=item.placement==="sponsor"?"sponsor":"search";
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
     $("bannerAdActive").checked=item.active!==false;
@@ -792,6 +794,7 @@
       city:String($("bannerAdCity")?.value||""),district:String($("bannerAdDistrict")?.value||""),
       category:String($("bannerAdCategory")?.value||""),categoryLabel:bannerCategoryLabel($("bannerAdCategory")?.value||""),
       durationSeconds:Number($("bannerAdDuration")?.value)===3?3:5,
+      placement:$("bannerAdPlacement")?.value==="sponsor"?"sponsor":"search",
       startAt:String($("bannerAdStartAt")?.value||""),endAt:String($("bannerAdEndAt")?.value||""),
       active:Boolean($("bannerAdActive")?.checked),updatedAt:now
     };
@@ -826,7 +829,7 @@
     fillBannerAdTargetOptions();
     if(reload||!bannerAdRecords.length)await loadBannerAdsAdmin();
     const q=normalize($("bannerAdSearch")?.value||"");
-    const rows=bannerAdRecords.filter(item=>!q||normalize([item.institutionName,item.headline,item.text,item.city,item.district,item.categoryLabel,item.category].join(" ")).includes(q));
+    const rows=bannerAdRecords.filter(item=>!q||normalize([item.institutionName,item.headline,item.text,item.city,item.district,item.categoryLabel,item.category,item.placement==="sponsor"?"sponsor bannerı":"arama bannerı"].join(" ")).includes(q));
     const activeCount=bannerAdRecords.filter(x=>x.active!==false).length;
     if($("bannerAdAdminCount"))$("bannerAdAdminCount").textContent=bannerAdRecords.length+" reklam · "+activeCount+" yayında · "+(bannerAdRecords.length-activeCount)+" pasif";
     if($("bannerAdsTabCount"))$("bannerAdsTabCount").textContent=activeCount;
@@ -846,6 +849,7 @@
           '<div><span>Kurum</span><strong>'+escapeHtml(item.institutionName||"-")+'</strong></div>'+
           '<div><span>Bölge</span><strong>'+escapeHtml([item.city,item.district].filter(Boolean).join(" / ")||"Tüm Bölgeler")+'</strong></div>'+
           '<div><span>Sektör</span><strong>'+escapeHtml(item.categoryLabel||bannerCategoryLabel(item.category)||"Tüm Sektörler")+'</strong></div>'+
+          '<div><span>Gösterim</span><strong>'+(item.placement==="sponsor"?"Sponsor Bannerı":"Arama Bannerı")+'</strong></div>'+
           '<div><span>Dönüş</span><strong>'+(Number(item.durationSeconds)===3?"3":"5")+' sn</strong></div>'+
         '</div>'+
         '<div class="banner-admin-card-actions">'+
