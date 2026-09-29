@@ -642,10 +642,22 @@ async function fetchInstitutionMatchedQuotes() {
   const queries = getInstitutionQuoteQueries();
   if (!queries.length) return [];
 
-  const snapshots = await Promise.all(queries.map(query => query.get()));
+  const snapshots = await Promise.all(
+    queries.map(async query => {
+      try {
+        return await query.get();
+      } catch (error) {
+        // Doğrudan teklif Firestore kuralı henüz yayınlanmadıysa
+        // mevcut toplu teklif sorgularının çalışmasını engelleme.
+        console.warn("Teklif sorgularından biri okunamadı:", error);
+        return null;
+      }
+    })
+  );
+
   const unique = new Map();
 
-  snapshots.forEach(snapshot => {
+  snapshots.filter(Boolean).forEach(snapshot => {
     snapshot.docs.forEach(doc => {
       unique.set(doc.id, { id: doc.id, ...doc.data() });
     });
