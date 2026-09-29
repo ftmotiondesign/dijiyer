@@ -315,6 +315,7 @@ function clearAllCategorySelections() {
 function syncExploreQuickFilterState() {
   const videoOnly = document.getElementById('videoOnly');
   const offerOnly = document.getElementById('offerOnly');
+  const tour360Only = document.getElementById('tour360Only');
 
   document.getElementById('exploreVideoBtn')
     ?.classList.toggle('active', Boolean(videoOnly?.checked));
@@ -327,7 +328,9 @@ function syncExploreQuickFilterState() {
   const hasSearch = Boolean(
     document.getElementById('searchInput')?.value.trim()
   );
-  const hasQuickFilter = Boolean(videoOnly?.checked || offerOnly?.checked);
+  const hasQuickFilter = Boolean(
+    videoOnly?.checked || offerOnly?.checked || tour360Only?.checked
+  );
   const hasLocationFilter = Boolean(activeLocationCity || activeLocationDistrict);
 
   document.getElementById('exploreClearFiltersBtn')
@@ -340,8 +343,15 @@ function syncExploreQuickFilterState() {
 function syncMobileQuickFilterState() {
   const videoOnly = document.getElementById('videoOnly');
   const offerOnly = document.getElementById('offerOnly');
-  document.getElementById('mobileVideoOnlyBtn')?.classList.toggle('active', Boolean(videoOnly?.checked));
-  document.getElementById('mobileOfferOnlyBtn')?.classList.toggle('active', Boolean(offerOnly?.checked));
+  const tour360Only = document.getElementById('tour360Only');
+
+  document.getElementById('mobileVideoOnlyBtn')
+    ?.classList.toggle('active', Boolean(videoOnly?.checked));
+  document.getElementById('mobileOfferOnlyBtn')
+    ?.classList.toggle('active', Boolean(offerOnly?.checked));
+  document.getElementById('mobileTour360Btn')
+    ?.classList.toggle('active', Boolean(tour360Only?.checked));
+
   syncExploreQuickFilterState();
 }
 
@@ -676,6 +686,15 @@ document.getElementById('mobileOfferOnlyBtn')?.addEventListener('click', () => {
   input.checked = !input.checked;
   syncMobileQuickFilterState();
   renderList();
+});
+
+document.getElementById('mobileTour360Btn')?.addEventListener('click', () => {
+  const input = document.getElementById('tour360Only');
+  if (!input) return;
+  input.checked = !input.checked;
+  syncMobileQuickFilterState();
+  renderList();
+  updateMobileCategoryResult();
 });
 
 document.querySelectorAll('.categoryFilter, .subCategoryFilter').forEach(input => {
@@ -1198,6 +1217,7 @@ function getFilteredInstitutions() {
   }));
   const videoOnly = document.getElementById('videoOnly').checked;
   const offerOnly = document.getElementById('offerOnly').checked;
+  const tour360Only = document.getElementById('tour360Only')?.checked || false;
 
   let data = institutions.filter(inst => {
     const [mainCategory, subCategory] = resolveTaxonomy(inst);
@@ -1230,6 +1250,13 @@ function getFilteredInstitutions() {
 
     const matchesVideo = !videoOnly || inst.video;
     const matchesOffer = !offerOnly || inst.offer;
+    const has360Tour = Boolean(
+      inst.has360Tour ||
+      inst.tour360Url ||
+      inst.virtualTourUrl ||
+      inst.tour360
+    );
+    const matches360Tour = !tour360Only || has360Tour;
 
     const locationParts = String(inst.location || '')
       .split(',')
@@ -1247,7 +1274,12 @@ function getFilteredInstitutions() {
       (!activeLocationCity || normalizedInstitutionCity === normalizedActiveCity) &&
       (!activeLocationDistrict || normalizedInstitutionDistrict === normalizedActiveDistrict);
 
-    return matchesCategory && matchesQuery && matchesVideo && matchesOffer && matchesLocation;
+    return matchesCategory &&
+      matchesQuery &&
+      matchesVideo &&
+      matchesOffer &&
+      matches360Tour &&
+      matchesLocation;
   });
 
   const sort = document.getElementById('sortSelect').value;
@@ -2756,10 +2788,12 @@ document.getElementById('exploreClearFiltersBtn')?.addEventListener('click', () 
   const search = document.getElementById('searchInput');
   const videoOnly = document.getElementById('videoOnly');
   const offerOnly = document.getElementById('offerOnly');
+  const tour360Only = document.getElementById('tour360Only');
 
   if (search) search.value = '';
   if (videoOnly) videoOnly.checked = false;
   if (offerOnly) offerOnly.checked = false;
+  if (tour360Only) tour360Only.checked = false;
 
   activeLocationCity = '';
   activeLocationDistrict = '';
@@ -3645,6 +3679,10 @@ async function loadApprovedInstitutions() {
         galleryUrls: Array.isArray(data.galleryUrls)
           ? data.galleryUrls.map(safePublicProfileUrl).filter(Boolean).slice(0,6)
           : [],
+        has360Tour: Boolean(data.has360Tour || data.tour360Url || data.virtualTourUrl || data.tour360),
+        tour360Url: safePublicProfileUrl(
+          data.tour360Url || data.virtualTourUrl || data.tour360 || ''
+        ),
         classes: data.classes || 'Bilgi eklenecek',
         video: Boolean(data.video),
         offer: data.offer !== false,
