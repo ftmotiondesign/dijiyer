@@ -15512,11 +15512,12 @@ to{opacity:1;transform:none}
   min-width:0;
   min-height:68px;
   display:grid;
-  grid-template-columns:66px minmax(0,1fr) 72px;
-  gap:7px;
+  grid-template-columns:66px minmax(0,1fr);
+  grid-template-rows:minmax(58px,1fr) auto;
+  gap:5px 7px;
   align-items:stretch;
   overflow:hidden;
-  padding:5px;
+  padding:5px 0 5px 5px;
   border:1px solid #dbe5ef;
   border-radius:12px;
   background:#fff;
@@ -15528,6 +15529,7 @@ to{opacity:1;transform:none}
 .page-top-mini-logo{
   width:66px;
   min-height:58px;
+  grid-row:1 / span 2;
   display:grid;
   place-items:center;
   overflow:hidden;
@@ -15551,7 +15553,7 @@ to{opacity:1;transform:none}
   min-width:0;
   min-height:58px;
   overflow:hidden;
-  border-radius:9px;
+  border-radius:9px 0 0 9px;
   background:#f4f7fb;
 }
 
@@ -15567,11 +15569,10 @@ to{opacity:1;transform:none}
 .page-top-mini-actions{
   min-width:0;
   display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  justify-content:center;
-  gap:5px;
-  padding:3px 2px;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  padding:0 7px 0 0;
 }
 
 .page-top-mini-sponsored{
@@ -15681,9 +15682,10 @@ to{opacity:1;transform:none}
   .standalone-page-back > a{width:max-content}
   .page-top-mini-banner-card{
     min-height:74px;
-    grid-template-columns:60px minmax(0,1fr) 64px;
-    gap:6px;
-    padding:5px;
+    grid-template-columns:60px minmax(0,1fr);
+    grid-template-rows:minmax(64px,1fr) auto;
+    gap:4px 6px;
+    padding:5px 0 5px 5px;
   }
   .page-top-mini-logo{
     width:60px;
@@ -15693,8 +15695,8 @@ to{opacity:1;transform:none}
   .page-top-mini-campaign>img,
   .page-top-mini-campaign>video{min-height:64px}
   .page-top-mini-actions{
-    gap:4px;
-    padding:2px 0;
+    gap:5px;
+    padding:0 6px 0 0;
   }
   .page-top-mini-sponsored{
     min-height:17px;
