@@ -310,7 +310,7 @@ async function saveUploadedSingleImage(file, kind, fieldName, inputId, statusId,
 
     await db.collection("institutions")
       .doc(currentAccount.institutionId)
-      .update({ [fieldName]:url });
+      .update({ [fieldName]:url, updatedAt:new Date().toISOString() });
 
     currentInstitution[fieldName] = url;
 
@@ -386,7 +386,7 @@ async function uploadProfileGalleryFiles(files) {
 
     await db.collection("institutions")
       .doc(currentAccount.institutionId)
-      .update({ galleryUrls:next });
+      .update({ galleryUrls:next, updatedAt:new Date().toISOString() });
 
     currentInstitution.galleryUrls = next;
 
@@ -1123,41 +1123,104 @@ quotePanelFilter.addEventListener("change", () => {
 document.getElementById("institutionProfileForm").addEventListener("submit", async e => {
   e.preventDefault();
 
-  const profileMessage = document.getElementById("profileMessage");
-  profileMessage.textContent = "Kaydediliyor...";
+  const profileMessage=document.getElementById("profileMessage");
+  const saveBtn=document.getElementById("profileSaveBtn");
+  const name=String(document.getElementById("profileName").value||"").trim();
 
-  const changes = {
-    name: document.getElementById("profileName").value.trim(),
-    description: document.getElementById("profileDescription").value.trim(),
-    phone: document.getElementById("profilePhone").value.trim(),
-    whatsapp: document.getElementById("profileWhatsapp").value.trim(),
-    website: document.getElementById("profileWebsite").value.trim(),
-    instagram: document.getElementById("profileInstagram").value.trim(),
-    logoUrl: safeProfileUrl(document.getElementById("profileLogoUrl").value),
-    coverUrl: safeProfileUrl(document.getElementById("profileCoverUrl").value),
-    serviceAreas: document.getElementById("profileServiceAreas").value.trim(),
-    weekdayHours: document.getElementById("profileWeekdayHours").value.trim(),
-    saturdayHours: document.getElementById("profileSaturdayHours").value.trim(),
-    sundayHours: document.getElementById("profileSundayHours").value.trim(),
-    galleryUrls: parseProfileGalleryUrls(
-      document.getElementById("profileGalleryUrls").value
-    ),
-    address: document.getElementById("profileAddress").value.trim(),
-    offer: document.getElementById("profileOffer").checked
+  const showProfileMessage=(text,state="")=>{
+    if(!profileMessage)return;
+    profileMessage.textContent=text;
+    profileMessage.className="form-message profile-save-message"+(state?" "+state:"");
   };
 
-  try {
-    await db.collection("institutions")
-      .doc(currentAccount.institutionId)
-      .update(changes);
+  if(!currentAccount?.institutionId){
+    showProfileMessage("Kurum oturumu bulunamadı. Çıkış yapıp tekrar giriş yapın.","error");
+    return;
+  }
 
-    Object.assign(currentInstitution, changes);
+  if(!name){
+    showProfileMessage("Kurum adı boş bırakılamaz.","error");
+    document.getElementById("profileName").focus();
+    return;
+  }
+
+  const website=String(document.getElementById("profileWebsite").value||"").trim();
+  const logoRaw=String(document.getElementById("profileLogoUrl").value||"").trim();
+  const coverRaw=String(document.getElementById("profileCoverUrl").value||"").trim();
+
+  const logoUrl=logoRaw ? safeProfileUrl(logoRaw) : "";
+  const coverUrl=coverRaw ? safeProfileUrl(coverRaw) : "";
+
+  if(logoRaw && !logoUrl){
+    showProfileMessage("Logo bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("profileLogoUrl").focus();
+    return;
+  }
+  if(coverRaw && !coverUrl){
+    showProfileMessage("Kapak görseli bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("profileCoverUrl").focus();
+    return;
+  }
+
+  const changes={
+    name,
+    description:String(document.getElementById("profileDescription").value||"").trim(),
+    phone:String(document.getElementById("profilePhone").value||"").trim(),
+    whatsapp:String(document.getElementById("profileWhatsapp").value||"").trim(),
+    website,
+    instagram:String(document.getElementById("profileInstagram").value||"").trim(),
+    logoUrl,
+    coverUrl,
+    serviceAreas:String(document.getElementById("profileServiceAreas").value||"").trim(),
+    weekdayHours:String(document.getElementById("profileWeekdayHours").value||"").trim(),
+    saturdayHours:String(document.getElementById("profileSaturdayHours").value||"").trim(),
+    sundayHours:String(document.getElementById("profileSundayHours").value||"").trim(),
+    galleryUrls:parseProfileGalleryUrls(
+      document.getElementById("profileGalleryUrls").value
+    ),
+    address:String(document.getElementById("profileAddress").value||"").trim(),
+    offer:document.getElementById("profileOffer").checked,
+    updatedAt:new Date().toISOString()
+  };
+
+  const oldText=saveBtn?.textContent || "Değişiklikleri Kaydet";
+  if(saveBtn){
+    saveBtn.disabled=true;
+    saveBtn.textContent="Kaydediliyor...";
+  }
+  showProfileMessage("Değişiklikler kaydediliyor...","saving");
+
+  try{
+    const ref=db.collection("institutions").doc(currentAccount.institutionId);
+    const snap=await ref.get();
+
+    if(!snap.exists){
+      showProfileMessage("Kurum kaydı bulunamadı. Destek ile iletişime geçin.","error");
+      return;
+    }
+
+    await ref.update(changes);
+
+    Object.assign(currentInstitution,changes);
     renderInstitutionHeader();
-    profileMessage.textContent = "Değişiklikler kaydedildi. Müşteri profiliniz güncellendi.";
-  } catch (error) {
-    console.error("Kurum bilgileri kaydedilemedi:", error);
-    profileMessage.textContent =
-      "Kaydedilemedi. Firestore yetkisini kontrol edin.";
+    updateProfileCompletion();
+    showProfileMessage("✓ Değişiklikler kaydedildi. Müşteri profiliniz güncellendi.","success");
+  }catch(error){
+    console.error("Kurum bilgileri kaydedilemedi:",error);
+
+    let message="Değişiklikler kaydedilemedi.";
+    if(String(error?.code||"").includes("permission-denied")){
+      message="Kayıt yetkisi reddedildi. Firestore kurum profil güncelleme kuralı yayınlanmalıdır.";
+    }else if(String(error?.code||"").includes("unavailable")){
+      message="Firebase'e ulaşılamıyor. İnternet bağlantınızı kontrol edip tekrar deneyin.";
+    }
+
+    showProfileMessage(message,"error");
+  }finally{
+    if(saveBtn){
+      saveBtn.disabled=false;
+      saveBtn.textContent=oldText;
+    }
   }
 });
 
@@ -1208,7 +1271,7 @@ document.getElementById("toggleOfferBtn").addEventListener("click", async () => 
   try {
     await db.collection("institutions")
       .doc(currentAccount.institutionId)
-      .update({ offer: nextValue });
+      .update({ offer: nextValue, updatedAt:new Date().toISOString() });
 
     currentInstitution.offer = nextValue;
     document.getElementById("profileOffer").checked = nextValue;
