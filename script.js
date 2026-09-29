@@ -914,7 +914,7 @@ function renderList() {
         ${inst.vip ? '<div class="vip">VIP</div>' : ''}
         <div class="card-body">
           <h3>${escapeHtml(inst.name)}</h3>
-          <div class="rating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span></div>
+          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span></div>
           <div class="meta">📍 ${escapeHtml(inst.location || '')}<br>${escapeHtml(inst.address || '')}</div>
           <div class="card-actions">
             ${inst.offer ? '<span class="chip positive">Teklif veriyor</span>' : ''}
