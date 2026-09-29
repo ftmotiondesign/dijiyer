@@ -5703,3 +5703,84 @@ body[data-panel-current="showcase"] .panel-heading-action{
     font-size:10.5px;
   }
 }
+
+/* Kurum Bilgileri > Görsel Kimlik hızlı erişimi */
+.firm-profile-card-head{
+  align-items:center;
+}
+
+.firm-profile-visual-shortcut{
+  flex:0 0 auto;
+  min-width:165px;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  padding:9px 11px;
+  border:1px solid #bfdbfe;
+  border-radius:12px;
+  background:#f5f9ff;
+  color:#173a69;
+  text-align:left;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.firm-profile-visual-shortcut:hover{
+  border-color:#7fb5f8;
+  background:#edf6ff;
+  transform:translateY(-1px);
+}
+
+.firm-profile-visual-shortcut>span:first-child{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#dbeafe;
+  font-size:16px;
+}
+
+.firm-profile-visual-shortcut>span:nth-child(2){
+  min-width:0;
+  display:grid;
+  gap:1px;
+}
+
+.firm-profile-visual-shortcut strong{
+  color:#1d4ed8;
+  font-size:11px;
+}
+
+.firm-profile-visual-shortcut small{
+  color:#718096;
+  font-size:8.5px;
+}
+
+.firm-profile-visual-shortcut b{
+  color:#1677ff;
+  font-size:15px;
+}
+
+.firm-profile-visual-section{
+  scroll-margin-top:18px;
+  transition:border-color .25s ease,box-shadow .25s ease,background .25s ease;
+}
+
+.firm-profile-visual-section.visual-section-focus{
+  border-color:#60a5fa;
+  background:#f7fbff;
+  box-shadow:0 0 0 4px rgba(22,119,255,.08);
+}
+
+@media(max-width:760px){
+  .firm-profile-card-head{
+    align-items:stretch;
+  }
+
+  .firm-profile-visual-shortcut{
+    width:100%;
+    min-width:0;
+  }
+}
