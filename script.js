@@ -2567,10 +2567,10 @@ function homepageAdSalesHtml() {
     <div class="sponsored-self-promo">
       <span class="sponsored-self-promo-icon">📣</span>
       <div>
-        <strong>İşletmenizi ana sayfada öne çıkarın</strong>
-        <small>Sponsorlu vitrin, şehir / ilçe görünürlüğü ve banner seçeneklerini inceleyin.</small>
+        <strong>Bu alanda işletmeniz görünsün</strong>
+        <small>Bölge ve sektörünüze göre potansiyel müşterilere ulaşın.</small>
       </div>
-      <button type="button" data-advertise-home>Reklam Seçeneklerini Gör</button>
+      <button type="button" data-advertise-home>Reklam Ver</button>
     </div>
   `;
 }
