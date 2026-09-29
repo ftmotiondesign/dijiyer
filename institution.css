@@ -5417,3 +5417,10 @@ body[data-panel-current="showcase"] .panel-heading-action{
   margin-top:9px;padding:8px;border-radius:8px;background:#fff8e8;color:#9a6c13;
   font-size:8.8px;font-weight:800;text-align:center;
 }
+
+.dynamic-package-price{
+  margin:8px 0 2px;
+  color:#1268da;
+  font-size:10px;
+  font-weight:900;
+}
