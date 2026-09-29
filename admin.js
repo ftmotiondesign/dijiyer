@@ -343,12 +343,12 @@ async function loadHomeBottomVisibilitySettings(){
     paintHomeSectionVisibility(
       earningsVisibilityToggle,
       earningsVisibilityState,
-      data.earningsVisible !== false
+      data.earningsVisible === true
     );
   }catch(error){
     console.error("Ana sayfa alt bölüm görünürlük ayarları okunamadı:",error);
     paintHomeSectionVisibility(bottomQuoteVisibilityToggle,bottomQuoteVisibilityState,true);
-    paintHomeSectionVisibility(earningsVisibilityToggle,earningsVisibilityState,true);
+    paintHomeSectionVisibility(earningsVisibilityToggle,earningsVisibilityState,false);
   }
 }
 
