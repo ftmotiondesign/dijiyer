@@ -62,9 +62,98 @@ function routeUrl(x){if(Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x
 function services(x){const rows=[categoryLabel(x)];String(x.classes||"").split(/[,;\n]/).map(s=>s.trim()).filter(s=>s&&s.toLocaleLowerCase("tr-TR")!=="bilgi eklenecek").forEach(s=>rows.push(s));String(x.services||"").split(/[,;\n]/).map(s=>s.trim()).filter(Boolean).forEach(s=>rows.push(s));return[...new Set(rows)].slice(0,12)}
 function showToast(text){const e=document.getElementById("toast");e.textContent=text;e.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>e.classList.remove("show"),2000)}
 
+
+function ensureSeoMeta(selector,attribute,value){
+  let el=document.head.querySelector(selector);
+  if(!el){
+    el=document.createElement("meta");
+    const [attrName,attrValue]=attribute;
+    el.setAttribute(attrName,attrValue);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content",String(value||""));
+  return el;
+}
+function setInstitutionRobots(value){
+  let el=document.head.querySelector('meta[name="robots"]');
+  if(!el){
+    el=document.createElement("meta");
+    el.setAttribute("name","robots");
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content",value);
+}
+function institutionCanonicalUrl(x){
+  const u=new URL("kurum.html",window.location.href);
+  u.search="";
+  u.searchParams.set("id",String(x.id||institutionId||""));
+  return u.href;
+}
+function applyInstitutionSeo(x){
+  if(!x)return;
+  const name=String(x.name||"Kurum").trim();
+  const category=categoryLabel(x);
+  const place=[x.district,x.city].filter(Boolean).join(", ");
+  const title=[name,category,place].filter(Boolean).join(" | ")+" | Dijiyer";
+  const fallback=[name,place?place+" bölgesinde":"",category].filter(Boolean).join(" · ");
+  const description=String(x.description||fallback+" hizmet bilgileri, iletişim, konum ve teklif seçenekleri Dijiyer'de.").trim().slice(0,160);
+  const canonical=institutionCanonicalUrl(x);
+  const image=safeUrl(x.coverUrl||x.logoUrl||"");
+
+  document.title=title;
+  ensureSeoMeta('meta[name="description"]',["name","description"],description);
+  ensureSeoMeta('meta[property="og:title"]',["property","og:title"],title);
+  ensureSeoMeta('meta[property="og:description"]',["property","og:description"],description);
+  ensureSeoMeta('meta[property="og:type"]',["property","og:type"],"website");
+  ensureSeoMeta('meta[property="og:url"]',["property","og:url"],canonical);
+  ensureSeoMeta('meta[property="og:site_name"]',["property","og:site_name"],"Dijiyer");
+  ensureSeoMeta('meta[name="twitter:title"]',["name","twitter:title"],title);
+  ensureSeoMeta('meta[name="twitter:description"]',["name","twitter:description"],description);
+  ensureSeoMeta('meta[name="twitter:card"]',["name","twitter:card"],image?"summary_large_image":"summary");
+  if(image){
+    ensureSeoMeta('meta[property="og:image"]',["property","og:image"],image);
+    ensureSeoMeta('meta[name="twitter:image"]',["name","twitter:image"],image);
+  }
+
+  const canonicalEl=document.getElementById("seoCanonical")||document.head.querySelector('link[rel="canonical"]');
+  if(canonicalEl)canonicalEl.setAttribute("href",canonical);
+
+  if(preview)setInstitutionRobots("noindex,nofollow,noarchive");
+  else setInstitutionRobots("index,follow,max-image-preview:large");
+
+  const schema={
+    "@context":"https://schema.org",
+    "@type":"LocalBusiness",
+    "@id":canonical+"#business",
+    "name":name,
+    "url":canonical,
+    "description":description,
+    "category":category,
+    "address":{
+      "@type":"PostalAddress",
+      "streetAddress":String(x.address||""),
+      "addressLocality":String(x.district||""),
+      "addressRegion":String(x.city||""),
+      "addressCountry":"TR"
+    }
+  };
+  const phone=String(x.phone||"").trim();
+  if(phone)schema.telephone=phone;
+  if(image)schema.image=image;
+  const lat=Number(x.lat),lng=Number(x.lng);
+  if(Number.isFinite(lat)&&Number.isFinite(lng))schema.geo={"@type":"GeoCoordinates","latitude":lat,"longitude":lng};
+  const rating=Number(x.rating||0),count=Number(x.reviewCount||0);
+  if(rating>0&&count>0)schema.aggregateRating={"@type":"AggregateRating","ratingValue":rating,"reviewCount":count};
+  const sameAs=[safeUrl(x.website),instagramUrl(x.instagram)].filter(Boolean);
+  if(sameAs.length)schema.sameAs=sameAs;
+
+  const ld=document.getElementById("institutionStructuredData");
+  if(ld)ld.textContent=JSON.stringify(schema);
+}
+
 function renderProfile(){
   const x=institution,logo=safeUrl(x.logoUrl),cover=safeUrl(x.coverUrl),video=safeUrl(x.videoUrl||x.profileVideoUrl||x.locationVideoUrl),gallery=(Array.isArray(x.galleryUrls)?x.galleryUrls:[]).map(safeUrl).filter(Boolean).slice(0,9),phone=String(x.phone||"").trim(),whatsapp=whatsappNumber(x.whatsapp||phone),website=safeUrl(x.website),instagram=instagramUrl(x.instagram),tour=safeUrl(x.virtualTourUrl||x.tour360Url||x.tourUrl),serviceRows=services(x);
-  document.title=(x.name||"Kurum")+" | Dijiyer";
+  applyInstitutionSeo(x);
   const root=document.getElementById("institutionProfile");
   root.innerHTML=`
     <section class="kp-hero">
@@ -421,7 +510,7 @@ async function track(type,dedupe=false){
   try{await db.collection("institutionAnalytics").add({institutionId:String(institution.id),type,day,date:now.toISOString()})}catch(error){console.warn("Analytics kaydedilemedi",error)}
 }
 
-function showError(){document.getElementById("loadingState").classList.add("hidden");document.getElementById("institutionProfile").classList.add("hidden");document.getElementById("errorState").classList.remove("hidden")}
+function showError(){setInstitutionRobots("noindex,nofollow,noarchive");document.getElementById("loadingState").classList.add("hidden");document.getElementById("institutionProfile").classList.add("hidden");document.getElementById("errorState").classList.remove("hidden")}
 
 async function init(){
   if(!institutionId){showError();return}
