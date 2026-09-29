@@ -733,7 +733,7 @@
       search:"Arama Sonuçları",
       home_sponsor:"Bölgenizde Öne Çıkanlar",
       premium_home:"Ana Sayfa Premium Vitrini",
-      mobile_sponsor:"Mobil Sponsor Alanı",
+      mobile_sponsor:"Mobil 2’li Sponsor Alanı",
       sidebar_sponsor:"Masaüstü Yan Sponsor",
       detail_banner:"Kurum Hızlı Önizleme Altı"
     };
