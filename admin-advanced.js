@@ -2337,11 +2337,11 @@
       device:"Sadece Masaüstü",type:"Detay bannerı"
     },
     page_top_mini:{
-      label:"Teklif / İş / Bayi · Üst Mini Banner",size:"728 × 90 px",
-      icon:"▰",page:"TEKLİF · İŞ · BAYİ",
-      title:"Ana Sayfa butonunun yanındaki mini banner",
-      description:"Teklif Al, İş Fırsatları ve Bayi & Servis sayfalarının üst kısmında görünür.",
-      device:"Mobil + Masaüstü",type:"Üst mini banner"
+      label:"Tüm Müşteri Sayfaları · Üst Mini Banner",size:"728 × 90 px",
+      icon:"▰",page:"TÜM MÜŞTERİ SAYFALARI",
+      title:"Sayfa başlığının altındaki standart mini banner",
+      description:"Ana sayfa, Teklif Al, teklif takip, fırsatlar, randevu, iş, bayi-servis, ticaret ve kurum sayfalarında aynı düzende görünür.",
+      device:"Mobil + Masaüstü",type:"Standart üst banner"
     }
   };
 
