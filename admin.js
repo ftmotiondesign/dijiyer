@@ -5702,12 +5702,6 @@ async function loadQuoteRequests() {
       })
     );
 
-    try{
-      await syncSecondOfferInvites();
-    }catch(error){
-      console.warn("2. teklif daveti senkronizasyonu tamamlanamadı:",error);
-    }
-
     updateQuoteDashboardStats();
     renderQuoteRequests();
     buildInstitutionOfferReport();
