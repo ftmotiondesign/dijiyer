@@ -164,7 +164,7 @@ const ADMIN_TAB_META = {
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
   opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
   mediaArchiveTabBtn:["ads","Medya Arşivi","Fırsat ve banner medyalarını, kullanım durumlarını ve temizleme işlemlerini yönetin."],
-  externalAdsTabBtn:["ads","Harici Reklamlar","Marka ve affiliate bannerlarını ekleyin, zamanlayın ve yayında döndürün."],
+  externalAdsTabBtn:["ads","Site / Affiliate Reklamları","Harici marka ve affiliate reklamlarını seçtiğiniz Dijiyer sayfalarında yayınlayın."],
   promotionOrdersTabBtn:["ads","Siparişler","Kurumların tanıtım ve reklam siparişlerini fiyatlandırın, ödeme ve yayın sürecini yönetin."],
   promotionPackagesTabBtn:["ads","Paketler","Kurumlara sunulan reklam ve tanıtım paketlerini oluşturun ve fiyatlandırın."],
   adCalendarTabBtn:["ads","Reklam Takvimi","Yayın tarihlerini, dolulukları ve yaklaşan reklam bitişlerini görün."],
