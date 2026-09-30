@@ -960,6 +960,20 @@ service cloud.firestore {
     // =====================================================
     // DİJİYER - KURUM YORUMLARI / TAVSİYE OYLARI
     // =====================================================
+    // =====================================================
+    // DİJİYER - İŞ & TİCARET FIRSATLARI
+    // =====================================================
+    match /businessOpportunities/{opportunityId} {
+      // Ziyaretçiler yalnızca yayındaki fırsatları okuyabilir.
+      allow get, list: if
+        adminMi()
+        || resource.data.status == 'published';
+
+      // Manuel giriş, otomatik kaynak onayı ve tüm yönetim işlemleri yalnızca admin.
+      allow create, update, delete: if adminMi();
+    }
+
+
     match /institutionReviews/{reviewId} {
 
       // Yayındaki yorumlar ve tavsiye oranları kurum profillerinde gösterilebilir.
