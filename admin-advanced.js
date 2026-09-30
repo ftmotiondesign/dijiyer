@@ -685,7 +685,7 @@
       source:String(meta.source||current.source||"other"),
       institutionId:String(meta.institutionId||current.institutionId||""),
       institutionName:String(meta.institutionName||current.institutionName||""),
-      mediaType:String(meta.mediaType||current.mediaType||result?.resource_type==="video"?"video":"image"),
+      mediaType:String(meta.mediaType || current.mediaType || (result?.resource_type==="video" ? "video" : "image")),
       resourceType:String(result?.resource_type||current.resourceType||meta.mediaType||"image"),
       bytes:Number(result?.bytes||current.bytes||0),
       width:Number(result?.width||current.width||0),
