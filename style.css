@@ -19825,3 +19825,48 @@ to{opacity:1;transform:none}
     color:#1268cd!important;
   }
 }
+
+
+/* =========================================================
+   DESKTOP ALT KATEGORI KURUM SAYISI V1
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-category-preview-subs button{
+    min-height:40px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:2px;
+    padding:6px 10px;
+    border-radius:10px;
+  }
+
+  .desktop-preview-sub-count{
+    display:block;
+    color:#1677ff;
+    font-size:6.6px;
+    line-height:1;
+    font-weight:950;
+    letter-spacing:.02em;
+  }
+
+  .desktop-preview-sub-label{
+    display:block;
+    color:#50657d;
+    font-size:7.8px;
+    line-height:1.15;
+    font-weight:850;
+    white-space:nowrap;
+  }
+
+  .desktop-category-preview-subs button.is-active .desktop-preview-sub-count,
+  .desktop-category-preview-subs button:hover .desktop-preview-sub-count{
+    color:#0d5ebd;
+  }
+
+  .desktop-category-preview-subs button.is-active .desktop-preview-sub-label,
+  .desktop-category-preview-subs button:hover .desktop-preview-sub-label{
+    color:#1268cd;
+  }
+}
