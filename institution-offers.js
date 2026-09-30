@@ -98,6 +98,107 @@ window.addEventListener("beforeunload",stopInstitutionOfferStateWatchers);
 // Canlı lock ve ikinci teklif dinleyicileri zaten açıkken sekmeye dönüldüğünde
 // tekrar toplu .get() çalıştırmıyoruz. Bu, Firestore okuma sayısını ciddi azaltır.
 
+function institutionArchiveDocId(quoteId){
+  return String(currentAccount?.institutionId||"")+"__"+String(quoteId||"");
+}
+
+function institutionArchiveStorageKey(){
+  return "dijiyerInstitutionQuoteArchive:"+String(currentAccount?.institutionId||"");
+}
+
+function readInstitutionArchiveLocal(){
+  try{
+    const raw=localStorage.getItem(institutionArchiveStorageKey());
+    const rows=raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(rows)?rows.map(String):[]);
+  }catch(_){
+    return new Set();
+  }
+}
+
+function writeInstitutionArchiveLocal(){
+  try{
+    localStorage.setItem(
+      institutionArchiveStorageKey(),
+      JSON.stringify([...institutionArchivedQuoteIds])
+    );
+  }catch(_){}
+}
+
+function institutionQuoteIsArchived(quoteId){
+  return institutionArchivedQuoteIds.has(String(quoteId||""));
+}
+
+async function loadInstitutionQuoteArchive(){
+  institutionArchivedQuoteIds=readInstitutionArchiveLocal();
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId)return;
+
+  try{
+    const snap=await db.collection("institutionQuoteArchive")
+      .where("institutionId","==",institutionId)
+      .get();
+
+    snap.forEach(doc=>{
+      const data=doc.data()||{};
+      const quoteId=String(data.quoteId||"");
+      if(!quoteId)return;
+      if(data.archived===true)institutionArchivedQuoteIds.add(quoteId);
+      if(data.archived===false)institutionArchivedQuoteIds.delete(quoteId);
+    });
+    writeInstitutionArchiveLocal();
+  }catch(error){
+    console.warn("Firestore arşiv senkronizasyonu kullanılamıyor; yerel arşiv kullanılacak:",error);
+  }
+}
+
+async function setInstitutionQuoteArchived(quoteId,archived){
+  const id=String(quoteId||"");
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!id||!institutionId)return;
+
+  const quote=quoteRecords.find(item=>String(item.id)===id);
+  const state=quote ? sellerOfferState(quote) : "";
+  if(archived && (state==="locked" || state==="used")){
+    alert("Kabul edilmiş teklifler arşivlenemez. Bu kayıt kurum panelinde kalmalıdır.");
+    return;
+  }
+
+  if(archived){
+    const ok=window.confirm("Bu talebi teklif listenizden kaldırmak istiyor musunuz? Sistem kaydı silinmez; Arşiv bölümünden geri getirebilirsiniz.");
+    if(!ok)return;
+    institutionArchivedQuoteIds.add(id);
+  }else{
+    institutionArchivedQuoteIds.delete(id);
+  }
+
+  writeInstitutionArchiveLocal();
+  renderQuotes();
+  renderSummary();
+
+  try{
+    const ref=db.collection("institutionQuoteArchive").doc(institutionArchiveDocId(id));
+    await ref.set({
+      institutionId,
+      quoteId:id,
+      archived:Boolean(archived),
+      archivedAt:archived ? new Date().toISOString() : "",
+      restoredAt:archived ? "" : new Date().toISOString(),
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+  }catch(error){
+    console.warn("Arşiv Firestore'a kaydedilemedi; bu tarayıcıda yerel olarak saklandı:",error);
+  }
+
+  try{
+    showToast(archived ? "Talep arşive alındı." : "Talep tekrar listeye alındı.");
+  }catch(_){}
+}
+
+function visibleInstitutionQuoteRecords(){
+  return quoteRecords.filter(quote=>!institutionQuoteIsArchived(quote.id));
+}
+
 function isRoutedLeadForCurrentInstitution(quote){
   const institutionId=String(currentAccount?.institutionId||"");
   if(!institutionId)return false;
