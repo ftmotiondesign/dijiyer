@@ -296,11 +296,41 @@ async function verifyAccess(code,phone){
 
 async function loadBundle(access){
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
-  const [offersSnap,lockSnap,engagementSnap]=await Promise.all([
-    quoteRef.collection("offers").get(),
-    quoteRef.collection("locks").doc("main").get(),
-    quoteRef.collection("engagement").get()
-  ]);
+
+  let offersSnap;
+  let lockSnap;
+  let engagementSnap;
+
+  try{
+    offersSnap=await quoteRef.collection("offers").get();
+  }catch(error){
+    console.error("OFFERS okunamadı:",error);
+    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
+      throw new Error("AŞAMA 2A: offers koleksiyonu okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/offers/{institutionId} için get,list izni gerekli.");
+    }
+    throw error;
+  }
+
+  try{
+    lockSnap=await quoteRef.collection("locks").doc("main").get();
+  }catch(error){
+    console.error("LOCK okunamadı:",error);
+    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
+      throw new Error("AŞAMA 2B: locks/main belgesi okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/locks/{lockId} için get izni gerekli.");
+    }
+    throw error;
+  }
+
+  try{
+    engagementSnap=await quoteRef.collection("engagement").get();
+  }catch(error){
+    console.error("ENGAGEMENT okunamadı:",error);
+    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
+      throw new Error("AŞAMA 2C: engagement koleksiyonu okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/engagement/{institutionId} için get,list izni gerekli.");
+    }
+    throw error;
+  }
+
   return {
     access,
     offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
