@@ -19553,3 +19553,184 @@ to{opacity:1;transform:none}
     height:33px;
   }
 }
+
+
+/* =========================================================
+   DESKTOP KATEGORI ONIZLEME PANELI V1
+   Kategori tiklaninca kullaniciyi otomatik asagi kaydirmadan
+   ayni alanda guclu bir sonraki adim sunar.
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-category-preview{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns:52px minmax(0,1fr) auto;
+    align-items:center;
+    gap:13px;
+    padding:12px 13px;
+    border:1px solid #cfe0f4;
+    border-radius:10px;
+    background:linear-gradient(135deg,#f8fbff 0%,#ffffff 66%);
+    box-shadow:0 6px 18px rgba(24,61,105,.055);
+  }
+
+  .desktop-category-preview.hidden{
+    display:none!important;
+  }
+
+  .desktop-category-preview-icon{
+    width:52px;
+    height:52px;
+    display:grid;
+    place-items:center;
+    border:1px solid #d9e7f6;
+    border-radius:12px;
+    background:#fff;
+    font-size:24px;
+    box-shadow:0 4px 12px rgba(31,76,128,.06);
+  }
+
+  .desktop-category-preview-body{
+    min-width:0;
+  }
+
+  .desktop-category-preview-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .desktop-category-preview-head>div{
+    min-width:0;
+  }
+
+  .desktop-category-preview-head span{
+    display:block;
+    margin-bottom:2px;
+    color:#1677ff;
+    font-size:7px;
+    font-weight:950;
+    letter-spacing:.09em;
+  }
+
+  .desktop-category-preview-head strong{
+    display:block;
+    color:#21354d;
+    font-size:13px;
+    line-height:1.2;
+    font-weight:900;
+  }
+
+  .desktop-category-preview-head small{
+    display:block;
+    margin-top:3px;
+    color:#7c8b9d;
+    font-size:8px;
+    line-height:1.35;
+    font-weight:650;
+  }
+
+  .desktop-category-preview-head>b{
+    flex:0 0 auto;
+    padding:5px 8px;
+    border:1px solid #d7e6f7;
+    border-radius:999px;
+    background:#fff;
+    color:#51708f;
+    font-size:7px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .desktop-category-preview-subs{
+    margin-top:8px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+  }
+
+  .desktop-category-preview-subs:empty{
+    display:none;
+  }
+
+  .desktop-category-preview-subs button{
+    min-height:26px;
+    padding:0 9px;
+    border:1px solid #dbe4ee;
+    border-radius:999px;
+    background:#fff;
+    color:#50657d;
+    font-size:7.5px;
+    font-weight:800;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+
+  .desktop-category-preview-subs button:hover,
+  .desktop-category-preview-subs button.is-active{
+    border-color:#89baf3;
+    background:#edf5ff;
+    color:#1268cd;
+  }
+
+  .desktop-category-preview-actions{
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+
+  .desktop-category-preview-actions button,
+  .desktop-category-preview-actions a{
+    min-height:34px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 12px;
+    border-radius:8px;
+    font-size:8px;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+
+  .desktop-category-preview-open{
+    border:1px solid #1677ff;
+    background:#1677ff;
+    color:#fff;
+    cursor:pointer;
+    box-shadow:0 5px 12px rgba(22,119,255,.16);
+  }
+
+  .desktop-category-preview-open:hover{
+    background:#0f6bdc;
+  }
+
+  .desktop-category-preview-quote{
+    border:1px solid #d8e2ed;
+    background:#fff;
+    color:#2f4a68;
+  }
+
+  .desktop-category-preview-quote:hover{
+    border-color:#a9c9ef;
+    background:#f7faff;
+    color:#1268cd;
+  }
+}
+
+@media(min-width:821px) and (max-width:1080px){
+  .desktop-category-preview{
+    grid-template-columns:46px minmax(0,1fr);
+  }
+
+  .desktop-category-preview-icon{
+    width:46px;
+    height:46px;
+  }
+
+  .desktop-category-preview-actions{
+    grid-column:1/-1;
+    justify-content:flex-end;
+  }
+}
