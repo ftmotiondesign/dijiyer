@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=60">
+  <link rel="stylesheet" href="admin.css?v=61">
   <link rel="stylesheet" href="admin-advanced.css?v=46">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -2502,14 +2502,7 @@
           </div>
         </div>
 
-        <nav id="quoteFlowDrawer" class="quote-routing-stage-nav quote-flow-drawer" aria-label="Yanıtsız teklif aşamaları">
-          <div class="quote-flow-drawer-head">
-            <div>
-              <span>TEKLİF AKIŞI</span>
-              <strong>4 Aşamalı Takip</strong>
-            </div>
-            <button type="button" id="quoteFlowDrawerClose" aria-label="Akış menüsünü kapat">×</button>
-          </div>
+        <nav class="quote-routing-stage-nav" aria-label="Yanıtsız teklif aşamaları">
           <button type="button" class="quote-routing-stage active" data-routing-view="fresh">
             <span class="stage-no">01</span>
             <span class="stage-copy">
@@ -2550,16 +2543,6 @@
             <b id="quoteRoutingRespondedCount">0</b>
           </button>
         </nav>
-
-        <div class="quote-routing-stage-strip">
-          <span>1. İlk kurum beklenir</span>
-          <i>→</i>
-          <span>2. Uygun kurumlara dağıtılır</span>
-          <i>→</i>
-          <span>3. Teklif dönüşü beklenir</span>
-          <i>→</i>
-          <span>4. Müşteri sonucu takip edilir</span>
-        </div>
 
         <div id="quoteRoutingFlowBlock" class="quote-routing-primary-workspace">
           <div class="quote-routing-workspace-head quote-routing-workspace-head-v2">
@@ -2751,11 +2734,6 @@
           </div>
         </section>
 
-        </div>
-
-        <div class="quote-routing-note quote-routing-note-bottom">
-          <strong>Dört aşamalı kontrollü akış</strong>
-          <span>Talep önce beklenir, sonra uygun kurumlara dağıtılır, yanıt takip edilir ve teklif dönüşü ayrı aşamada sonuçlandırılır. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
         </div>
 
         <div class="lead-credit-modal" id="leadCreditModal" hidden>
@@ -3403,11 +3381,6 @@
 
   <button type="button" id="adminBackToTop" class="admin-back-to-top" aria-label="Sayfanın en üstüne çık" title="Yukarı Çık" hidden>
     <span>↑</span>
-  </button>
-
-  <button type="button" id="quoteFlowDrawerToggle" class="quote-flow-drawer-toggle" aria-controls="quoteFlowDrawer" aria-expanded="false" hidden>
-    <span>☰</span>
-    <strong>Akış</strong>
   </button>
 
   <!-- FIREBASE -->
