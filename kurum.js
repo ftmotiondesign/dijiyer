@@ -713,34 +713,45 @@ function moderateReviewText(raw){
     .replace(/\s+/g," ")
     .trim();
 
+  const tokens=normalized.split(" ").filter(Boolean);
   const compact=normalized.replace(/\s+/g,"");
 
-  const profanityPatterns=[
-    /\b(amk|siktir|sikeyim|sikerim|sikik|orospu|yarrak|yarak|piç|pic|pezevenk|kahpe|şerefsiz|serefsiz|gerizekalı|gerizekali)\b/u,
-    /\borospu\s+çocuğu\b/u,
-    /\bananı\s+sikeyim\b/u,
-    /\banneni\s+sikeyim\b/u
+  const profanityTokens=new Set([
+    "amk","siktir","sikeyim","sikerim","sikik","orospu","yarrak","yarak",
+    "piç","pic","pezevenk","kahpe","şerefsiz","serefsiz","gerizekalı","gerizekali"
+  ]);
+
+  const profanityCompact=[
+    "orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
+    "annenisikeyim","şerefsiz","serefsiz"
   ];
 
-  const dangerousPatterns=[
-    /\b(öldüreceğim|öldürecem|oldurecegim|gebertirim|vuracağım|vurucam|vuracagim|bıçaklayacağım|bicaklayacagim|yakacağım|yakacagim)\b/u,
-    /\b(seni|sizi|onu|onları)\b.{0,28}\b(öldür|oldur|gebert|vur|bıçakla|bicakla|yak)\b/u,
-    /\b(bomba|patlayıcı|patlayici)\b.{0,24}\b(koy|yerleştir|yerlestir|patlat)\b/u,
-    /\b(kendini\s+öldür|kendini\s+oldur|intihar\s+et)\b/u,
-    /\b(tecavüz|tecavuz)\b/u
+  const threatCompact=[
+    "öldüreceğim","oldurecegim","öldürecem","oldurecem","gebertirim",
+    "vuracağım","vuracagim","vurucam","bıçaklayacağım","bicaklayacagim",
+    "yakacağım","yakacagim","kendiniöldür","kendinioldur","intiharet",
+    "bombakoy","bombayerleştir","bombayerlestir","bombapatlat",
+    "patlayıcıkoy","patlayicikoy","tecavüz","tecavuz"
   ];
 
-  const compactBlocked=[
-    "siktir","orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
-    "annenisikeyim","öldüreceğim","oldurecegim","gebertirim","vuracağım",
-    "vuracagim","bıçaklayacağım","bicaklayacagim","kendiniöldür","kendinioldur"
-  ];
+  const hasProfanityToken=tokens.some(token=>profanityTokens.has(token));
+  const hasProfanityCompact=profanityCompact.some(term=>compact.includes(term));
 
-  if(profanityPatterns.some(pattern=>pattern.test(normalized)) || compactBlocked.some(term=>compact.includes(term))){
+  if(hasProfanityToken || hasProfanityCompact){
     return {ok:false,message:"Yorum gönderilemedi: küfür veya hakaret içeren ifadeler kullanılamaz."};
   }
 
-  if(dangerousPatterns.some(pattern=>pattern.test(normalized))){
+  if(threatCompact.some(term=>compact.includes(term))){
+    return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
+  }
+
+  const threatSubject=tokens.some(token=>["seni","sizi","onu","onları","onlari"].includes(token));
+  const threatVerb=tokens.some(token=>[
+    "öldür","oldur","öldüreceğim","oldurecegim","gebert","gebertirim",
+    "vur","vuracağım","vuracagim","bıçakla","bicakla","yak","yakacağım","yakacagim"
+  ].includes(token));
+
+  if(threatSubject && threatVerb){
     return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
   }
 
