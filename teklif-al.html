@@ -64,7 +64,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=59" />
+  <link rel="stylesheet" href="style.css?v=60" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -557,7 +557,7 @@
         <strong>Aradığınız hizmet için fiyatları karşılaştırmaya başlayın.</strong>
         <small>Talebinizi oluşturmak ücretsizdir.</small>
       </div>
-      <a href="#mobileDiscoverySearchInput">Teklif Almaya Başla →</a>
+      <button type="button" id="quoteSeoStartBtn">Teklif Almaya Başla →</button>
     </div>
   </section>
 
@@ -1694,6 +1694,13 @@
 
   document.getElementById('quotePageFreeQuoteBtn')?.addEventListener('click',()=>{
     openQuoteForm();
+  });
+
+  document.getElementById('quoteSeoStartBtn')?.addEventListener('click',()=>{
+    openQuoteForm();
+    setTimeout(()=>{
+      document.getElementById('quoteModal')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },50);
   });
 
   document.getElementById('quotePageAddBusinessBtn')?.addEventListener('click',()=>{
