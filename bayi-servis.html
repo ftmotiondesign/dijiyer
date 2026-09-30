@@ -55,7 +55,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="style.css?v=54" />
   <link rel="stylesheet" href="offers.css?v=3" />
-  <link rel="stylesheet" href="market-nav.css?v=1">\n  <script src="market-nav.js?v=1" defer></script>\n</head>
+  <link rel="stylesheet" href="market-nav.css?v=1">\n  <script src="market-nav.js?v=1" defer></script>\n  <link rel="stylesheet" href="page-banner.css?v=1">
+</head>
 <body class="standalone-brands-page">
   <header class="topbar">
     <div class="brand">
@@ -147,7 +148,7 @@
     </div>
   </header>
 
-  <div class="standalone-page-back">
+  <div class="standalone-page-back unified-page-banner-shell">
     <a href="index.html">← Ana Sayfa</a>
     <div class="page-top-mini-banner hidden" id="pageTopMiniBanner" aria-label="Sponsorlu reklam"></div>
   </div>
@@ -420,14 +421,7 @@
     <div class="premium-showcase-dots" id="premiumShowcaseDots" aria-label="Premium reklam geçişleri"></div>
   </section>
 
-    <section class="external-ad-zone hidden" id="externalAdZone" aria-label="Reklam">
-    <div class="external-ad-zone-head">
-      <span>REKLAM</span>
-      <small>Harici / iş ortaklığı</small>
-    </div>
-    <div class="external-ad-stage" id="externalAdStage"></div>
-    <div class="external-ad-dots" id="externalAdDots" aria-label="Reklam geçişleri"></div>
-  </section>
+    
 
   <section class="mobile-sponsored-slot" id="mobileSponsoredSlot" aria-label="Mobil sponsorlu işletme">
     <div class="mobile-sponsored-placeholder">
@@ -1307,7 +1301,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=61"></script>
+<script src="page-banner.js?v=1"></script>
+  <script src="script.js?v=61"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
