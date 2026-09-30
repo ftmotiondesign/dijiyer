@@ -574,6 +574,85 @@
     return value;
   }
 
+  const TURKEY_PROVINCES = [
+    "Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya","Ardahan","Artvin",
+    "Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa",
+    "Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum",
+    "Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkari","Hatay","Iğdır","Isparta","İstanbul","İzmir",
+    "Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kilis","Kırıkkale","Kırklareli",
+    "Kırşehir","Kocaeli","Konya","Kütahya","Malatya","Manisa","Mardin","Mersin","Muğla","Muş","Nevşehir",
+    "Niğde","Ordu","Osmaniye","Rize","Sakarya","Samsun","Siirt","Sinop","Sivas","Şanlıurfa","Şırnak",
+    "Tekirdağ","Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak"
+  ];
+
+  function bannerLocationFold(value){
+    return String(value||"")
+      .toLocaleLowerCase("tr-TR")
+      .replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u")
+      .replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c")
+      .replace(/[^a-z0-9]+/g," ")
+      .trim();
+  }
+
+  function bannerProvinceFromText(value){
+    const folded=" "+bannerLocationFold(value)+" ";
+    if(!folded.trim())return "";
+    const found=TURKEY_PROVINCES.find(city=>{
+      const key=" "+bannerLocationFold(city)+" ";
+      return folded.includes(key);
+    });
+    return found||"";
+  }
+
+  function bannerInstitutionCity(item){
+    const direct=[
+      item?.city,
+      item?.il,
+      item?.province,
+      item?.provinceName,
+      item?.cityName,
+      item?.sehir
+    ].map(value=>String(value||"").trim()).filter(Boolean);
+
+    for(const value of direct){
+      const exact=TURKEY_PROVINCES.find(city=>bannerLocationFold(city)===bannerLocationFold(value));
+      if(exact)return exact;
+      const detected=bannerProvinceFromText(value);
+      if(detected)return detected;
+    }
+
+    const inferred=bannerProvinceFromText([
+      item?.location,
+      item?.address,
+      item?.fullAddress,
+      item?.adres
+    ].filter(Boolean).join(" "));
+    return inferred || direct[0] || "";
+  }
+
+  function bannerInstitutionDistrict(item){
+    const direct=[
+      item?.district,
+      item?.ilce,
+      item?.districtName,
+      item?.town,
+      item?.county
+    ].map(value=>String(value||"").trim()).filter(Boolean);
+    if(direct.length)return direct[0];
+
+    const city=bannerInstitutionCity(item);
+    const location=String(item?.location||"").trim();
+    if(location){
+      const parts=location.split(/[,/|·-]/).map(x=>x.trim()).filter(Boolean);
+      const candidate=parts.find(part=>
+        bannerLocationFold(part)!==bannerLocationFold(city) &&
+        !TURKEY_PROVINCES.some(province=>bannerLocationFold(province)===bannerLocationFold(part))
+      );
+      if(candidate)return candidate;
+    }
+    return "";
+  }
+
   function fillBannerAdTargetOptions(selectedInstitution=null){
     const institutionSelect=$("bannerAdInstitution");
     const citySelect=$("bannerAdCity");
@@ -583,25 +662,57 @@
 
     const oldInstitution=institutionSelect.value;
     institutionSelect.innerHTML='<option value="">Kurum seçin</option>'+
-      [...institutionRecords].sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr")).map(item=>
-        '<option value="'+escapeHtml(item.id)+'">'+escapeHtml(item.name||"Kurum")+' · '+escapeHtml([item.city,item.district].filter(Boolean).join(" / "))+'</option>'
-      ).join("");
+      [...institutionRecords].sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr")).map(item=>{
+        const city=bannerInstitutionCity(item);
+        const district=bannerInstitutionDistrict(item);
+        return '<option value="'+escapeHtml(item.id)+'">'+
+          escapeHtml(item.name||"Kurum")+' · '+
+          escapeHtml([city,district].filter(Boolean).join(" / "))+
+        '</option>';
+      }).join("");
     institutionSelect.value=selectedInstitution?.id || oldInstitution || "";
 
-    const cities=[...new Set(institutionRecords.map(x=>String(x.city||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-    const wantedCity=selectedInstitution?.city || citySelect.dataset.current || citySelect.value || "";
-    citySelect.innerHTML='<option value="">Tüm Bölgeler</option>'+cities.map(city=>'<option value="'+escapeHtml(city)+'">'+escapeHtml(city)+'</option>').join("");
-    citySelect.value=wantedCity;
+    const cities=[...new Set(
+      institutionRecords.map(bannerInstitutionCity).filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
 
-    const districts=[...new Set(institutionRecords.filter(x=>!citySelect.value||String(x.city||"")===String(citySelect.value)).map(x=>String(x.district||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-    const wantedDistrict=selectedInstitution?.district || districtSelect.dataset.current || "";
-    districtSelect.innerHTML='<option value="">Tüm İlçeler</option>'+districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
-    districtSelect.value=wantedDistrict;
+    const wantedCity=selectedInstitution
+      ? bannerInstitutionCity(selectedInstitution)
+      : (citySelect.dataset.current || citySelect.value || "");
 
-    const categories=[...new Set(institutionRecords.map(x=>String(x.subCategory||x.category||"").trim()).filter(Boolean))].sort((a,b)=>bannerCategoryLabel(a).localeCompare(bannerCategoryLabel(b),"tr"));
-    const wantedCategory=selectedInstitution?.subCategory || selectedInstitution?.category || categorySelect.dataset.current || "";
-    categorySelect.innerHTML='<option value="">Tüm Sektörler</option>'+categories.map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(bannerCategoryLabel(value))+'</option>').join("");
-    categorySelect.value=wantedCategory;
+    citySelect.innerHTML='<option value="">Tüm Bölgeler</option>'+
+      cities.map(city=>'<option value="'+escapeHtml(city)+'">'+escapeHtml(city)+'</option>').join("");
+    citySelect.value=cities.includes(wantedCity)?wantedCity:"";
+
+    const districts=[...new Set(
+      institutionRecords
+        .filter(item=>!citySelect.value || bannerInstitutionCity(item)===citySelect.value)
+        .map(bannerInstitutionDistrict)
+        .filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
+
+    const wantedDistrict=selectedInstitution
+      ? bannerInstitutionDistrict(selectedInstitution)
+      : (districtSelect.dataset.current || districtSelect.value || "");
+
+    districtSelect.innerHTML='<option value="">Tüm İlçeler</option>'+
+      districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
+    districtSelect.value=districts.includes(wantedDistrict)?wantedDistrict:"";
+
+    const categories=[...new Set(
+      institutionRecords.map(x=>String(x.subCategory||x.category||x.mainCategory||"").trim()).filter(Boolean)
+    )].sort((a,b)=>bannerCategoryLabel(a).localeCompare(bannerCategoryLabel(b),"tr"));
+
+    const wantedCategory=selectedInstitution?.subCategory ||
+      selectedInstitution?.category ||
+      selectedInstitution?.mainCategory ||
+      categorySelect.dataset.current ||
+      categorySelect.value ||
+      "";
+
+    categorySelect.innerHTML='<option value="">Tüm Sektörler</option>'+
+      categories.map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(bannerCategoryLabel(value))+'</option>').join("");
+    categorySelect.value=categories.includes(wantedCategory)?wantedCategory:"";
 
     populateBannerInstitutionFinderFilters();
   }
@@ -715,13 +826,20 @@
   function bannerInstitutionSearchHaystack(item){
     return normalize([
       item?.name,
+      bannerInstitutionCity(item),
+      bannerInstitutionDistrict(item),
       item?.city,
+      item?.il,
+      item?.province,
+      item?.location,
       item?.district,
+      item?.ilce,
       item?.subCategory,
       item?.category,
       item?.mainCategory,
       item?.phone,
       item?.address,
+      item?.fullAddress,
       item?.email
     ].filter(Boolean).join(" "));
   }
@@ -735,7 +853,7 @@
     const oldCategory=categorySelect.value;
 
     const cities=[...new Set(
-      (institutionRecords||[]).map(item=>String(item.city||"").trim()).filter(Boolean)
+      (institutionRecords||[]).map(bannerInstitutionCity).filter(Boolean)
     )].sort((a,b)=>a.localeCompare(b,"tr"));
 
     const categories=[...new Set(
@@ -756,7 +874,7 @@
     const adSummary=bannerInstitutionAdSummary(item);
     const advertiser=adSummary.live.length>0;
     const logo=String(item.logoUrl||item.coverUrl||"").trim();
-    const location=[item.city,item.district].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
+    const location=[bannerInstitutionCity(item),bannerInstitutionDistrict(item)].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
     const category=bannerCategoryLabel(bannerInstitutionCategory(item)) || "Sektör belirtilmemiş";
     const phone=String(item.phone||"").trim();
     const selected=String($("bannerAdInstitution")?.value||"")===String(item.id);
@@ -802,7 +920,7 @@
     }
 
     const logo=String(inst.logoUrl||inst.coverUrl||"").trim();
-    const location=[inst.city,inst.district].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
+    const location=[bannerInstitutionCity(inst),bannerInstitutionDistrict(inst)].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
     root.classList.remove("hidden");
     root.innerHTML=
       '<div class="banner-institution-selected-logo">'+
@@ -838,7 +956,7 @@
     let rows=[...(institutionRecords||[])].filter(item=>{
       if(!bannerQuickModeMatches(item,bannerInstitutionQuickMode))return false;
       if(query && !bannerInstitutionSearchHaystack(item).includes(query))return false;
-      if(city && String(item.city||"")!==city)return false;
+      if(city && bannerInstitutionCity(item)!==city)return false;
       if(category && bannerInstitutionCategory(item)!==category)return false;
 
       const active=bannerInstitutionIsActive(item);
@@ -906,7 +1024,7 @@
     fillBannerAdTargetOptions(inst);
     $("bannerAdInstitution").value=String(inst.id);
     $("bannerAdHeadline").value=inst.name||"";
-    $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
+    $("bannerAdText").value=[bannerInstitutionCity(inst),bannerInstitutionDistrict(inst)].filter(Boolean).join(" / ");
     $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
 
     if(!$("bannerAdVideoUrl")?.value){
@@ -2143,8 +2261,14 @@
   });
   $("bannerAdCity")?.addEventListener("change",()=>{
     const city=$("bannerAdCity").value;
-    const districts=[...new Set(institutionRecords.filter(x=>!city||String(x.city||"")===String(city)).map(x=>String(x.district||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
-    $("bannerAdDistrict").innerHTML='<option value="">Tüm İlçeler</option>'+districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
+    const districts=[...new Set(
+      institutionRecords
+        .filter(item=>!city || bannerInstitutionCity(item)===city)
+        .map(bannerInstitutionDistrict)
+        .filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
+    $("bannerAdDistrict").innerHTML='<option value="">Tüm İlçeler</option>'+
+      districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
     renderBannerAdminPreview();
   });
   ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",()=>{
