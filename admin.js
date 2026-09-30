@@ -632,6 +632,7 @@ auth.onAuthStateChanged(async (user) => {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
 
+    await loadAdminAdRateSettings();
     await loadApplications();
     await loadInstitutions();
     await loadQuoteRequests();
@@ -1170,42 +1171,173 @@ const ADMIN_AD_PLACEMENTS = {
   }
 };
 
-function adminAdPlacementCardsHtml(inst){
-  const lastPrice=Math.max(0,Number(inst?.adPrice||0));
-  return Object.entries(ADMIN_AD_PLACEMENTS).map(([id,item])=>`
-    <article class="institution-ad-placement-card">
-      <div class="institution-ad-placement-icon">${item.icon}</div>
-      <div class="institution-ad-placement-copy">
-        <span>${escapeHtml(item.page)}</span>
-        <strong>${escapeHtml(item.name)}</strong>
-        <small>${escapeHtml(item.description)}</small>
+const ADMIN_AD_RATE_DAYS = [7,15,30];
+let adminAdRateSettings = {};
+
+function normalizeAdminAdRates(raw){
+  const source=raw && typeof raw==="object" ? raw : {};
+  const normalized={};
+
+  Object.keys(ADMIN_AD_PLACEMENTS).forEach(placement=>{
+    normalized[placement]={};
+    ADMIN_AD_RATE_DAYS.forEach(days=>{
+      const value=Number(source?.[placement]?.[String(days)] ?? source?.[placement]?.[days] ?? 0);
+      normalized[placement][String(days)]=Number.isFinite(value) && value>=0 ? value : 0;
+    });
+  });
+
+  return normalized;
+}
+
+function adminAdRateFor(placement,days){
+  const rates=normalizeAdminAdRates(adminAdRateSettings);
+  return Math.max(0,Number(rates?.[placement]?.[String(days)]||0));
+}
+
+function adminAdRateText(value){
+  const amount=Math.max(0,Number(value||0));
+  if(amount===0)return "Ücretsiz";
+  return new Intl.NumberFormat("tr-TR").format(amount)+" TL";
+}
+
+async function loadAdminAdRateSettings(){
+  try{
+    const snap=await db.collection("siteSettings").doc("adRates").get();
+    adminAdRateSettings=normalizeAdminAdRates(snap.exists ? snap.data()?.rates : {});
+  }catch(error){
+    console.error("Reklam tarifesi yüklenemedi:",error);
+    adminAdRateSettings=normalizeAdminAdRates({});
+  }
+
+  window.DIJIYER_ADMIN_AD_RATES=adminAdRateSettings;
+  renderAdminAdRateEditor();
+  return adminAdRateSettings;
+}
+
+function renderAdminAdRateEditor(){
+  const root=document.getElementById("adminAdRateRows");
+  if(!root)return;
+
+  root.innerHTML=Object.entries(ADMIN_AD_PLACEMENTS).map(([placement,item])=>`
+    <article class="admin-ad-rate-row">
+      <div class="admin-ad-rate-place">
+        <span class="admin-ad-rate-icon">${item.icon}</span>
+        <div>
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>${escapeHtml(item.page)} · ${escapeHtml(item.size)} · ${escapeHtml(item.device)}</small>
+        </div>
       </div>
-      <div class="institution-ad-placement-meta">
-        <b>${escapeHtml(item.size)}</b>
-        <em>${escapeHtml(item.device)}</em>
-      </div>
-      <div class="institution-ad-placement-sale">
+
+      ${ADMIN_AD_RATE_DAYS.map(days=>`
         <label>
-          <span>Yayın Süresi</span>
-          <select data-placement-days="${id}">
-            <option value="7">7 gün</option>
-            <option value="15">15 gün</option>
-            <option value="30" selected>30 gün</option>
-          </select>
-        </label>
-        <label>
-          <span>Satış Fiyatı</span>
-          <div class="institution-ad-price-input">
-            <input type="number" min="0" step="1" data-placement-price="${id}" value="${lastPrice||""}" placeholder="Fiyat gir">
+          <span>${days} gün</span>
+          <div>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              data-admin-ad-rate-placement="${placement}"
+              data-admin-ad-rate-days="${days}"
+              value="${adminAdRateFor(placement,days)}"
+            >
             <i>TL</i>
           </div>
         </label>
-      </div>
-      <button type="button" class="institution-ad-placement-start" data-start-placement="${id}">
-        Reklamı Başlat →
-      </button>
+      `).join("")}
     </article>
   `).join("");
+}
+
+async function saveAdminAdRateSettings(){
+  const button=document.getElementById("adminAdRateSaveBtn");
+  const message=document.getElementById("adminAdRateMessage");
+  const rates=normalizeAdminAdRates({});
+
+  document.querySelectorAll("[data-admin-ad-rate-placement]").forEach(input=>{
+    const placement=String(input.dataset.adminAdRatePlacement||"");
+    const days=String(input.dataset.adminAdRateDays||"");
+    if(!rates[placement] || !days)return;
+    const value=Math.max(0,Number(input.value||0));
+    rates[placement][days]=Number.isFinite(value)?value:0;
+  });
+
+  if(button){
+    button.disabled=true;
+    button.textContent="Kaydediliyor...";
+  }
+  if(message){
+    message.textContent="Reklam ücretleri kaydediliyor...";
+    message.dataset.state="saving";
+  }
+
+  try{
+    await db.collection("siteSettings").doc("adRates").set({
+      rates,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+
+    adminAdRateSettings=normalizeAdminAdRates(rates);
+    window.DIJIYER_ADMIN_AD_RATES=adminAdRateSettings;
+
+    if(message){
+      message.textContent="✓ Reklam tarifesi kaydedildi. Kurum reklam ekranlarına otomatik yansıdı.";
+      message.dataset.state="success";
+    }
+
+    renderManagedInstitutions();
+  }catch(error){
+    console.error("Reklam tarifesi kaydedilemedi:",error);
+    if(message){
+      message.textContent="Reklam tarifesi kaydedilemedi. Firestore yetkisini kontrol edin.";
+      message.dataset.state="error";
+    }
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent="Reklam Tarifesini Kaydet";
+    }
+  }
+}
+
+document.getElementById("adminAdRateSaveBtn")?.addEventListener("click",saveAdminAdRateSettings);
+
+function adminAdPlacementCardsHtml(inst){
+  return Object.entries(ADMIN_AD_PLACEMENTS).map(([id,item])=>{
+    const initialDays=30;
+    const initialPrice=adminAdRateFor(id,initialDays);
+    return `
+      <article class="institution-ad-placement-card">
+        <div class="institution-ad-placement-icon">${item.icon}</div>
+        <div class="institution-ad-placement-copy">
+          <span>${escapeHtml(item.page)}</span>
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>${escapeHtml(item.description)}</small>
+        </div>
+        <div class="institution-ad-placement-meta">
+          <b>${escapeHtml(item.size)}</b>
+          <em>${escapeHtml(item.device)}</em>
+        </div>
+        <div class="institution-ad-placement-sale">
+          <label>
+            <span>Yayın Süresi</span>
+            <select data-placement-days="${id}">
+              <option value="7">7 gün</option>
+              <option value="15">15 gün</option>
+              <option value="30" selected>30 gün</option>
+            </select>
+          </label>
+          <div class="institution-ad-fixed-price">
+            <span>Yayın Ücreti</span>
+            <strong data-placement-fee="${id}">${escapeHtml(adminAdRateText(initialPrice))}</strong>
+            <small>Merkez tarifeden otomatik gelir</small>
+          </div>
+        </div>
+        <button type="button" class="institution-ad-placement-start" data-start-placement="${id}">
+          Reklamı Başlat →
+        </button>
+      </article>
+    `;
+  }).join("");
 }
 
 function adminDateInputValue(value){
@@ -1651,13 +1783,24 @@ function renderManagedInstitutions() {
       }
     });
 
+    card.querySelectorAll("[data-placement-days]").forEach(select => {
+      const syncPrice=()=>{
+        const placement=select.dataset.placementDays || "search";
+        const days=Math.max(1,Number(select.value||30));
+        const price=adminAdRateFor(placement,days);
+        const fee=card.querySelector('[data-placement-fee="'+placement+'"]');
+        if(fee)fee.textContent=adminAdRateText(price);
+      };
+      select.addEventListener("change",syncPrice);
+      syncPrice();
+    });
+
     card.querySelectorAll("[data-start-placement]").forEach(button => {
       button.addEventListener("click", () => {
         const placement=button.dataset.startPlacement || "search";
-        const priceInput=card.querySelector('[data-placement-price="'+placement+'"]');
         const daysSelect=card.querySelector('[data-placement-days="'+placement+'"]');
-        const price=Math.max(0,Number(priceInput?.value||0));
         const days=Math.max(1,Number(daysSelect?.value||30));
+        const price=adminAdRateFor(placement,days);
 
         if (typeof window.openBannerAdForInstitution === "function") {
           window.openBannerAdForInstitution(data.id,{placement,price,days});
