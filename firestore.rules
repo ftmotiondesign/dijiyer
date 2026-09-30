@@ -184,9 +184,11 @@ service cloud.firestore {
           'district',
           'name',
           'phone',
+          'email',
           'note',
           'status',
           'date',
+          'requestType',
           'targetInstitutionId',
           'targetInstitutionName'
         ])
@@ -197,38 +199,64 @@ service cloud.firestore {
         && request.resource.data.city is string
         && request.resource.data.district is string
         && request.resource.data.name is string
+        && request.resource.data.name.size() > 1
+        && request.resource.data.name.size() <= 120
         && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 10
+        && request.resource.data.phone.size() <= 30
         && request.resource.data.note is string
+        && request.resource.data.note.size() <= 1000
         && request.resource.data.status == 'new'
         && request.resource.data.date is string
 
-        // Normal toplu teklif: hedef kurum alanları hiç gönderilmez.
-        // Doğrudan teklif: iki hedef alanı birlikte gönderilir ve hedef kurum gerçekten vardır.
+        // E-posta toplu teklifte zorunlu, doğrudan teklifte isteğe bağlı olabilir.
         && (
-          !request.resource.data.keys().hasAny([
-            'targetInstitutionId',
-            'targetInstitutionName'
-          ])
+          !request.resource.data.keys().hasAny(['email'])
+          || (
+            request.resource.data.email is string
+            && request.resource.data.email.size() <= 160
+          )
+        )
+
+        // Normal toplu teklif: hedef kurum alanları hiç gönderilmez.
+        // Doğrudan teklif: hedef kurum doğrulanır ve talebin konumu kurumun konumuyla eşleşir.
+        && (
+          (
+            !request.resource.data.keys().hasAny([
+              'targetInstitutionId',
+              'targetInstitutionName',
+              'requestType'
+            ])
+          )
 
           ||
 
           (
             request.resource.data.keys().hasAll([
               'targetInstitutionId',
-              'targetInstitutionName'
+              'targetInstitutionName',
+              'requestType'
             ])
+            && request.resource.data.requestType == 'direct'
             && request.resource.data.targetInstitutionId is string
             && request.resource.data.targetInstitutionId.size() > 0
             && request.resource.data.targetInstitutionName is string
             && request.resource.data.targetInstitutionName.size() > 0
-            && request.resource.data.city == '__direct__'
-            && request.resource.data.district == ''
             && exists(
               /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
             )
             && request.resource.data.targetInstitutionName == get(
               /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
             ).data.name
+            && request.resource.data.category == get(
+              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
+            ).data.category
+            && request.resource.data.city == get(
+              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
+            ).data.city
+            && request.resource.data.district == get(
+              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
+            ).data.district
           )
         );
 
@@ -518,10 +546,12 @@ service cloud.firestore {
           'subCategoryLabel',
           'city',
           'district',
+          'email',
           'note',
           'date',
           'status',
           'createdAt',
+          'requestType',
           'targetInstitutionId',
           'targetInstitutionName'
         ])
@@ -548,6 +578,13 @@ service cloud.firestore {
         && request.resource.data.date is string
         && request.resource.data.status == 'active'
         && request.resource.data.createdAt is string
+        && (
+          !request.resource.data.keys().hasAny(['email'])
+          || (
+            request.resource.data.email is string
+            && request.resource.data.email.size() <= 160
+          )
+        )
 
         // Takip kaydı, gerçekten oluşturulmuş bir teklif talebine bağlı olmalı.
         // Önceki çok sıkı alan karşılaştırması bazı geçerli taleplerde
@@ -566,8 +603,10 @@ service cloud.firestore {
           (
             request.resource.data.keys().hasAll([
               'targetInstitutionId',
-              'targetInstitutionName'
+              'targetInstitutionName',
+              'requestType'
             ])
+            && request.resource.data.requestType == 'direct'
             && request.resource.data.targetInstitutionId is string
             && request.resource.data.targetInstitutionName is string
             && get(
