@@ -99,17 +99,42 @@ const quoteRoutingWaitingCount = document.getElementById("quoteRoutingWaitingCou
 const quoteRoutingVipCount = document.getElementById("quoteRoutingVipCount");
 const quoteRoutingAdCount = document.getElementById("quoteRoutingAdCount");
 const quoteRoutingForwardedCount = document.getElementById("quoteRoutingForwardedCount");
+const quoteRoutingRespondedCount = document.getElementById("quoteRoutingRespondedCount");
+const quoteRoutingStatusFilter = document.getElementById("quoteRoutingStatusFilter");
 const quoteRoutingWaitMinutes = document.getElementById("quoteRoutingWaitMinutes");
 const quoteRoutingAreaMode = document.getElementById("quoteRoutingAreaMode");
 const quoteRoutingSearch = document.getElementById("quoteRoutingSearch");
 const quoteRoutingRefreshBtn = document.getElementById("quoteRoutingRefreshBtn");
 const quoteRoutingList = document.getElementById("quoteRoutingList");
+const quoteRoutingListCount = document.getElementById("quoteRoutingListCount");
 const leadPackageSaveBtn = document.getElementById("leadPackageSaveBtn");
 const leadPriceSingle = document.getElementById("leadPriceSingle");
 const leadPrice10 = document.getElementById("leadPrice10");
 const leadPrice25 = document.getElementById("leadPrice25");
 const leadPrice50 = document.getElementById("leadPrice50");
 const leadPackageMessage = document.getElementById("leadPackageMessage");
+const leadCreditBalanceTotal = document.getElementById("leadCreditBalanceTotal");
+const leadCreditUsedTotal = document.getElementById("leadCreditUsedTotal");
+const leadCreditLoadedTotal = document.getElementById("leadCreditLoadedTotal");
+const leadCreditUsedSummary = document.getElementById("leadCreditUsedSummary");
+const leadCreditBalanceSummary = document.getElementById("leadCreditBalanceSummary");
+const leadCreditDebtCount = document.getElementById("leadCreditDebtCount");
+const leadCreditRefreshBtn = document.getElementById("leadCreditRefreshBtn");
+const leadCreditSearch = document.getElementById("leadCreditSearch");
+const leadCreditStatusFilter = document.getElementById("leadCreditStatusFilter");
+const leadCreditTableBody = document.getElementById("leadCreditTableBody");
+const leadCreditLedgerList = document.getElementById("leadCreditLedgerList");
+const leadCreditModal = document.getElementById("leadCreditModal");
+const leadCreditModalInstitution = document.getElementById("leadCreditModalInstitution");
+const leadCreditModalBalance = document.getElementById("leadCreditModalBalance");
+const leadCreditInstitutionId = document.getElementById("leadCreditInstitutionId");
+const leadCreditAction = document.getElementById("leadCreditAction");
+const leadCreditAmount = document.getElementById("leadCreditAmount");
+const leadCreditNote = document.getElementById("leadCreditNote");
+const leadCreditModalMessage = document.getElementById("leadCreditModalMessage");
+const leadCreditModalSaveBtn = document.getElementById("leadCreditModalSaveBtn");
+const leadCreditModalCloseBtn = document.getElementById("leadCreditModalCloseBtn");
+const leadCreditModalCancelBtn = document.getElementById("leadCreditModalCancelBtn");
 
 const offerReportCount = document.getElementById("offerReportCount");
 const offerReportInstitutionCount = document.getElementById("offerReportInstitutionCount");
@@ -327,6 +352,8 @@ const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 let applicationRecords = [];
 let institutionRecords = [];
 let quoteRequestRecords = [];
+let leadCreditAccountRecords = [];
+let leadCreditLedgerRecords = [];
 let institutionAccountRecords = [];
 let unmatchedSearchRecords = [];
 let institutionOfferReportRecords = [];
@@ -992,7 +1019,10 @@ quoteRoutingTabBtn?.addEventListener("click", async () => {
   if (!institutionRecords.length) await loadInstitutions();
   await loadQuoteRequests();
   await loadLeadRoutingSettings();
+  await reconcileLeadCreditUsage();
+  await loadLeadCreditData();
   renderQuoteRoutingAdmin();
+  renderLeadCreditAdmin();
 });
 
 offerReportTabBtn.addEventListener("click", async () => {
@@ -3164,14 +3194,21 @@ function quoteRoutingDirectRequest(request){
   return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
 }
 
+function quoteRoutingFlowStatus(request){
+  if(request?.liveLock || ["done","archived"].includes(String(request?.status||"")))return "completed";
+  const forwarded=Array.isArray(request?.forwardInstitutionIds) && request.forwardInstitutionIds.length>0;
+  const offers=Array.isArray(request?.liveOffers) ? request.liveOffers : [];
+  const forwardedSet=new Set((request?.forwardInstitutionIds||[]).map(String));
+  const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
+  if(routedOffers.length)return "responded";
+  if(forwarded)return "forwarded";
+  if(quoteRoutingAgeMinutes(request)>=Number(quoteRoutingWaitMinutes?.value||30))return "waiting";
+  return "fresh";
+}
+
 function quoteRoutingIsWaiting(request){
-  if(!quoteRoutingDirectRequest(request))return false;
-  if(request?.liveLock)return false;
-  if(Array.isArray(request?.liveOffers) && request.liveOffers.length)return false;
-  const status=String(request?.status||"new");
-  if(["done","archived"].includes(status))return false;
-  const wait=Number(quoteRoutingWaitMinutes?.value||30);
-  return quoteRoutingAgeMinutes(request)>=wait;
+  const status=quoteRoutingFlowStatus(request);
+  return status==="waiting" || status==="forwarded";
 }
 
 function quoteRoutingCandidateBundle(request){
@@ -3186,57 +3223,38 @@ function quoteRoutingCandidateBundle(request){
     if(!id || id===originalTarget)return false;
     if(String(inst.status||"active")==="passive")return false;
     if(inst.offer===false)return false;
-
     const instCategory=normalizeCategory(inst.subCategory || inst.category || "");
     const instCity=String(inst.city||"").trim().toLocaleLowerCase("tr-TR");
-
     return instCategory===category && instCity===city;
   });
 
   let scopeLabel="Aynı şehir";
   if(areaMode==="district" && district){
-    const exact=base.filter(inst=>
-      String(inst.district||"").trim().toLocaleLowerCase("tr-TR")===district
-    );
-    if(exact.length){
-      base=exact;
-      scopeLabel="Aynı ilçe";
-    }else{
-      scopeLabel="İlçede kurum yok · aynı şehir";
-    }
+    const exact=base.filter(inst=>String(inst.district||"").trim().toLocaleLowerCase("tr-TR")===district);
+    if(exact.length){ base=exact; scopeLabel="Aynı ilçe"; }
+    else scopeLabel="İlçede kurum yok · aynı şehir";
   }
 
-  const forwarded=new Set(
-    Array.isArray(request?.forwardInstitutionIds)
-      ? request.forwardInstitutionIds.map(String)
-      : []
-  );
-
+  const forwarded=new Set(Array.isArray(request?.forwardInstitutionIds)?request.forwardInstitutionIds.map(String):[]);
   const tierOf=inst=>{
     if(isInstitutionVipActive(inst))return "vip";
-    const adState=typeof getInstitutionAdState==="function"
-      ? getInstitutionAdState(inst)
-      : {advertiser:false};
+    const adState=typeof getInstitutionAdState==="function" ? getInstitutionAdState(inst) : {advertiser:false};
     if(Boolean(adState?.advertiser))return "ad";
     return "standard";
   };
 
-  const all=base
-    .map(inst=>({
-      ...inst,
-      routingTier:tierOf(inst),
-      alreadyForwarded:forwarded.has(String(inst.id))
-    }))
-    .sort((a,b)=>{
-      const rank={vip:1,ad:2,standard:3};
-      const diff=(rank[a.routingTier]||9)-(rank[b.routingTier]||9);
-      if(diff)return diff;
-      return String(a.name||"").localeCompare(String(b.name||""),"tr");
-    });
+  const all=base.map(inst=>({
+    ...inst,
+    routingTier:tierOf(inst),
+    alreadyForwarded:forwarded.has(String(inst.id))
+  })).sort((a,b)=>{
+    const rank={vip:1,ad:2,standard:3};
+    return ((rank[a.routingTier]||9)-(rank[b.routingTier]||9)) ||
+      String(a.name||"").localeCompare(String(b.name||""),"tr");
+  });
 
   return {
-    scopeLabel,
-    all,
+    scopeLabel,all,
     vip:all.filter(inst=>inst.routingTier==="vip"),
     ad:all.filter(inst=>inst.routingTier==="ad"),
     standard:all.filter(inst=>inst.routingTier==="standard")
@@ -3246,9 +3264,11 @@ function quoteRoutingCandidateBundle(request){
 function quoteRoutingInstitutionChips(rows){
   if(!rows.length)return '<span class="quote-routing-none">Uygun kurum yok</span>';
   return rows.map(inst=>{
-    const status=inst.alreadyForwarded ? " · iletildi" : "";
+    const account=leadCreditAccountRecords.find(x=>String(x.id)===String(inst.id));
+    const balance=Number(account?.balance||0);
+    const creditText=inst.alreadyForwarded ? " · iletildi" : " · "+balance+" kredi";
     return '<span class="quote-routing-inst-chip '+inst.routingTier+(inst.alreadyForwarded?' sent':'')+'">'+
-      escapeHtml(inst.name||"Kurum")+status+
+      escapeHtml(inst.name||"Kurum")+creditText+
     '</span>';
   }).join("");
 }
@@ -3257,37 +3277,22 @@ function quoteRoutingTierCard(tier,label,rows,requestId,canForward){
   const available=rows.filter(inst=>!inst.alreadyForwarded);
   const tierText=tier==="vip" ? "VIP" : tier==="ad" ? "Reklam Veren" : "Diğer";
   const disabled=!canForward || !available.length;
-  const buttonText=!canForward
-    ? "Müşteri izni gerekli"
-    : available.length
-      ? available.length+" kuruma ilet"
-      : "İletilecek kurum yok";
+  const buttonText=!canForward ? "Şu anda yönlendirilemez" :
+    available.length ? available.length+" kuruma ilet" : "İletilecek kurum yok";
   return '<div class="quote-routing-tier tier-'+tier+'">'+
     '<div class="quote-routing-tier-head"><div><span>'+tierText.toUpperCase()+'</span><strong>'+escapeHtml(label)+'</strong></div>'+
-    '<button type="button" data-routing-forward="'+escapeHtml(requestId)+'" data-routing-tier="'+tier+'" '+(disabled?'disabled':'')+'>'+
-    buttonText+
-    '</button></div>'+
+    '<button type="button" data-routing-forward="'+escapeHtml(requestId)+'" data-routing-tier="'+tier+'" '+(disabled?'disabled':'')+'>'+buttonText+'</button></div>'+
     '<div class="quote-routing-inst-list">'+quoteRoutingInstitutionChips(rows)+'</div>'+
   '</div>';
 }
 
 function updateQuoteRoutingBadge(){
-  const waiting=quoteRequestRecords.filter(quoteRoutingIsWaiting).length;
-
-  if(quoteRoutingTabCount){
-    quoteRoutingTabCount.textContent=String(waiting);
-  }
-
-  if(quoteRoutingMainCount){
-    quoteRoutingMainCount.textContent=String(waiting);
-    quoteRoutingMainCount.hidden=waiting<=0;
-  }
-
+  const waiting=quoteRequestRecords.filter(request=>quoteRoutingDirectRequest(request) && quoteRoutingIsWaiting(request)).length;
+  if(quoteRoutingTabCount)quoteRoutingTabCount.textContent=String(waiting);
+  if(quoteRoutingMainCount){ quoteRoutingMainCount.textContent=String(waiting); quoteRoutingMainCount.hidden=waiting<=0; }
   if(quoteRoutingMainBtn){
     quoteRoutingMainBtn.classList.toggle("has-opportunity",waiting>0);
-    quoteRoutingMainBtn.title=waiting>0
-      ? waiting+" yanıtsız teklif gelir fırsatı bekliyor"
-      : "Yanıtsız teklif gelir fırsatlarını yönet";
+    quoteRoutingMainBtn.title=waiting>0 ? waiting+" yanıtsız teklif gelir fırsatı bekliyor" : "Yanıtsız teklif gelir fırsatlarını yönet";
   }
 }
 
@@ -3295,68 +3300,84 @@ function renderQuoteRoutingAdmin(){
   if(!quoteRoutingList)return;
 
   const search=String(quoteRoutingSearch?.value||"").trim().toLocaleLowerCase("tr-TR");
-  let rows=quoteRequestRecords.filter(quoteRoutingIsWaiting);
+  const statusFilter=String(quoteRoutingStatusFilter?.value||"all");
+  const directRows=quoteRequestRecords.filter(quoteRoutingDirectRequest);
+  let rows=directRows.filter(request=>{
+    const status=quoteRoutingFlowStatus(request);
+    return statusFilter==="all" || status===statusFilter;
+  });
 
   if(search){
     rows=rows.filter(request=>{
-      const haystack=[
-        request.name,
-        request.phone,
-        request.service,
-        request.city,
-        request.district,
-        request.targetInstitutionName
-      ].map(value=>String(value||"").toLocaleLowerCase("tr-TR")).join(" ");
+      const haystack=[request.name,request.phone,request.service,request.city,request.district,request.targetInstitutionName]
+        .map(value=>String(value||"").toLocaleLowerCase("tr-TR")).join(" ");
       return haystack.includes(search);
     });
   }
 
-  const bundles=rows.map(request=>({
-    request,
-    candidates:quoteRoutingCandidateBundle(request)
-  }));
-
+  const waitingRows=directRows.filter(request=>quoteRoutingIsWaiting(request));
+  const bundles=waitingRows.map(request=>({request,candidates:quoteRoutingCandidateBundle(request)}));
   const vipCount=bundles.reduce((sum,row)=>sum+row.candidates.vip.filter(x=>!x.alreadyForwarded).length,0);
-  const adCount=bundles.reduce((sum,row)=>sum+row.candidates.ad.filter(x=>!x.alreadyForwarded).length,0);
-  const forwardedCount=quoteRequestRecords.filter(request=>
-    Array.isArray(request.forwardInstitutionIds) && request.forwardInstitutionIds.length
-  ).length;
+  const forwardedCount=directRows.filter(request=>Array.isArray(request.forwardInstitutionIds)&&request.forwardInstitutionIds.length).length;
+  const respondedCount=directRows.filter(request=>quoteRoutingFlowStatus(request)==="responded").length;
 
-  if(quoteRoutingWaitingCount)quoteRoutingWaitingCount.textContent=String(rows.length);
+  if(quoteRoutingWaitingCount)quoteRoutingWaitingCount.textContent=String(waitingRows.length);
   if(quoteRoutingVipCount)quoteRoutingVipCount.textContent=String(vipCount);
-  if(quoteRoutingAdCount)quoteRoutingAdCount.textContent=String(adCount);
   if(quoteRoutingForwardedCount)quoteRoutingForwardedCount.textContent=String(forwardedCount);
+  if(quoteRoutingRespondedCount)quoteRoutingRespondedCount.textContent=String(respondedCount);
+  if(quoteRoutingListCount)quoteRoutingListCount.textContent=rows.length+" kayıt";
   updateQuoteRoutingBadge();
 
   if(!rows.length){
-    quoteRoutingList.innerHTML=
-      '<div class="quote-routing-empty"><strong>Şu anda dağıtım bekleyen özel teklif yok.</strong><span>Belirlediğiniz yanıt süresini aşan ve henüz teklif almamış özel talepler burada görünür.</span></div>';
+    quoteRoutingList.innerHTML='<div class="quote-routing-empty"><strong>Bu filtrede özel teklif bulunmuyor.</strong><span>Filtreyi “Tüm özel talepler” yaparak bütün akışı görüntüleyebilirsiniz.</span></div>';
     return;
   }
 
-  quoteRoutingList.innerHTML=bundles.map(({request,candidates})=>{
+  const statusMeta={
+    fresh:["Yeni","fresh"],
+    waiting:["Dağıtım bekliyor","waiting"],
+    forwarded:["Yönlendirildi · yanıt bekliyor","forwarded"],
+    responded:["Yönlendirmeden teklif geldi","responded"],
+    completed:["Kayıt sürecine geçti","completed"]
+  };
+
+  quoteRoutingList.innerHTML=rows.map(request=>{
+    const candidates=quoteRoutingCandidateBundle(request);
     const age=quoteRoutingAgeMinutes(request);
     const history=Array.isArray(request.forwardHistory)?request.forwardHistory:[];
     const last=history.length?history[history.length-1]:null;
     const totalForwarded=Array.isArray(request.forwardInstitutionIds)?request.forwardInstitutionIds.length:0;
-    const canForward=request.allowAlternativeInstitutions===true;
-    const consentHtml=canForward
-      ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Talep, yönetim tarafından seçilen uygun kurumlara yönlendirilebilir.</span></div>'
-      : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Bu talep başka kurumlara iletilmeden önce müşteriden açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">Müşteriden İzin Alındı</button></div>';
+    const flow=quoteRoutingFlowStatus(request);
+    const meta=statusMeta[flow]||[flow,"fresh"];
+    const offers=Array.isArray(request.liveOffers)?request.liveOffers:[];
+    const forwardedSet=new Set((request.forwardInstitutionIds||[]).map(String));
+    const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
+    const canForward=request.allowAlternativeInstitutions===true && !request.liveLock && offers.length===0 && ["waiting","forwarded"].includes(flow);
+    const consentHtml=request.allowAlternativeInstitutions===true
+      ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Uygun kurumlara yönlendirilebilir.</span></div>'
+      : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Başka kuruma iletmeden önce açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">Müşteriden İzin Alındı</button></div>';
 
-    return '<article class="quote-routing-card" data-routing-quote="'+escapeHtml(request.id)+'">'+
+    const offerNames=routedOffers.map(offer=>escapeHtml(offer.institutionName||"Kurum")).join(", ");
+    const responseHtml=routedOffers.length
+      ? '<div class="quote-routing-response"><strong>✓ '+routedOffers.length+' yönlendirilmiş kurum teklif verdi</strong><span>'+offerNames+'</span></div>'
+      : '';
+
+    return '<article class="quote-routing-card flow-'+meta[1]+'" data-routing-quote="'+escapeHtml(request.id)+'">'+
       '<div class="quote-routing-card-head">'+
         '<div><span class="quote-routing-code">#'+escapeHtml(String(request.id||"").slice(0,9).toUpperCase())+'</span>'+
+        '<span class="quote-routing-flow-badge '+meta[1]+'">'+meta[0]+'</span>'+
         '<h4>'+escapeHtml(request.service||"Teklif Talebi")+'</h4>'+
         '<p>'+escapeHtml(request.name||"Müşteri")+' · '+escapeHtml([request.city,request.district].filter(Boolean).join(" / ")||"-")+'</p></div>'+
-        '<div class="quote-routing-wait"><span>Yanıt bekliyor</span><strong>'+escapeHtml(quoteRoutingAgeLabel(age))+'</strong></div>'+
+        '<div class="quote-routing-wait"><span>Geçen süre</span><strong>'+escapeHtml(quoteRoutingAgeLabel(age))+'</strong></div>'+
       '</div>'+
       '<div class="quote-routing-original">'+
         '<div><span>İlk hedef kurum</span><strong>'+escapeHtml(request.targetInstitutionName||"Kurum")+'</strong></div>'+
         '<div><span>Dağıtım kapsamı</span><strong>'+escapeHtml(candidates.scopeLabel)+'</strong></div>'+
-        '<div><span>Daha önce iletildi</span><strong>'+totalForwarded+' kurum</strong></div>'+
+        '<div><span>İletilen</span><strong>'+totalForwarded+' kurum</strong></div>'+
+        '<div><span>Teklif</span><strong>'+offers.length+' adet</strong></div>'+
         '<div><span>Son dağıtım</span><strong>'+(last?formatDate(last.date):"-")+'</strong></div>'+
       '</div>'+
+      responseHtml+
       '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
       consentHtml+
       '<div class="quote-routing-tiers">'+
@@ -3371,25 +3392,13 @@ function renderQuoteRoutingAdmin(){
     '</article>';
   }).join("");
 
-  quoteRoutingList.querySelectorAll("[data-routing-forward]").forEach(button=>{
-    button.addEventListener("click",async()=>{
-      await forwardQuoteRoutingTier(
-        button.dataset.routingForward,
-        button.dataset.routingTier,
-        button
-      );
-    });
-  });
-
-  quoteRoutingList.querySelectorAll("[data-routing-open]").forEach(button=>{
-    button.addEventListener("click",()=>openQuoteDetailModal(button.dataset.routingOpen));
-  });
-
-  quoteRoutingList.querySelectorAll("[data-routing-consent]").forEach(button=>{
-    button.addEventListener("click",async()=>{
-      await markQuoteRoutingConsent(button.dataset.routingConsent,button);
-    });
-  });
+  quoteRoutingList.querySelectorAll("[data-routing-forward]").forEach(button=>button.addEventListener("click",async()=>{
+    await forwardQuoteRoutingTier(button.dataset.routingForward,button.dataset.routingTier,button);
+  }));
+  quoteRoutingList.querySelectorAll("[data-routing-open]").forEach(button=>button.addEventListener("click",()=>openQuoteDetailModal(button.dataset.routingOpen)));
+  quoteRoutingList.querySelectorAll("[data-routing-consent]").forEach(button=>button.addEventListener("click",async()=>{
+    await markQuoteRoutingConsent(button.dataset.routingConsent,button);
+  }));
 }
 
 async function markQuoteRoutingConsent(requestId,button){
@@ -3556,7 +3565,7 @@ async function saveLeadRoutingSettings(){
         credit50:Number(leadPrice50?.value||0)
       },
       priorityOrder:["vip","advertiser","standard"],
-      creditUnit:"1 yönlendirilmiş müşteri fırsatı = 1 kredi",
+      creditUnit:"Yönlendirilmiş kurum teklif gönderdiğinde 1 kredi kullanılır",
       platformPayment:false,
       updatedAt:new Date().toISOString()
     },{merge:true});
@@ -3570,15 +3579,268 @@ async function saveLeadRoutingSettings(){
   }
 }
 
+function leadCreditAccountMap(){
+  return new Map(leadCreditAccountRecords.map(item=>[String(item.id),item]));
+}
+
+function leadCreditInstitutionStats(instId){
+  const id=String(instId);
+  const forwarded=quoteRequestRecords.filter(request=>
+    Array.isArray(request.forwardInstitutionIds) && request.forwardInstitutionIds.map(String).includes(id)
+  );
+  const responded=forwarded.filter(request=>
+    Array.isArray(request.liveOffers) && request.liveOffers.some(offer=>String(offer.institutionId||offer.id||"")===id)
+  );
+  return {forwarded:forwarded.length,responded:responded.length};
+}
+
+async function loadLeadCreditData(){
+  try{
+    const [accountSnap,ledgerSnap]=await Promise.all([
+      db.collection("leadCreditAccounts").get(),
+      db.collection("leadCreditLedger").get()
+    ]);
+    leadCreditAccountRecords=accountSnap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    leadCreditLedgerRecords=ledgerSnap.docs.map(doc=>({id:doc.id,...doc.data()}))
+      .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  }catch(error){
+    console.error("Teklif kredisi kayıtları yüklenemedi:",error);
+    leadCreditAccountRecords=[];
+    leadCreditLedgerRecords=[];
+  }
+}
+
+async function reconcileLeadCreditUsage(){
+  const jobs=[];
+  quoteRequestRecords.forEach(request=>{
+    const forwarded=new Set(Array.isArray(request.forwardInstitutionIds)?request.forwardInstitutionIds.map(String):[]);
+    const offers=Array.isArray(request.liveOffers)?request.liveOffers:[];
+    offers.forEach(offer=>{
+      const institutionId=String(offer.institutionId||offer.id||"");
+      if(!institutionId || !forwarded.has(institutionId))return;
+      jobs.push({request,offer,institutionId});
+    });
+  });
+
+  for(const item of jobs){
+    const ledgerId="usage_"+String(item.request.id)+"_"+item.institutionId;
+    const ledgerRef=db.collection("leadCreditLedger").doc(ledgerId);
+    const accountRef=db.collection("leadCreditAccounts").doc(item.institutionId);
+    try{
+      await db.runTransaction(async tx=>{
+        const [ledgerSnap,accountSnap]=await Promise.all([tx.get(ledgerRef),tx.get(accountRef)]);
+        if(ledgerSnap.exists)return;
+        const current=accountSnap.exists?accountSnap.data():{};
+        const before=Number(current.balance||0);
+        const after=before-1;
+        const totalUsed=Number(current.totalUsed||0)+1;
+        const institution=institutionRecords.find(x=>String(x.id)===item.institutionId);
+        const institutionName=String(item.offer.institutionName||institution?.name||"Kurum");
+        const now=new Date().toISOString();
+
+        tx.set(accountRef,{
+          institutionId:item.institutionId,
+          institutionName,
+          balance:after,
+          totalLoaded:Number(current.totalLoaded||0),
+          totalUsed,
+          updatedAt:now
+        },{merge:true});
+
+        tx.set(ledgerRef,{
+          institutionId:item.institutionId,
+          institutionName,
+          type:"offer_usage",
+          delta:-1,
+          balanceBefore:before,
+          balanceAfter:after,
+          quoteId:String(item.request.id),
+          service:String(item.request.service||""),
+          note:"Yönlendirilmiş müşteri talebine teklif gönderildi",
+          createdAt:now
+        });
+      });
+    }catch(error){
+      console.warn("Kredi kullanımı işlenemedi:",item.request.id,item.institutionId,error);
+    }
+  }
+}
+
+function renderLeadCreditAdmin(){
+  if(!leadCreditTableBody)return;
+  const accountMap=leadCreditAccountMap();
+  const query=String(leadCreditSearch?.value||"").trim().toLocaleLowerCase("tr-TR");
+  const status=String(leadCreditStatusFilter?.value||"");
+
+  const rows=institutionRecords.map(inst=>{
+    const account=accountMap.get(String(inst.id))||{};
+    const stats=leadCreditInstitutionStats(inst.id);
+    const balance=Number(account.balance||0);
+    const totalLoaded=Number(account.totalLoaded||0);
+    const totalUsed=Number(account.totalUsed||0);
+    const tier=isInstitutionVipActive(inst)?"VIP":((typeof getInstitutionAdState==="function"&&getInstitutionAdState(inst)?.advertiser)?"Reklam Veren":"Standart");
+    return {inst,balance,totalLoaded,totalUsed,tier,...stats};
+  }).filter(row=>{
+    const haystack=[row.inst.name,row.inst.city,row.inst.district,row.inst.category].join(" ").toLocaleLowerCase("tr-TR");
+    if(query&&!haystack.includes(query))return false;
+    if(status==="positive"&&row.balance<=0)return false;
+    if(status==="zero"&&row.balance!==0)return false;
+    if(status==="debt"&&row.balance>=0)return false;
+    if(status==="used"&&row.totalUsed<=0)return false;
+    return true;
+  }).sort((a,b)=>{
+    if(a.balance<0&&b.balance>=0)return -1;
+    if(b.balance<0&&a.balance>=0)return 1;
+    if(b.totalUsed!==a.totalUsed)return b.totalUsed-a.totalUsed;
+    return String(a.inst.name||"").localeCompare(String(b.inst.name||""),"tr");
+  });
+
+  const totals=leadCreditAccountRecords.reduce((acc,item)=>{
+    acc.balance+=Number(item.balance||0);
+    acc.loaded+=Number(item.totalLoaded||0);
+    acc.used+=Number(item.totalUsed||0);
+    if(Number(item.balance||0)<0)acc.debt++;
+    return acc;
+  },{balance:0,loaded:0,used:0,debt:0});
+
+  [leadCreditBalanceTotal,leadCreditBalanceSummary].forEach(el=>{if(el)el.textContent=String(totals.balance);});
+  [leadCreditUsedTotal,leadCreditUsedSummary].forEach(el=>{if(el)el.textContent=String(totals.used);});
+  if(leadCreditLoadedTotal)leadCreditLoadedTotal.textContent=String(totals.loaded);
+  if(leadCreditDebtCount)leadCreditDebtCount.textContent=String(totals.debt);
+
+  if(!rows.length){
+    leadCreditTableBody.innerHTML='<tr><td colspan="8" class="lead-credit-empty-cell">Bu filtreye uygun kurum yok.</td></tr>';
+  }else{
+    leadCreditTableBody.innerHTML=rows.map(row=>{
+      const balanceClass=row.balance<0?"debt":row.balance===0?"zero":"positive";
+      return '<tr>'+
+        '<td><strong>'+escapeHtml(row.inst.name||"Kurum")+'</strong><small>'+escapeHtml([row.inst.city,row.inst.district].filter(Boolean).join(" / ")||"-")+'</small></td>'+
+        '<td><span class="lead-credit-tier '+(row.tier==="VIP"?"vip":row.tier==="Reklam Veren"?"ad":"standard")+'">'+row.tier+'</span></td>'+
+        '<td>'+row.forwarded+'</td>'+
+        '<td>'+row.responded+'</td>'+
+        '<td>'+row.totalLoaded+'</td>'+
+        '<td>'+row.totalUsed+'</td>'+
+        '<td><strong class="lead-credit-balance '+balanceClass+'">'+row.balance+'</strong></td>'+
+        '<td><button type="button" class="lead-credit-manage-btn" data-lead-credit-manage="'+escapeHtml(row.inst.id)+'">Kredi Yönet</button></td>'+
+      '</tr>';
+    }).join("");
+  }
+
+  if(leadCreditLedgerList){
+    const recent=leadCreditLedgerRecords.slice(0,20);
+    leadCreditLedgerList.innerHTML=recent.length?recent.map(item=>{
+      const delta=Number(item.delta||0);
+      return '<div class="lead-credit-ledger-row">'+
+        '<div><strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong><small>'+escapeHtml(item.note||item.type||"Kredi hareketi")+'</small></div>'+
+        '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
+        '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
+      '</div>';
+    }).join(""):'<div class="empty-state">Henüz kredi hareketi yok.</div>';
+  }
+
+  leadCreditTableBody.querySelectorAll("[data-lead-credit-manage]").forEach(button=>{
+    button.addEventListener("click",()=>openLeadCreditModal(button.dataset.leadCreditManage));
+  });
+}
+
+function openLeadCreditModal(institutionId){
+  const inst=institutionRecords.find(x=>String(x.id)===String(institutionId));
+  if(!inst||!leadCreditModal)return;
+  const account=leadCreditAccountRecords.find(x=>String(x.id)===String(institutionId));
+  leadCreditInstitutionId.value=String(institutionId);
+  leadCreditModalInstitution.textContent=inst.name||"Kurum";
+  leadCreditModalBalance.textContent=String(Number(account?.balance||0));
+  leadCreditAction.value="add";
+  leadCreditAmount.value="10";
+  leadCreditNote.value="";
+  if(leadCreditModalMessage)leadCreditModalMessage.textContent="";
+  leadCreditModal.hidden=false;
+}
+
+function closeLeadCreditModal(){
+  if(leadCreditModal)leadCreditModal.hidden=true;
+}
+
+async function saveLeadCreditAdjustment(){
+  const institutionId=String(leadCreditInstitutionId?.value||"");
+  const inst=institutionRecords.find(x=>String(x.id)===institutionId);
+  const amount=Math.max(1,Math.floor(Number(leadCreditAmount?.value||0)));
+  const action=String(leadCreditAction?.value||"add");
+  const note=String(leadCreditNote?.value||"").trim();
+  if(!institutionId||!inst||!Number.isFinite(amount))return;
+
+  const delta=action==="remove"?-amount:amount;
+  const accountRef=db.collection("leadCreditAccounts").doc(institutionId);
+  const ledgerRef=db.collection("leadCreditLedger").doc();
+  const oldText=leadCreditModalSaveBtn?.textContent||"Kaydet";
+  if(leadCreditModalSaveBtn){leadCreditModalSaveBtn.disabled=true;leadCreditModalSaveBtn.textContent="Kaydediliyor...";}
+
+  try{
+    await db.runTransaction(async tx=>{
+      const snap=await tx.get(accountRef);
+      const current=snap.exists?snap.data():{};
+      const before=Number(current.balance||0);
+      const after=before+delta;
+      const now=new Date().toISOString();
+      tx.set(accountRef,{
+        institutionId,
+        institutionName:String(inst.name||"Kurum"),
+        balance:after,
+        totalLoaded:Number(current.totalLoaded||0)+(delta>0?delta:0),
+        totalUsed:Number(current.totalUsed||0),
+        updatedAt:now
+      },{merge:true});
+      tx.set(ledgerRef,{
+        institutionId,
+        institutionName:String(inst.name||"Kurum"),
+        type:delta>0?"credit_add":"credit_remove",
+        delta,
+        balanceBefore:before,
+        balanceAfter:after,
+        note:note||(delta>0?"Yönetim panelinden kredi yüklendi":"Yönetim panelinden kredi çıkarıldı"),
+        createdAt:now
+      });
+    });
+    if(leadCreditModalMessage)leadCreditModalMessage.textContent="✓ Kredi işlemi kaydedildi.";
+    await loadLeadCreditData();
+    renderLeadCreditAdmin();
+    setTimeout(closeLeadCreditModal,450);
+  }catch(error){
+    console.error("Kredi işlemi kaydedilemedi:",error);
+    if(leadCreditModalMessage)leadCreditModalMessage.textContent="Kredi işlemi kaydedilemedi.";
+  }finally{
+    if(leadCreditModalSaveBtn){leadCreditModalSaveBtn.disabled=false;leadCreditModalSaveBtn.textContent=oldText;}
+  }
+}
+
 quoteRoutingWaitMinutes?.addEventListener("change",renderQuoteRoutingAdmin);
 quoteRoutingAreaMode?.addEventListener("change",renderQuoteRoutingAdmin);
+quoteRoutingStatusFilter?.addEventListener("change",renderQuoteRoutingAdmin);
 quoteRoutingSearch?.addEventListener("input",renderQuoteRoutingAdmin);
 quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
   if(!institutionRecords.length)await loadInstitutions();
   await loadQuoteRequests();
+  await reconcileLeadCreditUsage();
+  await loadLeadCreditData();
   renderQuoteRoutingAdmin();
+  renderLeadCreditAdmin();
 });
 leadPackageSaveBtn?.addEventListener("click",saveLeadRoutingSettings);
+leadCreditSearch?.addEventListener("input",renderLeadCreditAdmin);
+leadCreditStatusFilter?.addEventListener("change",renderLeadCreditAdmin);
+leadCreditRefreshBtn?.addEventListener("click",async()=>{
+  await reconcileLeadCreditUsage();
+  await loadLeadCreditData();
+  renderQuoteRoutingAdmin();
+  renderLeadCreditAdmin();
+});
+leadCreditModalCloseBtn?.addEventListener("click",closeLeadCreditModal);
+leadCreditModalCancelBtn?.addEventListener("click",closeLeadCreditModal);
+leadCreditModalSaveBtn?.addEventListener("click",saveLeadCreditAdjustment);
+document.querySelectorAll("[data-lead-credit-quick]").forEach(button=>button.addEventListener("click",()=>{
+  if(leadCreditAmount)leadCreditAmount.value=button.dataset.leadCreditQuick||"1";
+}));
+leadCreditModal?.addEventListener("click",event=>{if(event.target===leadCreditModal)closeLeadCreditModal();});
 
 async function loadQuoteRequests() {
   adminQuoteActivityCache.clear();
