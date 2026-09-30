@@ -20343,3 +20343,80 @@ to{opacity:1;transform:none}
 .review-recommend-picker button.active[data-review-recommend="true"]{border-color:#72c695;background:#ecfdf3;color:#16824a}
 .review-recommend-picker button.active[data-review-recommend="false"]{border-color:#b9c4d0;background:#f1f5f9;color:#475569}
 .review-safety-note{margin-top:8px;padding:8px 9px;border:1px solid #d9e6f5;border-radius:8px;background:#f7faff;color:#63758b;font-size:10px;font-weight:700;line-height:1.45}
+
+
+/* DESKTOP INLINE KURUM BİLGİLERİ V3 - DAHA OKUNAKLI */
+@media(min-width:821px){
+  .desktop-inline-results-title>strong{
+    font-size:16px;
+  }
+
+  .desktop-inline-results-title>small{
+    margin-top:2px;
+    font-size:8.5px;
+  }
+
+  .desktop-inline-institution-card{
+    min-height:92px;
+    grid-template-columns:52px minmax(0,1fr) 28px;
+    gap:11px;
+    padding:12px 13px;
+    border-radius:14px;
+  }
+
+  .desktop-inline-institution-logo{
+    width:52px;
+    height:52px;
+    border-radius:11px;
+  }
+
+  .desktop-inline-institution-logo span{
+    font-size:23px;
+  }
+
+  .desktop-inline-institution-copy>strong{
+    font-size:11.5px;
+    line-height:1.25;
+  }
+
+  .desktop-inline-institution-copy>small{
+    margin-top:4px;
+    font-size:8px;
+    line-height:1.3;
+  }
+
+  .desktop-inline-institution-copy>div{
+    min-height:18px;
+    gap:6px;
+    margin-top:6px;
+  }
+
+  .desktop-inline-institution-copy>div>span{
+    font-size:7.5px;
+    line-height:1.2;
+  }
+
+  .desktop-inline-rating,
+  .desktop-inline-recommend,
+  .desktop-inline-offer{
+    min-height:20px;
+    display:inline-flex;
+    align-items:center;
+  }
+
+  .desktop-inline-rating{
+    font-size:8px!important;
+  }
+
+  .desktop-inline-recommend,
+  .desktop-inline-offer{
+    padding:3px 7px;
+    font-size:7.5px!important;
+  }
+
+  .desktop-inline-card-arrow{
+    width:28px;
+    height:28px;
+    font-size:14px!important;
+  }
+}
