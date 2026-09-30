@@ -1110,6 +1110,104 @@ const ADMIN_AD_PACKAGES = {
   }
 };
 
+
+const ADMIN_AD_PLACEMENTS = {
+  premium_home:{
+    icon:"◆",
+    name:"Premium Vitrin",
+    page:"Ana Sayfa",
+    size:"1600 × 600 px",
+    device:"Mobil + Masaüstü",
+    description:"Ana sayfanın en görünür geniş reklam alanı."
+  },
+  home_sponsor:{
+    icon:"📣",
+    name:"Bölgenizde Öne Çıkanlar",
+    page:"Ana Sayfa",
+    size:"1500 × 600 px",
+    device:"Mobil + Masaüstü",
+    description:"Şehir / ilçe bazlı sponsorlu kurum görünürlüğü."
+  },
+  search:{
+    icon:"🔎",
+    name:"Kurum Listesi Banner",
+    page:"Ana Sayfa",
+    size:"1200 × 450 px",
+    device:"Mobil + Masaüstü",
+    description:"Kurum arama sonuçlarının içinde, 2. kurumdan sonra."
+  },
+  mobile_sponsor:{
+    icon:"📱",
+    name:"Mobil 2’li Sponsor",
+    page:"Ana Sayfa",
+    size:"1080 × 600 px",
+    device:"Sadece Mobil",
+    description:"Premium vitrinin altındaki iki reklamlı mobil alan."
+  },
+  sidebar_sponsor:{
+    icon:"▤",
+    name:"Masaüstü Yan Sponsor",
+    page:"Ana Sayfa",
+    size:"900 × 330 px",
+    device:"Sadece Masaüstü",
+    description:"Kurum sonuçlarının yanındaki masaüstü sponsor alanı."
+  },
+  detail_banner:{
+    icon:"🏢",
+    name:"Kurum Önizleme Banner",
+    page:"Kurum Önizleme",
+    size:"1200 × 300 px",
+    device:"Sadece Masaüstü",
+    description:"Hızlı kurum önizleme panelinin altındaki banner."
+  },
+  page_top_mini:{
+    icon:"▰",
+    name:"Üst Mini Banner",
+    page:"Teklif / İş / Bayi",
+    size:"728 × 90 px",
+    device:"Mobil + Masaüstü",
+    description:"Teklif Al, İş Fırsatları ve Bayi & Servis sayfalarının üstünde."
+  }
+};
+
+function adminAdPlacementCardsHtml(inst){
+  const lastPrice=Math.max(0,Number(inst?.adPrice||0));
+  return Object.entries(ADMIN_AD_PLACEMENTS).map(([id,item])=>`
+    <article class="institution-ad-placement-card">
+      <div class="institution-ad-placement-icon">${item.icon}</div>
+      <div class="institution-ad-placement-copy">
+        <span>${escapeHtml(item.page)}</span>
+        <strong>${escapeHtml(item.name)}</strong>
+        <small>${escapeHtml(item.description)}</small>
+      </div>
+      <div class="institution-ad-placement-meta">
+        <b>${escapeHtml(item.size)}</b>
+        <em>${escapeHtml(item.device)}</em>
+      </div>
+      <div class="institution-ad-placement-sale">
+        <label>
+          <span>Yayın Süresi</span>
+          <select data-placement-days="${id}">
+            <option value="7">7 gün</option>
+            <option value="15">15 gün</option>
+            <option value="30" selected>30 gün</option>
+          </select>
+        </label>
+        <label>
+          <span>Satış Fiyatı</span>
+          <div class="institution-ad-price-input">
+            <input type="number" min="0" step="1" data-placement-price="${id}" value="${lastPrice||""}" placeholder="Fiyat gir">
+            <i>TL</i>
+          </div>
+        </label>
+      </div>
+      <button type="button" class="institution-ad-placement-start" data-start-placement="${id}">
+        Reklamı Başlat →
+      </button>
+    </article>
+  `).join("");
+}
+
 function adminDateInputValue(value){
   if(!value)return "";
   const date=new Date(value);
@@ -1431,8 +1529,22 @@ function renderManagedInstitutions() {
             </div>
           </div>
 
+          <section class="institution-ad-placement-catalog">
+            <div class="institution-ad-placement-head">
+              <div>
+                <span>SİTEDEKİ REKLAM ALANLARI</span>
+                <strong>Alanı, ölçüyü, süreyi ve fiyatı tek ekranda seçin</strong>
+                <small>Bir alan seçip satış fiyatını girin. “Reklamı Başlat” dediğinizde Reklam Merkezi seçili kurum ve alanla hazır açılır.</small>
+              </div>
+              <button type="button" class="institution-open-ad-center">Tüm Reklam Merkezini Aç</button>
+            </div>
+            <div class="institution-ad-placement-grid">
+              ${adminAdPlacementCardsHtml(data)}
+            </div>
+          </section>
+
           <details class="ad-package-catalog">
-            <summary>Tüm reklam paketlerini gör</summary>
+            <summary>Hazır görünürlük paketlerini gör</summary>
             <div class="ad-package-grid">
               ${Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg])=>`
                 <article class="${id===adRecommendation.packageId?"recommended":""}">
@@ -1529,6 +1641,30 @@ function renderManagedInstitutions() {
       } else {
         document.getElementById("bannerAdsTabBtn")?.click();
       }
+    });
+
+    card.querySelector(".institution-open-ad-center")?.addEventListener("click", () => {
+      if (typeof window.openBannerAdForInstitution === "function") {
+        window.openBannerAdForInstitution(data.id);
+      } else {
+        document.getElementById("bannerAdsTabBtn")?.click();
+      }
+    });
+
+    card.querySelectorAll("[data-start-placement]").forEach(button => {
+      button.addEventListener("click", () => {
+        const placement=button.dataset.startPlacement || "search";
+        const priceInput=card.querySelector('[data-placement-price="'+placement+'"]');
+        const daysSelect=card.querySelector('[data-placement-days="'+placement+'"]');
+        const price=Math.max(0,Number(priceInput?.value||0));
+        const days=Math.max(1,Number(daysSelect?.value||30));
+
+        if (typeof window.openBannerAdForInstitution === "function") {
+          window.openBannerAdForInstitution(data.id,{placement,price,days});
+        } else {
+          document.getElementById("bannerAdsTabBtn")?.click();
+        }
+      });
     });
 
     card.querySelector(".quick-photo-institution-btn")?.addEventListener("click", () => {
