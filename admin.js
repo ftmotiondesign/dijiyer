@@ -4258,6 +4258,125 @@ function quoteRoutingAgeLabel(minutes){
 }
 
 
+
+function secondOfferFallbackDelayMinutes(offer){
+  const validityHours=Math.max(1,Number(offer?.validityHours||48));
+  const halfValidity=Math.floor(validityHours*60/2);
+  return Math.max(30,Math.min(180,halfValidity||180));
+}
+
+function secondOfferFallbackQuoteClosed(request){
+  if(request?.liveLock)return true;
+  return ["done","archived","closed","cancelled","canceled","completed","used"]
+    .includes(String(request?.status||"").trim().toLowerCase());
+}
+
+async function secondOfferFallbackCustomerResponded(request,offer){
+  const institutionId=String(offer?.institutionId||offer?.id||"");
+  if(!request?.id||!institutionId)return false;
+
+  const offerAt=new Date(offer.updatedAt||offer.createdAt||0).getTime();
+  if(!Number.isFinite(offerAt)||offerAt<=0)return false;
+
+  const engagement=(Array.isArray(request.liveEngagement)?request.liveEngagement:[])
+    .find(row=>String(row.institutionId||row.id||"")===institutionId);
+
+  const revisionAt=new Date(engagement?.revisionRequestedAt||0).getTime();
+  if(Number.isFinite(revisionAt)&&revisionAt>offerAt)return true;
+
+  try{
+    const snapshot=await db.collection("quoteRequests")
+      .doc(String(request.id))
+      .collection("conversations")
+      .doc(institutionId)
+      .collection("messages")
+      .get();
+
+    return snapshot.docs.some(doc=>{
+      const row=doc.data()||{};
+      if(String(row.sender||"")!=="customer")return false;
+      const messageAt=new Date(row.date||0).getTime();
+      return Number.isFinite(messageAt)&&messageAt>offerAt;
+    });
+  }catch(error){
+    console.warn("2. teklif yedek kontrolünde müşteri mesajları okunamadı:",request.id,institutionId,error);
+    return false;
+  }
+}
+
+async function syncSecondOfferInvitesFallback(){
+  let created=0;
+
+  for(const request of quoteRequestRecords){
+    if(secondOfferFallbackQuoteClosed(request))continue;
+
+    const offers=Array.isArray(request.liveOffers)?request.liveOffers:[];
+    for(const offer of offers){
+      const institutionId=String(offer.institutionId||offer.id||"");
+      if(!institutionId)continue;
+      if(Math.max(1,Number(offer.offerVersion||1))!==1)continue;
+
+      const existing=(Array.isArray(request.secondOfferInvites)?request.secondOfferInvites:[])
+        .find(row=>String(row.institutionId||row.id||"")===institutionId);
+      if(existing)continue;
+
+      const expiryMs=new Date(offer.expiresAt||0).getTime();
+      if(Number.isFinite(expiryMs)&&expiryMs<=Date.now())continue;
+
+      const baseMs=new Date(offer.updatedAt||offer.createdAt||0).getTime();
+      if(!Number.isFinite(baseMs)||baseMs<=0)continue;
+
+      const eligibleAt=baseMs+secondOfferFallbackDelayMinutes(offer)*60000;
+      if(Date.now()<eligibleAt)continue;
+
+      if(await secondOfferFallbackCustomerResponded(request,offer))continue;
+
+      const inviteRef=db.collection("quoteRequests")
+        .doc(String(request.id))
+        .collection("secondOfferInvites")
+        .doc(institutionId);
+
+      try{
+        const snap=await inviteRef.get();
+        if(snap.exists){
+          request.secondOfferInvites=request.secondOfferInvites||[];
+          request.secondOfferInvites.push({id:snap.id,...snap.data()});
+          continue;
+        }
+
+        const invite={
+          institutionId,
+          institutionName:String(
+            offer.institutionName||
+            institutionRecords.find(inst=>String(inst.id)===institutionId)?.name||
+            "Kurum"
+          ),
+          status:"open",
+          reason:"customer_no_response",
+          firstOfferPrice:Number(offer.price||0),
+          offerVersion:1,
+          invitedAt:new Date().toISOString(),
+          expiresAt:String(offer.expiresAt||""),
+          decision:"",
+          respondedAt:""
+        };
+
+        await inviteRef.set(invite);
+        request.secondOfferInvites=request.secondOfferInvites||[];
+        request.secondOfferInvites.push({id:institutionId,...invite});
+        created++;
+      }catch(error){
+        console.warn("2. teklif ücretsiz-plan yedek daveti oluşturulamadı:",request.id,institutionId,error);
+      }
+    }
+  }
+
+  if(created){
+    console.info("2. teklif yedek sistemi davet oluşturdu:",created);
+  }
+  return created;
+}
+
 function quoteRoutingDirectRequest(request){
   return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
 }
@@ -5686,6 +5805,12 @@ async function loadQuoteRequests() {
         }
       })
     );
+
+    try{
+      await syncSecondOfferInvitesFallback();
+    }catch(error){
+      console.warn("2. teklif ücretsiz-plan yedek senkronizasyonu tamamlanamadı:",error);
+    }
 
     updateQuoteDashboardStats();
     renderQuoteRequests();
