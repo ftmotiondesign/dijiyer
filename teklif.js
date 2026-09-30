@@ -33,10 +33,12 @@ ensureTrackingInputsInteractive();
 document.addEventListener("DOMContentLoaded",ensureTrackingInputsInteractive,{once:true});
 let currentAccess=null;
 let stopOffersListener=null;
+let stopOfferHistoryListener=null;
 let stopLockListener=null;
 let stopEngagementListener=null;
 let stopPublicStatusListener=null;
 let liveOffers=[];
+let liveOfferHistory=[];
 let liveLock=null;
 let liveEngagement=[];
 let livePublicStatus=null;
@@ -144,6 +146,23 @@ function stateLabel(s){
     expired:"Süresi Doldu",
     closed:"Başka teklif seçildi"
   }[s]||s;
+}
+
+function customerOfferVersions(currentOffers,historyRows){
+  const rows=[];
+  (Array.isArray(historyRows)?historyRows:[]).forEach(row=>{
+    rows.push({
+      ...row,
+      id:"history_"+String(row.id||row.institutionId||"")+"_"+String(row.version||1),
+      offerVersion:Math.max(1,Number(row.version||row.offerVersion||1)),
+      isHistorical:true,
+      historyVersion:Math.max(1,Number(row.version||row.offerVersion||1))
+    });
+  });
+  (Array.isArray(currentOffers)?currentOffers:[]).forEach(row=>{
+    rows.push({...row,isHistorical:false});
+  });
+  return rows;
 }
 
 function offerValidityHoursFromDates(offer){
@@ -524,14 +543,16 @@ async function loadBundle(access){
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
 
   try{
-    const [offersSnap,lockSnap]=await Promise.all([
+    const [offersSnap,historySnap,lockSnap]=await Promise.all([
       quoteRef.collection("offers").get(),
+      quoteRef.collection("offerHistory").get(),
       quoteRef.collection("locks").doc("main").get()
     ]);
 
     return {
       access,
       offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
+      offerHistory:historySnap.docs.map(d=>({id:d.id,...d.data()})),
       lock:lockSnap.exists?lockSnap.data():null,
       engagement:[],
       publicStatus:null
@@ -544,10 +565,12 @@ async function loadBundle(access){
 
 function stopLiveTracking(){
   if(typeof stopOffersListener==="function") stopOffersListener();
+  if(typeof stopOfferHistoryListener==="function") stopOfferHistoryListener();
   if(typeof stopLockListener==="function") stopLockListener();
   if(typeof stopEngagementListener==="function") stopEngagementListener();
   if(typeof stopPublicStatusListener==="function") stopPublicStatusListener();
   stopOffersListener=null;
+  stopOfferHistoryListener=null;
   stopLockListener=null;
   stopEngagementListener=null;
   stopPublicStatusListener=null;
@@ -558,6 +581,7 @@ function renderLiveTracking(){
   render({
     access:currentAccess,
     offers:liveOffers,
+    offerHistory:liveOfferHistory,
     lock:liveLock,
     engagement:liveEngagement,
     publicStatus:livePublicStatus
@@ -701,6 +725,16 @@ function startLiveTracking(access){
     }
   );
 
+  stopOfferHistoryListener=quoteRef.collection("offerHistory").onSnapshot(
+    snapshot=>{
+      liveOfferHistory=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+      renderLiveTracking();
+    },
+    error=>{
+      console.error("Teklif geçmişi canlı izlenemedi:",error);
+    }
+  );
+
   stopLockListener=quoteRef.collection("locks").doc("main").onSnapshot(
     snapshot=>{
       liveLock=snapshot.exists?snapshot.data():null;
@@ -716,12 +750,14 @@ async function refreshTracking(){
   if(!currentAccess)return;
   try{
     const quoteRef=db.collection("quoteRequests").doc(currentAccess.quoteId);
-    const [offersSnap,lockSnap]=await Promise.all([
+    const [offersSnap,historySnap,lockSnap]=await Promise.all([
       quoteRef.collection("offers").get(),
+      quoteRef.collection("offerHistory").get(),
       quoteRef.collection("locks").doc("main").get()
     ]);
 
     liveOffers=offersSnap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    liveOfferHistory=historySnap.docs.map(doc=>({id:doc.id,...doc.data()}));
     liveLock=lockSnap.exists?lockSnap.data():null;
 
     if(liveLock)markQuoteAcceptedLocally(currentAccess.quoteId,liveLock);
@@ -798,34 +834,39 @@ function lockedHtml(bundle){
 }
 
 function offerHtml(bundle,offer){
-  const state=offerState(offer,bundle.lock);
-  const version=Math.max(1,Number(offer.offerVersion||1));
+  const historical=offer.isHistorical===true;
+  const state=historical ? "history" : offerState(offer,bundle.lock);
+  const version=Math.max(1,Number(offer.offerVersion||offer.version||1));
   const targetInstitutionId=String(bundle.publicStatus?.targetInstitutionId||bundle.access?.targetInstitutionId||"");
   const institutionId=String(offer.institutionId||offer.id||"");
   const alternative=offer.sourceType==="alternative" || Boolean(targetInstitutionId && institutionId && targetInstitutionId!==institutionId);
   const sourceNotice=alternative
     ? '<div class="alternative-offer-notice"><b>↗ Alternatif kurum teklifi</b><span>İlk seçtiğiniz kurumun yanıt süresi sonrasında talebiniz bu kuruma yönlendirildi.</span></div>'
     : "";
-  const versionNotice=version>=2
-    ? '<div class="offer-version-badge">🔔 '+version+'. teklif · Güncellenmiş teklif</div>'
-    : "";
+  const versionNotice=historical
+    ? '<div class="offer-version-badge history">🕘 '+version+'. teklif · Önceki teklif</div>'
+    : version>=2
+      ? '<div class="offer-version-badge">🔔 '+version+'. teklif · Güncellenmiş teklif</div>'
+      : '<div class="offer-version-badge first">1. teklif · İlk teklif</div>';
   return `
-    <article class="offer-card">
+    <article class="offer-card ${historical?"offer-card-history":""}">
       <div class="offer-head">
         <div>
           <h3>${safe(offer.institutionName||"Kurum")}</h3>
           <div class="offer-meta">Teklif No: <b>${safe(offer.offerCode||"-")}</b></div>
         </div>
-        <span class="status ${state==="expired"||state==="closed"?"red":state==="locked"||state==="used"?"green":""}">${stateLabel(state)}</span>
+        <span class="status ${historical?"history":state==="expired"||state==="closed"?"red":state==="locked"||state==="used"?"green":""}">${historical?"Geçmiş Teklif":stateLabel(state)}</span>
       </div>
       ${sourceNotice}
       ${versionNotice}
 
       <div class="offer-price">${money(offer.price)}</div>
       <div class="offer-updated-meta">
-        ${offer.updatedAt && offer.createdAt && offer.updatedAt!==offer.createdAt
-          ? "🔔 Teklif güncellendi · "+fmtDate(offer.updatedAt)
-          : "Teklif tarihi · "+fmtDate(offer.createdAt)}
+        ${historical
+          ? "🕘 Bu teklif daha sonra güncellendi · "+fmtDate(offer.updatedAt||offer.createdAt)
+          : offer.updatedAt && offer.createdAt && offer.updatedAt!==offer.createdAt
+            ? "🔔 Teklif güncellendi · "+fmtDate(offer.updatedAt)
+            : "Teklif tarihi · "+fmtDate(offer.createdAt)}
       </div>
 
       <div class="offer-scope">
@@ -834,9 +875,11 @@ function offerHtml(bundle,offer){
 
       ${acceptanceTermsHtml(offer)}
 
-      ${state==="offered"
-        ? `<label class="offer-consent-row"><input type="checkbox" data-lock-consent data-institution-id="${safe(offer.institutionId)}"><span>Teklif şartlarını, geçerlilik süresini ve Dijiyer üzerinden ödeme yapılmadığı bilgisini okudum.</span></label><div class="offer-actions"><button class="lock-btn accept-lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}" disabled>✓ Teklifi Kabul Et</button></div>`
-        : ""}
+      ${historical
+        ? '<div class="offer-history-note">Bu teklif geçmiş kaydıdır. Kabul işlemi yalnızca kurumun en güncel teklifi üzerinden yapılabilir.</div>'
+        : state==="offered"
+          ? `<label class="offer-consent-row"><input type="checkbox" data-lock-consent data-institution-id="${safe(offer.institutionId)}"><span>Teklif şartlarını, geçerlilik süresini ve Dijiyer üzerinden ödeme yapılmadığı bilgisini okudum.</span></label><div class="offer-actions"><button class="lock-btn accept-lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}" disabled>✓ Teklifi Kabul Et</button></div>`
+          : ""}
     </article>`;
 }
 
@@ -889,10 +932,11 @@ function render(bundle){
   const access=bundle.access;
   if(bundle.lock)markQuoteAcceptedLocally(access?.quoteId,bundle.lock);
   const acceptedLocally=Boolean(bundle.lock)||Boolean(localAcceptedQuote(access?.quoteId));
-  const offers=sortOffersForCustomer(bundle.offers);
+  const currentOffers=sortOffersForCustomer(bundle.offers);
+  const offers=sortOffersForCustomer(customerOfferVersions(bundle.offers,bundle.offerHistory));
   const engagementRows=Array.isArray(bundle.engagement)?bundle.engagement:[];
-  const directStatus=directResponseHtml(access,engagementRows,offers);
-  const bulkSummary=access.targetInstitutionId?"":bulkResponseSummaryHtml(engagementRows,offers);
+  const directStatus=directResponseHtml(access,engagementRows,currentOffers);
+  const bulkSummary=access.targetInstitutionId?"":bulkResponseSummaryHtml(engagementRows,currentOffers);
   results.classList.remove("hidden");
   results.innerHTML=`
     <article class="request-summary">
@@ -911,7 +955,7 @@ function render(bundle){
         <a class="secondary tracking-action-btn new-request-action" href="index.html"><span class="tracking-action-icon">＋</span><span>Yeni Talep Oluştur</span></a>
       </div>
 
-      ${requestDetailHtml(access,engagementRows,offers,bundle.lock)}
+      ${requestDetailHtml(access,engagementRows,currentOffers,bundle.lock)}
     </article>
 
     ${directStatus}
@@ -923,7 +967,7 @@ function render(bundle){
       ? lockedHtml(bundle)
       : acceptedLocally
         ? localAcceptedClosedHtml(access)
-        : `<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
+        : `<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offers.some(o=>o.isHistorical)?'<div class="offer-history-summary">İlk teklif dahil kurumların gönderdiği tüm teklif sürümleri gösteriliyor.</div>':""}${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
 
   newlyArrivedOfferIds.forEach(id=>{
