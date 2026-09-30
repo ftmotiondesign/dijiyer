@@ -11,7 +11,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=43">
-  <link rel="stylesheet" href="admin-advanced.css?v=33">
+  <link rel="stylesheet" href="admin-advanced.css?v=34">
 </head>
 
 <body>
@@ -861,8 +861,9 @@
 
         <div class="media-archive-kpis">
           <article><span>Toplam</span><strong id="mediaArchiveTotal">0</strong></article>
-          <article class="active"><span>Kullanımda</span><strong id="mediaArchiveInUse">0</strong></article>
-          <article class="unused"><span>Kullanılmıyor</span><strong id="mediaArchiveUnused">0</strong></article>
+          <article class="active"><span>Aktif Yayında</span><strong id="mediaArchiveInUse">0</strong></article>
+          <article class="passive"><span>Pasif</span><strong id="mediaArchivePassive">0</strong></article>
+          <article class="unused"><span>Silinmeye Hazır</span><strong id="mediaArchiveUnused">0</strong></article>
           <article><span>Video</span><strong id="mediaArchiveVideo">0</strong></article>
         </div>
 
@@ -875,8 +876,9 @@
           </select>
           <select id="mediaArchiveUsageFilter">
             <option value="all">Tüm durumlar</option>
-            <option value="in_use">Kullanımda</option>
-            <option value="unused">Kullanılmıyor</option>
+            <option value="active">Aktif yayında</option>
+            <option value="passive">Pasif</option>
+            <option value="unused">Silinmeye hazır</option>
           </select>
           <select id="mediaArchiveTypeFilter">
             <option value="all">Görsel + Video</option>
@@ -885,11 +887,34 @@
           </select>
         </div>
 
+        <div class="media-archive-bulk-panel" id="mediaArchiveBulkPanel">
+          <div class="media-archive-bulk-head">
+            <div>
+              <span>SİLME / PASİF YÖNETİMİ</span>
+              <strong>Birden fazla medyayı tek seferde yönetin</strong>
+            </div>
+            <label class="media-archive-select-all">
+              <input type="checkbox" id="mediaArchiveSelectAll">
+              <span>Görünenlerin tümünü seç</span>
+            </label>
+          </div>
+
+          <div class="media-archive-bulk-actions" id="mediaArchiveBulkBar">
+            <div class="media-archive-selected-count">
+              <strong id="mediaArchiveSelectedCount">0</strong>
+              <span>medya seçildi</span>
+            </div>
+            <button type="button" id="mediaArchiveBulkPassive" class="passive" disabled>⏸ Seçilenleri Pasif Yap</button>
+            <button type="button" id="mediaArchiveBulkDelete" class="danger" disabled>🗑 Seçilenleri Arşivden Sil</button>
+            <button type="button" id="mediaArchiveBulkClear" class="ghost" disabled>Seçimi Temizle</button>
+          </div>
+        </div>
+
         <div class="media-archive-help">
           <strong>Nasıl temizlenir?</strong>
           <span>
-            Önce “Kullanımdan Kaldır” ile dosyayı Dijiyer yayınından çıkarın.
-            Sonra gerekirse Cloudinary panelinde aynı <b>Public ID</b> ile dosyayı kalıcı silin.
+            “Pasif Yap” medyayı yayından kaldırır ancak bağlantısını korur. “Arşivden Sil” ise medyayı Dijiyer arşivinden ve bağlı yayın alanlarından kaldırır.
+            Cloudinary dosyasını fiziksel olarak kalıcı silmek isterseniz aynı <b>Public ID</b> ile Cloudinary panelini kullanın.
           </span>
         </div>
 
@@ -2683,7 +2708,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=43"></script>
-  <script src="admin-advanced.js?v=49"></script>
+  <script src="admin-advanced.js?v=50"></script>
 
 </body>
 </html>
