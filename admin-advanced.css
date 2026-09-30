@@ -3947,3 +3947,17 @@
     display:none;
   }
 }
+
+
+/* =========================================================
+   KURUM REKLAMI EKLE · FORM ODAĞI
+   ========================================================= */
+.banner-ad-editor{
+  scroll-margin-top:18px;
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.banner-ad-editor.banner-ad-editor-attention{
+  border-color:#1677ff;
+  box-shadow:0 0 0 4px rgba(22,119,255,.12),0 10px 28px rgba(18,69,126,.10);
+  transform:translateY(-2px);
+}
