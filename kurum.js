@@ -373,7 +373,7 @@ async function loadSimilar(){
   if(institution.isDemo){root.innerHTML='<div class="kp-empty">Benzer kurumlar gerçek kurum verileri geldikçe burada gösterilecek.</div>';return}
   try{
     const snap=await db.collection("institutions").get();
-    const rows=snap.docs.map(doc=>({id:doc.id,...doc.data()})).filter(x=>String(x.id)!==String(institution.id)&&String(x.subCategory||x.category||"")===String(institution.subCategory||institution.category||"")&&(!institution.city||String(x.city||"")===String(institution.city))).slice(0,3);
+    const rows=snap.docs.map(doc=>({id:doc.id,...doc.data()})).filter(x=>String(x.status||"active")!=="passive"&&String(x.id)!==String(institution.id)&&String(x.subCategory||x.category||"")===String(institution.subCategory||institution.category||"")&&(!institution.city||String(x.city||"")===String(institution.city))).slice(0,3);
     root.innerHTML=rows.length?rows.map(x=>{const logo=safeUrl(x.logoUrl);return`<a class="kp-similar-card" href="kurum.html?id=${encodeURIComponent(x.id)}"><span class="kp-similar-logo">${logo?'<img src="'+escapeHtml(logo)+'" alt="">':escapeHtml(x.emoji||"🏢")}</span><span class="kp-similar-copy"><strong>${escapeHtml(x.name||"Kurum")}</strong><span>${escapeHtml([x.city,x.district].filter(Boolean).join(" / "))}</span><b>Profili Gör →</b></span></a>`}).join(""):'<div class="kp-empty">Bu bölgede benzer kurum bulunamadı.</div>';
   }catch(error){console.error(error);root.innerHTML='<div class="kp-empty">Benzer kurumlar yüklenemedi.</div>'}
 }
@@ -516,7 +516,11 @@ async function init(){
   if(!institutionId){showError();return}
   try{
     const doc=await db.collection("institutions").doc(institutionId).get();
-    if(doc.exists){institution={id:doc.id,...doc.data(),isDemo:false};renderProfile();await loadReviews();return}
+    if(doc.exists){
+      const data=doc.data();
+      if(String(data.status||"active")==="passive"){showError();return}
+      institution={id:doc.id,...data,isDemo:false};renderProfile();await loadReviews();return
+    }
   }catch(error){console.error(error)}
   if(demoInstitutions[institutionId]){institution={...demoInstitutions[institutionId]};renderProfile();renderReviews();return}
   showError();
