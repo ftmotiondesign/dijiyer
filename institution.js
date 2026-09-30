@@ -844,11 +844,24 @@ function getInstitutionQuoteQueries() {
   }
 
   if (currentAccount?.institutionId) {
+    const institutionId=String(currentAccount.institutionId);
+
     queries.push(
       collection.where(
         "targetInstitutionId",
         "==",
-        String(currentAccount.institutionId)
+        institutionId
+      )
+    );
+
+    // Yönetim tarafından yanıt gelmediği için bu kuruma yönlendirilen
+    // özel teklif fırsatları. Sadece forwardInstitutionIds içinde kendi
+    // kurum kimliği bulunan kayıtlar gelir.
+    queries.push(
+      collection.where(
+        "forwardInstitutionIds",
+        "array-contains",
+        institutionId
       )
     );
   }
