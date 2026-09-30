@@ -4885,3 +4885,41 @@ button{
     grid-template-columns:1fr;
   }
 }
+
+
+/* ===== KURUM KARTI AD GÖRÜNÜRLÜĞÜ DÜZELTMESİ ===== */
+.institution-compact-head{
+  grid-template-columns:auto minmax(0,1fr)!important;
+}
+
+.institution-compact-head > .manage-title{
+  grid-column:2;
+  min-width:0;
+}
+
+.institution-compact-head > .manage-actions.compact{
+  grid-column:2;
+  grid-row:auto;
+  width:100%;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+
+.institution-manage-card .institution-name-row{
+  width:100%;
+}
+
+.institution-manage-card .institution-name-row h3{
+  flex:1 1 auto;
+  min-width:160px;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:break-word;
+}
+
+@media(max-width:700px){
+  .institution-manage-card .institution-name-row h3{
+    min-width:120px;
+  }
+}
