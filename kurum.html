@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-  <link rel="stylesheet" href="kurum.css?v=5">
+  <link rel="stylesheet" href="kurum.css?v=6">
   <link rel="stylesheet" href="kurum-premium.css?v=6">
 </head>
 <body>
@@ -55,16 +55,18 @@
 
   <div id="directQuoteModal" class="kp-modal hidden">
     <div class="kp-modal-card kp-direct-card">
-      <button type="button" id="directQuoteClose" class="kp-modal-close">×</button>
+      <button type="button" id="directQuoteClose" class="kp-modal-close" aria-label="Kapat">×</button>
 
       <div id="directQuoteFormView">
-        <span class="eyebrow">DOĞRUDAN KURUMA TEKLİF İSTEĞİ</span>
-        <h2 id="directQuoteTitle">Bu kurumdan teklif al</h2>
+        <span class="eyebrow">BU KURUMDAN FİYAT AL</span>
+        <h2 id="directQuoteTitle">Teklif isteğinizi gönderin</h2>
+        <p class="kp-direct-intro">Kısa formu doldurun. Talebiniz başka kurumlara açılmadan yalnızca seçtiğiniz kuruma iletilir.</p>
 
         <div class="kp-direct-target">
-          <span class="kp-direct-target-icon">🏢</span>
+          <span class="kp-direct-target-icon" id="directQuoteInstitutionIcon">🏢</span>
           <div>
             <strong id="directQuoteInstitutionName">Kurum</strong>
+            <small id="directQuoteInstitutionLocation">Konum bilgisi</small>
             <small>Talebiniz yalnızca bu kuruma gönderilecek.</small>
           </div>
           <span class="kp-direct-only">1 Kurum</span>
@@ -72,35 +74,43 @@
 
         <form id="directQuoteForm" class="kp-direct-form">
           <label>
-            <span>Talep / Hizmet</span>
-            <input id="directQuoteService" type="text" maxlength="120" required placeholder="Hangi hizmet için fiyat istiyorsunuz?">
+            <span>Ne için fiyat almak istiyorsunuz?</span>
+            <select id="directQuoteService" required>
+              <option value="">Talep konusu seçin</option>
+            </select>
+            <small class="kp-field-help">Kurumun hizmet alanına göre uygun seçenekler gösterilir.</small>
+          </label>
+
+          <label>
+            <span>Talebinizi kısaca anlatın <small>(isteğe bağlı)</small></span>
+            <textarea id="directQuoteNote" rows="4" maxlength="1000" placeholder="Örn. kayıt dönemi, paket detayı, tarih, özel isteğiniz..."></textarea>
           </label>
 
           <div class="kp-direct-two">
             <label>
               <span>Ad Soyad</span>
-              <input id="directQuoteName" type="text" maxlength="100" required placeholder="Adınız">
+              <input id="directQuoteName" type="text" maxlength="100" required autocomplete="name" placeholder="Adınız ve soyadınız">
             </label>
             <label>
               <span>Telefon</span>
-              <input id="directQuotePhone" type="tel" maxlength="20" required placeholder="05xx xxx xx xx">
+              <input id="directQuotePhone" type="tel" maxlength="20" required autocomplete="tel" placeholder="05xx xxx xx xx">
             </label>
           </div>
 
           <label>
-            <span>Talep Detayı <small>(isteğe bağlı)</small></span>
-            <textarea id="directQuoteNote" rows="4" maxlength="1000" placeholder="İhtiyacınızı, istediğiniz hizmeti veya özel notunuzu yazın..."></textarea>
+            <span>E-posta <small>(isteğe bağlı)</small></span>
+            <input id="directQuoteEmail" type="email" maxlength="160" autocomplete="email" placeholder="ornek@email.com">
           </label>
 
           <div class="kp-direct-assurance">
             <span>✓</span>
             <div>
               <strong>Doğrudan bu kuruma gider</strong>
-              <small>Talebiniz toplu teklif havuzuna gönderilmez.</small>
+              <small>Toplu teklif havuzuna gönderilmez. Kurum yanıt verdiğinde teklif takip ekranından görebilirsiniz.</small>
             </div>
           </div>
 
-          <button type="submit" class="kp-submit" id="directQuoteSubmit">Teklif İsteğini Gönder</button>
+          <button type="submit" class="kp-submit" id="directQuoteSubmit">Bu Kurumdan Teklif İste</button>
           <p id="directQuoteMessage" class="kp-form-message"></p>
         </form>
       </div>
@@ -145,7 +155,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-  <script src="kurum.js?v=9"></script>
+  <script src="kurum.js?v=10"></script>
   <script src="kurum-premium.js?v=7"></script>
 </body>
 </html>
