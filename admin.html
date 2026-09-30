@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=44">
+  <link rel="stylesheet" href="admin.css?v=45">
   <link rel="stylesheet" href="admin-advanced.css?v=36">
 </head>
 
@@ -173,6 +173,7 @@
         <button class="admin-tab active" id="overviewTabBtn" data-admin-group="overview">Genel Bakış</button>
 
         <button class="admin-tab" id="quotesTabBtn" data-admin-group="quotes">Talepler</button>
+        <button class="admin-tab" id="quoteRoutingTabBtn" data-admin-group="quotes">⚡ Teklif Dağıtım <span id="quoteRoutingTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="issuesTabBtn" data-admin-group="quotes">Sorunlar <span id="issueTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="offerReportTabBtn" data-admin-group="quotes">Teklif Raporu</button>
 
@@ -2112,6 +2113,96 @@
         <div id="quoteRequestsList"></div>
       </section>
 
+      <section id="quoteRoutingSection" class="quote-routing-section" hidden>
+        <div class="quote-routing-head">
+          <div>
+            <span class="quote-management-eyebrow">TEKLİF DAĞITIM MERKEZİ</span>
+            <h3>Yanıtsız Özel Teklifleri Dağıt</h3>
+            <p>Bir kuruma özel gelen talep cevaplanmazsa, aynı bölge ve sektördeki diğer kurumlara kontrollü olarak yönlendirin.</p>
+          </div>
+          <button type="button" id="quoteRoutingRefreshBtn" class="quote-refresh-btn"><span>↻</span> Yenile</button>
+        </div>
+
+        <div class="quote-routing-policy">
+          <div class="quote-routing-policy-step priority-vip">
+            <b>1</b>
+            <span><strong>VIP Kurumlar</strong><small>İlk erişim önceliği</small></span>
+          </div>
+          <div class="quote-routing-policy-arrow">→</div>
+          <div class="quote-routing-policy-step priority-ad">
+            <b>2</b>
+            <span><strong>Reklam Verenler</strong><small>İkinci erişim önceliği</small></span>
+          </div>
+          <div class="quote-routing-policy-arrow">→</div>
+          <div class="quote-routing-policy-step priority-standard">
+            <b>3</b>
+            <span><strong>Diğer Kurumlar</strong><small>Sonraki erişim grubu</small></span>
+          </div>
+        </div>
+
+        <div class="quote-routing-kpis">
+          <article><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Belirlenen süreyi aşan yanıtsız özel talepler</small></article>
+          <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong><small>Uygun VIP kurum sayısı</small></article>
+          <article><span>Reklam Veren Aday</span><strong id="quoteRoutingAdCount">0</strong><small>Uygun reklam veren kurum sayısı</small></article>
+          <article><span>Dağıtılmış Talep</span><strong id="quoteRoutingForwardedCount">0</strong><small>Daha önce başka kurumlara iletilenler</small></article>
+        </div>
+
+        <div class="quote-routing-toolbar">
+          <label>
+            <span>Yanıt bekleme süresi</span>
+            <select id="quoteRoutingWaitMinutes">
+              <option value="15">15 dakika</option>
+              <option value="30" selected>30 dakika</option>
+              <option value="60">1 saat</option>
+              <option value="180">3 saat</option>
+              <option value="360">6 saat</option>
+              <option value="1440">24 saat</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Bölge kapsamı</span>
+            <select id="quoteRoutingAreaMode">
+              <option value="district" selected>Önce aynı ilçe, yoksa aynı şehir</option>
+              <option value="city">Aynı şehir</option>
+            </select>
+          </label>
+
+          <label class="quote-routing-search">
+            <span>Ara</span>
+            <input type="search" id="quoteRoutingSearch" placeholder="Müşteri, kurum, şehir veya hizmet...">
+          </label>
+        </div>
+
+        <div class="lead-package-admin">
+          <div class="lead-package-admin-head">
+            <div>
+              <span>GELİR MODELİ</span>
+              <h4>Teklif Kredisi Paketleri</h4>
+              <p>1 yönlendirilmiş müşteri fırsatını 1 teklif kredisi olarak paketleyebilirsiniz. Ödeme işlemini şimdilik Dijiyer dışında/fatura ile takip edebilirsiniz.</p>
+            </div>
+            <button type="button" id="leadPackageSaveBtn">Paketleri Kaydet</button>
+          </div>
+
+          <div class="lead-package-grid">
+            <label><span>Tekli Fırsat</span><input type="number" min="0" step="1" id="leadPriceSingle" placeholder="₺"></label>
+            <label><span>10 Kredi</span><input type="number" min="0" step="1" id="leadPrice10" placeholder="₺"></label>
+            <label><span>25 Kredi</span><input type="number" min="0" step="1" id="leadPrice25" placeholder="₺"></label>
+            <label><span>50 Kredi</span><input type="number" min="0" step="1" id="leadPrice50" placeholder="₺"></label>
+          </div>
+          <p id="leadPackageMessage" class="lead-package-message"></p>
+        </div>
+
+        <div class="quote-routing-note">
+          <strong>Nasıl çalışır?</strong>
+          <span>Özel talep önce hedef kuruma gider. Hedef kurum cevap vermezse yönetim bu ekrandan aynı kategori ve bölgedeki kurumları öncelik sırasıyla seçer. Müşterinin talebi silinmez; yalnızca seçilen kurumlara görüntüleme ve teklif verme yetkisi açılır.</span>
+        </div>
+
+        <div id="quoteRoutingList" class="quote-routing-list">
+          <div class="empty-state">Dağıtım bekleyen talepler yükleniyor...</div>
+        </div>
+      </section>
+
       <section id="offerReportSection" hidden>
         <div class="section-title offer-report-title-row">
           <div>
@@ -2724,7 +2815,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=44"></script>
+<script src="admin.js?v=45"></script>
   <script src="admin-advanced.js?v=51"></script>
 
 </body>
