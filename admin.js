@@ -1840,6 +1840,12 @@ quoteRoutingTabBtn?.addEventListener("click", async () => {
 
   if (!institutionRecords.length) await loadInstitutions();
   await loadQuoteRequests();
+  await loadSecondOfferFallbackDetails();
+  try{
+    await syncSecondOfferInvitesFallback();
+  }catch(error){
+    console.warn("2. teklif yedek senkronizasyonu tamamlanamadı:",error);
+  }
   await loadLeadRoutingSettings();
   await reconcileLeadCreditUsage();
   await loadLeadCreditData();
@@ -4413,6 +4419,31 @@ async function syncSecondOfferInvitesFallback(){
   return created;
 }
 
+async function loadSecondOfferFallbackDetails(){
+  const candidates=quoteRequestRecords.filter(request=>{
+    if(secondOfferFallbackQuoteClosed(request))return false;
+    return (Array.isArray(request.liveOffers)?request.liveOffers:[])
+      .some(offer=>Math.max(1,Number(offer.offerVersion||1))===1);
+  });
+
+  await Promise.all(candidates.map(async request=>{
+    const quoteRef=db.collection("quoteRequests").doc(String(request.id));
+    try{
+      const [engagementSnap,inviteSnap]=await Promise.all([
+        quoteRef.collection("engagement").get(),
+        quoteRef.collection("secondOfferInvites").get()
+      ]);
+
+      request.liveEngagement=engagementSnap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      request.secondOfferInvites=inviteSnap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    }catch(error){
+      console.warn("2. teklif yedek detayları okunamadı:",request.id,error);
+      request.liveEngagement=request.liveEngagement||[];
+      request.secondOfferInvites=request.secondOfferInvites||[];
+    }
+  }));
+}
+
 function quoteRoutingDirectRequest(request){
   return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
 }
@@ -5747,6 +5778,12 @@ quoteRoutingSettingsCloseBtn?.addEventListener("click",()=>{
 quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
   if(!institutionRecords.length)await loadInstitutions();
   await loadQuoteRequests({force:true});
+  await loadSecondOfferFallbackDetails();
+  try{
+    await syncSecondOfferInvitesFallback();
+  }catch(error){
+    console.warn("2. teklif yedek senkronizasyonu tamamlanamadı:",error);
+  }
   await reconcileLeadCreditUsage();
   await loadLeadCreditData();
   renderQuoteRoutingAdmin();
@@ -5808,35 +5845,21 @@ async function loadQuoteRequests(options={}) {
         const quoteRef = db.collection("quoteRequests").doc(request.id);
 
         try {
-          const [offersSnapshot, lockSnapshot, issuesSnapshot, engagementSnapshot, secondOfferInviteSnapshot] = await Promise.all([
+          const [offersSnapshot, lockSnapshot, issuesSnapshot] = await Promise.all([
             quoteRef.collection("offers").get(),
             quoteRef.collection("locks").doc("main").get(),
-            quoteRef.collection("offerIssues").get(),
-            quoteRef.collection("engagement").get().catch(error=>{
-              console.warn("Teklif engagement özeti okunamadı:",request.id,error);
-              return null;
-            }),
-            quoteRef.collection("secondOfferInvites").get().catch(error=>{
-              console.warn("2. teklif davetleri henüz okunamıyor:",request.id,error);
-              return null;
-            })
+            quoteRef.collection("offerIssues").get()
           ]);
 
           const liveIssues = issuesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          const liveEngagement = engagementSnapshot
-            ? engagementSnapshot.docs.map(doc=>({id:doc.id,...doc.data()}))
-            : [];
-          const secondOfferInvites = secondOfferInviteSnapshot
-            ? secondOfferInviteSnapshot.docs.map(doc=>({id:doc.id,...doc.data()}))
-            : [];
 
           const enriched = {
             ...request,
             liveOffers: offersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
             liveLock: lockSnapshot.exists ? lockSnapshot.data() : null,
             liveIssues,
-            liveEngagement,
-            secondOfferInvites,
+            liveEngagement: [],
+            secondOfferInvites: [],
             issueCount: liveIssues.length
           };
 
@@ -5861,12 +5884,6 @@ async function loadQuoteRequests(options={}) {
     );
 
     adminQuoteRequestsLoadedAt=Date.now();
-
-    try{
-      await syncSecondOfferInvitesFallback();
-    }catch(error){
-      console.warn("2. teklif ücretsiz-plan yedek senkronizasyonu tamamlanamadı:",error);
-    }
 
     updateQuoteDashboardStats();
     renderQuoteRequests();
