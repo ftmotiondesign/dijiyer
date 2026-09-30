@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=19">
+  <link rel="stylesheet" href="admin-advanced.css?v=20">
 </head>
 
 <body>
@@ -125,6 +125,7 @@
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 Fırsat Sayfası <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="mediaArchiveTabBtn" data-admin-group="ads">🗂 Medya Arşivi <span id="mediaArchiveTabCount" class="admin-tab-count">0</span></button>
                 <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads">🌐 Harici Reklamlar <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
 <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
@@ -622,6 +623,69 @@
 
         <div id="opportunitySponsorList" class="opportunity-sponsor-list">
           <div class="advanced-empty">Kurumlar yükleniyor...</div>
+        </div>
+      </section>
+
+
+      <section id="mediaArchiveSection" hidden>
+        <div class="section-title banner-admin-title">
+          <div>
+            <h3>🗂 Medya Arşivi</h3>
+            <p id="mediaArchiveCount">Medya kayıtları hazırlanıyor...</p>
+          </div>
+        </div>
+
+        <div class="media-archive-security-note">
+          <div>
+            <span>🔒</span>
+            <p>
+              <strong>Güvenli silme yapısı</strong>
+              <small>
+                Buradan medyayı Fırsat veya Banner yayınından kaldırabilirsiniz.
+                Cloudinary dosyasını fiziksel olarak kalıcı silmek için API Secret tarayıcıya konmaz;
+                bu nedenle kalıcı dosya silme Cloudinary Media Library üzerinden yapılır.
+              </small>
+            </p>
+          </div>
+          <a href="https://console.cloudinary.com/" target="_blank" rel="noopener">Cloudinary Panelini Aç</a>
+        </div>
+
+        <div class="media-archive-kpis">
+          <article><span>Toplam</span><strong id="mediaArchiveTotal">0</strong></article>
+          <article class="active"><span>Kullanımda</span><strong id="mediaArchiveInUse">0</strong></article>
+          <article class="unused"><span>Kullanılmıyor</span><strong id="mediaArchiveUnused">0</strong></article>
+          <article><span>Video</span><strong id="mediaArchiveVideo">0</strong></article>
+        </div>
+
+        <div class="media-archive-toolbar">
+          <input type="search" id="mediaArchiveSearch" placeholder="Kurum, dosya veya kaynak ara...">
+          <select id="mediaArchiveSourceFilter">
+            <option value="all">Tüm kaynaklar</option>
+            <option value="opportunity">Fırsat sayfası</option>
+            <option value="banner">Banner reklam</option>
+          </select>
+          <select id="mediaArchiveUsageFilter">
+            <option value="all">Tüm durumlar</option>
+            <option value="in_use">Kullanımda</option>
+            <option value="unused">Kullanılmıyor</option>
+          </select>
+          <select id="mediaArchiveTypeFilter">
+            <option value="all">Görsel + Video</option>
+            <option value="image">Görseller</option>
+            <option value="video">Videolar</option>
+          </select>
+        </div>
+
+        <div class="media-archive-help">
+          <strong>Nasıl temizlenir?</strong>
+          <span>
+            Önce “Kullanımdan Kaldır” ile dosyayı Dijiyer yayınından çıkarın.
+            Sonra gerekirse Cloudinary panelinde aynı <b>Public ID</b> ile dosyayı kalıcı silin.
+          </span>
+        </div>
+
+        <div id="mediaArchiveList" class="media-archive-list">
+          <div class="advanced-empty">Medya kayıtları yükleniyor...</div>
         </div>
       </section>
 
@@ -1886,8 +1950,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=54"></script>
-  <script src="admin-advanced.js?v=30"></script>
+<script src="admin.js?v=55"></script>
+  <script src="admin-advanced.js?v=31"></script>
 
 </body>
 </html>
