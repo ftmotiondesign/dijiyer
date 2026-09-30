@@ -510,6 +510,13 @@ function renderLiveTracking(){
 function startLiveTracking(access){
   stopLiveTracking();
 
+  offerListenerInitialized=false;
+  engagementListenerInitialized=false;
+  offerUpdateVersions.clear();
+  engagementResponseVersions.clear();
+  newlyArrivedOfferIds.clear();
+  latestNewOfferNotice=null;
+
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
 
   stopOffersListener=quoteRef.collection("offers").onSnapshot(
@@ -518,8 +525,48 @@ function startLiveTracking(access){
 
       if(offerListenerInitialized){
         snapshot.docChanges().forEach(change=>{
-          if(change.type!=="modified")return;
           const offer={id:change.doc.id,...change.doc.data()};
+
+          if(change.type==="added"){
+            const offerId=String(change.doc.id);
+            newlyArrivedOfferIds.add(offerId);
+            latestNewOfferNotice={
+              id:offerId,
+              institutionName:offer.institutionName||"Kurum",
+              price:Number(offer.price||0),
+              at:Date.now()
+            };
+
+            toast(
+              "🔔 Yeni teklif geldi · "+
+              (offer.institutionName||"Kurum")+
+              " · "+
+              money(offer.price)
+            );
+
+            try{
+              if("Notification" in window && Notification.permission==="granted" && document.hidden){
+                new Notification("Dijiyer · Yeni teklif geldi",{
+                  body:(offer.institutionName||"Kurum")+" · "+money(offer.price),
+                  tag:"dijiyer-new-offer-"+offerId
+                });
+              }
+            }catch(_){}
+
+            setTimeout(()=>{
+              newlyArrivedOfferIds.delete(offerId);
+              if(latestNewOfferNotice?.id===offerId){
+                latestNewOfferNotice=null;
+              }
+              if(currentAccess?.quoteId===access.quoteId){
+                renderLiveTracking();
+              }
+            },30000);
+            return;
+          }
+
+          if(change.type!=="modified")return;
+
           const previousVersion=offerUpdateVersions.get(change.doc.id)||"";
           const nextVersion=String(offer.updatedAt||"");
 
