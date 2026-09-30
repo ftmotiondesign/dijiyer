@@ -5,7 +5,7 @@ Set-Location $PSScriptRoot
 Write-Host ""
 Write-Host "Dijiyer Firebase cekirdek yayin basliyor..." -ForegroundColor Cyan
 
-if (-not (Get-Command firebase -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command firebase.cmd -ErrorAction SilentlyContinue)) {
   throw "Firebase CLI bulunamadi. Once: npm install -g firebase-tools"
 }
 
@@ -23,7 +23,7 @@ if ($LASTEXITCODE -ne 0) {
 Pop-Location
 
 Write-Host "2/3 Firestore Rules ve Cloud Functions yayinlaniyor..." -ForegroundColor Yellow
-firebase deploy --only firestore:rules,functions
+firebase.cmd deploy --only firestore:rules,functions
 if ($LASTEXITCODE -ne 0) {
   throw "Firebase deploy basarisiz oldu. Cikis kodu: $LASTEXITCODE"
 }
