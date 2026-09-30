@@ -3819,7 +3819,7 @@ function renderQuoteRoutingAdmin(){
         quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id,canForward)+
       '</div>'+
       '<div class="quote-routing-card-actions">'+
-        '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talebi Aç</button>'+
+        '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talep Detayı</button>'+
         (totalForwarded>0 && !request.liveLock
           ? '<button type="button" class="quote-routing-test-offer-btn" data-routing-test-offer="'+escapeHtml(request.id)+'">🧪 Test Teklifi Gönder</button>'
           : '')+
@@ -4380,7 +4380,7 @@ function renderLeadCreditAdmin(){
         '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
         '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
         (quoteId
-          ? '<button type="button" class="lead-credit-open-quote" data-credit-quote-id="'+escapeHtml(quoteId)+'">Talebi Aç</button>'
+          ? '<button type="button" class="lead-credit-open-quote" data-credit-quote-id="'+escapeHtml(quoteId)+'">Talep Detayı</button>'
           : '')+
       '</div>';
     }).join(""):'<div class="empty-state">Henüz kredi hareketi yok.</div>';
