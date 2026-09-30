@@ -2897,3 +2897,78 @@
     flex:1 1 calc(50% - 4px)
   }
 }
+
+
+/* =========================================================
+   FIRSAT SPONSOR CRUD · YENİ / DÜZENLE / SİL
+   ========================================================= */
+.opportunity-title-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.opportunity-add-sponsor-btn{
+  min-height:40px;
+  padding:0 14px;
+  border:0;
+  border-radius:9px;
+  background:#1677ff;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(22,119,255,.16);
+}
+.opportunity-add-sponsor-btn:hover{
+  background:#0f68e8;
+}
+.opportunity-institution-chooser{
+  margin:14px 0 4px;
+  padding:12px;
+  border:1px solid #dbe7f6;
+  border-radius:12px;
+  background:#f7fbff;
+}
+.opportunity-institution-chooser.hidden{
+  display:none;
+}
+.opportunity-institution-chooser label{
+  display:grid;
+  gap:6px;
+}
+.opportunity-institution-chooser label>span{
+  color:#28415f;
+  font-size:10px;
+  font-weight:900;
+}
+.opportunity-institution-chooser select{
+  width:100%;
+  min-height:42px;
+  padding:0 10px;
+  border:1px solid #cedbea;
+  border-radius:9px;
+  background:#fff;
+  color:#24364d;
+  outline:none;
+}
+.opportunity-institution-chooser small{
+  color:#718096;
+  font-size:8px;
+  line-height:1.4;
+}
+
+@media(max-width:720px){
+  .banner-admin-title{
+    align-items:flex-start;
+    gap:10px;
+  }
+  .opportunity-title-actions{
+    width:100%;
+  }
+  .opportunity-add-sponsor-btn,
+  .opportunity-title-actions .opportunity-page-preview-link{
+    flex:1;
+    min-width:0;
+  }
+}
