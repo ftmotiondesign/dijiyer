@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=61">
+  <link rel="stylesheet" href="admin.css?v=62">
   <link rel="stylesheet" href="admin-advanced.css?v=46">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -170,6 +170,9 @@
         <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions">
           <span>Kurumlar</span>
         </a>
+        <a href="admin.html#kategoriler" class="admin-main-nav-btn" data-admin-main="categories">
+          <span>Kategoriler</span>
+        </a>
         <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business">
           <span>İş &amp; Ticaret</span>
         </a>
@@ -193,6 +196,8 @@
         <a href="admin.html#basvurular" class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</a>
         <a href="admin.html#hesaplar" class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</a>
         <a href="admin.html#bulunamayan-aramalar" class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></a>
+
+        <a href="admin.html#kategoriler" class="admin-tab" id="categoriesTabBtn" data-admin-group="categories">Kategoriler</a>
 
         <a href="admin.html#is-ticaret" class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></a>
 
@@ -562,6 +567,38 @@
             </div>
             <div id="overviewCityList" class="overview-city-list"></div>
           </section>
+        </div>
+      </section>
+
+      <section id="categoriesSection" class="categories-admin-section" hidden>
+        <div class="section-title categories-admin-title">
+          <div>
+            <span class="categories-admin-eyebrow">SEKTÖR & KATEGORİ YÖNETİMİ</span>
+            <h3>Kategoriler</h3>
+            <p>Ana sektörleri ve alt kategorileri aktif / pasif yapın. Pasif yapılan kategori daha sonra kullanıcı tarafındaki seçimlerden gizlenebilir.</p>
+          </div>
+          <button type="button" id="categoriesRefreshBtn" class="overview-refresh-btn">Yenile</button>
+        </div>
+
+        <div class="categories-admin-summary">
+          <article><span>Ana Kategori</span><strong id="categoryMainTotal">0</strong></article>
+          <article class="active"><span>Aktif Ana Kategori</span><strong id="categoryMainActive">0</strong></article>
+          <article><span>Alt Kategori</span><strong id="categorySubTotal">0</strong></article>
+          <article class="active"><span>Aktif Alt Kategori</span><strong id="categorySubActive">0</strong></article>
+        </div>
+
+        <div class="categories-admin-toolbar">
+          <input type="search" id="categoryAdminSearch" placeholder="Kategori veya alt kategori ara...">
+          <select id="categoryAdminFilter">
+            <option value="all">Tümü</option>
+            <option value="active">Sadece aktif</option>
+            <option value="passive">Sadece pasif</option>
+          </select>
+        </div>
+
+        <div id="categoryAdminMessage" class="categories-admin-message"></div>
+        <div id="categoryAdminList" class="categories-admin-list">
+          <div class="empty-state">Kategoriler hazırlanıyor...</div>
         </div>
       </section>
 
@@ -3391,8 +3428,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=66"></script>
-  <script src="admin-advanced.js?v=56"></script>
+<script src="admin.js?v=67"></script>
+  <script src="admin-advanced.js?v=57"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
 </body>
