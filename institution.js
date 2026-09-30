@@ -899,6 +899,18 @@ function getInstitutionQuoteQueries() {
       )
     );
 
+    // Müşteri bu kurumun teklifini kabul ettiğinde talep artık doğrudan
+    // acceptedInstitutionId üzerinden de kuruma bağlıdır. Kategori/şehir
+    // veya yönlendirme bilgisi sonradan değişse bile kabul edilen kayıt
+    // kurum panelinde kaybolmamalıdır.
+    queries.push(
+      collection.where(
+        "acceptedInstitutionId",
+        "==",
+        institutionId
+      )
+    );
+
     // Yönetim tarafından yanıt gelmediği için bu kuruma yönlendirilen
     // özel teklif fırsatları. Sadece forwardInstitutionIds içinde kendi
     // kurum kimliği bulunan kayıtlar gelir.
@@ -959,7 +971,9 @@ function quoteMatchesInstitutionArea(quote) {
 }
 
 function startLiveQuoteWatcher() {
-  if (!currentInstitution || !currentInstitution.category || !currentInstitution.city) return;
+  // Doğrudan, yönlendirilmiş ve kabul edilmiş teklifler kategori/şehir
+  // bilgisi eksik olsa bile kurum kimliği üzerinden canlı izlenebilmelidir.
+  if (!currentInstitution || !currentAccount?.institutionId) return;
 
   if (liveQuoteUnsubscribe) {
     liveQuoteUnsubscribe();
@@ -1075,7 +1089,12 @@ document.getElementById("persistentNewRequestBtn")?.addEventListener("click", ()
   if (typeof syncQuoteShortcutActive === "function") syncQuoteShortcutActive();
   renderQuotes();
 });
-document.getElementById("openVerifyBtn")?.addEventListener("click", () => setPanelTab("verify"));
+document.getElementById("openVerifyBtn")?.addEventListener("click", () => {
+  if (quotePanelFilter) quotePanelFilter.value = "locked";
+  setPanelTab("quotes");
+  if (typeof syncQuoteShortcutActive === "function") syncQuoteShortcutActive();
+  if (typeof renderQuotes === "function") renderQuotes();
+});
 document.getElementById("completeProfileBtn")?.addEventListener("click", () => setPanelTab("profile"));
 
 document.getElementById("profileVisualShortcut")?.addEventListener("click", () => {
