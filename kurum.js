@@ -42,7 +42,9 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
     status:"active",
     createdAt:new Date().toISOString(),
     targetInstitutionId:String(request.targetInstitutionId||institution?.id||""),
-    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum")
+    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum"),
+    requestType:"direct",
+    email:String(request.email||"")
   });
   return {trackingCode,trackingUrl:url,normalizedPhone};
 }
@@ -468,17 +470,20 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
 
   const mainCategory=String(institution.mainCategory||"diger");
   const subCategory=String(institution.subCategory||institution.category||"diger");
+  const institutionCategory=String(institution.category||institution.subCategory||"diger");
   const request={
     mainCategory,
     subCategory,
-    category:subCategory,
+    category:institutionCategory,
     service,
-    city:"__direct__",
-    district:"",
+    city:String(institution.city||""),
+    district:String(institution.district||""),
     name,
     phone,
+    email,
     note,
     status:"new",
+    requestType:"direct",
     date:new Date().toISOString(),
     targetInstitutionId:String(institution.id),
     targetInstitutionName:String(institution.name||"Kurum")
@@ -544,9 +549,11 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   }catch(error){
     console.error("Doğrudan teklif talebi gönderilemedi:",error);
     const errorCode=String(error?.code||"unknown");
-    message.textContent=errorCode.includes("permission-denied")
-      ?"Teklif gönderilemedi (permission-denied)."
+    const errorText=errorCode.includes("permission-denied")
+      ?"Teklif gönderilemedi (permission-denied). Firestore kuralını kontrol edin."
       :"Teklif gönderilemedi ("+errorCode+"). Lütfen tekrar deneyin.";
+    message.textContent=errorText;
+    showToast(errorText);
   }finally{
     submit.disabled=false;
     submit.textContent=oldText;
