@@ -140,6 +140,13 @@
     line-height:1;
   }
 
+  .dijiyer-global-brand-mark img{
+    width:34px;
+    height:34px;
+    object-fit:contain;
+    display:block;
+  }
+
   .dijiyer-global-brand-copy{
     min-width:0;
     display:grid;
