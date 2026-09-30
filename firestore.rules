@@ -696,6 +696,9 @@ service cloud.firestore {
           'vatStatus',
           'scope',
           'extraFee',
+          'extraFeeAmount',
+          'extraFeeRequired',
+          'extraFeeNote',
           'conditions',
           'expiresAt',
           'expiresAtTs',
@@ -721,6 +724,23 @@ service cloud.firestore {
         && request.resource.data.status == 'offered'
         && request.resource.data.validityHours is number
         && request.resource.data.validityHours > 0
+        && request.resource.data.extraFeeAmount is number
+        && request.resource.data.extraFeeAmount >= 0
+        && request.resource.data.extraFeeRequired is string
+        && request.resource.data.extraFeeNote is string
+        && (
+          request.resource.data.extraFee == 'Yok'
+          ||
+          (
+            request.resource.data.extraFee == 'Var'
+            && request.resource.data.extraFeeAmount > 0
+            && (
+              request.resource.data.extraFeeRequired == 'Zorunlu'
+              || request.resource.data.extraFeeRequired == 'Opsiyonel'
+            )
+            && request.resource.data.extraFeeNote.size() > 0
+          )
+        )
         && request.resource.data.registrationRequired == true
         && request.resource.data.platformPayment == false
         && request.resource.data.paymentPolicy
@@ -755,6 +775,9 @@ service cloud.firestore {
               'vatStatus',
               'scope',
               'extraFee',
+              'extraFeeAmount',
+              'extraFeeRequired',
+              'extraFeeNote',
               'conditions',
               'expiresAt',
               'expiresAtTs',
@@ -769,6 +792,23 @@ service cloud.firestore {
               'secondOfferSentAt',
               'updatedAt'
             ])
+        && request.resource.data.extraFeeAmount is number
+        && request.resource.data.extraFeeAmount >= 0
+        && request.resource.data.extraFeeRequired is string
+        && request.resource.data.extraFeeNote is string
+        && (
+          request.resource.data.extraFee == 'Yok'
+          ||
+          (
+            request.resource.data.extraFee == 'Var'
+            && request.resource.data.extraFeeAmount > 0
+            && (
+              request.resource.data.extraFeeRequired == 'Zorunlu'
+              || request.resource.data.extraFeeRequired == 'Opsiyonel'
+            )
+            && request.resource.data.extraFeeNote.size() > 0
+          )
+        )
         && request.resource.data.registrationRequired == true
         && request.resource.data.platformPayment == false
         && request.resource.data.paymentPolicy
@@ -903,6 +943,9 @@ service cloud.firestore {
           && request.resource.data.version >= 1
           && request.resource.data.price is number
           && request.resource.data.price > 0
+          && request.resource.data.extraFeeAmount is number
+          && request.resource.data.extraFeeRequired is string
+          && request.resource.data.extraFeeNote is string
           && request.resource.data.offerCode is string
           && request.resource.data.offerCode.size() > 0
           && request.resource.data.archivedAt is string
@@ -996,6 +1039,9 @@ service cloud.firestore {
           'lockedScope',
           'conditions',
           'extraFee',
+          'extraFeeAmount',
+          'extraFeeRequired',
+          'extraFeeNote',
           'offerCreatedAt',
           'offerUpdatedAt',
           'offerVersion',
@@ -1075,6 +1121,18 @@ service cloud.firestore {
             == get(
               /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
             ).data.extraFee
+        && request.resource.data.extraFeeAmount
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.get('extraFeeAmount', 0)
+        && request.resource.data.extraFeeRequired
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.get('extraFeeRequired', '')
+        && request.resource.data.extraFeeNote
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.get('extraFeeNote', '')
         && request.resource.data.offerCreatedAt
             == get(
               /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
