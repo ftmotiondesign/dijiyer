@@ -5618,7 +5618,7 @@ function renderQuoteRequests() {
       return raw;
     };
 
-    const requestCategory = normalizeCategory(request.category);
+    const requestCategory = normalizeCategory(request.subCategory || request.category);
     const requestCity = normalizeText(request.city);
     const requestDistrict = normalizeText(request.district);
 
@@ -5627,7 +5627,7 @@ function renderQuoteRequests() {
     );
 
     const categoryMatches = activeInstitutions.filter(inst =>
-      normalizeCategory(inst.category) === requestCategory
+      normalizeCategory(inst.subCategory || inst.category) === requestCategory
     );
 
     const exactDistrictMatches = categoryMatches.filter(inst =>
@@ -5695,7 +5695,7 @@ function renderQuoteRequests() {
     );
 
     const sameCategoryAll = institutionRecords.filter(inst =>
-      normalizeCategory(inst.category) === requestCategory
+      normalizeCategory(inst.subCategory || inst.category) === requestCategory
     );
 
     const diagnosticMap = new Map();
@@ -5711,7 +5711,7 @@ function renderQuoteRequests() {
         reason = "Teklif alımı kapalı";
       } else if (sameCity && !sameCategory) {
         reason = "Kategori farklı: " +
-          (categoryLabels[normalizeCategory(inst.category)] || inst.category || "Belirsiz");
+          (categoryLabels[normalizeCategory(inst.subCategory || inst.category)] || inst.subCategory || inst.category || "Belirsiz");
       } else if (!sameCity && sameCategory) {
         reason = "Şehir farklı: " +
           ([inst.city, inst.district].filter(Boolean).join(" / ") || "Belirsiz");
