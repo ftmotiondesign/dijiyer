@@ -6026,6 +6026,124 @@ function adminQuoteForwardedHtml(request,offers){
   }).join("")+'</div>';
 }
 
+function adminQuoteDistributionStatus(request,offers,forwardedRows,lock){
+  const rows=Array.isArray(forwardedRows)?forwardedRows:[];
+  const allOffers=Array.isArray(offers)?offers:[];
+  const targetId=String(request?.targetInstitutionId||"");
+  const targetOffer=targetId
+    ? allOffers.find(item=>String(item.institutionId||item.id||"")===targetId)
+    : null;
+  const routedOfferCount=rows.filter(row=>Boolean(row.offer)).length;
+
+  if(!targetId){
+    return {
+      cls:"bulk",
+      icon:"↔",
+      title:"Toplu teklif talebi",
+      text:"Bu talep tek bir hedef kuruma bağlı değil. Uygun kurumlar teklif verebilir.",
+      badge:"Toplu Talep"
+    };
+  }
+
+  if(lock){
+    return {
+      cls:"completed",
+      icon:"✓",
+      title:"Dağıtım tamamlandı",
+      text:"Müşteri bir teklifi kabul etti. Bu talep için yeni kurum yönlendirmesi yapılmamalıdır.",
+      badge:"Tamamlandı"
+    };
+  }
+
+  if(rows.length && routedOfferCount){
+    return {
+      cls:"responded",
+      icon:"✓",
+      title:"Diğer kurumlardan teklif geldi",
+      text:rows.length+" kuruma iletildi. "+routedOfferCount+" kurum bu talebe teklif verdi.",
+      badge:routedOfferCount+" Teklif"
+    };
+  }
+
+  if(rows.length){
+    return {
+      cls:"sent",
+      icon:"→",
+      title:"Diğer kurumlara iletildi",
+      text:"Talep hedef kurumdan sonra "+rows.length+" uygun kuruma daha gönderildi. Şu anda yanıt bekleniyor.",
+      badge:rows.length+" Kuruma İletildi"
+    };
+  }
+
+  if(targetOffer){
+    return {
+      cls:"responded",
+      icon:"✓",
+      title:"İlk kurum teklif verdi",
+      text:"Hedef kurum talebe cevap verdi. Bu nedenle diğer kurumlara yönlendirme gerekmiyor.",
+      badge:"Teklif Geldi"
+    };
+  }
+
+  if(request?.allowAlternativeInstitutions!==true){
+    return {
+      cls:"blocked",
+      icon:"!",
+      title:"Diğer kurumlara iletilemez",
+      text:"Müşterinin alternatif kurumlarla paylaşım izni bulunmuyor. İzin alınmadan talep başka kuruma gönderilmemelidir.",
+      badge:"Paylaşım İzni Yok"
+    };
+  }
+
+  let flow="";
+  try{
+    flow=typeof quoteRoutingFlowStatus==="function"
+      ? quoteRoutingFlowStatus(request)
+      : "";
+  }catch(_error){}
+
+  if(flow==="waiting"){
+    return {
+      cls:"ready",
+      icon:"→",
+      title:"Diğer kurumlara iletilecek",
+      text:"İlk kurumun yanıt süresi doldu. Talep müşteri izni kapsamında uygun diğer kurumlara yönlendirilebilir.",
+      badge:"Yönlendirmeye Hazır"
+    };
+  }
+
+  let waitLabel="";
+  try{
+    waitLabel=typeof quoteRoutingWaitLabelForRequest==="function"
+      ? quoteRoutingWaitLabelForRequest(request)
+      : "";
+  }catch(_error){}
+
+  return {
+    cls:"waiting",
+    icon:"…",
+    title:"İlk kurumdan yanıt bekleniyor",
+    text:"Hedef kurum henüz teklif vermedi."+
+      (waitLabel
+        ? " Yanıt gelmezse "+waitLabel+" sonunda diğer uygun kurumlara iletilebilir."
+        : " Yanıt süresi dolduğunda diğer uygun kurumlara iletilebilir."),
+    badge:"Bekleniyor"
+  };
+}
+
+function adminQuoteDistributionHtml(request,offers,forwardedRows,lock){
+  const status=adminQuoteDistributionStatus(request,offers,forwardedRows,lock);
+  return '<div class="quote-detail-distribution '+status.cls+'">'+
+    '<div class="quote-detail-distribution-icon">'+escapeHtml(status.icon)+'</div>'+
+    '<div class="quote-detail-distribution-copy">'+
+      '<span>DAĞITIM DURUMU</span>'+
+      '<strong>'+escapeHtml(status.title)+'</strong>'+
+      '<small>'+escapeHtml(status.text)+'</small>'+
+    '</div>'+
+    '<em>'+escapeHtml(status.badge)+'</em>'+
+  '</div>';
+}
+
 function openQuoteDetailModal(requestId) {
   const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
   if (!request || !quoteDetailModal || !quoteDetailBody) return;
@@ -6098,6 +6216,7 @@ function openQuoteDetailModal(requestId) {
 
   let html = "";
   html += '<div class="quote-detail-status-strip state-' + state.cls + '"><div><span>SON DURUM</span><strong>' + escapeHtml(state.label) + '</strong></div><div class="quote-detail-status-stats"><span><b>' + offers.length + '</b> kurum teklifi</span><span><b>' + matching.length + '</b> uygun kurum</span>' + (forwardedRows.length ? '<span><b>'+forwardedRows.length+'</b> diğer kuruma iletildi</span>' : "") + (lock ? '<span><b>✓</b> teklif kabulü var</span>' : "") + '</div></div>';
+  html += adminQuoteDistributionHtml(request,offers,forwardedRows,lock);
 
   html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>MÜŞTERİ VE TALEP</span><h3>Talep Bilgileri</h3></div></div><div class="quote-detail-info-grid">' +
     '<div><span>Müşteri</span><strong>' + escapeHtml(request.name || "-") + '</strong></div>' +
