@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","vipInstitutionsSection","promotionOrdersSection","adCalendarSection","adRevenueSection","businessOpportunitiesSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","vipInstitutionsSection","promotionOrdersSection","adCalendarSection","adRevenueSection","businessOpportunitiesSection","supportSection","announcementsSection","systemSection","clientErrorsSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection","quoteRoutingSection",
     "offerReportSection","issuesSection","accountsSection","unmatchedSearchesSection","categoriesSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","vipInstitutionsTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","businessOpportunitiesTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","vipInstitutionsTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","businessOpportunitiesTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn","clientErrorsTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn","quoteRoutingTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn","unmatchedSearchesTabBtn","categoriesTabBtn"
@@ -273,6 +273,12 @@
     renderSystemChecks();
     fillSettingsForm();
     renderAudit();
+  });
+
+  $("clientErrorsTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("clientErrorsSection","clientErrorsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("clientErrorsTabBtn");
+    await loadClientErrors();
   });
 
   function getOfferEventsForInstitution(institutionId) {
@@ -8211,6 +8217,8 @@
     const rows=clientErrorRecords.filter(row=>!status||String(row.status||"new")===status);
     const open=clientErrorRecords.filter(row=>String(row.status||"new")==="new").length;
     count.textContent=open+" açık hata · "+clientErrorRecords.length+" kayıt";
+    if($("systemErrorsMainCount")) $("systemErrorsMainCount").textContent=String(open);
+    if($("clientErrorsTabCount")) $("clientErrorsTabCount").textContent=String(open);
 
     if(!rows.length){
       list.innerHTML='<div class="empty-state">Bu filtreye uygun hata kaydı yok.</div>';
