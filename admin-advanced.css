@@ -6887,3 +6887,261 @@
     align-items:start;
   }
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · TEK KOLON NİHAİ DÜZEN
+   Eski sticky/floating drawer denemelerini kesin olarak geçersiz kılar.
+   ========================================================= */
+#quoteRoutingSection.quote-routing-v2{
+  display:block !important;
+  position:relative !important;
+  padding-right:0 !important;
+  width:100% !important;
+  max-width:none !important;
+}
+#quoteRoutingSection.quote-routing-v2[hidden]{
+  display:none !important;
+}
+
+#quoteRoutingSection.quote-routing-v2>.quote-routing-head-pro,
+#quoteRoutingSection.quote-routing-v2>.quote-routing-stage-nav,
+#quoteRoutingSection.quote-routing-v2>#quoteRoutingFlowBlock,
+#quoteRoutingSection.quote-routing-v2>#quoteRoutingSettingsPanel{
+  width:100% !important;
+  max-width:none !important;
+  grid-column:auto !important;
+  grid-row:auto !important;
+}
+
+#quoteRoutingSection .quote-routing-stage-nav{
+  position:static !important;
+  inset:auto !important;
+  top:auto !important;
+  right:auto !important;
+  left:auto !important;
+  bottom:auto !important;
+  transform:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:10px !important;
+  margin:14px 0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+  max-height:none !important;
+  z-index:auto !important;
+}
+
+#quoteRoutingSection .quote-routing-stage-nav::before,
+#quoteRoutingSection .quote-flow-drawer-head,
+.quote-flow-drawer-toggle,
+#quoteRoutingSection .quote-routing-stage-strip,
+#quoteRoutingSection .quote-routing-note-bottom{
+  display:none !important;
+}
+
+#quoteRoutingSection button.quote-routing-stage{
+  position:relative !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:94px !important;
+  display:grid !important;
+  grid-template-columns:40px minmax(0,1fr) 34px !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin:0 !important;
+  padding:12px 13px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:15px !important;
+  background:#fff !important;
+  box-shadow:0 5px 16px rgba(15,23,42,.045) !important;
+  text-align:left !important;
+  cursor:pointer !important;
+}
+#quoteRoutingSection button.quote-routing-stage:hover{
+  transform:translateY(-1px) !important;
+  border-color:#b9c8da !important;
+  box-shadow:0 8px 20px rgba(15,23,42,.07) !important;
+}
+#quoteRoutingSection button.quote-routing-stage.active{
+  transform:none !important;
+  border-color:#60a5fa !important;
+  background:linear-gradient(145deg,#f3f8ff,#fff 74%) !important;
+  box-shadow:0 7px 22px rgba(37,99,235,.10) !important;
+}
+#quoteRoutingSection button.quote-routing-stage.active::after{
+  content:"" !important;
+  position:absolute !important;
+  left:14px !important;
+  right:14px !important;
+  bottom:-1px !important;
+  height:3px !important;
+  border-radius:999px 999px 0 0 !important;
+  background:#1677ff !important;
+}
+
+#quoteRoutingSection .quote-routing-stage .stage-no{
+  width:38px !important;
+  height:38px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:11px !important;
+  background:#eef2f7 !important;
+  color:#64748b !important;
+  font-size:9.5px !important;
+  font-weight:950 !important;
+}
+#quoteRoutingSection .quote-routing-stage.active .stage-no{
+  background:#1677ff !important;
+  color:#fff !important;
+}
+#quoteRoutingSection .quote-routing-stage .stage-copy{
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:2px !important;
+}
+#quoteRoutingSection .quote-routing-stage .stage-copy em{
+  display:block !important;
+  color:#94a3b8 !important;
+  font-size:6.8px !important;
+  font-style:normal !important;
+  font-weight:950 !important;
+  letter-spacing:.09em !important;
+}
+#quoteRoutingSection .quote-routing-stage .stage-copy strong{
+  display:block !important;
+  color:#172033 !important;
+  font-size:11.5px !important;
+  line-height:1.25 !important;
+  white-space:normal !important;
+}
+#quoteRoutingSection .quote-routing-stage .stage-copy small{
+  display:block !important;
+  color:#7a8798 !important;
+  font-size:8.2px !important;
+  line-height:1.35 !important;
+  white-space:normal !important;
+}
+#quoteRoutingSection .quote-routing-stage>b{
+  width:32px !important;
+  min-width:32px !important;
+  height:32px !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  border-radius:999px !important;
+  background:#f1f5f9 !important;
+  color:#475569 !important;
+  font-size:10px !important;
+  font-weight:950 !important;
+}
+#quoteRoutingSection .quote-routing-stage.active>b{
+  background:#dbeafe !important;
+  color:#1d4ed8 !important;
+}
+
+/* Aşama renkleri */
+#quoteRoutingSection .quote-routing-stage:nth-child(2).active{
+  border-color:#f5c24b !important;
+  background:linear-gradient(145deg,#fff9eb,#fff 74%) !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(2).active::after,
+#quoteRoutingSection .quote-routing-stage:nth-child(2).active .stage-no{
+  background:#f59e0b !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(2).active>b{
+  background:#fef3c7 !important;
+  color:#a16207 !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(3).active{
+  border-color:#b9a2f8 !important;
+  background:linear-gradient(145deg,#f8f5ff,#fff 74%) !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(3).active::after,
+#quoteRoutingSection .quote-routing-stage:nth-child(3).active .stage-no{
+  background:#8b5cf6 !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(3).active>b{
+  background:#ede9fe !important;
+  color:#6d28d9 !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(4).active{
+  border-color:#86dba3 !important;
+  background:linear-gradient(145deg,#f0fdf4,#fff 74%) !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(4).active::after,
+#quoteRoutingSection .quote-routing-stage:nth-child(4).active .stage-no{
+  background:#22c55e !important;
+}
+#quoteRoutingSection .quote-routing-stage:nth-child(4).active>b{
+  background:#dcfce7 !important;
+  color:#15803d !important;
+}
+
+/* Aktif aşama kartı tam genişlik */
+#quoteRoutingSection #quoteRoutingFlowBlock{
+  margin:0 !important;
+  padding:16px !important;
+  border:1px solid #dbe5f1 !important;
+  border-radius:16px !important;
+  background:#fff !important;
+  box-shadow:0 7px 24px rgba(15,23,42,.04) !important;
+}
+#quoteRoutingSection .quote-routing-workspace-head-v2{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+  margin-bottom:11px !important;
+}
+#quoteRoutingSection .quote-routing-toolbar-v2{
+  display:block !important;
+  margin:0 0 10px !important;
+}
+#quoteRoutingSection .quote-routing-toolbar-v2 .quote-routing-search{
+  display:grid !important;
+  grid-template-columns:36px minmax(280px,560px) !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+#quoteRoutingSection .quote-routing-action-note-v2{
+  margin:0 0 12px !important;
+}
+
+/* Ayarlar açıldığında da tam genişlik */
+#quoteRoutingSection #quoteRoutingSettingsPanel{
+  margin:14px 0 0 !important;
+}
+
+@media(max-width:1050px){
+  #quoteRoutingSection .quote-routing-stage-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media(max-width:620px){
+  #quoteRoutingSection .quote-routing-head-pro{
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+  #quoteRoutingSection .quote-routing-head-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+  }
+  #quoteRoutingSection .quote-routing-stage-nav{
+    grid-template-columns:1fr !important;
+  }
+  #quoteRoutingSection button.quote-routing-stage{
+    min-height:82px !important;
+  }
+  #quoteRoutingSection .quote-routing-workspace-head-v2{
+    align-items:flex-start !important;
+  }
+  #quoteRoutingSection .quote-routing-toolbar-v2 .quote-routing-search{
+    grid-template-columns:1fr !important;
+  }
+}
