@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=37">
-  <link rel="stylesheet" href="admin-advanced.css?v=32">
+  <link rel="stylesheet" href="admin-advanced.css?v=33">
 </head>
 
 <body>
@@ -91,17 +91,62 @@
         </div>
       </div>
 
-      <div class="admin-ad-main-entry">
-        <button type="button" class="admin-ad-main-entry-btn" data-admin-main="ads">
-          <span class="admin-ad-main-entry-icon">📣</span>
-          <span class="admin-ad-main-entry-copy">
-            <b>REKLAM MERKEZİ</b>
-            <strong>Reklamları Yönet</strong>
-            <small>Kurum Reklamları · Site / Affiliate · KEŞFET / FIRSAT Sponsorları</small>
-          </span>
-          <span class="admin-ad-main-entry-arrow">→</span>
-        </button>
-      </div>
+      <div class="admin-dashboard-shell">
+        <aside class="admin-ad-side-panel" aria-label="Reklam Merkezi hızlı yönetim">
+          <button type="button" class="admin-ad-side-main" data-admin-main="ads">
+            <span class="admin-ad-side-main-icon">📣</span>
+            <span>
+              <b>REKLAM MERKEZİ</b>
+              <strong>Reklamları Yönet</strong>
+              <small>Tüm reklam alanlarını tek yerden yönet.</small>
+            </span>
+            <i>→</i>
+          </button>
+
+          <div class="admin-ad-side-status">
+            <span>HIZLI ERİŞİM</span>
+            <small>Yayındaki reklamlar</small>
+          </div>
+
+          <div class="admin-ad-side-categories">
+            <button type="button" id="adSideBannerBtn">
+              <span class="admin-ad-side-cat-icon">🏢</span>
+              <span class="admin-ad-side-cat-copy">
+                <strong>Kurum Reklamları</strong>
+                <small>Banner ve sponsor alanları</small>
+              </span>
+              <b id="adSideBannerCount">0</b>
+            </button>
+
+            <button type="button" id="adSideExternalBtn">
+              <span class="admin-ad-side-cat-icon">🌐</span>
+              <span class="admin-ad-side-cat-copy">
+                <strong>Site / Affiliate</strong>
+                <small>Harici marka reklamları</small>
+              </span>
+              <b id="adSideExternalCount">0</b>
+            </button>
+
+            <button type="button" id="adSideOpportunityBtn">
+              <span class="admin-ad-side-cat-icon">🎯</span>
+              <span class="admin-ad-side-cat-copy">
+                <strong>KEŞFET / FIRSAT</strong>
+                <small>Sponsor kurumlar</small>
+              </span>
+              <b id="adSideOpportunityCount">0</b>
+            </button>
+          </div>
+
+          <div class="admin-ad-side-tools">
+            <span>REKLAM ARAÇLARI</span>
+            <button type="button" id="adSideCalendarBtn">🗓️ <strong>Reklam Takvimi</strong></button>
+            <button type="button" id="adSideRevenueBtn">₺ <strong>Gelir Raporu</strong></button>
+            <button type="button" id="adSidePackagesBtn">📦 <strong>Paketler</strong></button>
+            <button type="button" id="adSideMediaBtn">🗂️ <strong>Medya Arşivi</strong></button>
+          </div>
+        </aside>
+
+        <div class="admin-dashboard-main">
 
       <nav class="admin-main-nav" aria-label="Yönetim ana menüsü">
         <button type="button" class="admin-main-nav-btn active" data-admin-main="overview">
@@ -2009,7 +2054,10 @@
           </table>
         </div>
       </section>
-    </section>
+            </div>
+      </div>
+
+</section>
 
   </div>
 
@@ -2376,7 +2424,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=37"></script>
-  <script src="admin-advanced.js?v=47"></script>
+  <script src="admin-advanced.js?v=48"></script>
 
 </body>
 </html>
