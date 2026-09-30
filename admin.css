@@ -5326,3 +5326,192 @@ button{
     gap:8px;
   }
 }
+
+
+/* ===== MERKEZİ REKLAM TARİFESİ ===== */
+.admin-ad-rate-board{
+  margin:0 0 16px;
+  padding:15px;
+  border:1px solid #bfdbfe;
+  border-radius:14px;
+  background:linear-gradient(180deg,#f8fbff 0%,#fff 100%);
+}
+.admin-ad-rate-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+.admin-ad-rate-head>div{
+  display:grid;
+  gap:4px;
+}
+.admin-ad-rate-head span{
+  color:#2563eb;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.1em;
+}
+.admin-ad-rate-head h3{
+  margin:0;
+  color:#172033;
+  font-size:17px;
+}
+.admin-ad-rate-head p{
+  max-width:760px;
+  margin:0;
+  color:#64748b;
+  font-size:10px;
+  line-height:1.5;
+}
+.admin-ad-rate-columns{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) repeat(3,150px);
+  gap:8px;
+  padding:0 9px 6px;
+  color:#64748b;
+  font-size:8px;
+  font-weight:900;
+  text-align:center;
+}
+.admin-ad-rate-columns span:first-child{text-align:left}
+.admin-ad-rate-rows{
+  display:grid;
+  gap:7px;
+}
+.admin-ad-rate-row{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) repeat(3,150px);
+  gap:8px;
+  align-items:center;
+  padding:9px;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+}
+.admin-ad-rate-place{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.admin-ad-rate-icon{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:9px;
+  background:#eff6ff;
+  font-size:17px;
+}
+.admin-ad-rate-place>div{
+  display:grid;
+  gap:2px;
+  min-width:0;
+}
+.admin-ad-rate-place strong{
+  color:#172033;
+  font-size:10px;
+}
+.admin-ad-rate-place small{
+  color:#64748b;
+  font-size:8px;
+  line-height:1.35;
+}
+.admin-ad-rate-row label{
+  display:grid;
+  gap:3px;
+}
+.admin-ad-rate-row label>span{
+  display:none;
+  color:#64748b;
+  font-size:8px;
+  font-weight:850;
+}
+.admin-ad-rate-row label>div{
+  position:relative;
+}
+.admin-ad-rate-row input{
+  width:100%;
+  min-height:36px;
+  border:1px solid #dbe3ee;
+  border-radius:8px;
+  background:#fff;
+  padding:6px 31px 6px 8px;
+  color:#172033;
+  font-size:10px;
+  font-weight:900;
+  text-align:right;
+}
+.admin-ad-rate-row i{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#64748b;
+  font-size:8px;
+  font-style:normal;
+  font-weight:900;
+}
+.admin-ad-rate-message{
+  min-height:18px;
+  margin:9px 0 0;
+  color:#64748b;
+  font-size:9px;
+  font-weight:850;
+}
+.admin-ad-rate-message[data-state="success"]{color:#15803d}
+.admin-ad-rate-message[data-state="error"]{color:#b91c1c}
+.admin-ad-rate-message[data-state="saving"]{color:#1d4ed8}
+
+.institution-ad-fixed-price{
+  display:grid;
+  gap:3px;
+  min-height:53px;
+  padding:7px 9px;
+  border:1px solid #dbe3ee;
+  border-radius:8px;
+  background:#f8fafc;
+}
+.institution-ad-fixed-price>span{
+  color:#64748b;
+  font-size:7.5px;
+  font-weight:850;
+}
+.institution-ad-fixed-price strong{
+  color:#15803d;
+  font-size:11px;
+}
+.institution-ad-fixed-price small{
+  color:#94a3b8;
+  font-size:7px;
+}
+
+@media(max-width:900px){
+  .admin-ad-rate-columns{display:none}
+  .admin-ad-rate-row{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+  .admin-ad-rate-place{
+    grid-column:1 / -1;
+  }
+  .admin-ad-rate-row label>span{
+    display:block;
+  }
+}
+@media(max-width:600px){
+  .admin-ad-rate-head{
+    display:grid;
+  }
+  .admin-ad-rate-head button{
+    width:100%;
+  }
+  .admin-ad-rate-row{
+    grid-template-columns:1fr;
+  }
+  .admin-ad-rate-place{
+    grid-column:auto;
+  }
+}
