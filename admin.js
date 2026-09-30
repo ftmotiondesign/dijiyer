@@ -779,14 +779,20 @@ document.querySelectorAll("[data-top-menu-toggle]").forEach(toggle=>{
 
 
 const CATEGORY_VISIBILITY_DEFAULTS={};
-Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
-  CATEGORY_VISIBILITY_DEFAULTS["main:"+mainKey]=true;
-  Object.keys(main.subs||{}).forEach(subKey=>{
-    CATEGORY_VISIBILITY_DEFAULTS["sub:"+mainKey+":"+subKey]=true;
-  });
-});
+let categoryVisibilitySettings={};
 
-let categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+function initializeCategoryVisibilityDefaults(){
+  if(Object.keys(CATEGORY_VISIBILITY_DEFAULTS).length)return;
+
+  Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
+    CATEGORY_VISIBILITY_DEFAULTS["main:"+mainKey]=true;
+    Object.keys(main.subs||{}).forEach(subKey=>{
+      CATEGORY_VISIBILITY_DEFAULTS["sub:"+mainKey+":"+subKey]=true;
+    });
+  });
+
+  categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+}
 
 function categoryVisibilityValue(key){
   return categoryVisibilitySettings[key]!==false;
@@ -800,6 +806,7 @@ function categoryAdminPaintState(el,active){
 }
 
 function renderCategoryAdmin(){
+  initializeCategoryVisibilityDefaults();
   const root=document.getElementById("categoryAdminList");
   if(!root)return;
 
@@ -873,6 +880,7 @@ function renderCategoryAdmin(){
 }
 
 async function loadCategoryVisibilitySettings(){
+  initializeCategoryVisibilityDefaults();
   const message=document.getElementById("categoryAdminMessage");
   if(message)message.textContent="Kategoriler yükleniyor...";
   try{
@@ -894,6 +902,7 @@ async function loadCategoryVisibilitySettings(){
 }
 
 async function saveCategoryVisibilitySetting(key,visible,toggle){
+  initializeCategoryVisibilityDefaults();
   if(!Object.prototype.hasOwnProperty.call(CATEGORY_VISIBILITY_DEFAULTS,key))return;
   if(toggle)toggle.disabled=true;
   const previous={...categoryVisibilitySettings};
