@@ -5795,3 +5795,177 @@
     white-space:normal;
   }
 }
+
+
+/* =========================================================
+   KREDI -> OTOMATIK VIP
+   ========================================================= */
+.credit-vip-auto-panel{
+  margin:14px 0;
+  padding:15px;
+  border:1px solid #dbe6f5;
+  border-radius:15px;
+  background:linear-gradient(135deg,#f8fbff 0%,#ffffff 58%,#fffaf0 100%);
+  box-shadow:0 8px 24px rgba(31,45,64,.05)
+}
+.credit-vip-auto-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:13px
+}
+.credit-vip-auto-head>div{
+  display:grid;
+  gap:4px;
+  min-width:0
+}
+.credit-vip-auto-head>div>span{
+  color:#2563eb;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.08em
+}
+.credit-vip-auto-head>div>strong{
+  color:#1f2d40;
+  font-size:14px
+}
+.credit-vip-auto-head>div>small{
+  color:#748196;
+  font-size:9px;
+  line-height:1.45;
+  max-width:760px
+}
+.credit-vip-master-toggle{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:38px;
+  padding:0 11px;
+  border:1px solid #bfdbfe;
+  border-radius:10px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer
+}
+.credit-vip-master-toggle input{
+  width:16px;
+  height:16px
+}
+.credit-vip-rule-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px
+}
+.credit-vip-rule-grid article{
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#fff
+}
+.credit-vip-rule-grid article>div{
+  display:grid;
+  gap:2px
+}
+.credit-vip-rule-grid article>div>span{
+  color:#7c3aed;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.06em
+}
+.credit-vip-rule-grid article>div>strong{
+  color:#26364b;
+  font-size:10px
+}
+.credit-vip-rule-grid label{
+  display:grid;
+  gap:5px;
+  color:#64748b;
+  font-size:8px;
+  font-weight:850
+}
+.credit-vip-rule-grid input{
+  width:100%;
+  min-height:38px;
+  padding:0 9px;
+  border:1px solid #d8e1ec;
+  border-radius:8px;
+  background:#fff;
+  color:#1f2d40;
+  outline:none
+}
+.credit-vip-input-suffix{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:6px
+}
+.credit-vip-input-suffix span{
+  min-width:34px;
+  color:#7b8797;
+  font-size:8px;
+  font-weight:850
+}
+.credit-vip-auto-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #e7edf5
+}
+.credit-vip-extend-option{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  cursor:pointer
+}
+.credit-vip-extend-option input{
+  width:16px;
+  height:16px;
+  margin-top:2px
+}
+.credit-vip-extend-option>span{
+  display:grid;
+  gap:2px
+}
+.credit-vip-extend-option strong{
+  color:#334155;
+  font-size:9px
+}
+.credit-vip-extend-option small,
+.credit-vip-auto-footer>div>small{
+  color:#7b8797;
+  font-size:8px;
+  line-height:1.4
+}
+.credit-vip-auto-footer>div{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+  text-align:right
+}
+@media(max-width:900px){
+  .credit-vip-rule-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .credit-vip-auto-head,
+  .credit-vip-auto-footer{
+    flex-direction:column;
+    align-items:stretch
+  }
+  .credit-vip-master-toggle{justify-content:center}
+  .credit-vip-auto-footer>div{
+    justify-content:stretch;
+    text-align:left
+  }
+  .credit-vip-auto-footer>div button{width:100%}
+}
