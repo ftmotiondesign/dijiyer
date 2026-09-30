@@ -131,6 +131,7 @@ const quoteCompareTitle = document.getElementById("quoteCompareTitle");
 const quoteCompareMeta = document.getElementById("quoteCompareMeta");
 const quoteCompareHighlights = document.getElementById("quoteCompareHighlights");
 const quoteCompareTableBody = document.getElementById("quoteCompareTableBody");
+const quoteCompareReminder = document.getElementById("quoteCompareReminder");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
@@ -4135,6 +4136,202 @@ function getAdminOfferCompareState(offer, request) {
   return { label:"Aktif Teklif", cls:"active" };
 }
 
+function lowestActiveOfferForReminder(offers) {
+  const now = Date.now();
+
+  return (Array.isArray(offers) ? offers : [])
+    .filter(offer => {
+      const price = Number(offer.price || 0);
+      if (!Number.isFinite(price) || price <= 0) return false;
+      if (!offer.expiresAt) return true;
+      return new Date(offer.expiresAt).getTime() > now;
+    })
+    .sort((a,b) => Number(a.price || 0) - Number(b.price || 0))[0] || null;
+}
+
+function quoteReminderCooldown(request) {
+  const lastTime = new Date(request.customerReminderAt || 0).getTime();
+  if (!Number.isFinite(lastTime) || lastTime <= 0) {
+    return { blocked:false, remainingMinutes:0 };
+  }
+
+  const cooldownMs = 6 * 60 * 60 * 1000;
+  const remaining = cooldownMs - (Date.now() - lastTime);
+
+  return {
+    blocked: remaining > 0,
+    remainingMinutes: Math.max(0, Math.ceil(remaining / 60000))
+  };
+}
+
+function quoteReminderMessage(request, offer) {
+  const expiryTime = offer.expiresAt ? new Date(offer.expiresAt).getTime() : 0;
+  const hoursLeft = expiryTime
+    ? Math.max(0, Math.ceil((expiryTime - Date.now()) / (60 * 60 * 1000)))
+    : null;
+
+  const urgency =
+    hoursLeft !== null && hoursLeft <= 24
+      ? "Teklifin süresinin dolmasına yaklaşık " + hoursLeft + " saat kaldı."
+      : "";
+
+  return [
+    "Merhaba " + (request.name || "") + ",",
+    "",
+    "Dijiyer üzerinden oluşturduğunuz " + (request.service || "teklif") + " talebiniz için kısa bir hatırlatma:",
+    "",
+    "Şu anda geçerli teklifler içindeki en düşük fiyat: " + quoteMoney(offer.price),
+    "Kurum: " + (offer.institutionName || "Kurum"),
+    offer.expiresAt ? "Geçerlilik: " + formatDate(offer.expiresAt) : "",
+    urgency,
+    "",
+    "Karar vermeden önce teklif detaylarını ve şartlarını tekrar inceleyebilirsiniz.",
+    "Dijiyer üzerinden ödeme alınmaz. Ödeme yalnızca müşteri ile kurum arasında doğrudan yapılır."
+  ].filter(Boolean).join("\n");
+}
+
+async function sendLowestOfferReminder(request, offer, button) {
+  if (!request || !offer) return;
+
+  const phone = normalizeWhatsApp(request.phone);
+  if (!phone) {
+    alert("Müşterinin geçerli bir telefon numarası bulunamadı.");
+    return;
+  }
+
+  const cooldown = quoteReminderCooldown(request);
+  if (cooldown.blocked) {
+    alert("Bu müşteriye yakın zamanda hatırlatma açılmış. Tekrar göndermek için biraz bekleyin.");
+    return;
+  }
+
+  const message = quoteReminderMessage(request, offer);
+  const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  const oldText = button?.textContent || "";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Hatırlatma kaydediliyor...";
+  }
+
+  const now = new Date().toISOString();
+  const nextCount = Number(request.customerReminderCount || 0) + 1;
+
+  try {
+    await db.collection("quoteRequests").doc(request.id).update({
+      customerReminderAt: now,
+      customerReminderCount: nextCount,
+      customerReminderOfferCode: offer.offerCode || "",
+      customerReminderPrice: Number(offer.price || 0),
+      customerReminderInstitutionName: offer.institutionName || "",
+      updatedAt: now
+    });
+
+    request.customerReminderAt = now;
+    request.customerReminderCount = nextCount;
+    request.customerReminderOfferCode = offer.offerCode || "";
+    request.customerReminderPrice = Number(offer.price || 0);
+    request.customerReminderInstitutionName = offer.institutionName || "";
+    request.updatedAt = now;
+
+    if (typeof addAudit === "function") {
+      addAudit(
+        "Müşteri teklif hatırlatması",
+        (request.name || "Müşteri") + " · " +
+        (offer.institutionName || "Kurum") + " · " +
+        quoteMoney(offer.price)
+      );
+    }
+
+    openQuoteCompareModal(request.id);
+  } catch (error) {
+    console.error("Müşteri hatırlatması kaydedilemedi:", error);
+    if (button) {
+      button.disabled = false;
+      button.textContent = oldText || "Müşteriye Hatırlat";
+    }
+    alert("WhatsApp açıldı ancak hatırlatma kaydı yönetim paneline yazılamadı.");
+  }
+}
+
+function renderLowestOfferReminder(request, offers) {
+  if (!quoteCompareReminder) return;
+
+  const lowest = lowestActiveOfferForReminder(offers);
+  const lock = request.liveLock || null;
+  const cooldown = quoteReminderCooldown(request);
+  const reminderCount = Number(request.customerReminderCount || 0);
+
+  if (!lowest) {
+    quoteCompareReminder.innerHTML =
+      '<div class="quote-reminder-unavailable">' +
+        '<strong>Hatırlatma gönderilemiyor</strong>' +
+        '<span>Aktif ve geçerli bir fiyat teklifi bulunmuyor.</span>' +
+      '</div>';
+    return;
+  }
+
+  if (lock) {
+    quoteCompareReminder.innerHTML =
+      '<div class="quote-reminder-unavailable selected">' +
+        '<strong>Müşteri seçim yapmış</strong>' +
+        '<span>Bir teklif kilitlendiği için en düşük fiyat hatırlatması kapatıldı.</span>' +
+      '</div>';
+    return;
+  }
+
+  const expiryTime = lowest.expiresAt ? new Date(lowest.expiresAt).getTime() : 0;
+  const hoursLeft = expiryTime
+    ? Math.max(0, Math.ceil((expiryTime - Date.now()) / (60 * 60 * 1000)))
+    : null;
+  const expiringSoon = hoursLeft !== null && hoursLeft <= 24;
+
+  const lastReminder = request.customerReminderAt
+    ? formatDate(request.customerReminderAt)
+    : "Henüz gönderilmedi";
+
+  let cooldownText = "";
+  if (cooldown.blocked) {
+    const hours = Math.floor(cooldown.remainingMinutes / 60);
+    const minutes = cooldown.remainingMinutes % 60;
+    cooldownText = hours
+      ? hours + " sa " + minutes + " dk sonra tekrar gönderilebilir"
+      : minutes + " dk sonra tekrar gönderilebilir";
+  }
+
+  quoteCompareReminder.innerHTML =
+    '<div class="quote-reminder-main">' +
+      '<div class="quote-reminder-icon">↗</div>' +
+      '<div class="quote-reminder-copy">' +
+        '<span class="quote-reminder-eyebrow">MÜŞTERİ HATIRLATMASI</span>' +
+        '<strong>' + escapeHtml(lowest.institutionName || "Kurum") + ' · ' + quoteMoney(lowest.price) + '</strong>' +
+        '<small>' +
+          (expiringSoon
+            ? '<b class="reminder-expiring">Süresi dolmak üzere · yaklaşık ' + hoursLeft + ' saat kaldı</b>'
+            : (lowest.expiresAt ? 'Geçerlilik: ' + formatDate(lowest.expiresAt) : 'Geçerlilik süresi belirtilmemiş')) +
+        '</small>' +
+        '<div class="quote-reminder-history">Son hatırlatma: <b>' + escapeHtml(lastReminder) + '</b> · Toplam <b>' + reminderCount + '</b> kez</div>' +
+      '</div>' +
+      '<div class="quote-reminder-action">' +
+        '<button type="button" id="quoteLowestReminderBtn" ' + (cooldown.blocked ? 'disabled' : '') + '>' +
+          (cooldown.blocked ? 'Yakın zamanda gönderildi' : 'WhatsApp ile Hatırlat') +
+        '</button>' +
+        (cooldownText ? '<small>' + escapeHtml(cooldownText) + '</small>' : '<small>Hazır mesaj otomatik oluşturulur</small>') +
+      '</div>' +
+    '</div>';
+
+  const button = document.getElementById("quoteLowestReminderBtn");
+  button?.addEventListener("click", () => sendLowestOfferReminder(request, lowest, button));
+}
+
 function openQuoteCompareModal(requestId) {
   const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
   if (!request) return;
@@ -4159,6 +4356,7 @@ function openQuoteCompareModal(requestId) {
         '<div class="quote-compare-empty">Henüz karşılaştırılacak kurum teklifi yok.</div>';
     }
     if (quoteCompareTableBody) quoteCompareTableBody.innerHTML = "";
+    if (quoteCompareReminder) quoteCompareReminder.innerHTML = "";
     return;
   }
 
@@ -4169,6 +4367,8 @@ function openQuoteCompareModal(requestId) {
   const minPrice = validPrices.length ? Math.min(...validPrices) : 0;
   const maxPrice = validPrices.length ? Math.max(...validPrices) : 0;
   const selected = request.liveLock || null;
+
+  renderLowestOfferReminder(request, offers);
 
   if (quoteCompareHighlights) {
     quoteCompareHighlights.innerHTML = [
