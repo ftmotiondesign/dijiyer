@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=42">
+  <link rel="stylesheet" href="admin.css?v=43">
   <link rel="stylesheet" href="admin-advanced.css?v=33">
 </head>
 
@@ -1573,6 +1573,27 @@
       </section>
 
 <section id="promotionPackagesSection" hidden>
+        <section class="admin-ad-rate-board" id="adminAdRateBoard">
+          <div class="admin-ad-rate-head">
+            <div>
+              <span>YÖNETİCİ REKLAM TARİFESİ</span>
+              <h3>Reklam Alanları · Süre / Ücret</h3>
+              <p>Ücretleri burada yalnızca siz belirlersiniz. Kurum kartında süre seçildiğinde fiyat otomatik gelir. Müşteri tarafında henüz paket seçimi veya ödeme yoktur.</p>
+            </div>
+            <button type="button" class="advanced-primary-btn" id="adminAdRateSaveBtn">Reklam Tarifesini Kaydet</button>
+          </div>
+
+          <div class="admin-ad-rate-columns">
+            <span>Reklam Alanı</span>
+            <span>7 gün</span>
+            <span>15 gün</span>
+            <span>30 gün</span>
+          </div>
+
+          <div class="admin-ad-rate-rows" id="adminAdRateRows"></div>
+          <p class="admin-ad-rate-message" id="adminAdRateMessage" aria-live="polite"></p>
+        </section>
+
         <div class="section-title promotion-package-admin-title">
           <div>
             <h3>📦 Reklam Paketleri</h3>
@@ -2661,7 +2682,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=41"></script>
+<script src="admin.js?v=42"></script>
   <script src="admin-advanced.js?v=49"></script>
 
 </body>
