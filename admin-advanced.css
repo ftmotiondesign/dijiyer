@@ -6411,3 +6411,221 @@
     padding:0 !important;
   }
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · SABİT TEKLİF AKIŞI ÇEKMECESİ
+   ========================================================= */
+#quoteRoutingSection.quote-routing-v2{
+  position:relative !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer{
+  box-sizing:border-box !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer-head{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+  padding:2px 2px 10px !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  margin-bottom:2px !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer-head>div{
+  display:grid !important;
+  gap:2px !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer-head span{
+  color:#64748b !important;
+  font-size:7.5px !important;
+  font-weight:950 !important;
+  letter-spacing:.1em !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer-head strong{
+  color:#172033 !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+}
+
+#quoteRoutingSection #quoteFlowDrawerClose{
+  width:30px !important;
+  height:30px !important;
+  display:grid !important;
+  place-items:center !important;
+  border:0 !important;
+  border-radius:9px !important;
+  background:#eef2f7 !important;
+  color:#475569 !important;
+  font-size:19px !important;
+  cursor:pointer !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:92px !important;
+  display:grid !important;
+  grid-template-columns:42px minmax(0,1fr) 34px !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin:0 !important;
+  padding:12px !important;
+  text-align:left !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:3px !important;
+  min-width:0 !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy em,
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy strong,
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy small{
+  display:block !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy strong{
+  font-size:12px !important;
+  line-height:1.25 !important;
+}
+
+#quoteRoutingSection .quote-flow-drawer .quote-routing-stage .stage-copy small{
+  font-size:9px !important;
+  line-height:1.45 !important;
+}
+
+/* Desktop: always-open side drawer, content reserves space. */
+@media(min-width:1281px){
+  #quoteRoutingSection.quote-routing-v2{
+    padding-right:292px !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer{
+    position:absolute !important;
+    top:84px !important;
+    right:0 !important;
+    width:274px !important;
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:9px !important;
+    margin:0 !important;
+    padding:12px !important;
+    border:1px solid #dbe4ef !important;
+    border-radius:18px !important;
+    background:rgba(248,250,252,.985) !important;
+    box-shadow:0 14px 34px rgba(15,23,42,.10) !important;
+    z-index:75 !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer::before{
+    display:none !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer-head{
+    display:flex !important;
+  }
+
+  #quoteRoutingSection #quoteFlowDrawerClose{
+    display:none !important;
+  }
+
+  .quote-flow-drawer-toggle{
+    display:none !important;
+  }
+}
+
+/* Medium / narrow: drawer overlays the page and is opened from one permanent button. */
+@media(max-width:1280px){
+  #quoteRoutingSection.quote-routing-v2{
+    padding-right:0 !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer{
+    position:fixed !important;
+    top:82px !important;
+    right:14px !important;
+    width:min(330px,calc(100vw - 28px)) !important;
+    max-height:calc(100vh - 104px) !important;
+    overflow:auto !important;
+    display:none !important;
+    grid-template-columns:1fr !important;
+    gap:9px !important;
+    margin:0 !important;
+    padding:12px !important;
+    border:1px solid #dbe4ef !important;
+    border-radius:18px !important;
+    background:#f8fafc !important;
+    box-shadow:0 22px 60px rgba(15,23,42,.24) !important;
+    z-index:5000 !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer.open{
+    display:grid !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer::before{
+    display:none !important;
+  }
+
+  .quote-flow-drawer-toggle{
+    position:fixed !important;
+    right:18px !important;
+    bottom:82px !important;
+    z-index:4900 !important;
+    min-width:74px !important;
+    height:46px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:7px !important;
+    border:1px solid #bfdbfe !important;
+    border-radius:14px !important;
+    background:#172033 !important;
+    color:#fff !important;
+    box-shadow:0 12px 32px rgba(15,23,42,.24) !important;
+    padding:0 13px !important;
+    cursor:pointer !important;
+  }
+
+  .quote-flow-drawer-toggle[hidden]{
+    display:none !important;
+  }
+
+  .quote-flow-drawer-toggle span{
+    font-size:16px !important;
+    line-height:1 !important;
+  }
+
+  .quote-flow-drawer-toggle strong{
+    font-size:10px !important;
+    font-weight:900 !important;
+  }
+}
+
+@media(max-width:520px){
+  #quoteRoutingSection .quote-flow-drawer{
+    top:70px !important;
+    right:8px !important;
+    width:calc(100vw - 16px) !important;
+    max-height:calc(100vh - 88px) !important;
+  }
+
+  .quote-flow-drawer-toggle{
+    right:12px !important;
+    bottom:72px !important;
+  }
+
+  #quoteRoutingSection .quote-flow-drawer .quote-routing-stage{
+    min-height:86px !important;
+  }
+}
