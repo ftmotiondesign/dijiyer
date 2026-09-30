@@ -236,6 +236,7 @@
           time:selectedTime,
           durationMinutes:Math.max(15,Number(settings.durationMinutes||30)),
           note:note.slice(0,500),
+          slotId,
           bookingCode,
           status:"pending",
           createdAt:now,
