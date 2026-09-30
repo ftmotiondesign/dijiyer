@@ -12,6 +12,7 @@
 
   <link rel="stylesheet" href="admin.css?v=48">
   <link rel="stylesheet" href="admin-advanced.css?v=38">
+  <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
 
 <body>
@@ -169,6 +170,9 @@
         <button type="button" class="admin-main-nav-btn" data-admin-main="institutions">
           <span>Kurumlar</span>
         </button>
+        <button type="button" class="admin-main-nav-btn" data-admin-main="business">
+          <span>İş &amp; Ticaret</span>
+        </button>
         <button type="button" class="admin-main-nav-btn" data-admin-main="support">
           <span>İletişim</span>
         </button>
@@ -189,6 +193,8 @@
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
         <button class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></button>
+
+        <button class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></button>
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
@@ -1913,6 +1919,148 @@
         <div id="promotionAdminList" class="promotion-admin-list"></div>
       </section>
 
+
+      <section id="businessOpportunitiesSection" hidden>
+        <div class="section-title business-opportunities-title">
+          <div>
+            <h3>🤝 İş &amp; Ticaret Fırsatları</h3>
+            <p id="businessOpportunitiesAdminCount">Fırsatlar yükleniyor...</p>
+          </div>
+          <a class="business-opportunities-public-link" href="ticaret-firsatlari.html" target="_blank" rel="noopener">Kullanıcı Sayfasını Aç ↗</a>
+        </div>
+
+        <div class="business-opportunities-admin-layout">
+          <form id="businessOpportunityForm" class="business-opportunity-editor">
+            <input type="hidden" id="businessOpportunityEditId">
+
+            <div class="business-opportunity-editor-head">
+              <div>
+                <span>MANUEL FIRSAT GİRİŞİ</span>
+                <strong id="businessOpportunityFormTitle">Yeni Fırsat Ekle</strong>
+                <small>İhale, tedarik, toplu alım, bayilik ve diğer ticari fırsatları tek yerden yayınlayın.</small>
+              </div>
+              <label>
+                <input type="checkbox" id="businessOpportunityFeatured">
+                <span>Öne Çıkar</span>
+              </label>
+            </div>
+
+            <div class="business-opportunity-form-grid">
+              <label>Fırsat Türü
+                <select id="businessOpportunityType" required>
+                  <option value="tender">İhale</option>
+                  <option value="quote_call">Teklif Çağrısı</option>
+                  <option value="supply">Tedarikçi Aranıyor</option>
+                  <option value="bulk_purchase">Toplu Alım</option>
+                  <option value="subcontractor">Taşeron / Usta Aranıyor</option>
+                  <option value="project">Proje Fırsatı</option>
+                  <option value="procurement">Satın Alma Duyurusu</option>
+                  <option value="dealership">Bayilik / Distribütörlük</option>
+                  <option value="partnership">İş Ortaklığı</option>
+                  <option value="rental">Kiralama Talebi</option>
+                  <option value="service_contract">Hizmet Sözleşmesi</option>
+                  <option value="announcement">Kurumsal Duyuru</option>
+                </select>
+              </label>
+
+              <label>Yayın Durumu
+                <select id="businessOpportunityStatus">
+                  <option value="published">Yayında</option>
+                  <option value="draft">Taslak</option>
+                  <option value="closed">Kapandı</option>
+                </select>
+              </label>
+
+              <label class="wide">Başlık
+                <input id="businessOpportunityTitle" maxlength="160" required placeholder="Örn. Çanakkale öğrenci taşıma hizmeti alımı">
+              </label>
+
+              <label>İlanı Açan Kurum / Firma
+                <input id="businessOpportunityOrganizer" maxlength="120" placeholder="Kurum veya firma adı">
+              </label>
+
+              <label>Sektör
+                <input id="businessOpportunityCategory" maxlength="80" placeholder="Örn. İnşaat, Eğitim, Gıda">
+              </label>
+
+              <label>İl
+                <input id="businessOpportunityCity" maxlength="60" placeholder="Örn. Çanakkale">
+              </label>
+
+              <label>İlçe
+                <input id="businessOpportunityDistrict" maxlength="60" placeholder="Örn. Merkez">
+              </label>
+
+              <label>Bütçe / Yaklaşık Bedel
+                <input id="businessOpportunityBudget" maxlength="80" placeholder="Örn. 250.000 TL / Belirtilmedi">
+              </label>
+
+              <label>Son Başvuru Tarihi
+                <input id="businessOpportunityDeadline" type="datetime-local">
+              </label>
+
+              <label>Kaynak
+                <input id="businessOpportunitySourceLabel" maxlength="80" placeholder="Örn. Dijiyer Manuel / EKAP / TED">
+              </label>
+
+              <label>Kaynak Bağlantısı
+                <input id="businessOpportunitySourceUrl" type="url" placeholder="https://...">
+              </label>
+
+              <label class="wide">Açıklama
+                <textarea id="businessOpportunityDescription" rows="5" maxlength="1800" placeholder="Fırsatın kapsamını ve önemli koşulları yazın."></textarea>
+              </label>
+            </div>
+
+            <div class="business-opportunity-form-actions">
+              <button type="button" id="businessOpportunityCancelEdit" class="secondary hidden">Düzenlemeyi İptal Et</button>
+              <button type="submit" id="businessOpportunitySaveBtn" class="primary">Kaydet ve Yayınla</button>
+            </div>
+            <p id="businessOpportunityFormMessage" class="business-opportunity-message"></p>
+          </form>
+
+          <section class="business-opportunity-list-panel">
+            <div class="business-opportunity-list-head">
+              <div>
+                <span>YAYIN HAVUZU</span>
+                <strong>Manuel ve otomatik fırsatlar</strong>
+                <small>Şimdilik manuel giriş aktif. Otomatik kaynak kuyruğunu bir sonraki aşamada bağlayacağız.</small>
+              </div>
+              <button type="button" id="businessOpportunityRefreshBtn">Yenile</button>
+            </div>
+
+            <div class="business-opportunity-filters">
+              <input type="search" id="businessOpportunityAdminSearch" placeholder="Başlık, kurum, şehir veya sektör ara...">
+              <select id="businessOpportunityAdminStatus">
+                <option value="">Tüm durumlar</option>
+                <option value="published">Yayında</option>
+                <option value="draft">Taslak</option>
+                <option value="closed">Kapandı</option>
+              </select>
+              <select id="businessOpportunityAdminType">
+                <option value="">Tüm türler</option>
+                <option value="tender">İhale</option>
+                <option value="quote_call">Teklif Çağrısı</option>
+                <option value="supply">Tedarikçi</option>
+                <option value="bulk_purchase">Toplu Alım</option>
+                <option value="subcontractor">Taşeron / Usta</option>
+                <option value="project">Proje</option>
+                <option value="procurement">Satın Alma</option>
+                <option value="dealership">Bayilik</option>
+                <option value="partnership">İş Ortaklığı</option>
+                <option value="rental">Kiralama</option>
+                <option value="service_contract">Hizmet Sözleşmesi</option>
+                <option value="announcement">Duyuru</option>
+              </select>
+            </div>
+
+            <div id="businessOpportunityAdminList" class="business-opportunity-admin-list">
+              <div class="advanced-empty">Fırsatlar yükleniyor...</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section id="supportSection" hidden>
         <div class="section-title support-section-title">
           <div>
@@ -2917,7 +3065,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=50"></script>
-  <script src="admin-advanced.js?v=53"></script>
+  <script src="admin-advanced.js?v=54"></script>
+  <script src="admin-business-opportunities.js?v=1"></script>
 
 </body>
 </html>
