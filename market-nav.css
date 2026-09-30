@@ -78,9 +78,18 @@
 }
 
 @media(min-width:821px){
+  /* Tüm masaüstü sayfalarda yalnızca ortak Dijiyer üst barı görünür.
+     Ana sayfadaki eski .home-page .topbar kuralları !important kullandığı
+     için burada daha güçlü ve ortak bir gizleme kuralı kullanıyoruz. */
   body > header:not(.dijiyer-global-topbar),
   body > header.dijiyer-legacy-topbar,
-  .dijiyer-legacy-topbar{
+  body.home-page > header.topbar,
+  body > header.topbar,
+  body > header.kp-topbar,
+  body > header.rv-topbar,
+  body > header.tracking-header,
+  body > header.trade-topbar,
+  body > .dijiyer-legacy-topbar.dijiyer-legacy-topbar{
     display:none!important;
   }
 
