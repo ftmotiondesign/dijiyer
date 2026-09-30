@@ -3718,3 +3718,58 @@
     flex:1;
   }
 }
+
+
+/* =========================================================
+   REKLAM GÖSTERİM ALANI · ÖNERİLEN EBAT BİLGİSİ
+   ========================================================= */
+.banner-placement-size-chip{
+  min-height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 9px;
+  border:1px solid #b9d5f7;
+  border-radius:8px;
+  background:#eef6ff;
+  color:#1268da;
+  font-size:8px;
+  font-weight:950;
+  white-space:nowrap;
+}
+.banner-placement-size-note{
+  margin-top:9px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  gap:8px;
+  align-items:start;
+  padding:8px 9px;
+  border:1px dashed #cfdceb;
+  border-radius:9px;
+  background:#fbfdff;
+}
+.banner-placement-size-note>span{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#f0f5fb;
+  font-size:13px;
+}
+.banner-placement-size-note p{
+  margin:0;
+  color:#738196;
+  font-size:7.5px;
+  line-height:1.45;
+}
+.banner-placement-size-note p strong{
+  color:#334a66;
+  font-size:8px;
+}
+@media(max-width:650px){
+  .banner-placement-size-chip{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
