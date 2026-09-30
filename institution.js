@@ -1034,6 +1034,31 @@ document.addEventListener("keydown", () => {
   panelAudioUnlocked = true;
 }, { once:true });
 
+let institutionStatsLoadedAt=0;
+let supportLoadedAt=0;
+let showcaseWatchersStarted=false;
+
+async function ensureInstitutionStats(force=false){
+  if(!currentInstitution)return;
+  if(!force && institutionStatsLoadedAt && Date.now()-institutionStatsLoadedAt<120000)return;
+  await loadInstitutionStats();
+  institutionStatsLoadedAt=Date.now();
+}
+
+async function ensureSupportLoaded(force=false){
+  if(!currentAccount||!currentUser)return;
+  if(!force && supportLoadedAt && Date.now()-supportLoadedAt<120000)return;
+  await loadSupportTickets();
+  supportLoadedAt=Date.now();
+}
+
+function ensureShowcaseWatchers(){
+  if(showcaseWatchersStarted)return;
+  showcaseWatchersStarted=true;
+  startPromotionPackagesWatcher();
+  startPromotionOrdersWatcher();
+}
+
 function setPanelTab(name) {
   document.body.dataset.panelCurrent = name;
 
@@ -1045,6 +1070,8 @@ function setPanelTab(name) {
     view.classList.toggle("active", view.dataset.panelView === name);
   });
 
+  if(name==="showcase")ensureShowcaseWatchers();
+
   if (typeof window.updateInstitutionNavigation === "function") {
     window.updateInstitutionNavigation(name);
   }
@@ -1055,12 +1082,13 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
     setPanelTab(btn.dataset.panelTab);
 
     if (btn.dataset.panelTab === "stats" && currentInstitution) {
-      await loadInstitutionStats();
+      await ensureInstitutionStats();
     }
 
     if (btn.dataset.panelTab === "support" && currentAccount) {
       populateSupportQuoteReferences();
-      await loadSupportTickets();
+      await ensureSupportLoaded();
+      startLiveSupportWatcher();
       markAllSupportRepliesRead();
     }
   });
@@ -1073,7 +1101,8 @@ document.getElementById("goSupportBtn")?.addEventListener("click", async () => {
   setPanelTab("support");
   populateSupportQuoteReferences();
   if (currentAccount) {
-    await loadSupportTickets();
+    await ensureSupportLoaded();
+    startLiveSupportWatcher();
     markAllSupportRepliesRead();
   }
 });
@@ -2477,13 +2506,6 @@ document.getElementById("institutionProfileForm").addEventListener("submit", asy
 
   try{
     const ref=db.collection("institutions").doc(currentAccount.institutionId);
-    const snap=await ref.get();
-
-    if(!snap.exists){
-      showProfileMessage("Kurum kaydı bulunamadı. Destek ile iletişime geçin.","error");
-      return;
-    }
-
     await ref.update(changes);
 
     Object.assign(currentInstitution,changes);
@@ -3356,82 +3378,48 @@ async function loadSectorStats(weekKeys) {
   const sectorStatsNote = document.getElementById("sectorStatsNote");
 
   if (!currentInstitution || !currentInstitution.category) {
-    sectorStatsNote.textContent = "Kurum kategorisi bulunamadı.";
+    if(sectorStatsNote)sectorStatsNote.textContent = "Kurum kategorisi bulunamadı.";
     return;
   }
 
   const category = currentInstitution.category;
-  sectorLabel.textContent = categoryLabels[category] || category;
-  sectorStatsNote.textContent = "Sektör verileri hesaplanıyor...";
+  if(sectorLabel)sectorLabel.textContent = categoryLabels[category] || category;
+  if(sectorStatsNote)sectorStatsNote.textContent = "Sektör özeti yükleniyor...";
 
   try {
     const institutionSnapshot = await db.collection("institutions")
       .where("category", "==", category)
       .get();
 
-    const sectorInstitutionIds = institutionSnapshot.docs.map(doc => doc.id);
-    sectorInstitutionCount.textContent = sectorInstitutionIds.length;
+    const rows=institutionSnapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+    if(sectorInstitutionCount)sectorInstitutionCount.textContent = rows.length;
 
-    if (!sectorInstitutionIds.length) {
-      sectorWeekViews.textContent = "0";
-      sectorReviewCount.textContent = "0";
-      sectorAverageRating.textContent = "0.0";
-      sectorStatsNote.textContent = "Bu sektörde henüz kurum bulunmuyor.";
+    if (!rows.length) {
+      if(sectorWeekViews)sectorWeekViews.textContent = "—";
+      if(sectorReviewCount)sectorReviewCount.textContent = "0";
+      if(sectorAverageRating)sectorAverageRating.textContent = "0.0";
+      if(sectorStatsNote)sectorStatsNote.textContent = "Bu sektörde henüz kurum bulunmuyor.";
       return;
     }
 
-    const reviewSnapshots = await Promise.all(
-      sectorInstitutionIds.map(id =>
-        db.collection("institutionReviews")
-          .where("institutionId", "==", id)
-          .get()
-      )
-    );
+    const reviewCount=rows.reduce((sum,row)=>sum+Math.max(0,Number(row.reviewCount||0)),0);
+    const weightedTotal=rows.reduce((sum,row)=>{
+      const count=Math.max(0,Number(row.reviewCount||0));
+      const rating=Math.max(0,Number(row.rating||0));
+      return sum+(count*rating);
+    },0);
+    const average=reviewCount ? weightedTotal/reviewCount : 0;
 
-    const sectorReviews = reviewSnapshots.flatMap(snapshot =>
-      snapshot.docs
-        .map(doc => doc.data())
-        .filter(item => item.status === "published")
-    );
-
-    const sectorAverage = sectorReviews.length
-      ? sectorReviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / sectorReviews.length
-      : 0;
-
-    sectorReviewCount.textContent = sectorReviews.length;
-    sectorAverageRating.textContent =
-      sectorReviews.length ? sectorAverage.toFixed(1) : "0.0";
-
-    try {
-      const analyticsSnapshots = await Promise.all(
-        sectorInstitutionIds.map(id =>
-          db.collection("institutionAnalytics")
-            .where("institutionId", "==", id)
-            .get()
-        )
-      );
-
-      const sectorEvents = analyticsSnapshots.flatMap(snapshot =>
-        snapshot.docs.map(doc => doc.data())
-      );
-
-      const sectorWeekViewCount = sectorEvents.filter(item =>
-        item.type === "profile_view" && weekKeys.has(item.day)
-      ).length;
-
-      sectorWeekViews.textContent = sectorWeekViewCount;
-      sectorStatsNote.textContent =
-        "Sektör karşılaştırması son 7 günlük Dijiyer verilerine göre hesaplanır.";
-    } catch (analyticsError) {
-      console.warn("Sektör trafik verisi okunamadı:", analyticsError);
-      sectorWeekViews.textContent = "—";
-      sectorStatsNote.textContent =
-        "Kurum ve yorum sektör verileri hazır. Sektör trafik yetkisi Firestore Rules ile açılacak.";
+    if(sectorReviewCount)sectorReviewCount.textContent=String(reviewCount);
+    if(sectorAverageRating)sectorAverageRating.textContent=reviewCount ? average.toFixed(1) : "0.0";
+    if(sectorWeekViews)sectorWeekViews.textContent="—";
+    if(sectorStatsNote){
+      sectorStatsNote.textContent=
+        "Sektör puanı kurum kayıtlarındaki toplu verilerden hesaplanır. Gereksiz toplu trafik ve yorum okumaları kapatıldı.";
     }
-
   } catch (error) {
     console.error("Sektör istatistikleri yüklenemedi:", error);
-    sectorStatsNote.textContent = "Sektör istatistikleri şu anda yüklenemedi.";
+    if(sectorStatsNote)sectorStatsNote.textContent = "Sektör istatistikleri şu anda yüklenemedi.";
   }
 }
 
@@ -3480,18 +3468,11 @@ auth.onAuthStateChanged(async user => {
     currentInstitution = { id: institutionDoc.id, ...institutionDoc.data() };
 
     renderInstitutionHeader();
-    await Promise.all([
-      loadMatchedQuotes(),
-      loadInstitutionStats(),
-      loadSupportTickets()
-    ]);
+    await loadMatchedQuotes();
 
     populateSupportQuoteReferences();
     updateSupportBrowserNotificationUi();
     startLiveQuoteWatcher();
-    startLiveSupportWatcher();
-    startPromotionPackagesWatcher();
-    startPromotionOrdersWatcher();
 
     const panelParams = new URLSearchParams(window.location.search);
     const requestedPanel = panelParams.get("tab");
@@ -3505,6 +3486,15 @@ auth.onAuthStateChanged(async user => {
 
     if (requestedPanel && allowedPanels.has(requestedPanel)) {
       setPanelTab(requestedPanel);
+
+      if(requestedPanel==="stats"){
+        await ensureInstitutionStats(true);
+      }else if(requestedPanel==="support"){
+        await ensureSupportLoaded(true);
+        startLiveSupportWatcher();
+      }else if(requestedPanel==="showcase"){
+        ensureShowcaseWatchers();
+      }
     }
 
     if (
