@@ -19870,3 +19870,41 @@ to{opacity:1;transform:none}
     color:#1268cd;
   }
 }
+
+
+/* =========================================================
+   DESKTOP BOS ALT KATEGORI PASIF V1
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-category-preview-subs button.is-disabled,
+  .desktop-category-preview-subs button:disabled{
+    cursor:default;
+    opacity:.52;
+    border-color:#e7ebf0;
+    background:#f7f8fa;
+    box-shadow:none;
+  }
+
+  .desktop-category-preview-subs button.is-disabled .desktop-preview-sub-count,
+  .desktop-category-preview-subs button:disabled .desktop-preview-sub-count{
+    color:#9aa6b4;
+  }
+
+  .desktop-category-preview-subs button.is-disabled .desktop-preview-sub-label,
+  .desktop-category-preview-subs button:disabled .desktop-preview-sub-label{
+    color:#8c99a8;
+  }
+
+  .desktop-category-preview-subs button.is-disabled:hover,
+  .desktop-category-preview-subs button:disabled:hover{
+    border-color:#e7ebf0;
+    background:#f7f8fa;
+  }
+
+  .desktop-category-preview-subs button.is-disabled:hover .desktop-preview-sub-count,
+  .desktop-category-preview-subs button:disabled:hover .desktop-preview-sub-count,
+  .desktop-category-preview-subs button.is-disabled:hover .desktop-preview-sub-label,
+  .desktop-category-preview-subs button:disabled:hover .desktop-preview-sub-label{
+    color:inherit;
+  }
+}
