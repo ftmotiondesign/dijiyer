@@ -6298,3 +6298,40 @@ body[data-panel-current="showcase"] .panel-heading-action{
     gap:3px;
   }
 }
+
+
+/* Dijiyer ikinci teklif fırsatı */
+.second-offer-prompt{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:14px;
+  align-items:center;
+  margin:16px 0 8px;
+  padding:16px;
+  border:1px solid #bfdbfe;
+  border-radius:16px;
+  background:linear-gradient(135deg,#eff6ff 0%,#f8fbff 100%);
+  box-shadow:0 10px 26px rgba(37,99,235,.08);
+}
+.second-offer-prompt-icon{
+  width:42px;height:42px;border-radius:13px;
+  display:grid;place-items:center;
+  background:#2563eb;color:#fff;font-size:22px;font-weight:900;
+}
+.second-offer-prompt-copy{min-width:0}
+.second-offer-prompt-copy span{
+  display:block;margin-bottom:3px;
+  color:#2563eb;font-size:11px;font-weight:900;letter-spacing:.08em;
+}
+.second-offer-prompt-copy strong{display:block;color:#172033;font-size:15px}
+.second-offer-prompt-copy p{margin:5px 0 0;color:#64748b;font-size:13px;line-height:1.5}
+.second-offer-prompt button{
+  border:0;border-radius:11px;padding:11px 14px;
+  background:#2563eb;color:#fff;font-weight:900;cursor:pointer;white-space:nowrap;
+}
+.second-offer-prompt button:hover{filter:brightness(.96)}
+.offer-edit-details[open]{padding-top:4px}
+@media(max-width:760px){
+  .second-offer-prompt{grid-template-columns:auto 1fr}
+  .second-offer-prompt button{grid-column:1/-1;width:100%}
+}
