@@ -64,7 +64,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=62" />
+  <link rel="stylesheet" href="style.css?v=63" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -296,6 +296,20 @@
             <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
           </section>
       
+          <section class="quote-search-fallback hidden" id="quoteSearchFallback" aria-live="polite">
+            <div class="quote-search-fallback-icon">⌕</div>
+            <div class="quote-search-fallback-main">
+              <span>ARADIĞIN HİZMETİ BULAMADIK</span>
+              <h3><b id="quoteSearchFallbackQuery">Aramanız</b> için doğrudan bir sonuç bulunamadı.</h3>
+              <p>Yakın alt kategorilerden birini deneyebilir veya ihtiyacınızı serbestçe yazıp teklif talebi oluşturabilirsiniz.</p>
+              <div class="quote-search-fallback-suggestions hidden" id="quoteSearchFallbackSuggestions"></div>
+              <div class="quote-search-fallback-actions">
+                <button type="button" id="quoteSearchFallbackAllBtn">Tüm Kategorilerde Ara</button>
+                <button type="button" class="primary" id="quoteSearchFallbackQuoteBtn">İhtiyacımı Yazıp Teklif Al</button>
+              </div>
+            </div>
+          </section>
+
           <input type="checkbox" id="videoOnly" hidden>
           <input type="checkbox" id="offerOnly" hidden>
           <input type="checkbox" id="tour360Only" hidden>
@@ -1572,7 +1586,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=62"></script>
+<script src="script.js?v=63"></script>
 <script src="offers.js?v=2"></script>
 
 <script>
