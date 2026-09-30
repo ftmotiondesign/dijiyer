@@ -4683,10 +4683,10 @@
         impressions++;
         return;
       }
-      if(type==="opportunity_ad_click"){
-        if(action==="detail")details++;
-        else if(action==="whatsapp")whatsapp++;
-        else if(action==="directions")directions++;
+      if(type.endsWith("ad_click")){
+        if(type.includes("whatsapp")||action==="whatsapp")whatsapp++;
+        else if(type.includes("directions")||action==="directions")directions++;
+        else if(type.includes("detail")||action==="detail")details++;
         else otherClicks++;
       }
     });
