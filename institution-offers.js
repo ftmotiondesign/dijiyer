@@ -53,6 +53,9 @@ function syncInstitutionOfferStateWatchers(){
         else institutionLockMap.delete(quoteId);
 
         if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
+          if(!before && after && institutionLockBelongsToCurrentInstitution(after,institutionOfferMap.get(quoteId))){
+            try{ showToast("✓ Müşteri teklifinizi kabul etti. Teklif kapatıldı ve artık düzenlenemez."); }catch(_){}
+          }
           renderQuotes();
           renderSummary();
         }
@@ -343,7 +346,7 @@ function sellerStateMeta(state){
   const map={
     new:["Yeni","status-new"],
     offered:["Teklif Verildi","status-interested"],
-    locked:["Kayıt Bekliyor","status-interested"],
+    locked:["Kabul Edildi","status-interested"],
     used:["Gerçek Kayıt","status-interested"],
     expired:["Süresi Doldu","status-not_interested"],
     closed:["Başka Teklif Seçildi","status-not_interested"],
@@ -952,10 +955,10 @@ quoteCardHtml = function(quote,compact=false){
             <div class="offer-summary-price">${offerMoney(lock.price)}</div>
             <div class="muted">Teklif No: <b>${offerSafe(lock.offerCode)}</b></div>
           </div>
-          <span class="quote-status status-interested">⏳ Kayıt Bekliyor</span>
+          <span class="quote-status status-interested">✓ Kabul Edildi</span>
         </div>
         <div class="quote-note">${offerSafe(lock.scope || "")}</div>
-        <div class="offer-lock-notice"><strong>Müşteri teklifi kabul etti.</strong> Kabul edilen fiyat ve şartlar artık değiştirilemez. Gerçek kayıt için müşterinin en geç <b>${formatDate(lock.registrationDeadlineAt || lock.expiresAt)}</b> tarihine kadar kurumunuzla doğrudan işlemi tamamlaması gerekir. Dijiyer üzerinden ödeme alınmaz.</div>
+        <div class="offer-lock-notice"><strong>✓ Müşteri teklifinizi kabul etti.</strong> Bu teklif kapatıldı. Kabul edilen fiyat ve şartlar artık değiştirilemez. Gerçek kayıt için müşterinin en geç <b>${formatDate(lock.registrationDeadlineAt || lock.expiresAt)}</b> tarihine kadar kurumunuzla doğrudan işlemi tamamlaması gerekir. Dijiyer üzerinden ödeme alınmaz.</div>
       </div>`;
   }else if(state==="used"){
     actionArea=`<div class="offer-lock-notice"><strong>✓ Gerçek Kayıt Tamamlandı</strong><br>${offerSafe(lock.offerCode || "")} numaralı teklif kurum tarafından gerçek kayda dönüştürüldü. Tamamlanma: ${formatDate(lock.registrationCompletedAt || lock.usedAt)}</div>`;
@@ -1042,7 +1045,7 @@ renderQuotes = function(){
 async function saveRealOffer(form){
   const quoteId=form.dataset.quoteId;
   const quote=quoteRecords.find(q=>q.id===quoteId);
-  const lock=institutionLockMap.get(quoteId);
+  let lock=institutionLockMap.get(quoteId);
   const existing=institutionOfferMap.get(quoteId);
   const routedLead=isRoutedLeadForCurrentInstitution(quote);
   const nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
@@ -1050,6 +1053,20 @@ async function saveRealOffer(form){
   if(!quote || institutionQuoteIsTerminal(quote)){
     alert("Bu teklif talebi kapalı olduğu için yeni teklif gönderilemez.");
     renderQuotes();
+    return;
+  }
+
+  // Canlı dinleyici gecikse bile kaydetmeden hemen önce sunucudaki kabul kilidini doğrula.
+  try{
+    const freshLockSnap=await db.collection("quoteRequests").doc(quoteId)
+      .collection("locks").doc("main").get();
+    if(freshLockSnap.exists){
+      lock=freshLockSnap.data();
+      institutionLockMap.set(quoteId,lock);
+    }
+  }catch(error){
+    console.error("Teklif kabul durumu doğrulanamadı:",error);
+    alert("Teklifin güncel durumu doğrulanamadı. Lütfen tekrar deneyin.");
     return;
   }
 
