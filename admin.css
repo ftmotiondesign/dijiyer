@@ -6485,20 +6485,36 @@ button{
   color:#166534;
 }
 .quote-routing-consent.blocked{
-  border:1px solid #f8d78b;
-  background:#fffaf0;
+  border:1px solid #f59e0b;
+  background:linear-gradient(180deg,#fffaf0,#fff7e6);
   color:#92400e;
+  box-shadow:0 5px 14px rgba(245,158,11,.08);
+}
+.quote-routing-consent.blocked strong{
+  color:#9a3412;
 }
 .quote-routing-consent button{
-  min-height:31px;
-  border:0;
-  border-radius:8px;
-  background:#f59e0b;
+  min-height:38px;
+  border:1px solid #d97706;
+  border-radius:10px;
+  background:linear-gradient(180deg,#f59e0b,#ea8a00);
   color:#fff;
-  padding:0 10px;
-  font-size:9px;
-  font-weight:850;
+  padding:0 16px;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.01em;
+  box-shadow:0 5px 12px rgba(217,119,6,.22);
   flex:0 0 auto;
+  cursor:pointer;
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.quote-routing-consent button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 7px 16px rgba(217,119,6,.28);
+  filter:saturate(1.06);
+}
+.quote-routing-consent button:active{
+  transform:translateY(0);
 }
 @media(max-width:620px){
   .quote-routing-consent{
