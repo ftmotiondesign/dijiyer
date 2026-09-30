@@ -148,6 +148,7 @@ const adminSubtabs = document.getElementById("adminSubtabs");
 const adminCurrentSection = document.getElementById("adminCurrentSection");
 const adminCurrentHint = document.getElementById("adminCurrentHint");
 const adminBackOverview = document.getElementById("adminBackOverview");
+const adCenterPersistentHub = document.getElementById("adCenterPersistentHub");
 const quickQuoteCount = document.getElementById("quickQuoteCount");
 const quickApplicationCount = document.getElementById("quickApplicationCount");
 const quickIssueCount = document.getElementById("quickIssueCount");
@@ -200,6 +201,7 @@ function syncSimpleAdminNavigation(tabId){
   if(adminCurrentSection)adminCurrentSection.textContent=meta[1];
   if(adminCurrentHint)adminCurrentHint.textContent=meta[2];
   if(adminBackOverview)adminBackOverview.hidden=group==="overview";
+  if(adCenterPersistentHub)adCenterPersistentHub.hidden=group!=="ads";
 
   localStorage.setItem("dijiyerAdminLastTab",tabId);
 }
