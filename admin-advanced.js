@@ -459,6 +459,8 @@
       vip_off:["vip",false,"VIP kaldırıldı"],
       video_on:["video",true,"Videolu işaretlendi"],
       video_off:["video",false,"Video işareti kaldırıldı"],
+      status_active:["status","active","Kurum aktif yapıldı"],
+      status_passive:["status","passive","Kurum pasif yapıldı"],
       ad_pause:["adStatus","paused","Reklam duraklatıldı"],
       ad_off:["adStatus","none","Reklam kapatıldı"]
     };
