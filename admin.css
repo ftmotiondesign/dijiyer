@@ -5515,3 +5515,432 @@ button{
     grid-column:auto;
   }
 }
+
+
+/* =========================================================
+   TEKLİF DETAYI / TEKLİFİ AÇ
+   ========================================================= */
+.quote-open-btn{
+  border-color:#93c5fd !important;
+  background:#1677ff !important;
+  color:#fff !important;
+}
+.quote-open-btn:hover{
+  background:#0f66df !important;
+  border-color:#0f66df !important;
+}
+
+.quote-detail-modal-card{
+  width:min(1100px,95vw);
+  max-height:92vh;
+  overflow:auto;
+  padding:0;
+  border-radius:20px;
+}
+
+.quote-detail-header{
+  padding:24px 28px 18px;
+  border-bottom:1px solid #e7edf5;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(22,119,255,.10),transparent 28%),
+    linear-gradient(180deg,#fff,#f9fbff);
+}
+.quote-detail-header h2{
+  margin:5px 0 6px;
+  color:#0f172a;
+  font-size:24px;
+}
+.quote-detail-header p{
+  margin:0;
+  color:#64748b;
+  font-size:12px;
+}
+
+.quote-detail-body{
+  display:grid;
+  gap:14px;
+  padding:18px 22px 24px;
+  background:#f7f9fc;
+}
+
+.quote-detail-status-strip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:15px 17px;
+  border:1px solid #dbe5f0;
+  border-radius:15px;
+  background:#fff;
+}
+.quote-detail-status-strip>div:first-child span{
+  display:block;
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  margin-bottom:4px;
+}
+.quote-detail-status-strip>div:first-child strong{
+  font-size:18px;
+  color:#172033;
+}
+.quote-detail-status-strip.state-locked{border-color:#d8c4ff;background:#fbf8ff}
+.quote-detail-status-strip.state-completed{border-color:#b7e4c7;background:#f5fff8}
+.quote-detail-status-strip.state-expired{border-color:#fecaca;background:#fff8f8}
+.quote-detail-status-strip.state-waiting{border-color:#fde68a;background:#fffbeb}
+.quote-detail-status-strip.state-active{border-color:#bfdbfe;background:#f8fbff}
+
+.quote-detail-status-stats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+}
+.quote-detail-status-stats span{
+  padding:7px 9px;
+  border:1px solid #e2e8f0;
+  border-radius:999px;
+  background:#fff;
+  color:#475569;
+  font-size:10px;
+  font-weight:800;
+}
+
+.quote-detail-section{
+  padding:16px;
+  border:1px solid #e3e9f1;
+  border-radius:15px;
+  background:#fff;
+}
+.quote-detail-section.accepted{
+  border-color:#c4b5fd;
+  background:#fcfaff;
+}
+.quote-detail-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.quote-detail-section-head span{
+  display:block;
+  color:#64748b;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  margin-bottom:4px;
+}
+.quote-detail-section-head h3{
+  margin:0;
+  color:#172033;
+  font-size:17px;
+}
+.quote-detail-head-link{
+  color:#1677ff;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:850;
+}
+.quote-detail-helper{
+  margin:0;
+  color:#64748b;
+  font-size:11px;
+  line-height:1.55;
+}
+
+.quote-detail-info-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;
+}
+.quote-detail-info-grid>div{
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid #e7edf4;
+  border-radius:11px;
+  background:#fbfcfe;
+}
+.quote-detail-info-grid span,
+.quote-detail-note span,
+.quote-detail-scope span,
+.quote-detail-condition span{
+  display:block;
+  color:#7a8798;
+  font-size:9px;
+  font-weight:850;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.quote-detail-info-grid strong{
+  display:block;
+  color:#172033;
+  font-size:11.5px;
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+.quote-detail-note{
+  margin-top:9px;
+  padding:11px 12px;
+  border:1px solid #e7edf4;
+  border-radius:11px;
+  background:#fbfcfe;
+}
+.quote-detail-note strong{
+  color:#334155;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.quote-detail-offers,
+.quote-detail-institutions{
+  display:grid;
+  gap:10px;
+}
+.quote-detail-offer-card{
+  border:1px solid #dde6f0;
+  border-radius:13px;
+  padding:13px;
+  background:#fff;
+}
+.quote-detail-offer-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.quote-detail-mini-label{
+  color:#64748b;
+  font-size:8.5px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.quote-detail-offer-head h4{
+  margin:3px 0 3px;
+  font-size:15px;
+  color:#172033;
+}
+.quote-detail-offer-head small{
+  color:#7a8798;
+  font-size:9.5px;
+}
+.quote-detail-offer-side{
+  display:grid;
+  justify-items:end;
+  gap:5px;
+}
+.quote-detail-offer-side>strong{
+  color:#0f172a;
+  font-size:18px;
+}
+.quote-detail-state{
+  display:inline-flex !important;
+  align-items:center;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#eef4ff;
+  color:#1d4ed8 !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  white-space:nowrap;
+}
+.quote-detail-offer-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+  margin-top:11px;
+}
+.quote-detail-offer-grid>div{
+  padding:8px 9px;
+  border:1px solid #edf1f5;
+  border-radius:9px;
+  background:#f8fafc;
+}
+.quote-detail-offer-grid span{
+  display:block;
+  color:#7a8798;
+  font-size:8.5px;
+  margin-bottom:3px;
+}
+.quote-detail-offer-grid strong{
+  color:#172033;
+  font-size:10.5px;
+}
+.quote-detail-scope,
+.quote-detail-condition{
+  margin-top:8px;
+  padding:10px 11px;
+  border-radius:10px;
+  background:#f8fafc;
+  border:1px solid #edf1f5;
+}
+.quote-detail-scope strong,
+.quote-detail-condition strong{
+  color:#334155;
+  font-size:11px;
+  line-height:1.5;
+}
+.quote-detail-condition{
+  background:#fffaf0;
+  border-color:#f8df9c;
+}
+.quote-detail-inline-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:9px;
+}
+.quote-detail-inline-actions a{
+  color:#1677ff;
+  text-decoration:none;
+  font-size:10px;
+  font-weight:850;
+}
+
+.quote-detail-institution-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 12px;
+  border:1px solid #e4eaf1;
+  border-radius:11px;
+  background:#fbfcfe;
+}
+.quote-detail-institution-card>div:first-child{
+  min-width:0;
+}
+.quote-detail-institution-card strong{
+  display:block;
+  color:#172033;
+  font-size:12px;
+  margin-bottom:3px;
+}
+.quote-detail-institution-card span{
+  display:block;
+  color:#64748b;
+  font-size:10px;
+  margin-bottom:3px;
+}
+.quote-detail-institution-card small{
+  color:#1677ff;
+  font-size:9.5px;
+  font-weight:800;
+}
+.quote-detail-institution-actions{
+  display:flex;
+  gap:6px;
+  flex:0 0 auto;
+}
+.quote-detail-institution-actions a{
+  padding:7px 9px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#334155;
+  text-decoration:none;
+  font-size:9.5px;
+  font-weight:850;
+}
+.quote-detail-institution-actions a.wa{
+  border-color:#bbf7d0;
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.quote-detail-empty{
+  display:grid;
+  gap:5px;
+  padding:14px;
+  border:1px dashed #cbd5e1;
+  border-radius:12px;
+  background:#f8fafc;
+}
+.quote-detail-empty strong{color:#334155;font-size:12px}
+.quote-detail-empty span{color:#64748b;font-size:10.5px;line-height:1.5}
+.quote-detail-empty.warning{
+  border-color:#f6d365;
+  background:#fffaf0;
+}
+
+.quote-detail-payment-warning{
+  display:grid;
+  gap:4px;
+  margin-top:10px;
+  padding:11px 12px;
+  border:1px solid #f1cf68;
+  border-radius:11px;
+  background:#fff9e8;
+}
+.quote-detail-payment-warning strong{
+  color:#5f4700;
+  font-size:11px;
+}
+.quote-detail-payment-warning span{
+  color:#725c16;
+  font-size:10px;
+  line-height:1.5;
+}
+
+.quote-detail-footer-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  padding-top:2px;
+}
+.quote-detail-footer-actions a,
+.quote-detail-footer-actions button{
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 13px;
+  border:1px solid #dbe3ee;
+  border-radius:9px;
+  background:#fff;
+  color:#334155;
+  text-decoration:none;
+  font-size:10.5px;
+  font-weight:850;
+}
+.quote-detail-footer-actions a.primary{
+  background:#16a34a;
+  border-color:#16a34a;
+  color:#fff;
+}
+
+@media(max-width:900px){
+  .quote-detail-info-grid,
+  .quote-detail-offer-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:620px){
+  .quote-detail-header{padding:20px 18px 15px}
+  .quote-detail-body{padding:13px}
+  .quote-detail-status-strip,
+  .quote-detail-offer-head,
+  .quote-detail-institution-card{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .quote-detail-status-stats{justify-content:flex-start}
+  .quote-detail-info-grid,
+  .quote-detail-offer-grid{
+    grid-template-columns:1fr;
+  }
+  .quote-detail-offer-side{
+    justify-items:start;
+  }
+  .quote-detail-institution-actions{
+    width:100%;
+  }
+  .quote-detail-institution-actions a{
+    flex:1;
+    text-align:center;
+  }
+  .quote-detail-footer-actions>*{
+    width:100%;
+  }
+}
