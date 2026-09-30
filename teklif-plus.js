@@ -77,6 +77,7 @@
   }
 
   function comparePanelHtml(bundle){
+    if(bundle.lock)return "";
     const chosen=bundle.offers.filter(o=>compareIds.has(String(o.institutionId||o.id||"")));
     if(chosen.length<2)return "";
     const minPrice=Math.min(...chosen.map(o=>Number(o.price||0)));
@@ -108,6 +109,10 @@
     if(enhancing)return;
     enhancing=true;
     try{
+      if(bundle.lock){
+        compareIds.clear();
+        results.querySelectorAll("[data-lock], [data-lock-consent], [data-djy-compare-lock]").forEach(control=>control.remove());
+      }
       const summary=results.querySelector(".request-summary");
       if(summary){
         summary.insertAdjacentHTML("afterend",comparePanelHtml(bundle));
