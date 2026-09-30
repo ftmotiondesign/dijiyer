@@ -8155,6 +8155,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
   const categoryPreviewCount = document.getElementById('desktopCategoryPreviewCount');
   const categoryPreviewSubs = document.getElementById('desktopCategoryPreviewSubs');
   const categoryPreviewOpen = document.getElementById('desktopCategoryPreviewOpen');
+  const categoryInlineResults = document.getElementById('desktopCategoryInlineResults');
 
   function syncDesktopLocation(){
     if(!desktopLocationText)return;
@@ -8191,6 +8192,58 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     }).length;
   }
 
+  function hideDesktopInlineInstitutions(){
+    if(!categoryInlineResults)return;
+    categoryInlineResults.classList.add('hidden');
+    categoryInlineResults.innerHTML='';
+    if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gör';
+  }
+
+  function renderDesktopInlineInstitutions(){
+    if(!categoryInlineResults)return;
+
+    const rows = typeof getFilteredInstitutions === 'function'
+      ? getFilteredInstitutions()
+      : [];
+
+    if(!rows.length){
+      categoryInlineResults.innerHTML =
+        '<div class="desktop-inline-empty"><strong>Bu seçimde aktif kurum bulunamadı.</strong><small>Başka bir alt hizmet seçebilirsin.</small></div>';
+      categoryInlineResults.classList.remove('hidden');
+      if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
+      return;
+    }
+
+    const visibleRows = rows.slice(0,12);
+    categoryInlineResults.innerHTML =
+      '<div class="desktop-inline-results-head">' +
+        '<div><span>KAYITLI KURUMLAR</span><strong>' + rows.length + ' kurum bulundu</strong></div>' +
+        '<small>Kurum kartına tıklayarak profilini açabilirsin.</small>' +
+      '</div>' +
+      '<div class="desktop-inline-institution-grid">' +
+        visibleRows.map(inst=>{
+          const logo = safePublicProfileUrl(inst.logoUrl || '');
+          const location = [inst.district,inst.city].filter(Boolean).join(' / ') || String(inst.location || '');
+          const rating = Number(inst.rating || 0);
+          const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
+          return '<a class="desktop-inline-institution-card" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
+            '<div class="desktop-inline-institution-logo">' +
+              (logo ? '<img src="' + logo + '" alt="">' : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>') +
+            '</div>' +
+            '<div class="desktop-inline-institution-copy">' +
+              '<strong>' + escapeHtml(inst.name || 'Kurum') + '</strong>' +
+              '<small>📍 ' + escapeHtml(location || 'Konum bilgisi yok') + '</small>' +
+              '<div>' + (rating > 0 ? '<span>⭐ ' + rating.toFixed(1) + '</span>' : '') + offerText + '</div>' +
+            '</div>' +
+            '<b>→</b>' +
+          '</a>';
+        }).join('') +
+      '</div>' +
+      (rows.length > visibleRows.length ? '<div class="desktop-inline-more">+' + (rows.length-visibleRows.length) + ' kurum daha</div>' : '');
+
+    categoryInlineResults.classList.remove('hidden');
+    if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
+  }
   function renderDesktopCategoryPreview(key){
     if(!categoryPreview)return;
 
@@ -8293,6 +8346,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderMobileCategories === 'function')renderMobileCategories();
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+    hideDesktopInlineInstitutions();
     renderDesktopCategoryPreview(key);
   }
 
@@ -8336,10 +8390,16 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
     renderDesktopCategoryPreview(mainKey);
+    renderDesktopInlineInstitutions();
   });
 
   categoryPreviewOpen?.addEventListener('click', ()=>{
-    resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+    if(!categoryInlineResults)return;
+    if(categoryInlineResults.classList.contains('hidden')){
+      renderDesktopInlineInstitutions();
+    }else{
+      hideDesktopInlineInstitutions();
+    }
   });
 
   desktopLocationBtn?.addEventListener('click', event=>{
