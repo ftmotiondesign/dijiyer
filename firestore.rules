@@ -82,6 +82,100 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - KURUM BAŞVURULARI
+    // =====================================================
+    match /institutionApplications/{applicationId} {
+
+      // Ziyaretçi üyelik olmadan kurum başvurusu gönderebilir.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'name',
+          'mainCategory',
+          'subCategory',
+          'category',
+          'city',
+          'district',
+          'address',
+          'phone',
+          'website',
+          'referralCode',
+          'referralCapturedAt',
+          'date',
+          'lat',
+          'lng'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.mainCategory is string
+        && request.resource.data.subCategory is string
+        && request.resource.data.category is string
+        && request.resource.data.city is string
+        && request.resource.data.district is string
+        && request.resource.data.address is string
+        && request.resource.data.phone is string
+        && request.resource.data.website is string
+        && request.resource.data.referralCode is string
+        && request.resource.data.referralCapturedAt is string
+        && request.resource.data.date is string
+        && request.resource.data.lat is number
+        && request.resource.data.lng is number;
+
+      allow read, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - KURUMLAR
+    // =====================================================
+    match /institutions/{institutionId} {
+
+      // Kurum listesi ve kurum profilleri herkese açık.
+      allow read: if true;
+
+      // Kurum kaydının kendisi yalnızca yönetici tarafından oluşturulur/değiştirilir.
+      allow create, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - KURUM HESAPLARI
+    // =====================================================
+    match /institutionUsers/{userId} {
+
+      // Firebase Auth hesabını oluşturan kullanıcı kendi kurum hesabı başvurusunu kaydedebilir.
+      allow create: if
+        girisYapmis()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'email',
+          'institutionId',
+          'institutionName',
+          'status',
+          'date'
+        ])
+        && request.resource.data.email is string
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.institutionName is string
+        && request.resource.data.institutionName.size() > 0
+        && request.resource.data.status == 'pending'
+        && request.resource.data.date is string;
+
+      // Kullanıcı kendi başvurusunu, yönetici ise tüm hesapları okuyabilir.
+      allow read: if
+        adminMi()
+        || (
+          girisYapmis()
+          && request.auth.uid == userId
+        );
+
+      // Onay/red ve diğer yönetim işlemleri sadece admin.
+      allow update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - YENİ TEKLİF TALEBİ
     // =====================================================
     match /quoteRequests/{quoteId} {
