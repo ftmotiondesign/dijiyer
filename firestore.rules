@@ -103,6 +103,11 @@ service cloud.firestore {
           )
           ||
           (
+            talep.keys().hasAny(['acceptedInstitutionId'])
+            && talep.acceptedInstitutionId == bagliKurumId()
+          )
+          ||
+          (
             talep.keys().hasAny(['forwardInstitutionIds'])
             && talep.forwardInstitutionIds is list
             && talep.forwardInstitutionIds.hasAny([bagliKurumId()])
@@ -499,6 +504,11 @@ service cloud.firestore {
             (
               resource.data.keys().hasAny(['targetInstitutionId'])
               && resource.data.targetInstitutionId == bagliKurumId()
+            )
+            ||
+            (
+              resource.data.keys().hasAny(['acceptedInstitutionId'])
+              && resource.data.acceptedInstitutionId == bagliKurumId()
             )
             ||
             (
