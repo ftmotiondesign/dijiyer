@@ -1063,6 +1063,24 @@ function populateInstitutionCityFilter() {
   }
 }
 
+function isInstitutionVipActive(item){
+  if(!item)return false;
+
+  // Yeni VIP yönetimi açıkça pasife aldıysa eski vip alanı olsa bile VIP sayma.
+  if(item.vipActive===false)return false;
+
+  if(item.vipActive===true){
+    const end=String(item.vipEndAt||"").slice(0,10);
+    if(!end)return true;
+
+    const endTime=new Date(end+"T23:59:59").getTime();
+    return !Number.isFinite(endTime) || endTime>=Date.now();
+  }
+
+  // Eski kayıtlardaki VIP işaretini geriye dönük destekle.
+  return Boolean(item.vip);
+}
+
 function getFilteredManagedInstitutions() {
   const query = institutionSearch.value.trim().toLocaleLowerCase("tr-TR");
   const category = institutionCategoryFilter.value;
@@ -1091,7 +1109,7 @@ function getFilteredManagedInstitutions() {
       (status === "passive" && !isActive);
 
     let matchesFeature = true;
-    if (feature === "vip") matchesFeature = Boolean(item.vip);
+    if (feature === "vip") matchesFeature = isInstitutionVipActive(item);
     if (feature === "video") matchesFeature = Boolean(item.video);
     if (feature === "offer") matchesFeature = item.offer !== false;
     if (feature === "offer_off") matchesFeature = item.offer === false;
@@ -1531,7 +1549,7 @@ function refreshInstitutionMiniStats() {
   if (institutionStatOffer) institutionStatOffer.textContent =
     institutionRecords.filter(item => item.offer !== false).length;
   if (institutionStatVip) institutionStatVip.textContent =
-    institutionRecords.filter(item => Boolean(item.vip)).length;
+    institutionRecords.filter(item => isInstitutionVipActive(item)).length;
   if (institutionStatVideo) institutionStatVideo.textContent =
     institutionRecords.filter(item => Boolean(item.video)).length;
 
@@ -3147,7 +3165,7 @@ function quoteRoutingCandidateBundle(request){
   );
 
   const tierOf=inst=>{
-    if(Boolean(inst.vip))return "vip";
+    if(isInstitutionVipActive(inst))return "vip";
     const adState=typeof getInstitutionAdState==="function"
       ? getInstitutionAdState(inst)
       : {advertiser:false};
