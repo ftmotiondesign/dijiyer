@@ -1355,49 +1355,72 @@ async function saveRealOffer(form){
     const offerRef=quoteRef.collection("offers").doc(existing?.id || currentAccount.institutionId);
     const lookupRef=db.collection("offerLookup").doc(code);
 
-    const batch=db.batch();
-
+    // 1) Önce eski sürümü arşivlemeyi dene. Bu yardımcı kayıt başarısız olsa bile
+    // ana teklifin müşteriye gitmesini engelleme.
     if(existing && Number(existing.offerVersion||0)>=1){
       const existingVersion=institutionOfferVersion(existing);
       const historyRef=quoteRef.collection("offerHistory")
         .doc(String(currentAccount.institutionId)+"_v"+String(existingVersion));
 
-      // Aynı sürüm daha önce arşivlendiyse create-only Firestore kuralına takılmamak için
-      // tekrar yazma. Bu özellikle sayfa eski local state ile açık kaldığında oluşabiliyor.
-      const historySnap=await historyRef.get();
-      if(!historySnap.exists){
-        batch.set(historyRef,{
-          quoteId:String(quoteId),
-          institutionId:String(currentAccount.institutionId),
-          institutionName:String(existing.institutionName||currentInstitution.name||"Kurum"),
-          offerCode:String(existing.offerCode||code),
-          version:existingVersion,
-          price:Number(existing.price||0),
-          vatStatus:String(existing.vatStatus||""),
-          scope:String(existing.scope||""),
-          extraFee:String(existing.extraFee||""),
-          extraFeeAmount:Number(existing.extraFeeAmount||0),
-          extraFeeRequired:String(existing.extraFeeRequired||""),
-          extraFeeNote:String(existing.extraFeeNote||""),
-          conditions:String(existing.conditions||""),
-          expiresAt:String(existing.expiresAt||""),
-          sourceType:String(existing.sourceType||source.type||""),
-          sourceLabel:String(existing.sourceLabel||source.label||""),
-          createdAt:String(existing.createdAt||now),
-          updatedAt:String(existing.updatedAt||existing.createdAt||now),
-          archivedAt:now
-        });
+      try{
+        const historySnap=await historyRef.get();
+        if(!historySnap.exists){
+          await historyRef.set({
+            quoteId:String(quoteId),
+            institutionId:String(currentAccount.institutionId),
+            institutionName:String(existing.institutionName||currentInstitution.name||"Kurum"),
+            offerCode:String(existing.offerCode||code),
+            version:existingVersion,
+            price:Number(existing.price||0),
+            vatStatus:String(existing.vatStatus||""),
+            scope:String(existing.scope||""),
+            extraFee:String(existing.extraFee||""),
+            extraFeeAmount:Number(existing.extraFeeAmount||0),
+            extraFeeRequired:String(existing.extraFeeRequired||""),
+            extraFeeNote:String(existing.extraFeeNote||""),
+            conditions:String(existing.conditions||""),
+            expiresAt:String(existing.expiresAt||""),
+            sourceType:String(existing.sourceType||source.type||""),
+            sourceLabel:String(existing.sourceLabel||source.label||""),
+            createdAt:String(existing.createdAt||now),
+            updatedAt:String(existing.updatedAt||existing.createdAt||now),
+            archivedAt:now
+          });
+        }
+      }catch(historyError){
+        console.warn("Teklif geçmişi kaydedilemedi; ana teklif kaydı devam ediyor:",historyError);
       }
     }
 
-    batch.set(offerRef,data,{merge:true});
-    batch.set(lookupRef,{
-      quoteId,
-      institutionId:currentAccount.institutionId,
-      offerCode:code,
-      updatedAt:new Date().toISOString()
-    },{merge:true});
-    await batch.commit();
+    // 2) Kritik kayıt: müşterinin takip ekranını besleyen asıl teklif.
+    // Yardımcı kayıtlarla aynı batch'te olmadığı için onların hatası bunu iptal edemez.
+    try{
+      await offerRef.set(data,{merge:true});
+    }catch(coreOfferError){
+      console.error("ANA TEKLİF YAZMA HATASI:",{
+        code:String(coreOfferError?.code||"unknown"),
+        message:String(coreOfferError?.message||""),
+        quoteId,
+        institutionId:String(currentAccount.institutionId||""),
+        existingVersion:existing ? institutionOfferVersion(existing) : 0,
+        nextVersion,
+        quoteStatus:String(quote?.status||"")
+      });
+      throw coreOfferError;
+    }
+
+    // 3) QR / teklif kodu indeksi yardımcı kayıttır. Hata verirse teklif yine müşteriye gider.
+    try{
+      await lookupRef.set({
+        quoteId,
+        institutionId:currentAccount.institutionId,
+        offerCode:code,
+        updatedAt:new Date().toISOString()
+      },{merge:true});
+    }catch(lookupError){
+      console.warn("Teklif kodu indeksi güncellenemedi; ana teklif kaydedildi:",lookupError);
+    }
+
     await recordPublicOfferEvent(quoteId,currentAccount.institutionId,data.createdAt);
 
     institutionOfferMap.set(quoteId,{id:currentAccount.institutionId,...data});
@@ -1459,7 +1482,7 @@ async function saveRealOffer(form){
 
     alert(
       errorCode.includes("permission-denied")
-        ? "Teklif kaydedilemedi. Talep kapanmış veya teklif artık düzenlenemiyor. Sayfayı yenileyip tekrar kontrol edin."
+        ? "Ana teklif Firestore tarafından reddedildi. Talep açık görünse bile kurum yetkisi veya canlı Firestore kuralları bu yazmaya izin vermiyor. Sayfayı yenileyip tekrar deneyin; sorun sürerse yönetim Firestore kuralları kontrol edilmelidir."
         : "Teklif kaydedilemedi ("+errorCode+").\n\n"+errorMessage
     );
   }finally{
