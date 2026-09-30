@@ -31,6 +31,9 @@
       if(settings.enabled!==true) return;
       injectButton();
       buildModal();
+      if(new URLSearchParams(location.search).get("randevu")==="1"){
+        setTimeout(openModal,120);
+      }
     }catch(error){
       console.warn("Randevu ayarları yüklenemedi:",error);
     }
