@@ -575,13 +575,46 @@ quoteFlowDrawer?.querySelectorAll("[data-routing-view]").forEach(button=>{
 
 window.addEventListener("resize",syncQuoteFlowDrawerToggle);
 
-const quoteFlowObserver=new MutationObserver(syncQuoteFlowDrawerToggle);
+let quoteFlowScrollFrame=0;
+
+function syncQuoteFlowDrawerPosition(){
+  if(!quoteFlowDrawer)return;
+
+  if(window.matchMedia("(min-width:1281px)").matches && isQuoteRoutingVisible()){
+    const startTop=150;
+    const stickyTop=18;
+    const nextTop=Math.max(stickyTop,startTop-window.scrollY);
+
+    quoteFlowDrawer.style.setProperty("--quote-flow-top",nextTop+"px");
+    quoteFlowDrawer.classList.toggle("flow-following",nextTop<=stickyTop+1);
+  }else{
+    quoteFlowDrawer.style.removeProperty("--quote-flow-top");
+    quoteFlowDrawer.classList.remove("flow-following");
+  }
+}
+
+function scheduleQuoteFlowDrawerPosition(){
+  if(quoteFlowScrollFrame)return;
+  quoteFlowScrollFrame=requestAnimationFrame(()=>{
+    quoteFlowScrollFrame=0;
+    syncQuoteFlowDrawerPosition();
+  });
+}
+
+window.addEventListener("scroll",scheduleQuoteFlowDrawerPosition,{passive:true});
+window.addEventListener("resize",scheduleQuoteFlowDrawerPosition);
+
+const quoteFlowObserver=new MutationObserver(()=>{
+  syncQuoteFlowDrawerToggle();
+  scheduleQuoteFlowDrawerPosition();
+});
 const quoteFlowSection=document.getElementById("quoteRoutingSection");
 if(quoteFlowSection){
   quoteFlowObserver.observe(quoteFlowSection,{attributes:true,attributeFilter:["hidden"]});
 }
 
 syncQuoteFlowDrawerToggle();
+syncQuoteFlowDrawerPosition();
 
 initSimpleAdminNavigation();
 
