@@ -1,6 +1,7 @@
 let institutionOfferMap = new Map();
 let institutionLockMap = new Map();
 let institutionSecondOfferInviteMap = new Map();
+let institutionArchivedQuoteIds = new Set();
 let institutionLeadCreditBalance = 0;
 let institutionOfferStateWatchers = new Map();
 
@@ -174,6 +175,82 @@ document.addEventListener("visibilitychange",()=>{
     refreshInstitutionOfferStatesFromServer();
   }
 });
+
+function institutionArchiveDocId(quoteId){
+  return String(currentAccount?.institutionId||"")+"__"+String(quoteId||"");
+}
+
+function institutionQuoteIsArchived(quoteId){
+  return institutionArchivedQuoteIds.has(String(quoteId||""));
+}
+
+async function loadInstitutionQuoteArchive(){
+  institutionArchivedQuoteIds=new Set();
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId)return;
+
+  try{
+    const snap=await db.collection("institutionQuoteArchive")
+      .where("institutionId","==",institutionId)
+      .get();
+
+    snap.forEach(doc=>{
+      const data=doc.data()||{};
+      if(data.archived===true && data.quoteId){
+        institutionArchivedQuoteIds.add(String(data.quoteId));
+      }
+    });
+  }catch(error){
+    console.warn("Arşivlenmiş teklifler okunamadı:",error);
+  }
+}
+
+async function setInstitutionQuoteArchived(quoteId,archived){
+  const id=String(quoteId||"");
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!id||!institutionId)return;
+
+  const quote=quoteRecords.find(item=>String(item.id)===id);
+  const state=quote ? sellerOfferState(quote) : "";
+  if(archived && (state==="locked" || state==="used")){
+    alert("Kabul edilmiş teklifler arşivlenemez. Bu kayıt kurum panelinde kalmalıdır.");
+    return;
+  }
+
+  const ref=db.collection("institutionQuoteArchive").doc(institutionArchiveDocId(id));
+
+  if(archived){
+    const ok=window.confirm("Bu talebi teklif listenizden kaldırmak istiyor musunuz? Sistem kaydı silinmez; Arşiv bölümünden geri getirebilirsiniz.");
+    if(!ok)return;
+
+    await ref.set({
+      institutionId,
+      quoteId:id,
+      archived:true,
+      archivedAt:new Date().toISOString(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    institutionArchivedQuoteIds.add(id);
+    try{ showToast("Talep arşive alındı."); }catch(_){}
+  }else{
+    await ref.set({
+      institutionId,
+      quoteId:id,
+      archived:false,
+      restoredAt:new Date().toISOString(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    institutionArchivedQuoteIds.delete(id);
+    try{ showToast("Talep tekrar listeye alındı."); }catch(_){}
+  }
+
+  renderQuotes();
+  renderSummary();
+}
+
+function visibleInstitutionQuoteRecords(){
+  return quoteRecords.filter(quote=>!institutionQuoteIsArchived(quote.id));
+}
 
 function isRoutedLeadForCurrentInstitution(quote){
   const institutionId=String(currentAccount?.institutionId||"");
@@ -404,7 +481,8 @@ loadMatchedQuotes = async function(){
 
     await Promise.all([
       loadQuoteResponses(),
-      refreshInstitutionLeadCreditBalance()
+      refreshInstitutionLeadCreditBalance(),
+      loadInstitutionQuoteArchive()
     ]);
 
     institutionOfferMap = new Map();
@@ -473,13 +551,14 @@ function renderFirmHomeOpportunities(){
   const listEl = document.getElementById("firmOpportunityList");
   if (!listEl) return;
 
-  const rows = quoteRecords
+  const visibleQuotes=visibleInstitutionQuoteRecords();
+  const rows = visibleQuotes
     .filter(quote => sellerOfferState(quote) === "new")
     .slice(0, 4);
 
   if (countEl) {
     countEl.textContent = String(
-      quoteRecords.filter(quote => sellerOfferState(quote) === "new").length
+      visibleQuotes.filter(quote => sellerOfferState(quote) === "new").length
     );
   }
 
@@ -509,7 +588,8 @@ function renderFirmHomeOpportunities(){
 }
 
 renderSummary = function(){
-  const states = quoteRecords.map(q => sellerOfferState(q));
+  const visibleQuotes=visibleInstitutionQuoteRecords();
+  const states = visibleQuotes.map(q => sellerOfferState(q));
   const newCount = states.filter(state => state === "new").length;
   const offeredCount = states.filter(state => state === "offered").length;
   const lockedCount = states.filter(state => state === "locked").length;
@@ -520,7 +600,7 @@ renderSummary = function(){
   if (typeof updatePersistentNewRequestCard === "function") updatePersistentNewRequestCard(newCount);
 
   document.getElementById("newQuoteCount").textContent = newCount;
-  document.getElementById("totalQuoteCount").textContent = quoteRecords.length;
+  document.getElementById("totalQuoteCount").textContent = visibleQuotes.length;
   document.getElementById("quoteTabCount").textContent = newCount;
 
   document.getElementById("workNewCount").textContent = newCount;
@@ -529,7 +609,7 @@ renderSummary = function(){
   document.getElementById("offeredQuoteCount").textContent = offeredCount;
   document.getElementById("lockedQuoteCount").textContent = lockedCount;
   document.getElementById("latestQuoteTime").textContent =
-    quoteRecords.length ? formatRelativeTime(quoteRecords[0].date) : "-";
+    visibleQuotes.length ? formatRelativeTime(visibleQuotes[0].date) : "-";
 
   const firmHomeNewCount = document.getElementById("firmHomeNewCount");
   const firmHomeOfferedCount = document.getElementById("firmHomeOfferedCount");
@@ -547,7 +627,7 @@ renderSummary = function(){
   renderFirmHomeOpportunities();
 
   updateQuoteShortcutCounts({
-    all: quoteRecords.length,
+    all: visibleQuotes.length,
     new: newCount,
     offered: offeredCount,
     locked: lockedCount,
@@ -585,7 +665,7 @@ renderSummary = function(){
     focusCard.dataset.state = "clear";
   }
 
-  const latest=quoteRecords.slice(0,3);
+  const latest=visibleQuotes.slice(0,3);
   recentQuotes.innerHTML=latest.length
     ? latest.map(q=>quoteCardHtml(q,true)).join("")
     : '<div class="empty-state">Henüz uygun teklif talebi yok.</div>';
@@ -943,6 +1023,7 @@ function updateInstitutionResponseCountdowns(){
 
 quoteCardHtml = function(quote,compact=false){
   const state=sellerOfferState(quote);
+  const archived=institutionQuoteIsArchived(quote.id);
   const [statusText,statusClass]=sellerStateMeta(state);
   const offer=institutionOfferMap.get(quote.id);
   const lock=institutionEffectiveLock(quote);
@@ -1011,6 +1092,16 @@ quoteCardHtml = function(quote,compact=false){
     actionArea='<div class="quote-note">Bu talep için “İlgilenmiyorum” seçildi.</div>';
   }
 
+  if(archived){
+    actionArea=`
+      <div class="quote-note" style="border-left-color:#64748b">
+        <strong>Arşivde</strong> Bu talep yalnızca kurum panelinizden gizlendi; sistem kaydı silinmedi.
+      </div>
+      <div class="quote-actions" style="margin-top:10px">
+        <button type="button" data-restore-quote="${offerSafe(quote.id)}" class="secondary">↩ Geri Getir</button>
+      </div>`;
+  }
+
   return `
     <article class="quote-card">
       <div class="quote-card-head">
@@ -1022,7 +1113,12 @@ quoteCardHtml = function(quote,compact=false){
             ${sameDistrict ? '<span class="district-badge">Aynı ilçe</span>' : '<span class="city-badge">Aynı şehir</span>'}
           </div>
         </div>
-        <span class="quote-status ${statusClass}">${statusText}</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          <span class="quote-status ${statusClass}">${statusText}</span>
+          ${!archived && state!=="locked" && state!=="used"
+            ? `<button type="button" data-archive-quote="${offerSafe(quote.id)}" style="border:1px solid #fecaca;background:#fff1f2;color:#be123c;border-radius:8px;padding:7px 10px;font-weight:800;cursor:pointer">Sil</button>`
+            : ""}
+        </div>
       </div>
 
       <div class="quote-customer">
@@ -1040,7 +1136,9 @@ quoteCardHtml = function(quote,compact=false){
 
 renderQuotes = function(){
   const filter=quotePanelFilter.value;
-  const rows=quoteRecords.filter(q=>!filter || sellerOfferState(q)===filter);
+  const rows=filter==="archived"
+    ? quoteRecords.filter(q=>institutionQuoteIsArchived(q.id))
+    : quoteRecords.filter(q=>!institutionQuoteIsArchived(q.id) && (!filter || sellerOfferState(q)===filter));
 
   institutionQuotesList.innerHTML=rows.length
     ? rows.map(q=>quoteCardHtml(q)).join("")
@@ -1078,6 +1176,34 @@ renderQuotes = function(){
       await saveQuoteResponse(btn.dataset.quoteId,"not_interested");
       renderQuotes();
       renderSummary();
+    });
+  });
+
+  institutionQuotesList.querySelectorAll("[data-archive-quote]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      btn.disabled=true;
+      try{
+        await setInstitutionQuoteArchived(String(btn.dataset.archiveQuote||""),true);
+      }catch(error){
+        console.error("Talep arşivlenemedi:",error);
+        alert("Talep arşivlenemedi. Firestore yetkisini kontrol edin.");
+      }finally{
+        if(document.body.contains(btn))btn.disabled=false;
+      }
+    });
+  });
+
+  institutionQuotesList.querySelectorAll("[data-restore-quote]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      btn.disabled=true;
+      try{
+        await setInstitutionQuoteArchived(String(btn.dataset.restoreQuote||""),false);
+      }catch(error){
+        console.error("Talep arşivden çıkarılamadı:",error);
+        alert("Talep geri getirilemedi. Firestore yetkisini kontrol edin.");
+      }finally{
+        if(document.body.contains(btn))btn.disabled=false;
+      }
     });
   });
 };
