@@ -4087,11 +4087,11 @@ function getAdminOfferCompareState(offer, request) {
     String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
 
   if (isSelected) {
-    if (lock.status === "used") return { label:"Kullanıldı", cls:"used" };
+    if (lock.status === "used") return { label:"Gerçek Kayıt Tamamlandı", cls:"used" };
     if (lock.expiresAt && new Date(lock.expiresAt).getTime() <= now) {
-      return { label:"Seçildi · Süresi Doldu", cls:"expired" };
+      return { label:"Kabul Edildi · Süresi Doldu", cls:"expired" };
     }
-    return { label:"Seçildi / Kilitli", cls:"locked" };
+    return { label:"Kayıt Bekliyor", cls:"locked" };
   }
 
   if (offer.expiresAt && new Date(offer.expiresAt).getTime() <= now) {
@@ -4323,7 +4323,7 @@ function openQuoteCompareModal(requestId) {
       '<article><span>Fiyat Aralığı</span><strong>' +
         (minPrice && maxPrice ? quoteMoney(minPrice) + " – " + quoteMoney(maxPrice) : "-") +
       '</strong></article>',
-      '<article class="' + (selected ? "selected" : "") + '"><span>Seçilen Teklif</span><strong>' +
+      '<article class="' + (selected ? "selected" : "") + '"><span>Kabul Edilen Teklif</span><strong>' +
         (selected ? escapeHtml(selected.institutionName || selected.offerCode || "Seçim yapıldı") : "Henüz seçilmedi") +
       '</strong></article>'
     ].join("");
@@ -4346,7 +4346,7 @@ function openQuoteCompareModal(requestId) {
           escapeHtml(offer.institutionName || "Kurum") +
           '</strong><small>' +
           (isLowest ? '<span class="lowest-chip">En düşük fiyat</span>' : '') +
-          (isSelected ? '<span class="selected-chip">Seçilen</span>' : '') +
+          (isSelected ? '<span class="selected-chip">Kabul Edildi</span>' : '') +
           '</small></div></td>' +
         '<td class="quote-compare-price">' + quoteMoney(offer.price) + '</td>' +
         '<td>' + escapeHtml(offer.vatStatus || "-") + '</td>' +
