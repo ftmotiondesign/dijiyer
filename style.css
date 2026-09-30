@@ -17950,3 +17950,256 @@ to{opacity:1;transform:none}
     grid-template-columns:1fr !important;
   }
 }
+
+
+/* =========================================================
+   TEKLIF SAYFASI MASAUSTU ANLIK SONUCLAR V1
+   Mobil bileşen masaüstünde de kullanıldığı için ayrı PC stili.
+   ========================================================= */
+@media(min-width:821px){
+  .standalone-quote-page .mobile-instant-results{
+    margin-top:12px !important;
+    padding:14px !important;
+    border:1px solid #dce5ef !important;
+    border-radius:16px !important;
+    background:#fff !important;
+    box-shadow:0 8px 24px rgba(16,42,76,.055) !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results.hidden{
+    display:none !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-head{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:12px !important;
+    padding:0 0 11px !important;
+    margin-bottom:10px !important;
+    border-bottom:1px solid #edf1f5 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-head>div{
+    min-width:0 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-head span{
+    display:block !important;
+    color:#1677ff !important;
+    font-size:8px !important;
+    font-weight:950 !important;
+    letter-spacing:.08em !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-head strong{
+    display:block !important;
+    margin-top:3px !important;
+    color:#1f3550 !important;
+    font-size:15px !important;
+  }
+
+  .standalone-quote-page #mobileInstantResultsClose{
+    width:32px !important;
+    height:32px !important;
+    display:grid !important;
+    place-items:center !important;
+    padding:0 !important;
+    border:1px solid #dce5ef !important;
+    border-radius:9px !important;
+    background:#f8fafc !important;
+    color:#64748b !important;
+    font-size:18px !important;
+    line-height:1 !important;
+    cursor:pointer !important;
+  }
+
+  .standalone-quote-page #mobileInstantResultsClose:hover{
+    border-color:#b7cdec !important;
+    background:#eef5ff !important;
+    color:#1677ff !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-list{
+    display:grid !important;
+    gap:10px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-card{
+    min-width:0 !important;
+    min-height:122px !important;
+    display:grid !important;
+    grid-template-columns:150px minmax(0,1fr) auto !important;
+    gap:14px !important;
+    align-items:center !important;
+    padding:10px !important;
+    border:1px solid #dfe6ee !important;
+    border-radius:14px !important;
+    background:#fff !important;
+    box-shadow:0 5px 16px rgba(18,44,78,.045) !important;
+    cursor:pointer !important;
+    transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-card:hover{
+    border-color:#a9c8ee !important;
+    box-shadow:0 9px 22px rgba(22,119,255,.08) !important;
+    transform:translateY(-1px) !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-logo{
+    width:150px !important;
+    height:102px !important;
+    display:grid !important;
+    place-items:center !important;
+    overflow:hidden !important;
+    border:1px solid #e2e8f0 !important;
+    border-radius:11px !important;
+    background:linear-gradient(145deg,#eef5ff,#f9fbff) !important;
+    color:#33516f !important;
+    font-size:32px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-logo.has-logo{
+    background:#fff !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-logo img{
+    width:100% !important;
+    height:100% !important;
+    display:block !important;
+    object-fit:contain !important;
+    padding:7px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-logo.has-cover img{
+    object-fit:cover !important;
+    padding:0 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy{
+    min-width:0 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy>strong{
+    display:block !important;
+    overflow:hidden !important;
+    color:#18304f !important;
+    font-size:16px !important;
+    font-weight:900 !important;
+    line-height:1.2 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy>span{
+    display:block !important;
+    margin-top:7px !important;
+    color:#60738b !important;
+    font-size:10.5px !important;
+    font-weight:700 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy>small{
+    display:block !important;
+    margin-top:5px !important;
+    color:#6f7f93 !important;
+    font-size:10px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy>div{
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:6px !important;
+    margin-top:8px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-copy em{
+    min-height:26px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    padding:0 9px !important;
+    border-radius:999px !important;
+    background:#eaf8ef !important;
+    color:#1a8a4a !important;
+    font-size:8px !important;
+    font-style:normal !important;
+    font-weight:900 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions{
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions button{
+    min-width:116px !important;
+    min-height:42px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:0 14px !important;
+    border:1px solid #b6cff0 !important;
+    border-radius:10px !important;
+    background:#fff !important;
+    color:#1677ff !important;
+    font-size:10px !important;
+    font-weight:900 !important;
+    cursor:pointer !important;
+    white-space:nowrap !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions button:hover{
+    background:#f4f8ff !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions button.offer{
+    border-color:#1677ff !important;
+    background:#1677ff !important;
+    color:#fff !important;
+    box-shadow:0 6px 14px rgba(22,119,255,.16) !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions button.offer:hover{
+    background:#0e68e8 !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-empty{
+    padding:20px !important;
+    border:1px dashed #ccd8e6 !important;
+    border-radius:12px !important;
+    background:#fafcfe !important;
+    text-align:center !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-empty strong{
+    display:block !important;
+    color:#324a65 !important;
+    font-size:12px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-results-empty span{
+    display:block !important;
+    margin-top:5px !important;
+    color:#8090a2 !important;
+    font-size:9px !important;
+  }
+}
+
+@media(min-width:821px) and (max-width:1050px){
+  .standalone-quote-page .mobile-instant-result-card{
+    grid-template-columns:118px minmax(0,1fr) !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-logo{
+    width:118px !important;
+    height:92px !important;
+  }
+
+  .standalone-quote-page .mobile-instant-result-actions{
+    grid-column:1/-1 !important;
+    justify-content:flex-end !important;
+    padding-top:2px !important;
+  }
+}
