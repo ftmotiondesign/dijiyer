@@ -4712,13 +4712,35 @@ async function createQuoteTrackingAccess(quoteId, request) {
   };
 }
 
-function showQuoteTrackingSuccess(tracking, matchedCount) {
+function showQuoteTrackingSuccess(tracking, matchedCount, quoteId, requestData = {}) {
   sessionStorage.setItem('dijiyerTrackingCode', tracking.trackingCode);
   sessionStorage.setItem('dijiyerTrackingPhone', tracking.normalizedPhone);
   localStorage.setItem('dijiyerLastTrackingCode', tracking.trackingCode);
 
   document.getElementById('quoteSuccessCode').textContent = tracking.trackingCode;
   document.getElementById('quoteSuccessLink').value = tracking.trackingUrl;
+
+  const requestIdText = String(quoteId || '').trim();
+  const shortRequestId = requestIdText
+    ? 'DJY-' + requestIdText.slice(-8).toUpperCase()
+    : tracking.trackingCode;
+
+  const serviceText =
+    String(requestData.service || '').trim() ||
+    categoryTaxonomy[requestData.mainCategory]?.subs?.[requestData.subCategory] ||
+    'Teklif Talebi';
+
+  const locationText = [requestData.district, requestData.city]
+    .filter(Boolean)
+    .join(' / ') || 'Konum belirtilmedi';
+
+  const requestIdEl = document.getElementById('quoteSuccessRequestId');
+  const serviceEl = document.getElementById('quoteSuccessService');
+  const locationEl = document.getElementById('quoteSuccessLocation');
+
+  if (requestIdEl) requestIdEl.textContent = shortRequestId;
+  if (serviceEl) serviceEl.textContent = serviceText;
+  if (locationEl) locationEl.textContent = locationText;
 
   const areaText = tracking.requestDistrict
     ? tracking.requestDistrict + ' ilçesindeki'
@@ -4971,7 +4993,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     if (tracking) {
       tracking.requestDistrict = request.district || '';
       tracking.requestCity = request.city || '';
-      showQuoteTrackingSuccess(tracking, matchedCount);
+      showQuoteTrackingSuccess(tracking, matchedCount, quoteRef.id, request);
     } else {
       showToast(
         'Talebiniz alındı. Takip linki henüz oluşturulamadı; Firestore takip kurallarını yayınlayın.'
