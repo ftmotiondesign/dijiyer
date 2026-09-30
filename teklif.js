@@ -1113,6 +1113,35 @@ async function recordPublicAcceptedEvent(quoteId,date){
   }
 }
 
+
+async function notifyInstitutionOfferAccepted(quoteId,lockData,date){
+  try{
+    const institutionId=String(lockData?.institutionId||"");
+    if(!quoteId||!institutionId)return;
+
+    const messageRef=db.collection("quoteRequests")
+      .doc(String(quoteId))
+      .collection("conversations")
+      .doc(institutionId)
+      .collection("messages")
+      .doc("offer_accepted");
+
+    const existing=await messageRef.get();
+    if(existing.exists)return;
+
+    await messageRef.set({
+      institutionId,
+      sender:"customer",
+      kind:"message",
+      text:"✓ Teklifiniz müşteri tarafından kabul edildi. Kabul edilen fiyat: "+money(lockData?.price||0)+" · Teklif No: "+String(lockData?.offerCode||"-")+". Fiyat ve şartlar artık değiştirilemez.",
+      date:String(date||new Date().toISOString()),
+      createdAtTs:firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(error){
+    console.warn("Kurum kabul bildirimi kaydedilemedi:",error);
+  }
+}
+
 function confirmOfferLock(offer){
   return new Promise(resolve=>{
     document.getElementById("offerAcceptConfirmModal")?.remove();
@@ -1296,6 +1325,7 @@ async function lockOffer(quoteId,institutionId,button){
     }
 
     recordPublicAcceptedEvent(quoteId,publicLockedAt);
+    notifyInstitutionOfferAccepted(quoteId,liveLock,publicLockedAt);
     toast("✓ Teklif kabul edildi ve kapatıldı.");
   }catch(error){
     console.error(error);
@@ -1456,11 +1486,38 @@ async function reportIssue(quoteId,offerCode,reason){
   }
 }
 
-function drawQr(){
+function drawQr(attempt=0){
   const box=document.getElementById("lockedQr");
-  if(!box||typeof QRCode==="undefined")return;
-  box.innerHTML="";
-  new QRCode(box,{text:box.dataset.url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  if(!box)return;
+
+  const url=String(box.dataset.url||"");
+  if(!url){
+    box.innerHTML='<div class="qr-fallback"><strong>QR bağlantısı oluşturulamadı.</strong></div>';
+    return;
+  }
+
+  if(typeof QRCode==="undefined"){
+    box.innerHTML='<div class="qr-fallback"><strong>QR hazırlanıyor...</strong><small>Teklif kodunu kurumda da gösterebilirsiniz.</small></div>';
+    if(attempt<20){
+      window.setTimeout(()=>drawQr(attempt+1),150);
+    }else{
+      box.innerHTML='<div class="qr-fallback"><strong>QR yüklenemedi.</strong><small>Teklif numaranız geçerlidir; kurum teklif kodunu manuel doğrulayabilir.</small></div>';
+    }
+    return;
+  }
+
+  try{
+    box.innerHTML="";
+    new QRCode(box,{
+      text:url,
+      width:180,
+      height:180,
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  }catch(error){
+    console.error("QR oluşturulamadı:",error);
+    box.innerHTML='<div class="qr-fallback"><strong>QR oluşturulamadı.</strong><small>Teklif numaranızla kurumda manuel doğrulama yapabilirsiniz.</small></div>';
+  }
 }
 function updateCountdowns(){
   document.querySelectorAll("[data-countdown]").forEach(el=>{
