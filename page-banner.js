@@ -65,11 +65,30 @@
     return y+"-"+m+"-"+day;
   }
 
+  function placeShell(shell){
+    if(!shell)return false;
+
+    const nav=document.querySelector(".dijiyer-global-market-nav");
+    if(nav?.parentNode){
+      if(nav.nextElementSibling!==shell)nav.insertAdjacentElement("afterend",shell);
+      return true;
+    }
+
+    const topbar=document.querySelector(".dijiyer-global-topbar");
+    if(topbar?.parentNode){
+      if(topbar.nextElementSibling!==shell)topbar.insertAdjacentElement("afterend",shell);
+      return true;
+    }
+
+    return false;
+  }
+
   function ensureShell(){
     let root=document.getElementById("pageTopMiniBanner");
     if(root){
       const shell=root.closest(".standalone-page-back,.unified-page-banner-shell");
       shell?.classList.add("unified-page-banner-shell");
+      placeShell(shell);
       return root;
     }
 
@@ -91,11 +110,13 @@
     root.setAttribute("aria-label","Sponsorlu reklam");
     shell.appendChild(root);
 
-    const header=document.querySelector("body > header, .topbar, .kp-topbar");
-    if(header?.parentNode){
-      header.insertAdjacentElement("afterend",shell);
-    }else{
-      document.body.insertBefore(shell,document.body.firstChild);
+    if(!placeShell(shell)){
+      const header=document.querySelector("body > header, .topbar, .kp-topbar");
+      if(header?.parentNode){
+        header.insertAdjacentElement("afterend",shell);
+      }else{
+        document.body.insertBefore(shell,document.body.firstChild);
+      }
     }
 
     return root;
