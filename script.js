@@ -5032,19 +5032,28 @@ function moderateReviewText(raw){
   if(!original)return {ok:false,message:"Lütfen yorumunuzu yazın."};
 
   const leetMap={"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t"};
-  const normalized=original
+  const lowered=original
     .toLocaleLowerCase("tr-TR")
     .replace(/[013457]/g,ch=>leetMap[ch]||ch)
-    .replace(/(.)\1{2,}/gu,"$1$1")
+    .replace(/(.)\1{2,}/gu,"$1$1");
+
+  const normalized=lowered
     .replace(/[^\p{L}\p{N}\s]/gu," ")
     .replace(/\s+/g," ")
     .trim();
 
+  // Nokta, tire, ünlem gibi karakterlerle kelimeyi bölme denemelerini de yakalar.
+  const punctuationJoined=lowered
+    .replace(/[^\p{L}\p{N}\s]/gu,"")
+    .replace(/\s+/g," ")
+    .trim();
+
   const tokens=normalized.split(" ").filter(Boolean);
+  const joinedTokens=punctuationJoined.split(" ").filter(Boolean);
   const compact=normalized.replace(/\s+/g,"");
 
   const profanityTokens=new Set([
-    "amk","siktir","sikeyim","sikerim","sikik","orospu","yarrak","yarak",
+    "amk","siktir","sktir","sikeyim","sikerim","sikik","orospu","yarrak","yarak",
     "piç","pic","pezevenk","kahpe","şerefsiz","serefsiz","gerizekalı","gerizekali"
   ]);
 
@@ -5053,27 +5062,36 @@ function moderateReviewText(raw){
     "annenisikeyim","şerefsiz","serefsiz"
   ];
 
-  const threatCompact=[
+  const threatTokens=new Set([
     "öldüreceğim","oldurecegim","öldürecem","oldurecem","gebertirim",
     "vuracağım","vuracagim","vurucam","bıçaklayacağım","bicaklayacagim",
-    "yakacağım","yakacagim","kendiniöldür","kendinioldur","intiharet",
+    "yakacağım","yakacagim","tecavüz","tecavuz"
+  ]);
+
+  const threatCompact=[
+    "kendiniöldür","kendinioldur","intiharet",
     "bombakoy","bombayerleştir","bombayerlestir","bombapatlat",
     "patlayıcıkoy","patlayicikoy","tecavüz","tecavuz"
   ];
 
-  const hasProfanityToken=tokens.some(token=>profanityTokens.has(token));
-  const hasProfanityCompact=profanityCompact.some(term=>compact.includes(term));
+  const allTokens=[...tokens,...joinedTokens];
 
-  if(hasProfanityToken || hasProfanityCompact){
+  if(
+    allTokens.some(token=>profanityTokens.has(token))
+    || profanityCompact.some(term=>compact.includes(term))
+  ){
     return {ok:false,message:"Yorum gönderilemedi: küfür veya hakaret içeren ifadeler kullanılamaz."};
   }
 
-  if(threatCompact.some(term=>compact.includes(term))){
+  if(
+    allTokens.some(token=>threatTokens.has(token))
+    || threatCompact.some(term=>compact.includes(term))
+  ){
     return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
   }
 
   const threatSubject=tokens.some(token=>["seni","sizi","onu","onları","onlari"].includes(token));
-  const threatVerb=tokens.some(token=>[
+  const threatVerb=allTokens.some(token=>[
     "öldür","oldur","öldüreceğim","oldurecegim","gebert","gebertirim",
     "vur","vuracağım","vuracagim","bıçakla","bicakla","yak","yakacağım","yakacagim"
   ].includes(token));
