@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -4162,6 +4162,374 @@
       return result;
     };
   } catch (_) {}
+
+
+
+  /* =========================================================
+     FIRSAT SAYFASI SPONSOR YÖNETİMİ
+     Kurum belgesindeki opportunitySponsor* alanlarını kullanır.
+     ========================================================= */
+  let selectedOpportunityInstitutionId="";
+
+  function opportunitySponsorActive(inst){
+    return Boolean(
+      inst &&
+      inst.opportunitySponsorActive===true &&
+      String(inst.opportunitySponsorMediaUrl||"").trim()
+    );
+  }
+
+  function opportunitySponsorMediaHtml(inst){
+    const url=String(inst?.opportunitySponsorMediaUrl||"").trim();
+    const type=String(inst?.opportunitySponsorMediaType||"image");
+    if(!url)return '<span>🏢</span>';
+    if(type==="video"){
+      return '<video src="'+escapeHtml(url)+'" muted playsinline preload="metadata"></video>';
+    }
+    return '<img src="'+escapeHtml(url)+'" alt="">';
+  }
+
+  function renderOpportunitySponsorsAdmin(){
+    const root=$("opportunitySponsorList");
+    if(!root)return;
+
+    const query=normalize($("opportunitySponsorSearch")?.value||"");
+    const filter=String($("opportunitySponsorFilter")?.value||"all");
+
+    const records=[...(institutionRecords||[])];
+    const total=records.length;
+    const sponsored=records.filter(opportunitySponsorActive).length;
+
+    if($("opportunitySponsorCount")){
+      $("opportunitySponsorCount").textContent=
+        sponsored+" sponsorlu · "+(total-sponsored)+" normal · "+total+" toplam kurum";
+    }
+    if($("opportunitySponsorsTabCount")){
+      $("opportunitySponsorsTabCount").textContent=String(sponsored);
+    }
+
+    const rows=records
+      .filter(inst=>{
+        const active=opportunitySponsorActive(inst);
+        if(filter==="sponsored"&&!active)return false;
+        if(filter==="normal"&&active)return false;
+        if(!query)return true;
+        return normalize([
+          inst.name,inst.city,inst.district,inst.category,inst.mainCategory,inst.subCategory
+        ].filter(Boolean).join(" ")).includes(query);
+      })
+      .sort((a,b)=>{
+        const aActive=opportunitySponsorActive(a);
+        const bActive=opportunitySponsorActive(b);
+        if(aActive!==bActive)return aActive?-1:1;
+        return String(a.name||"").localeCompare(String(b.name||""),"tr");
+      });
+
+    if(!rows.length){
+      root.innerHTML='<div class="advanced-empty">Bu filtreye uygun kurum bulunamadı.</div>';
+      return;
+    }
+
+    root.innerHTML=rows.map(inst=>{
+      const active=opportunitySponsorActive(inst);
+      const institutionActive=String(inst.status||"active")!=="passive";
+      const logo=String(inst.logoUrl||inst.coverUrl||"").trim();
+      const thumb=active
+        ? opportunitySponsorMediaHtml(inst)
+        : (logo
+            ? '<img src="'+escapeHtml(logo)+'" alt="">'
+            : '<span>🏢</span>');
+      const location=[inst.city,inst.district].filter(Boolean).join(" / ")||"Bölge yok";
+      const sector=inst.subCategory||inst.category||inst.mainCategory||"Sektör yok";
+
+      return '<article class="opportunity-sponsor-row '+(active?"is-sponsored":"")+'">'+
+        '<div class="opportunity-sponsor-thumb">'+thumb+'</div>'+
+        '<div class="opportunity-sponsor-copy">'+
+          '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
+          '<small>'+escapeHtml(location+" · "+sector)+'</small>'+
+          '<div class="opportunity-sponsor-badges">'+
+            '<span class="opportunity-sponsor-badge '+(institutionActive?"":"passive")+'">'+(institutionActive?"Kurum Aktif":"Kurum Pasif")+'</span>'+
+            (active
+              ? '<span class="opportunity-sponsor-badge active">★ Fırsat Sponsor</span>'
+              : '<span class="opportunity-sponsor-badge">Normal</span>')+
+            (inst.opportunitySponsorMediaUrl
+              ? '<span class="opportunity-sponsor-badge">'+(inst.opportunitySponsorMediaType==="video"?"🎬 Video":"🖼 Görsel")+'</span>'
+              : '')+
+          '</div>'+
+        '</div>'+
+        '<div class="opportunity-sponsor-row-actions">'+
+          '<button type="button" class="primary '+(active?"active":"")+'" data-opportunity-sponsor="'+escapeHtml(inst.id)+'">'+
+            (active?"Sponsor Düzenle":"Fırsat Sponsor")+
+          '</button>'+
+        '</div>'+
+      '</article>';
+    }).join("");
+
+    root.querySelectorAll("[data-opportunity-sponsor]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        openOpportunitySponsorModal(button.dataset.opportunitySponsor);
+      });
+    });
+  }
+
+  function opportunitySponsorPreview(url,type){
+    const root=$("opportunitySponsorPreview");
+    if(!root)return;
+    const safe=String(url||"").trim();
+    if(!safe){
+      root.innerHTML=
+        '<div class="opportunity-sponsor-preview-empty">'+
+          '<span>🖼️</span>'+
+          '<strong>Henüz sponsor medyası yok</strong>'+
+          '<small>1080 × 1350 px görsel veya video yükleyin.</small>'+
+        '</div>';
+      return;
+    }
+    root.innerHTML=type==="video"
+      ? '<video src="'+escapeHtml(safe)+'" autoplay muted loop playsinline></video>'
+      : '<img src="'+escapeHtml(safe)+'" alt="Fırsat sponsor önizleme">';
+  }
+
+  function opportunitySponsorProgress(percent,textValue){
+    const wrap=$("opportunitySponsorUploadProgress");
+    const bar=$("opportunitySponsorUploadProgressBar");
+    const textEl=$("opportunitySponsorUploadProgressText");
+    if(!wrap||!bar||!textEl)return;
+    if(percent===null){
+      wrap.classList.add("hidden");
+      bar.style.width="0%";
+      textEl.textContent="";
+      return;
+    }
+    wrap.classList.remove("hidden");
+    bar.style.width=Math.max(0,Math.min(100,Number(percent)||0))+"%";
+    textEl.textContent=textValue||("Yükleniyor... %"+Math.round(Number(percent)||0));
+  }
+
+  function openOpportunitySponsorModal(institutionId){
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(institutionId)
+    );
+    if(!inst)return;
+
+    selectedOpportunityInstitutionId=String(inst.id);
+    $("opportunitySponsorInstitutionId").value=String(inst.id);
+    $("opportunitySponsorModalTitle").textContent=inst.name||"Kurum";
+    $("opportunitySponsorModalMeta").textContent=
+      [inst.city,inst.district,inst.subCategory||inst.category||inst.mainCategory]
+        .filter(Boolean).join(" · ");
+
+    const url=String(inst.opportunitySponsorMediaUrl||"").trim();
+    const type=String(inst.opportunitySponsorMediaType||"image")==="video"?"video":"image";
+
+    $("opportunitySponsorMediaUrl").value=url;
+    $("opportunitySponsorMediaType").value=type;
+    $("opportunitySponsorActive").checked=Boolean(inst.opportunitySponsorActive);
+    $("opportunitySponsorUploadMessage").textContent=
+      url
+        ? "Mevcut sponsor medyası yüklü. Değiştirmek için yeni görsel veya video seçebilirsiniz."
+        : "Önerilen ölçü: 1080 × 1350 px (4:5).";
+    opportunitySponsorProgress(null,"");
+    opportunitySponsorPreview(url,type);
+
+    const modal=$("opportunitySponsorModal");
+    modal?.classList.remove("hidden");
+    modal?.setAttribute("aria-hidden","false");
+  }
+
+  function closeOpportunitySponsorModal(){
+    selectedOpportunityInstitutionId="";
+    const modal=$("opportunitySponsorModal");
+    modal?.classList.add("hidden");
+    modal?.setAttribute("aria-hidden","true");
+    if($("opportunitySponsorImageFile"))$("opportunitySponsorImageFile").value="";
+    if($("opportunitySponsorVideoFile"))$("opportunitySponsorVideoFile").value="";
+    opportunitySponsorProgress(null,"");
+  }
+
+  async function uploadOpportunitySponsorMedia(file,type){
+    const message=$("opportunitySponsorUploadMessage");
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(selectedOpportunityInstitutionId)
+    );
+
+    if(!inst){
+      if(message)message.textContent="Kurum bulunamadı.";
+      return;
+    }
+    if(!file)return;
+
+    const isVideo=type==="video";
+    const valid=isVideo
+      ? ["video/mp4","video/webm"].includes(file.type)
+      : ["image/jpeg","image/png","image/webp"].includes(file.type);
+    const maxBytes=isVideo?30*1024*1024:8*1024*1024;
+
+    if(!valid){
+      if(message)message.textContent=isVideo
+        ? "Video için MP4 veya WebM dosyası seçin."
+        : "Görsel için JPG, PNG veya WebP dosyası seçin.";
+      return;
+    }
+    if(file.size>maxBytes){
+      if(message)message.textContent=isVideo
+        ? "Video en fazla 30 MB olabilir."
+        : "Görsel en fazla 8 MB olabilir.";
+      return;
+    }
+
+    const settings=loadCloudinaryBannerSettings();
+    if(!settings.cloudName||!settings.uploadPreset){
+      if(message)message.textContent="Medya yükleme bağlantısı hazır değil. Reklam Merkezi içindeki medya ayarını kontrol edin.";
+      return;
+    }
+
+    if(message)message.textContent="Medya yükleniyor...";
+    opportunitySponsorProgress(0,"Yükleniyor... %0");
+
+    const formData=new FormData();
+    formData.append("file",file);
+    formData.append("upload_preset",settings.uploadPreset);
+    formData.append("folder","dijiyer/firsatlar/"+String(inst.id));
+
+    try{
+      const result=await new Promise((resolve,reject)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open(
+          "POST",
+          "https://api.cloudinary.com/v1_1/"+encodeURIComponent(settings.cloudName)+"/auto/upload",
+          true
+        );
+
+        xhr.upload.onprogress=event=>{
+          if(!event.lengthComputable)return;
+          const percent=(event.loaded/event.total)*100;
+          opportunitySponsorProgress(percent,"Yükleniyor... %"+Math.round(percent));
+        };
+
+        xhr.onerror=()=>reject(new Error("Ağ bağlantısı sırasında yükleme başarısız oldu."));
+        xhr.onload=()=>{
+          let data={};
+          try{data=JSON.parse(xhr.responseText||"{}")}catch(_){}
+          if(xhr.status>=200&&xhr.status<300&&data.secure_url){
+            resolve(data);
+          }else{
+            reject(new Error(data?.error?.message||"Medya yükleme hatası."));
+          }
+        };
+        xhr.send(formData);
+      });
+
+      const url=String(result.secure_url||"");
+      if(!url)throw new Error("Yüklenen dosyanın adresi alınamadı.");
+
+      $("opportunitySponsorMediaUrl").value=url;
+      $("opportunitySponsorMediaType").value=isVideo?"video":"image";
+      $("opportunitySponsorActive").checked=true;
+      opportunitySponsorPreview(url,isVideo?"video":"image");
+      opportunitySponsorProgress(100,"Yükleme tamamlandı");
+      if(message){
+        message.textContent=
+          (isVideo?"Video":"Görsel")+
+          " yüklendi. “Kaydet ve Yayınla” ile Fırsat sayfasında yayınlayın.";
+      }
+    }catch(error){
+      console.error("Fırsat sponsor medyası yüklenemedi:",error);
+      opportunitySponsorProgress(null,"");
+      if(message)message.textContent="Medya yüklenemedi: "+String(error?.message||"Bilinmeyen hata");
+    }finally{
+      if($("opportunitySponsorImageFile"))$("opportunitySponsorImageFile").value="";
+      if($("opportunitySponsorVideoFile"))$("opportunitySponsorVideoFile").value="";
+    }
+  }
+
+  async function saveOpportunitySponsor(){
+    const id=String($("opportunitySponsorInstitutionId")?.value||"").trim();
+    const url=String($("opportunitySponsorMediaUrl")?.value||"").trim();
+    const type=String($("opportunitySponsorMediaType")?.value||"image")==="video"?"video":"image";
+    const active=Boolean($("opportunitySponsorActive")?.checked);
+    const message=$("opportunitySponsorUploadMessage");
+    const saveBtn=$("opportunitySponsorSaveBtn");
+
+    if(!id)return;
+    if(active&&!url){
+      if(message)message.textContent="Fırsat Sponsor'u aktif etmek için önce 1080 × 1350 px görsel veya video yükleyin.";
+      return;
+    }
+
+    const oldText=saveBtn?.textContent||"Kaydet ve Yayınla";
+    if(saveBtn){
+      saveBtn.disabled=true;
+      saveBtn.textContent="Kaydediliyor...";
+    }
+
+    try{
+      const updates={
+        opportunitySponsorActive:active&&Boolean(url),
+        opportunitySponsorMediaUrl:url,
+        opportunitySponsorMediaType:type,
+        opportunitySponsorUpdatedAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      };
+
+      await db.collection("institutions").doc(id).update(updates);
+
+      const inst=(institutionRecords||[]).find(item=>String(item.id)===id);
+      if(inst)Object.assign(inst,updates);
+
+      addAudit(
+        active&&url ? "Fırsat sponsoru yayınlandı" : "Fırsat sponsoru pasif yapıldı",
+        (inst?.name||id)+" · "+(url ? (type==="video"?"Video":"Görsel") : "Medya yok")
+      );
+
+      renderOpportunitySponsorsAdmin();
+      closeOpportunitySponsorModal();
+    }catch(error){
+      console.error("Fırsat sponsor kaydı yapılamadı:",error);
+      if(message)message.textContent="Kaydedilemedi. Firestore yazma izinlerini kontrol edin.";
+    }finally{
+      if(saveBtn){
+        saveBtn.disabled=false;
+        saveBtn.textContent=oldText;
+      }
+    }
+  }
+
+  $("opportunitySponsorsTabBtn")?.addEventListener("click",async()=>{
+    showAdvancedSection("opportunitySponsorsSection","opportunitySponsorsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function"){
+      syncSimpleAdminNavigation("opportunitySponsorsTabBtn");
+    }
+    if(typeof loadInstitutions==="function"){
+      await loadInstitutions();
+    }
+    renderOpportunitySponsorsAdmin();
+  });
+
+  $("opportunitySponsorSearch")?.addEventListener("input",renderOpportunitySponsorsAdmin);
+  $("opportunitySponsorFilter")?.addEventListener("change",renderOpportunitySponsorsAdmin);
+  $("opportunitySponsorModalClose")?.addEventListener("click",closeOpportunitySponsorModal);
+  $("opportunitySponsorCancelBtn")?.addEventListener("click",closeOpportunitySponsorModal);
+  $("opportunitySponsorModal")?.addEventListener("click",event=>{
+    if(event.target===$("opportunitySponsorModal"))closeOpportunitySponsorModal();
+  });
+  $("opportunitySponsorImageBtn")?.addEventListener("click",()=>$("opportunitySponsorImageFile")?.click());
+  $("opportunitySponsorVideoBtn")?.addEventListener("click",()=>$("opportunitySponsorVideoFile")?.click());
+  $("opportunitySponsorImageFile")?.addEventListener("change",event=>{
+    uploadOpportunitySponsorMedia(event.target.files?.[0],"image");
+  });
+  $("opportunitySponsorVideoFile")?.addEventListener("change",event=>{
+    uploadOpportunitySponsorMedia(event.target.files?.[0],"video");
+  });
+  $("opportunitySponsorMediaClearBtn")?.addEventListener("click",()=>{
+    $("opportunitySponsorMediaUrl").value="";
+    $("opportunitySponsorMediaType").value="image";
+    $("opportunitySponsorActive").checked=false;
+    opportunitySponsorPreview("","image");
+    $("opportunitySponsorUploadMessage").textContent=
+      "Medya kaldırıldı. Değişikliği uygulamak için kaydedin.";
+  });
+  $("opportunitySponsorSaveBtn")?.addEventListener("click",saveOpportunitySponsor);
 
   const overviewRefresh = $("overviewRefreshBtn");
   overviewRefresh?.addEventListener("click", () => {
