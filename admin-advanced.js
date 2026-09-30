@@ -16,6 +16,8 @@
   let supportAdminRecords = [];
   let promotionAdminRecords = [];
   let promotionPackageRecords = [];
+  let promotionPackageInstitutionRecords = [];
+  const selectedPromotionPackageIds = new Set();
   let bannerAdRecords = [];
   let bannerInstitutionQuickMode = "all";
   let externalAdRecords = [];
@@ -3181,6 +3183,187 @@
     return promotionPackageRecords;
   }
 
+  async function loadPromotionPackageInstitutions(){
+    const select = $("promotionPackageInstitutionSelect");
+    if(!select)return [];
+
+    const keepValue=String(select.value||"");
+    try{
+      const snapshot=await db.collection("institutions").get();
+      promotionPackageInstitutionRecords=snapshot.docs
+        .map(doc=>({id:doc.id,...doc.data()}))
+        .sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
+
+      select.innerHTML='<option value="">Kurum seçin...</option>'+
+        promotionPackageInstitutionRecords.map(item=>{
+          const place=[item.city,item.district].filter(Boolean).join(" / ");
+          return '<option value="'+escapeHtml(item.id)+'">'+
+            escapeHtml(item.name||"Kurum")+(place?' · '+escapeHtml(place):'')+
+          '</option>';
+        }).join("");
+
+      if(keepValue && promotionPackageInstitutionRecords.some(x=>x.id===keepValue)){
+        select.value=keepValue;
+      }
+    }catch(error){
+      console.error("Paket kurumları yüklenemedi:",error);
+      promotionPackageInstitutionRecords=[];
+      select.innerHTML='<option value="">Kurumlar yüklenemedi</option>';
+    }
+    return promotionPackageInstitutionRecords;
+  }
+
+  function selectedPromotionPackages(){
+    return promotionPackageRecords.filter(item=>selectedPromotionPackageIds.has(item.id));
+  }
+
+  function updatePromotionPackageSelectionUi(){
+    const selected=selectedPromotionPackages();
+    const institutionId=String($("promotionPackageInstitutionSelect")?.value||"");
+    const total=selected.reduce((sum,item)=>sum+Math.max(0,Number(item.basePrice||0)),0);
+    const pendingPriceCount=selected.filter(item=>Number(item.basePrice||0)<=0).length;
+
+    if($("promotionPackageSelectedCount")) $("promotionPackageSelectedCount").textContent=String(selected.length);
+    if($("promotionPackageSelectedTotal")) $("promotionPackageSelectedTotal").textContent=money(total);
+    if($("promotionPackageSelectedPriceNote")){
+      $("promotionPackageSelectedPriceNote").textContent=pendingPriceCount
+        ? pendingPriceCount+" paketin fiyatı planlamada netleşecek"
+        : "Kayıtlı paket fiyatlarının toplamı";
+    }
+
+    if($("promotionPackageSelectedList")){
+      $("promotionPackageSelectedList").innerHTML=selected.length
+        ? selected.map(item=>'<span class="promotion-package-selected-chip">'+
+            '<b>✓</b>'+escapeHtml(item.name||"Paket")+
+            '<button type="button" data-selected-package-remove="'+escapeHtml(item.id)+'" title="Seçimden çıkar">×</button>'+
+          '</span>').join("")
+        : '<span>Henüz paket seçilmedi.</span>';
+
+      $("promotionPackageSelectedList").querySelectorAll("[data-selected-package-remove]").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          selectedPromotionPackageIds.delete(btn.dataset.selectedPackageRemove);
+          renderPromotionPackageAdmin(false);
+        });
+      });
+    }
+
+    if($("promotionPackageAssignBtn")){
+      $("promotionPackageAssignBtn").disabled=!institutionId || !selected.length;
+    }
+
+    document.querySelectorAll("[data-package-card]").forEach(card=>{
+      const selectedState=selectedPromotionPackageIds.has(card.dataset.packageCard);
+      card.classList.toggle("is-selected",selectedState);
+    });
+    document.querySelectorAll("[data-package-select]").forEach(btn=>{
+      const selectedState=selectedPromotionPackageIds.has(btn.dataset.packageSelect);
+      btn.classList.toggle("is-selected",selectedState);
+      btn.setAttribute("aria-pressed",selectedState?"true":"false");
+      btn.innerHTML=selectedState?"✓ Seçildi":"+ Paketi Seç";
+    });
+  }
+
+  function togglePromotionPackageSelection(id){
+    const item=promotionPackageRecords.find(x=>x.id===id);
+    if(!item || item.active===false)return;
+    if(selectedPromotionPackageIds.has(id))selectedPromotionPackageIds.delete(id);
+    else selectedPromotionPackageIds.add(id);
+    updatePromotionPackageSelectionUi();
+  }
+
+  function clearPromotionPackageSelection(showMessage=false){
+    selectedPromotionPackageIds.clear();
+    if(showMessage && $("promotionPackageSelectionMessage")){
+      $("promotionPackageSelectionMessage").textContent="Paket seçimi temizlendi.";
+    }
+    renderPromotionPackageAdmin(false);
+  }
+
+  function loadAssignedPackagesForInstitution(){
+    const institutionId=String($("promotionPackageInstitutionSelect")?.value||"");
+    selectedPromotionPackageIds.clear();
+    const institution=promotionPackageInstitutionRecords.find(x=>x.id===institutionId);
+
+    const savedIds=Array.isArray(institution?.promotionPackageIds)
+      ? institution.promotionPackageIds.map(String)
+      : [];
+
+    savedIds.forEach(id=>{
+      if(promotionPackageRecords.some(pkg=>pkg.id===id && pkg.active!==false)){
+        selectedPromotionPackageIds.add(id);
+      }
+    });
+
+    if($("promotionPackageSelectionMessage")){
+      $("promotionPackageSelectionMessage").textContent=institutionId
+        ? (savedIds.length ? "Kurumun kayıtlı paketleri seçili olarak yüklendi." : "Bu kurum için kayıtlı paket seçimi yok.")
+        : "";
+    }
+    renderPromotionPackageAdmin(false);
+  }
+
+  async function savePromotionPackageAssignment(){
+    const button=$("promotionPackageAssignBtn");
+    const message=$("promotionPackageSelectionMessage");
+    const institutionId=String($("promotionPackageInstitutionSelect")?.value||"");
+    const institution=promotionPackageInstitutionRecords.find(x=>x.id===institutionId);
+    const selected=selectedPromotionPackages();
+
+    if(!institution){
+      if(message)message.textContent="Önce kurum seçin.";
+      return;
+    }
+    if(!selected.length){
+      if(message)message.textContent="En az bir paket seçin.";
+      return;
+    }
+
+    const total=selected.reduce((sum,item)=>sum+Math.max(0,Number(item.basePrice||0)),0);
+    const now=new Date().toISOString();
+
+    if(button){
+      button.disabled=true;
+      button.textContent="Kaydediliyor...";
+    }
+
+    try{
+      await db.collection("institutions").doc(institutionId).update({
+        promotionPackageIds:selected.map(item=>item.id),
+        promotionPackageNames:selected.map(item=>String(item.name||"Paket")),
+        promotionPackageTotal:total,
+        promotionPackageAssignedAt:now
+      });
+
+      const localIndex=promotionPackageInstitutionRecords.findIndex(x=>x.id===institutionId);
+      if(localIndex>=0){
+        promotionPackageInstitutionRecords[localIndex]={
+          ...promotionPackageInstitutionRecords[localIndex],
+          promotionPackageIds:selected.map(item=>item.id),
+          promotionPackageNames:selected.map(item=>String(item.name||"Paket")),
+          promotionPackageTotal:total,
+          promotionPackageAssignedAt:now
+        };
+      }
+
+      addAudit(
+        "Reklam paketleri kuruma atandı",
+        (institution.name||institutionId)+" · "+selected.map(item=>item.name||"Paket").join(", ")
+      );
+
+      if(message){
+        message.textContent=selected.length+" paket "+(institution.name||"kurum")+" için kaydedildi.";
+      }
+    }catch(error){
+      console.error("Paket seçimi kuruma kaydedilemedi:",error);
+      if(message)message.textContent="Paket seçimi kaydedilemedi. Firestore yetkisini kontrol edin.";
+    }finally{
+      if(button){
+        button.textContent="Seçimi Kuruma Kaydet";
+      }
+      updatePromotionPackageSelectionUi();
+    }
+  }
+
   function editPromotionPackage(id){
     const item=promotionPackageRecords.find(x=>x.id===id);
     if(!item)return;
@@ -3335,7 +3518,7 @@
     }
 
     root.innerHTML=rows.length ? rows.map(item=>`
-      <article class="promotion-package-admin-card ${item.active===false?"is-passive":""}">
+      <article class="promotion-package-admin-card ${item.active===false?"is-passive":""} ${selectedPromotionPackageIds.has(item.id)?"is-selected":""}" data-package-card="${escapeHtml(item.id)}">
         <div class="promotion-package-admin-card-head">
           <div>
             <span>${escapeHtml(item.badge||"PAKET")}</span>
@@ -3354,6 +3537,13 @@
         <div class="promotion-package-admin-includes">
           ${(item.includes||[]).slice(0,5).map(x=>'<span>✓ '+escapeHtml(x)+'</span>').join("") || '<span>İçerik eklenmemiş.</span>'}
         </div>
+        <button type="button"
+          class="promotion-package-select-btn ${selectedPromotionPackageIds.has(item.id)?"is-selected":""}"
+          data-package-select="${escapeHtml(item.id)}"
+          aria-pressed="${selectedPromotionPackageIds.has(item.id)?"true":"false"}"
+          ${item.active===false?"disabled":""}>
+          ${selectedPromotionPackageIds.has(item.id)?"✓ Seçildi":"+ Paketi Seç"}
+        </button>
         <div class="promotion-package-admin-card-actions">
           <button type="button" data-package-edit="${escapeHtml(item.id)}">Düzenle</button>
           <button type="button" data-package-toggle="${escapeHtml(item.id)}">${item.active===false?"Yayına Al":"Pasife Al"}</button>
@@ -3362,9 +3552,13 @@
       </article>
     `).join("") : '<div class="advanced-empty">Paket bulunamadı.</div>';
 
+    root.querySelectorAll("[data-package-select]").forEach(btn=>btn.addEventListener("click",()=>togglePromotionPackageSelection(btn.dataset.packageSelect)));
     root.querySelectorAll("[data-package-edit]").forEach(btn=>btn.addEventListener("click",()=>editPromotionPackage(btn.dataset.packageEdit)));
     root.querySelectorAll("[data-package-toggle]").forEach(btn=>btn.addEventListener("click",()=>togglePromotionPackage(btn.dataset.packageToggle)));
     root.querySelectorAll("[data-package-delete]").forEach(btn=>btn.addEventListener("click",()=>deletePromotionPackage(btn.dataset.packageDelete)));
+
+    if(!promotionPackageInstitutionRecords.length)await loadPromotionPackageInstitutions();
+    updatePromotionPackageSelectionUi();
   }
 
   $("promotionPackageForm")?.addEventListener("submit",savePromotionPackage);
@@ -3373,6 +3567,9 @@
   $("promotionPackageAddExtra")?.addEventListener("click",()=>addPromotionPackageExtraRow());
   $("promotionPackageSeedBtn")?.addEventListener("click",seedPromotionPackages);
   $("promotionPackageSearch")?.addEventListener("input",()=>renderPromotionPackageAdmin(false));
+  $("promotionPackageClearSelectionBtn")?.addEventListener("click",()=>clearPromotionPackageSelection(true));
+  $("promotionPackageInstitutionSelect")?.addEventListener("change",loadAssignedPackagesForInstitution);
+  $("promotionPackageAssignBtn")?.addEventListener("click",savePromotionPackageAssignment);
 
   function promotionOrderStatusLabel(status) {
     return {
