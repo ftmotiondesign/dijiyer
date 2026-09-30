@@ -1426,6 +1426,16 @@ function getRecommendedAdPackage(inst){
   return {packageId,package:ADMIN_AD_PACKAGES[packageId],reason};
 }
 
+function adminAdPackageTriggerText(id){
+  const map={
+    starter:"⚡ Hızlı Başlangıç",
+    regional:"📍 Yerel Müşteri İçin",
+    video:"🎬 Daha Fazla Dikkat",
+    premium:"◆ Maksimum Görünürlük"
+  };
+  return map[id] || "✨ Görünürlüğü Artır";
+}
+
 function adminAdPackageOptions(selected){
   return '<option value="">Paket seçin...</option>' +
     Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg]) =>
@@ -1678,14 +1688,20 @@ function renderManagedInstitutions() {
           <details class="ad-package-catalog">
             <summary>Hazır görünürlük paketlerini gör</summary>
             <div class="ad-package-grid">
-              ${Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg])=>`
-                <article class="${id===adRecommendation.packageId?"recommended":""}">
-                  <span>${id===adRecommendation.packageId?"Önerilen":"Paket"}</span>
+              ${Object.entries(ADMIN_AD_PACKAGES).map(([id,pkg])=>{
+                const selected=String(data.adPackage||"")===id;
+                return `
+                <article class="${selected?"selected-package":(id===adRecommendation.packageId?"recommended":"")}" data-ad-package-card="${id}">
+                  <span>${selected?"✓ SEÇİLİ":(id===adRecommendation.packageId?"ÖNERİLEN":escapeHtml(adminAdPackageTriggerText(id)))}</span>
                   <strong>${escapeHtml(pkg.name)}</strong>
                   <p>${escapeHtml(pkg.short)}</p>
                   <small>${escapeHtml(pkg.benefits.join(" · "))}</small>
+                  <button type="button" class="ad-package-card-select ${selected?"is-selected":""}" data-ad-package-pick="${id}">
+                    ${selected?"✓ SEÇİLİ PAKET":"Bu Paketi Seç"}
+                  </button>
                 </article>
-              `).join("")}
+              `;
+              }).join("")}
             </div>
           </details>
 
@@ -1926,6 +1942,29 @@ function renderManagedInstitutions() {
     const adForm = card.querySelector(".institution-ad-form");
     const adPackageSelect = adForm?.elements.adPackage;
     const adStatusSelect = adForm?.elements.adStatus;
+
+    card.querySelectorAll("[data-ad-package-pick]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const packageId=String(button.dataset.adPackagePick||"");
+        if(adPackageSelect)adPackageSelect.value=packageId;
+
+        card.querySelectorAll("[data-ad-package-card]").forEach(packageCard=>{
+          const selected=packageCard.dataset.adPackageCard===packageId;
+          packageCard.classList.toggle("selected-package",selected);
+          packageCard.querySelector(".ad-package-card-select")?.classList.toggle("is-selected",selected);
+          const pickBtn=packageCard.querySelector(".ad-package-card-select");
+          if(pickBtn)pickBtn.textContent=selected?"✓ SEÇİLİ PAKET":"Bu Paketi Seç";
+          const tag=packageCard.querySelector(":scope > span");
+          if(tag){
+            tag.textContent=selected
+              ? "✓ SEÇİLİ"
+              : (packageCard.dataset.adPackageCard===adRecommendation.packageId
+                  ? "ÖNERİLEN"
+                  : adminAdPackageTriggerText(packageCard.dataset.adPackageCard));
+          }
+        });
+      });
+    });
 
     card.querySelector(".ad-pick-recommended")?.addEventListener("click", () => {
       if(adPackageSelect) adPackageSelect.value = adRecommendation.packageId;
