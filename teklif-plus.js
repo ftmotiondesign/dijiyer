@@ -13,6 +13,7 @@
   let customerAudioUnlocked=false;
   let customerResumeBusy=false;
   let lastCustomerResumeSync=0;
+  let customerOfferUnreadCount=0;
   const customerMessageTitleBase=document.title;
 
   const originalOfferHtml=offerHtml;
@@ -263,12 +264,30 @@
   }
 
   function updateCustomerMessageTitle(){
-    const total=[...customerUnreadMap.values()]
+    const messageTotal=[...customerUnreadMap.values()]
       .reduce((sum,value)=>sum+Number(value||0),0);
+    const total=messageTotal+Number(customerOfferUnreadCount||0);
+
+    let label="Yeni Bildirim";
+    if(messageTotal>0 && customerOfferUnreadCount<=0)label="Yeni Mesaj";
+    if(customerOfferUnreadCount>0 && messageTotal<=0)label="Yeni Teklif";
 
     document.title=total>0
-      ? "("+total+") Yeni Mesaj · "+customerMessageTitleBase
+      ? "("+total+") "+label+" · "+customerMessageTitleBase
       : customerMessageTitleBase;
+  }
+
+  window.DijiyerCustomerNotifyOffer=function(){
+    if(document.hidden){
+      customerOfferUnreadCount=Math.max(1,Number(customerOfferUnreadCount||0)+1);
+      updateCustomerMessageTitle();
+    }
+  };
+
+  function clearCustomerOfferUnread(){
+    if(customerOfferUnreadCount<=0)return;
+    customerOfferUnreadCount=0;
+    updateCustomerMessageTitle();
   }
 
   function markCustomerConversationRead(quoteId,institutionId){
@@ -327,7 +346,7 @@
     );
 
     if(text){
-      const name=offer?.institutionName||"Kurum";
+      const name=offer?.institutionName||currentAccess?.targetInstitutionName||"Kurum";
       const preview=String(msg?.text||"").trim();
       text.textContent=name+(preview?" · "+preview.slice(0,90):" size mesaj gönderdi.");
     }
@@ -363,9 +382,12 @@
       watchedQuoteId=quoteId;
     }
 
-    const activeIds=new Set(
-      bundle.offers.map(o=>String(o.institutionId||o.id||"")).filter(Boolean)
-    );
+    const conversationInstitutionIds=[
+      ...bundle.offers.map(o=>String(o.institutionId||o.id||"")),
+      String(bundle.access?.targetInstitutionId||""),
+      String(bundle.lock?.institutionId||"")
+    ].filter(Boolean);
+    const activeIds=new Set(conversationInstitutionIds);
 
     customerMessageWatchers.forEach((unsubscribe,institutionId)=>{
       if(activeIds.has(institutionId))return;
@@ -375,8 +397,8 @@
       customerUnreadMap.delete(institutionId);
     });
 
-    bundle.offers.forEach(offer=>{
-      const institutionId=String(offer.institutionId||offer.id||"");
+    conversationInstitutionIds.forEach(institutionId=>{
+      institutionId=String(institutionId||"");
       if(!institutionId||customerMessageWatchers.has(institutionId))return;
 
       let initial=true;
@@ -445,9 +467,14 @@
 
     const quoteId=String(bundle.access.quoteId);
     const offers=bundle.offers||[];
+    const conversationInstitutionIds=[...new Set([
+      ...offers.map(offer=>String(offer.institutionId||offer.id||"")),
+      String(bundle.access?.targetInstitutionId||""),
+      String(bundle.lock?.institutionId||"")
+    ].filter(Boolean))];
 
-    await Promise.all(offers.map(async offer=>{
-      const institutionId=String(offer.institutionId||offer.id||"");
+    await Promise.all(conversationInstitutionIds.map(async institutionId=>{
+      institutionId=String(institutionId||"");
       if(!institutionId)return;
 
       const previousRows=customerMessageRows.get(institutionId)||[];
@@ -524,7 +551,10 @@
   }
 
   document.addEventListener("visibilitychange",()=>{
-    if(!document.hidden)resumeCustomerMessaging();
+    if(!document.hidden){
+      clearCustomerOfferUnread();
+      resumeCustomerMessaging();
+    }
   });
 
   window.addEventListener("pageshow",()=>{
@@ -532,6 +562,7 @@
   });
 
   window.addEventListener("focus",()=>{
+    clearCustomerOfferUnread();
     setTimeout(resumeCustomerMessaging,250);
   });
 
