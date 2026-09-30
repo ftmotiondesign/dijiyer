@@ -1842,6 +1842,132 @@ offerReportTabBtn.addEventListener("click", async () => {
   renderInstitutionOfferReport();
 });
 
+let institutionReviewModerationRecords = [];
+
+async function loadInstitutionReviewModeration(){
+  const list=document.getElementById("reviewModerationList");
+  const count=document.getElementById("reviewModerationCount");
+  if(!list||!count)return;
+
+  list.innerHTML='<div class="empty-state">Yorumlar yükleniyor...</div>';
+
+  try{
+    const snap=await db.collection("institutionReviews")
+      .orderBy("date","desc")
+      .limit(200)
+      .get();
+
+    institutionReviewModerationRecords=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    renderInstitutionReviewModeration();
+  }catch(error){
+    console.error("Yorum moderasyonu yüklenemedi:",error);
+    count.textContent="Yorumlar yüklenemedi.";
+    list.innerHTML='<div class="empty-state">Yorumlar yüklenemedi. Firestore yetkisini kontrol edin.</div>';
+  }
+}
+
+function renderInstitutionReviewModeration(){
+  const list=document.getElementById("reviewModerationList");
+  const count=document.getElementById("reviewModerationCount");
+  const filter=document.getElementById("reviewModerationFilter");
+  if(!list||!count)return;
+
+  const status=String(filter?.value||"");
+  const rows=institutionReviewModerationRecords.filter(item=>
+    !status || String(item.status||"pending")===status
+  );
+
+  const pending=institutionReviewModerationRecords.filter(item=>String(item.status||"pending")==="pending").length;
+  const published=institutionReviewModerationRecords.filter(item=>String(item.status||"")==="published").length;
+  const rejected=institutionReviewModerationRecords.filter(item=>String(item.status||"")==="rejected").length;
+
+  count.textContent=
+    pending+" onay bekliyor · "+published+" yayında · "+rejected+" reddedildi";
+
+  if(!rows.length){
+    list.innerHTML='<div class="empty-state">Bu durumda yorum bulunmuyor.</div>';
+    return;
+  }
+
+  list.innerHTML=rows.map(item=>{
+    const institution=institutionRecords.find(inst=>String(inst.id)===String(item.institutionId||""));
+    const itemStatus=String(item.status||"pending");
+    const statusLabel=itemStatus==="published"
+      ? "Yayında"
+      : itemStatus==="rejected"
+        ? "Reddedildi"
+        : "Onay Bekliyor";
+
+    return `
+      <article class="review-moderation-card ${escapeHtml(itemStatus)}" data-review-id="${escapeHtml(item.id)}">
+        <div>
+          <h5>${escapeHtml(institution?.name||"Kurum bulunamadı")} · ⭐ ${Number(item.rating||0)}/5</h5>
+          <div class="review-moderation-meta">
+            <span>${escapeHtml(statusLabel)}</span>
+            <span>${formatDate(item.date)}</span>
+            ${typeof item.recommend==="boolean"
+              ? '<span>'+(item.recommend?'👍 Tavsiye ediyor':'👎 Tavsiye etmiyor')+'</span>'
+              : ''}
+          </div>
+          <p>${escapeHtml(item.text||"")}</p>
+        </div>
+        <div class="review-moderation-buttons">
+          ${itemStatus!=="published"
+            ? '<button type="button" class="approve" data-review-action="published" data-review-id="'+escapeHtml(item.id)+'">Yayınla</button>'
+            : ''}
+          ${itemStatus!=="rejected"
+            ? '<button type="button" class="reject" data-review-action="rejected" data-review-id="'+escapeHtml(item.id)+'">Reddet</button>'
+            : ''}
+          <button type="button" class="delete" data-review-action="delete" data-review-id="${escapeHtml(item.id)}">Sil</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  list.querySelectorAll("[data-review-action]").forEach(button=>{
+    button.addEventListener("click",async()=>{
+      const id=String(button.dataset.reviewId||"");
+      const action=String(button.dataset.reviewAction||"");
+      if(!id||!action)return;
+
+      const item=institutionReviewModerationRecords.find(row=>String(row.id)===id);
+      const old=button.textContent;
+      button.disabled=true;
+      button.textContent="Kaydediliyor...";
+
+      try{
+        const ref=db.collection("institutionReviews").doc(id);
+
+        if(action==="delete"){
+          if(!confirm("Bu yorumu kalıcı olarak silmek istiyor musunuz?"))return;
+          await ref.delete();
+          institutionReviewModerationRecords=institutionReviewModerationRecords.filter(row=>String(row.id)!==id);
+        }else{
+          await ref.update({
+            status:action,
+            moderatedAt:new Date().toISOString()
+          });
+          if(item){
+            item.status=action;
+            item.moderatedAt=new Date().toISOString();
+          }
+        }
+
+        renderInstitutionReviewModeration();
+      }catch(error){
+        console.error("Yorum moderasyonu kaydedilemedi:",error);
+        alert("Yorum işlemi kaydedilemedi.");
+      }finally{
+        button.disabled=false;
+        button.textContent=old;
+      }
+    });
+  });
+}
+
+document.getElementById("reviewModerationFilter")?.addEventListener("change",renderInstitutionReviewModeration);
+document.getElementById("reviewModerationRefresh")?.addEventListener("click",loadInstitutionReviewModeration);
+
 async function loadInstitutions() {
   institutionsList.innerHTML = "Kurumlar yükleniyor...";
 
@@ -1861,6 +1987,7 @@ async function loadInstitutions() {
       `${activeInstitutionCount} aktif · ${passiveInstitutionCount} pasif · ${institutionRecords.length} toplam`;
     populateInstitutionCityFilter();
     renderManagedInstitutions();
+    await loadInstitutionReviewModeration();
     refreshAdminOverview();
 
     if (quoteRequestRecords.length) {
