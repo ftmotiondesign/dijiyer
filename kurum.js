@@ -637,7 +637,7 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     console.error("Doğrudan teklif talebi gönderilemedi:",error);
     const errorCode=String(error?.code||"unknown");
     const errorText=errorCode.includes("permission-denied")
-      ?"Teklif gönderilemedi (permission-denied). Firestore kuralını kontrol edin."
+      ?"Teklif talebi kaydedilemedi (quoteRequests / permission-denied)."
       :"Teklif gönderilemedi ("+errorCode+"). Lütfen tekrar deneyin.";
     message.textContent=errorText;
     showToast(errorText);
