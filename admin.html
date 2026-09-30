@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=1002">
+  <link rel="stylesheet" href="admin.css?v=1003">
   <link rel="stylesheet" href="admin-advanced.css?v=40">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -2414,132 +2414,183 @@
       </section>
 
       <section id="quoteRoutingSection" class="quote-routing-section" hidden>
-        <div class="quote-routing-head">
+        <div class="quote-routing-head quote-routing-head-pro">
           <div>
-            <span class="quote-management-eyebrow">GELİR FIRSATI · YANITSIZ TEKLİFLER</span>
-            <h3>Yanıtsız Talepleri Gelire Dönüştür</h3>
-            <p>İlk kurumun cevaplamadığı özel talepleri boşa bırakmayın. Müşteri izniyle uygun kurumlara öncelikli yönlendirin ve teklif kredisi modeliyle gelir üretin.</p>
+            <span class="quote-management-eyebrow">GELİR MERKEZİ · YANITSIZ TEKLİFLER</span>
+            <h3>Teklif Dağıtım Merkezi</h3>
+            <p>Yanıtsız kalan özel talepleri, kurum yönlendirmelerini ve teklif kredilerini tek ekrandan yönetin.</p>
           </div>
           <button type="button" id="quoteRoutingRefreshBtn" class="quote-refresh-btn"><span>↻</span> Yenile</button>
         </div>
 
-        <div class="unanswered-revenue-callout">
-          <div>
-            <span class="unanswered-revenue-icon">₺</span>
-            <div>
-              <strong>Her yanıtsız talep yeni bir satış fırsatı olabilir</strong>
-              <small>Önce VIP kurumlara, sonra reklam verenlere, ardından diğer uygun kurumlara yönlendirin.</small>
-            </div>
-          </div>
-          <span class="unanswered-revenue-flow">Yanıtsız Talep → Yönlendirme → Teklif Kredisi → Gelir</span>
+        <div class="quote-routing-hub">
+          <button type="button" class="quote-routing-hub-card active" data-routing-jump="quoteRoutingFlowBlock">
+            <span class="quote-routing-hub-icon">⚡</span>
+            <span class="quote-routing-hub-copy">
+              <strong>Teklif Akışı</strong>
+              <small>Bekleyen talepler ve kurum yönlendirmeleri</small>
+            </span>
+            <b id="quoteRoutingHubWaiting">0</b>
+          </button>
+
+          <button type="button" class="quote-routing-hub-card" data-routing-jump="leadCreditPanelBlock">
+            <span class="quote-routing-hub-icon">◎</span>
+            <span class="quote-routing-hub-copy">
+              <strong>Kredi Yönetimi</strong>
+              <small>Kurum bakiyeleri ve kredi hareketleri</small>
+            </span>
+            <b id="quoteRoutingHubCredit">0</b>
+          </button>
+
+          <button type="button" class="quote-routing-hub-card" data-routing-jump="quoteRoutingRevenueBlock">
+            <span class="quote-routing-hub-icon">₺</span>
+            <span class="quote-routing-hub-copy">
+              <strong>Gelir Ayarları</strong>
+              <small>Paket fiyatları ve dağıtım önceliği</small>
+            </span>
+            <i>→</i>
+          </button>
         </div>
 
-        <div class="quote-routing-policy">
-          <div class="quote-routing-policy-step priority-vip">
-            <b>1</b>
-            <span><strong>VIP Kurumlar</strong><small>İlk erişim önceliği</small></span>
-          </div>
-          <div class="quote-routing-policy-arrow">→</div>
-          <div class="quote-routing-policy-step priority-ad">
-            <b>2</b>
-            <span><strong>Reklam Verenler</strong><small>İkinci erişim önceliği</small></span>
-          </div>
-          <div class="quote-routing-policy-arrow">→</div>
-          <div class="quote-routing-policy-step priority-standard">
-            <b>3</b>
-            <span><strong>Diğer Kurumlar</strong><small>Sonraki erişim grubu</small></span>
-          </div>
-        </div>
-
-        <div class="quote-routing-kpis quote-routing-kpis-expanded">
-          <article><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Henüz teklif almayan uygun talepler</small></article>
+        <div class="quote-routing-kpis quote-routing-kpis-expanded quote-routing-kpis-pro">
+          <article class="attention"><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Önce ilgilenmeniz gereken talepler</small></article>
           <article><span>Yönlendirilmiş</span><strong id="quoteRoutingForwardedCount">0</strong><small>Başka kurumlara açılan talepler</small></article>
-          <article><span>Teklif Dönen</span><strong id="quoteRoutingRespondedCount">0</strong><small>Yönlendirme sonrası teklif gelen talepler</small></article>
+          <article class="success"><span>Teklif Dönen</span><strong id="quoteRoutingRespondedCount">0</strong><small>Yönlendirme sonrası teklif gelen</small></article>
           <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong><small>Dağıtıma uygun VIP kurumlar</small></article>
-          <article class="credit-kpi"><span>Toplam Kredi Bakiyesi</span><strong id="leadCreditBalanceTotal">0</strong><small>Kurumların kullanılabilir net kredisi</small></article>
-          <article class="credit-kpi"><span>Kullanılan Kredi</span><strong id="leadCreditUsedTotal">0</strong><small>Yönlendirilmiş tekliflerden kullanılan</small></article>
+          <article class="credit-kpi"><span>Toplam Kredi</span><strong id="leadCreditBalanceTotal">0</strong><small>Kurumların kullanılabilir bakiyesi</small></article>
+          <article class="credit-kpi"><span>Kullanılan Kredi</span><strong id="leadCreditUsedTotal">0</strong><small>Teklif gönderimlerinde kullanılan</small></article>
         </div>
 
-        <div class="quote-routing-toolbar quote-routing-toolbar-expanded">
-          <label>
-            <span>Akış durumu</span>
-            <select id="quoteRoutingStatusFilter">
-              <option value="all" selected>Tüm özel talepler</option>
-              <option value="waiting">Dağıtım bekleyen</option>
-              <option value="forwarded">Yönlendirilmiş / yanıt bekleyen</option>
-              <option value="responded">Teklif gelen</option>
-              <option value="completed">Kayıt sürecine geçen</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Yanıt bekleme süresi</span>
-            <select id="quoteRoutingWaitMinutes">
-              <option value="0" selected>Hemen / Test</option>
-              <option value="15">15 dakika</option>
-              <option value="30">30 dakika</option>
-              <option value="60">1 saat</option>
-              <option value="180">3 saat</option>
-              <option value="360">6 saat</option>
-              <option value="1440">24 saat</option>
-            </select>
-          </label>
-
-          <label>
-            <span>Bölge kapsamı</span>
-            <select id="quoteRoutingAreaMode">
-              <option value="district" selected>Önce aynı ilçe, yoksa aynı şehir</option>
-              <option value="city">Aynı şehir</option>
-            </select>
-          </label>
-
-          <label class="quote-routing-search">
-            <span>Ara</span>
-            <input type="search" id="quoteRoutingSearch" placeholder="Müşteri, kurum, şehir veya hizmet...">
-          </label>
-        </div>
-
-        <div class="quote-routing-command-grid">
-          <div class="lead-package-admin">
-            <div class="lead-package-admin-head">
-              <div>
-                <span>GELİR MODELİ</span>
-                <h4>Teklif Kredisi Paketleri</h4>
-                <p>Yönlendirilmiş bir kurum müşteriye teklif gönderdiğinde 1 kredi kullanılır. Paket ödemeleri şimdilik Dijiyer dışında/fatura ile takip edilir.</p>
-              </div>
-              <button type="button" id="leadPackageSaveBtn">Paketleri Kaydet</button>
-            </div>
-
-            <div class="lead-package-grid">
-              <label><span>Tekli Kredi</span><input type="number" min="0" step="1" id="leadPriceSingle" placeholder="₺"></label>
-              <label><span>10 Kredi</span><input type="number" min="0" step="1" id="leadPrice10" placeholder="₺"></label>
-              <label><span>25 Kredi</span><input type="number" min="0" step="1" id="leadPrice25" placeholder="₺"></label>
-              <label><span>50 Kredi</span><input type="number" min="0" step="1" id="leadPrice50" placeholder="₺"></label>
-            </div>
-            <p id="leadPackageMessage" class="lead-package-message"></p>
-          </div>
-
-          <div class="lead-credit-summary-card">
+        <div id="quoteRoutingFlowBlock" class="quote-routing-primary-workspace">
+          <div class="quote-routing-workspace-head">
             <div>
-              <span>KREDİ MUHASEBESİ</span>
-              <h4>Teklif Kredisi Takibi</h4>
-              <p>Kurumlara yüklenen, kullanılan ve eksi bakiyeye düşen kredileri tek ekrandan izleyin.</p>
+              <span class="quote-management-eyebrow">ÖNCELİKLİ ÇALIŞMA ALANI</span>
+              <h4>Teklif Akışı</h4>
+              <p>Yanıtsız talepleri burada gör, uygun kuruma yönlendir ve teklif dönüşünü takip et.</p>
             </div>
-            <div class="lead-credit-mini-kpis">
-              <span><small>Yüklenen</small><strong id="leadCreditLoadedTotal">0</strong></span>
-              <span><small>Kullanılan</small><strong id="leadCreditUsedSummary">0</strong></span>
-              <span><small>Net Bakiye</small><strong id="leadCreditBalanceSummary">0</strong></span>
-              <span><small>Eksi Bakiye</small><strong id="leadCreditDebtCount">0</strong></span>
+            <small id="quoteRoutingListCount">0 kayıt</small>
+          </div>
+
+          <div class="quote-routing-toolbar quote-routing-toolbar-expanded">
+            <label>
+              <span>Akış durumu</span>
+              <select id="quoteRoutingStatusFilter">
+                <option value="all" selected>Tüm özel talepler</option>
+                <option value="waiting">Dağıtım bekleyen</option>
+                <option value="forwarded">Yönlendirilmiş / yanıt bekleyen</option>
+                <option value="responded">Teklif gelen</option>
+                <option value="completed">Kayıt sürecine geçen</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Yanıt bekleme süresi</span>
+              <select id="quoteRoutingWaitMinutes">
+                <option value="0" selected>Hemen / Test</option>
+                <option value="15">15 dakika</option>
+                <option value="30">30 dakika</option>
+                <option value="60">1 saat</option>
+                <option value="180">3 saat</option>
+                <option value="360">6 saat</option>
+                <option value="1440">24 saat</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Bölge kapsamı</span>
+              <select id="quoteRoutingAreaMode">
+                <option value="district" selected>Önce aynı ilçe, yoksa aynı şehir</option>
+                <option value="city">Aynı şehir</option>
+              </select>
+            </label>
+
+            <label class="quote-routing-search">
+              <span>Ara</span>
+              <input type="search" id="quoteRoutingSearch" placeholder="Müşteri, kurum, şehir veya hizmet...">
+            </label>
+          </div>
+
+          <div class="quote-routing-action-note">
+            <span>⚡</span>
+            <div>
+              <strong>Önce bu alanı kontrol edin</strong>
+              <small>Dağıtım bekleyen talep → müşteri izni → uygun kurum → teklif dönüşü. Kredi yalnızca kurum teklif gönderdiğinde kullanılır.</small>
+            </div>
+          </div>
+
+          <div id="quoteRoutingList" class="quote-routing-list">
+            <div class="empty-state">Özel teklif akışı yükleniyor...</div>
+          </div>
+        </div>
+
+        <div id="quoteRoutingRevenueBlock" class="quote-routing-secondary-block">
+          <div class="quote-routing-secondary-title">
+            <div>
+              <span class="quote-management-eyebrow">GELİR AYARLARI</span>
+              <h4>Paketler ve Dağıtım Önceliği</h4>
+              <p>Günlük operasyonun altında duran ayarlar. Sık değiştirilmesi gerekmez.</p>
+            </div>
+          </div>
+
+          <div class="quote-routing-policy compact">
+            <div class="quote-routing-policy-step priority-vip">
+              <b>1</b>
+              <span><strong>VIP Kurumlar</strong><small>İlk erişim önceliği</small></span>
+            </div>
+            <div class="quote-routing-policy-arrow">→</div>
+            <div class="quote-routing-policy-step priority-ad">
+              <b>2</b>
+              <span><strong>Reklam Verenler</strong><small>İkinci erişim önceliği</small></span>
+            </div>
+            <div class="quote-routing-policy-arrow">→</div>
+            <div class="quote-routing-policy-step priority-standard">
+              <b>3</b>
+              <span><strong>Diğer Kurumlar</strong><small>Sonraki erişim grubu</small></span>
+            </div>
+          </div>
+
+          <div class="quote-routing-command-grid">
+            <div class="lead-package-admin">
+              <div class="lead-package-admin-head">
+                <div>
+                  <span>GELİR MODELİ</span>
+                  <h4>Teklif Kredisi Paketleri</h4>
+                  <p>Yönlendirilmiş kurum müşteriye teklif gönderdiğinde 1 kredi kullanılır.</p>
+                </div>
+                <button type="button" id="leadPackageSaveBtn">Paketleri Kaydet</button>
+              </div>
+
+              <div class="lead-package-grid">
+                <label><span>Tekli Kredi</span><input type="number" min="0" step="1" id="leadPriceSingle" placeholder="₺"></label>
+                <label><span>10 Kredi</span><input type="number" min="0" step="1" id="leadPrice10" placeholder="₺"></label>
+                <label><span>25 Kredi</span><input type="number" min="0" step="1" id="leadPrice25" placeholder="₺"></label>
+                <label><span>50 Kredi</span><input type="number" min="0" step="1" id="leadPrice50" placeholder="₺"></label>
+              </div>
+              <p id="leadPackageMessage" class="lead-package-message"></p>
+            </div>
+
+            <div class="lead-credit-summary-card">
+              <div>
+                <span>KREDİ MUHASEBESİ</span>
+                <h4>Teklif Kredisi Özeti</h4>
+                <p>Kurumlara yüklenen, kullanılan ve kalan kredileri hızlıca kontrol edin.</p>
+              </div>
+              <div class="lead-credit-mini-kpis">
+                <span><small>Yüklenen</small><strong id="leadCreditLoadedTotal">0</strong></span>
+                <span><small>Kullanılan</small><strong id="leadCreditUsedSummary">0</strong></span>
+                <span><small>Net Bakiye</small><strong id="leadCreditBalanceSummary">0</strong></span>
+                <span><small>Eksi Bakiye</small><strong id="leadCreditDebtCount">0</strong></span>
+              </div>
             </div>
           </div>
         </div>
 
-        <section class="lead-credit-panel">
+        <section id="leadCreditPanelBlock" class="lead-credit-panel quote-routing-secondary-block">
           <div class="lead-credit-panel-head">
             <div>
               <span class="quote-management-eyebrow">KURUM BAZLI KREDİ TAKİBİ</span>
               <h4>Kredi Hesapları</h4>
-              <p>Kredi ekleyin/çıkarın, yönlendirilen fırsat ve geri dönen teklif sayılarını karşılaştırın.</p>
+              <p>Kredi ekleyin/çıkarın, yönlendirme ve teklif dönüşlerini kurum bazında izleyin.</p>
             </div>
             <button type="button" id="leadCreditRefreshBtn" class="quote-refresh-btn"><span>↻</span> Kredi Kayıtlarını Yenile</button>
           </div>
@@ -2586,21 +2637,9 @@
           </div>
         </section>
 
-        <div class="quote-routing-note">
+        <div class="quote-routing-note quote-routing-note-bottom">
           <strong>Tek sayfa akışı</strong>
-          <span>Özel talep, ilk hedef kurum, yönlendirilen kurumlar, geri dönen teklifler ve kullanılan kredi aynı ekranda izlenir. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
-        </div>
-
-        <div class="quote-routing-list-head">
-          <div>
-            <span class="quote-management-eyebrow">TEKLİF AKIŞI</span>
-            <h4>Tüm Özel Teklifler</h4>
-          </div>
-          <small id="quoteRoutingListCount">0 kayıt</small>
-        </div>
-
-        <div id="quoteRoutingList" class="quote-routing-list">
-          <div class="empty-state">Özel teklif akışı yükleniyor...</div>
+          <span>Talep, hedef kurum, yönlendirme, teklif dönüşü ve kullanılan kredi aynı ekranda takip edilir. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
         </div>
 
         <div class="lead-credit-modal" id="leadCreditModal" hidden>
@@ -3254,7 +3293,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=1002"></script>
+<script src="admin.js?v=1003"></script>
   <script src="admin-advanced.js?v=56"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
