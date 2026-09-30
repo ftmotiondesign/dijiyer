@@ -808,12 +808,12 @@ async function lockOffer(quoteId,institutionId,button){
     const previewOffer=previewSnap.data();
     if(!confirmOfferLock(previewOffer))return;
     button.disabled=true;
-    button.textContent="Kilitleniyor...";
+    button.textContent="Kabul ediliyor...";
     const publicLockedAt=new Date().toISOString();
 
     await db.runTransaction(async tx=>{
       const [offerSnap,lockSnap]=await Promise.all([tx.get(offerRef),tx.get(lockRef)]);
-      if(lockSnap.exists)throw new Error("Bu talep için daha önce bir fiyat kilitlendi.");
+      if(lockSnap.exists)throw new Error("Bu talep için daha önce bir teklif kabul edildi.");
       if(!offerSnap.exists)throw new Error("Teklif bulunamadı.");
       const offer=offerSnap.data();
       if(!offer.expiresAtTs||offer.expiresAtTs.toMillis()<=Date.now())throw new Error("Teklifin süresi dolmuş.");
@@ -865,7 +865,7 @@ async function lockOffer(quoteId,institutionId,button){
     toast("Teklif kabul edildi. Gerçek kayıt için süre dolmadan kurumla görüşün.");
     await refreshTracking();
   }catch(error){
-    console.error(error);toast(error.message||"Teklif kilitlenemedi.");
+    console.error(error);toast(error.message||"Teklif kabul edilemedi.");
   }finally{
     button.disabled=false;button.textContent="✓ Teklifi Kabul Et";
   }
@@ -887,8 +887,8 @@ function ensureOfferIssueModal(){
 
         <form id="offerIssueForm">
           <label class="offer-issue-option">
-            <input type="radio" name="issueReason" value="Firma kilitlenen fiyatı kabul etmedi" required>
-            <span><strong>Firma kilitlenen fiyatı kabul etmedi</strong><small>Kilitlenen fiyat yerine farklı bir fiyat istendi.</small></span>
+            <input type="radio" name="issueReason" value="Firma kabul edilen fiyatı uygulamadı" required>
+            <span><strong>Firma kabul edilen fiyatı uygulamadı</strong><small>Kabul kaydındaki fiyat yerine farklı bir fiyat istendi.</small></span>
           </label>
 
           <label class="offer-issue-option">
@@ -898,12 +898,12 @@ function ensureOfferIssueModal(){
 
           <label class="offer-issue-option">
             <input type="radio" name="issueReason" value="Teklif kapsamı değiştirildi">
-            <span><strong>Teklif kapsamı değiştirildi</strong><small>Kilitlenen hizmet veya ürün kapsamı sonradan değiştirildi.</small></span>
+            <span><strong>Teklif kapsamı değiştirildi</strong><small>Kabul edilen hizmet veya ürün kapsamı sonradan değiştirildi.</small></span>
           </label>
 
           <label class="offer-issue-option">
             <input type="radio" name="issueReason" value="Hizmet verilmek istenmedi">
-            <span><strong>Hizmet verilmek istenmedi</strong><small>Geçerli ve kilitli teklif olmasına rağmen hizmet reddedildi.</small></span>
+            <span><strong>Hizmet verilmek istenmedi</strong><small>Geçerli ve kabul edilmiş teklif olmasına rağmen hizmet reddedildi.</small></span>
           </label>
 
           <label class="offer-issue-option">
@@ -918,7 +918,7 @@ function ensureOfferIssueModal(){
 
           <div class="offer-issue-fairness">
             <strong>Adil değerlendirme</strong>
-            <span>Bildirim; teklif kodu, kilitlenen fiyat ve şartlarla birlikte değerlendirilir. Tek taraflı beyan otomatik ceza oluşturmaz.</span>
+            <span>Bildirim; teklif kodu, kabul edilen fiyat ve şartlarla birlikte değerlendirilir. Tek taraflı beyan otomatik ceza oluşturmaz.</span>
           </div>
 
           <button type="submit" class="offer-issue-submit">Bildirimi Gönder</button>
