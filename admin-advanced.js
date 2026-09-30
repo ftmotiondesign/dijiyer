@@ -4989,12 +4989,22 @@
     const url=String($("opportunitySponsorMediaUrl")?.value||"").trim();
     const type=String($("opportunitySponsorMediaType")?.value||"image")==="video"?"video":"image";
     const active=Boolean($("opportunitySponsorActive")?.checked);
+    const startAt=String($("opportunitySponsorStartAt")?.value||"").slice(0,10);
+    const endAt=String($("opportunitySponsorEndAt")?.value||"").slice(0,10);
+    const priority=Math.max(
+      1,
+      Math.min(99,Number($("opportunitySponsorPriority")?.value||10)||10)
+    );
     const message=$("opportunitySponsorUploadMessage");
     const saveBtn=$("opportunitySponsorSaveBtn");
 
     if(!id)return;
     if(active&&!url){
       if(message)message.textContent="Fırsat Sponsor'u aktif etmek için önce 1080 × 1350 px görsel veya video yükleyin.";
+      return;
+    }
+    if(startAt&&endAt&&startAt>endAt){
+      if(message)message.textContent="Bitiş tarihi başlangıç tarihinden önce olamaz.";
       return;
     }
 
@@ -5009,6 +5019,9 @@
         opportunitySponsorActive:active&&Boolean(url),
         opportunitySponsorMediaUrl:url,
         opportunitySponsorMediaType:type,
+        opportunitySponsorStartAt:startAt,
+        opportunitySponsorEndAt:endAt,
+        opportunitySponsorPriority:priority,
         opportunitySponsorUpdatedAt:new Date().toISOString(),
         updatedAt:new Date().toISOString()
       };
@@ -5033,6 +5046,55 @@
         saveBtn.disabled=false;
         saveBtn.textContent=oldText;
       }
+    }
+  }
+
+
+  async function quickToggleOpportunitySponsor(institutionId,nextActive){
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(institutionId)
+    );
+    if(!inst)return;
+
+    const state=opportunitySponsorState(inst);
+
+    if(nextActive&&!state.mediaUrl){
+      openOpportunitySponsorModal(inst.id);
+      if($("opportunitySponsorUploadMessage")){
+        $("opportunitySponsorUploadMessage").textContent=
+          "Sponsorluğu açmak için önce 1080 × 1350 px görsel veya video yükleyin.";
+      }
+      return;
+    }
+
+    if(nextActive&&state.endAt&&state.endAt<opportunityTodayKey()){
+      openOpportunitySponsorModal(inst.id);
+      if($("opportunitySponsorUploadMessage")){
+        $("opportunitySponsorUploadMessage").textContent=
+          "Bu sponsorluğun süresi dolmuş. Bitiş tarihini güncelleyip kaydedin.";
+      }
+      return;
+    }
+
+    try{
+      const now=new Date().toISOString();
+      await db.collection("institutions").doc(String(inst.id)).update({
+        opportunitySponsorActive:Boolean(nextActive),
+        opportunitySponsorUpdatedAt:now,
+        updatedAt:now
+      });
+      inst.opportunitySponsorActive=Boolean(nextActive);
+      inst.opportunitySponsorUpdatedAt=now;
+      inst.updatedAt=now;
+
+      addAudit(
+        nextActive ? "Fırsat sponsoru hızlı aktif edildi" : "Fırsat sponsoru hızlı pasif edildi",
+        inst.name||inst.id
+      );
+      renderOpportunitySponsorsAdmin();
+    }catch(error){
+      console.error("Fırsat sponsor durumu değiştirilemedi:",error);
+      alert("Sponsor durumu değiştirilemedi.");
     }
   }
 
