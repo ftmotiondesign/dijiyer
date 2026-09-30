@@ -359,6 +359,198 @@ function sellerOfferFormHtml(quote,offer){
   `;
 }
 
+function institutionResponseTiming(quote){
+  const institutionId=String(currentAccount?.institutionId||"");
+  const targetId=String(quote?.targetInstitutionId||"");
+
+  if(!institutionId || !targetId || institutionId!==targetId)return null;
+
+  const raw=Number(quote?.responseWaitMinutes||30);
+  const minutes=[15,30,45,60,1440].includes(raw)?raw:30;
+
+  let deadline=new Date(quote?.responseDeadlineAt||"").getTime();
+  if(!Number.isFinite(deadline)){
+    const created=new Date(quote?.date||"").getTime();
+    if(Number.isFinite(created))deadline=created+(minutes*60000);
+  }
+
+  if(!Number.isFinite(deadline))return null;
+
+  const diff=deadline-Date.now();
+  const forwarded=Array.isArray(quote?.forwardInstitutionIds)
+    && quote.forwardInstitutionIds.length>0;
+
+  return {
+    minutes,
+    deadline,
+    diff,
+    expired:diff<=0,
+    urgent:diff>0 && diff<=15*60000,
+    forwarded
+  };
+}
+
+function institutionResponseWaitLabel(minutes){
+  const value=Number(minutes||0);
+  if(value===1440)return "1 gün";
+  if(value===60)return "1 saat";
+  return value+" dakika";
+}
+
+function institutionResponseRemainingLabel(diff){
+  if(diff<=0)return "Süre doldu";
+
+  const totalMinutes=Math.max(1,Math.ceil(diff/60000));
+
+  if(totalMinutes>=1440){
+    const days=Math.floor(totalMinutes/1440);
+    const hours=Math.floor((totalMinutes%1440)/60);
+    return days+" gün"+(hours?" "+hours+" saat":"");
+  }
+
+  if(totalMinutes>=60){
+    const hours=Math.floor(totalMinutes/60);
+    const minutes=totalMinutes%60;
+    return hours+" saat"+(minutes?" "+minutes+" dk":"");
+  }
+
+  return totalMinutes+" dk";
+}
+
+function institutionResponseTimingHtml(quote){
+  const timing=institutionResponseTiming(quote);
+  if(!timing)return "";
+
+  const state=sellerOfferState(quote);
+  if(state!=="new" && state!=="not_interested")return "";
+
+  const styleState=timing.forwarded
+    ? "forwarded"
+    : timing.expired
+      ? "expired"
+      : timing.urgent
+        ? "urgent"
+        : "active";
+
+  let message="Müşterinin seçtiği süre içinde fiyat teklifinizi gönderin.";
+
+  if(timing.urgent){
+    message="Yanıt süresi azalıyor. Fiyat teklifinizi mümkün olduğunca kısa sürede gönderin.";
+  }
+
+  if(timing.expired){
+    message=quote.allowAlternativeInstitutions===true
+      ? "Yanıt süresi doldu. Müşteri izin verdiği için talep diğer uygun kurumlara yönlendirilebilir."
+      : "Yanıt süresi doldu. Müşteri izin vermediği için talep başka kurumlara yönlendirilmez.";
+  }
+
+  if(timing.forwarded){
+    message="Yanıt süresinde fiyat teklifi verilmediği için talep diğer uygun kurumlara iletildi. Talep hâlâ açıksa siz de teklif gönderebilirsiniz.";
+  }
+
+  return `
+    <div class="institution-response-deadline ${styleState}">
+      <div class="institution-response-deadline-icon">${timing.forwarded?"↗":timing.expired?"!":timing.urgent?"⏱":"◷"}</div>
+      <div class="institution-response-deadline-copy">
+        <div class="institution-response-deadline-head">
+          <span>YANIT SÜRESİ</span>
+          <strong data-institution-response-countdown="${timing.deadline}">${offerSafe(institutionResponseRemainingLabel(timing.diff))}</strong>
+        </div>
+        <div class="institution-response-deadline-meta">
+          <span>Seçilen: <b>${offerSafe(institutionResponseWaitLabel(timing.minutes))}</b></span>
+          <span>Son yanıt: <b>${offerSafe(formatDate(new Date(timing.deadline).toISOString()))}</b></span>
+        </div>
+        <p>${offerSafe(message)}</p>
+      </div>
+    </div>
+  `;
+}
+
+function institutionTimingNoticeKey(quoteId,type){
+  return "dijiyerInstitutionTimingNotice:"+
+    String(currentAccount?.institutionId||"")+"|"+
+    String(quoteId||"")+"|"+
+    String(type||"");
+}
+
+function showInstitutionTimingNotice(quote,type){
+  const key=institutionTimingNoticeKey(quote?.id,type);
+  if(localStorage.getItem(key))return;
+
+  localStorage.setItem(key,new Date().toISOString());
+
+  const service=quote?.service||"Teklif talebi";
+  let title="Dijiyer · Teklif süresi";
+  let body=service;
+
+  if(type==="urgent"){
+    body=service+" · Yanıt süresinin bitmesine 15 dakikadan az kaldı.";
+  }else if(type==="expired"){
+    body=service+" · Yanıt süresi doldu.";
+  }else if(type==="forwarded"){
+    title="Dijiyer · Talep başka kurumlara iletildi";
+    body=service+" · Sürede fiyat teklifi verilmediği için talep diğer uygun kurumlara iletildi.";
+  }
+
+  const alert=document.getElementById("liveQuoteAlert");
+  const text=document.getElementById("liveQuoteAlertText");
+
+  if(alert && text){
+    text.textContent=body;
+    alert.classList.remove("hidden");
+    if(typeof playNewQuoteSound==="function")playNewQuoteSound();
+  }
+
+  try{
+    if("Notification" in window &&
+       Notification.permission==="granted" &&
+       (document.hidden || !document.hasFocus())){
+      const notification=new Notification(title,{
+        body,
+        tag:"dijiyer-quote-timing-"+String(quote?.id||"")+"-"+type
+      });
+
+      notification.onclick=()=>{
+        window.focus();
+        if(typeof openFirmDashboardQuotes==="function")openFirmDashboardQuotes("new");
+        notification.close();
+      };
+    }
+  }catch(_){}
+}
+
+function updateInstitutionResponseCountdowns(){
+  document.querySelectorAll("[data-institution-response-countdown]").forEach(node=>{
+    const deadline=Number(node.dataset.institutionResponseCountdown||0);
+    if(!Number.isFinite(deadline)||!deadline)return;
+
+    const diff=deadline-Date.now();
+    node.textContent=institutionResponseRemainingLabel(diff);
+
+    const box=node.closest(".institution-response-deadline");
+    if(!box || box.classList.contains("forwarded"))return;
+
+    box.classList.toggle("expired",diff<=0);
+    box.classList.toggle("urgent",diff>0 && diff<=15*60000);
+    box.classList.toggle("active",diff>15*60000);
+  });
+
+  quoteRecords.forEach(quote=>{
+    const timing=institutionResponseTiming(quote);
+    if(!timing)return;
+
+    if(institutionOfferMap.has(quote.id) || institutionLockMap.has(quote.id))return;
+
+    if(timing.forwarded){
+      showInstitutionTimingNotice(quote,"forwarded");
+    }else if(timing.expired){
+      showInstitutionTimingNotice(quote,"expired");
+    }else if(timing.urgent){
+      showInstitutionTimingNotice(quote,"urgent");
+    }
+  });
+}
+
 quoteCardHtml = function(quote,compact=false){
   const state=sellerOfferState(quote);
   const [statusText,statusClass]=sellerStateMeta(state);
@@ -448,6 +640,7 @@ quoteCardHtml = function(quote,compact=false){
         <div><small>Tarih</small><strong>${formatDate(quote.date)}</strong></div>
       </div>
 
+      ${institutionResponseTimingHtml(quote)}
       ${quote.note ? `<div class="quote-note">${offerSafe(quote.note)}</div>` : ""}
       ${actionArea}
     </article>
@@ -461,6 +654,8 @@ renderQuotes = function(){
   institutionQuotesList.innerHTML=rows.length
     ? rows.map(q=>quoteCardHtml(q)).join("")
     : '<div class="empty-state">Bu filtreye uygun teklif bulunamadı.</div>';
+
+  updateInstitutionResponseCountdowns();
 
   institutionQuotesList.querySelectorAll("[data-real-offer-form]").forEach(form=>{
     form.addEventListener("submit",async e=>{
@@ -753,3 +948,6 @@ quotePanelFilter.addEventListener("change",()=>{
   syncQuoteShortcutActive();
   renderQuotes();
 });
+
+// Kurum paneli açıkken tekli teklif yanıt sürelerini canlı güncelle.
+setInterval(updateInstitutionResponseCountdowns,30000);
