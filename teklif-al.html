@@ -64,7 +64,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=61" />
+  <link rel="stylesheet" href="style.css?v=62" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -452,49 +452,74 @@
       </div>
     </div>
 
+    <div class="quote-seo-services-head">
+      <div>
+        <span>HIZLI KATEGORİ SEÇİMİ</span>
+        <h2>Bir hizmet seç, uygun kurumları hemen gör</h2>
+      </div>
+      <small>Karta tıklayınca sonuçlar otomatik hazırlanır.</small>
+    </div>
+
     <div class="quote-seo-services" aria-label="Teklif alınabilen hizmet kategorileri">
-      <article>
-        <span>📚</span>
+      <button type="button" class="quote-seo-service-card" data-seo-query="sürücü kursu anaokulu dershane">
+        <span class="quote-seo-service-icon">📚</span>
         <div>
           <h3>Eğitim ve Kurs</h3>
-          <p>Sürücü kursu, anaokulu, dershane, özel ders, dil kursu ve öğrenci yurdu.</p>
+          <p>Sürücü kursu, anaokulu, dershane, özel ders ve öğrenci yurdu.</p>
+          <small>Uygun kurumları gör</small>
         </div>
-      </article>
-      <article>
-        <span>🚗</span>
+        <b>→</b>
+      </button>
+
+      <button type="button" class="quote-seo-service-card" data-seo-query="oto servis lastik ekspertiz">
+        <span class="quote-seo-service-icon">🚗</span>
         <div>
           <h3>Otomotiv</h3>
-          <p>Oto servis, lastik, ekspertiz, kaporta boya, oto elektrik ve araç bakım.</p>
+          <p>Oto servis, lastik, ekspertiz, kaporta boya ve araç bakım.</p>
+          <small>Servisleri karşılaştır</small>
         </div>
-      </article>
-      <article>
-        <span>🏠</span>
+        <b>→</b>
+      </button>
+
+      <button type="button" class="quote-seo-service-card" data-seo-query="tadilat elektrik tesisat klima">
+        <span class="quote-seo-service-icon">🏠</span>
         <div>
           <h3>Ev ve Teknik Servis</h3>
-          <p>Mobilya, tadilat, elektrik, tesisat, klima, cam balkon ve temizlik.</p>
+          <p>Tadilat, elektrik, tesisat, klima, mobilya ve temizlik.</p>
+          <small>Hizmet verenleri gör</small>
         </div>
-      </article>
-      <article>
-        <span>🍽️</span>
+        <b>→</b>
+      </button>
+
+      <button type="button" class="quote-seo-service-card" data-seo-query="restoran catering organizasyon">
+        <span class="quote-seo-service-icon">🍽️</span>
         <div>
           <h3>Yeme İçme ve Organizasyon</h3>
-          <p>Restoran, catering, organizasyon, düğün, fotoğraf, video ve drone çekimi.</p>
+          <p>Restoran, catering, organizasyon, düğün ve etkinlik hizmetleri.</p>
+          <small>İşletmeleri keşfet</small>
         </div>
-      </article>
-      <article>
-        <span>💼</span>
+        <b>→</b>
+      </button>
+
+      <button type="button" class="quote-seo-service-card" data-seo-query="web tasarım sosyal medya reklam">
+        <span class="quote-seo-service-icon">💼</span>
         <div>
           <h3>Profesyonel Hizmetler</h3>
-          <p>Web tasarım, sosyal medya, reklam, muhasebe, hukuk ve danışmanlık.</p>
+          <p>Web tasarım, sosyal medya, reklam, muhasebe ve danışmanlık.</p>
+          <small>Teklifleri karşılaştır</small>
         </div>
-      </article>
-      <article>
-        <span>🏢</span>
+        <b>→</b>
+      </button>
+
+      <button type="button" class="quote-seo-service-card" data-seo-query="emlak otel konaklama">
+        <span class="quote-seo-service-icon">🏢</span>
         <div>
           <h3>Emlak ve Turizm</h3>
-          <p>Emlak ofisleri, konaklama, seyahat hizmetleri ve yerel işletmeler.</p>
+          <p>Emlak, konaklama, seyahat hizmetleri ve yerel işletmeler.</p>
+          <small>Yakındaki seçenekleri gör</small>
         </div>
-      </article>
+        <b>→</b>
+      </button>
     </div>
 
     <div class="quote-seo-info-grid">
@@ -1708,7 +1733,8 @@
   });
 
   document.querySelectorAll('[data-seo-query]').forEach(link=>{
-    link.addEventListener('click',()=>{
+    link.addEventListener('click',event=>{
+      event.preventDefault();
       const value=String(link.dataset.seoQuery||'').trim();
       const input=document.getElementById('mobileDiscoverySearchInput');
       if(input && value){
@@ -1716,6 +1742,11 @@
         try{
           if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
         }catch(_){}
+        setTimeout(()=>{
+          try{
+            if(typeof showMobileInstitutionResults==='function') showMobileInstitutionResults(true);
+          }catch(_){}
+        },80);
       }
     });
   });
