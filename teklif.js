@@ -1334,6 +1334,7 @@ form.addEventListener("submit",async e=>{
     liveOffers=initialBundle.offers;
     liveLock=initialBundle.lock;
     liveEngagement=initialBundle.engagement||[];
+    livePublicStatus=initialBundle.publicStatus||null;
     offerListenerInitialized=false;
     engagementListenerInitialized=false;
     offerUpdateVersions.clear();
