@@ -8412,22 +8412,38 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
             ? '<span class="desktop-inline-recommend">👍 ' + recommendationYes + ' kişi · %' + Math.round(recommendationRate) + '</span>'
             : '';
 
-          return '<a class="desktop-inline-institution-card" style="--result-index:' + index + '" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
-            '<div class="desktop-inline-institution-logo">' +
-              (logo ? '<img src="' + logo + '" alt="">' : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>') +
+          return '<article class="desktop-inline-institution-card" style="--result-index:' + index + '">' +
+            '<a class="desktop-inline-card-main" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
+              '<div class="desktop-inline-institution-logo">' +
+                (logo ? '<img src="' + logo + '" alt="">' : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>') +
+              '</div>' +
+              '<div class="desktop-inline-institution-copy">' +
+                '<strong>' + escapeHtml(inst.name || 'Kurum') + '</strong>' +
+                '<small>📍 ' + escapeHtml(location || 'Konum bilgisi yok') + '</small>' +
+                '<div>' + ratingText + recommendText + offerText + '</div>' +
+              '</div>' +
+            '</a>' +
+            '<div class="desktop-inline-card-actions">' +
+              (inst.offer
+                ? '<button type="button" class="desktop-inline-card-quote" data-desktop-inline-offer="' + escapeHtml(String(inst.id)) + '">Teklif Al</button>'
+                : '') +
+              '<a class="desktop-inline-card-arrow" href="kurum.html?id=' + encodeURIComponent(inst.id) + '" aria-label="' + escapeHtml(inst.name || 'Kurum') + ' kurum sayfasını aç">→</a>' +
             '</div>' +
-            '<div class="desktop-inline-institution-copy">' +
-              '<strong>' + escapeHtml(inst.name || 'Kurum') + '</strong>' +
-              '<small>📍 ' + escapeHtml(location || 'Konum bilgisi yok') + '</small>' +
-              '<div>' + ratingText + recommendText + offerText + '</div>' +
-            '</div>' +
-            '<b class="desktop-inline-card-arrow">→</b>' +
-          '</a>';
+          '</article>';
         }).join('') +
       '</div>' +
       (realRows.length > visibleRows.length
         ? '<div class="desktop-inline-more">+' + (realRows.length-visibleRows.length) + ' kurum daha</div>'
         : '');
+
+    categoryInlineResults.querySelectorAll('[data-desktop-inline-offer]').forEach(button=>{
+      button.addEventListener('click',event=>{
+        event.preventDefault();
+        event.stopPropagation();
+        const institutionId=String(button.dataset.desktopInlineOffer||'').trim();
+        if(institutionId)openInstitutionDirectQuote(institutionId);
+      });
+    });
 
     const inlineQuoteBtn = categoryInlineResults.querySelector('[data-desktop-inline-quote]');
     inlineQuoteBtn?.addEventListener('click',()=>{
