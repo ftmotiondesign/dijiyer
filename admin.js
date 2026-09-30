@@ -288,7 +288,8 @@ const ADMIN_TAB_ROUTES = {
   adRevenueTabBtn:"gelir-raporu",
   supportTabBtn:"destek",
   announcementsTabBtn:"duyurular",
-  systemTabBtn:"sistem"
+  systemTabBtn:"sistem",
+  clientErrorsTabBtn:"sistem-hatalari"
 };
 
 const ADMIN_ROUTE_TABS = Object.fromEntries(
@@ -356,7 +357,8 @@ const ADMIN_TAB_META = {
   adRevenueTabBtn:["ads","Gelir Raporu","Reklam gelirini, tahsilatı, performansı ve yenileme fırsatlarını izleyin."],
   supportTabBtn:["support","Destek Merkezi","Kurumların destek taleplerini takip edin ve yanıtlayın."],
   announcementsTabBtn:["support","Duyurular","Kurumlara yönetim duyuruları gönderin."],
-  systemTabBtn:["system","Sistem","Sistem kontrollerini, ayarları ve yönetim işlem geçmişini görüntüleyin."]
+  systemTabBtn:["system","Sistem","Sistem kontrollerini, ayarları ve yönetim işlem geçmişini görüntüleyin."],
+  clientErrorsTabBtn:["errors","Sistem Hataları","Yönetim ve kurum panelinde otomatik yakalanan açık ve çözülen teknik hataları takip edin."]
 };
 
 function syncSimpleAdminNavigation(tabId){
@@ -423,7 +425,8 @@ function initSimpleAdminNavigation(){
         business:"businessOpportunitiesTabBtn",
         ads:"bannerAdsTabBtn",
         support:"supportTabBtn",
-        system:"systemTabBtn"
+        system:"systemTabBtn",
+        errors:"clientErrorsTabBtn"
       };
       openSimpleAdminTab(map[link.dataset.adminMain] || "overviewTabBtn");
     });
