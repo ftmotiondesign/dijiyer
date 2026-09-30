@@ -526,6 +526,63 @@ adminBackToTop?.addEventListener("click",()=>{
 
 updateAdminBackToTop();
 
+const quoteFlowDrawer=document.getElementById("quoteFlowDrawer");
+const quoteFlowDrawerToggle=document.getElementById("quoteFlowDrawerToggle");
+const quoteFlowDrawerClose=document.getElementById("quoteFlowDrawerClose");
+
+function isQuoteRoutingVisible(){
+  const section=document.getElementById("quoteRoutingSection");
+  return Boolean(section && !section.hidden);
+}
+
+function syncQuoteFlowDrawerToggle(){
+  if(!quoteFlowDrawerToggle)return;
+  const narrow=window.matchMedia("(max-width:1280px)").matches;
+  quoteFlowDrawerToggle.hidden=!(narrow && isQuoteRoutingVisible());
+
+  if(!narrow && quoteFlowDrawer){
+    quoteFlowDrawer.classList.remove("open");
+    quoteFlowDrawerToggle?.setAttribute("aria-expanded","false");
+  }
+}
+
+function openQuoteFlowDrawer(){
+  if(!quoteFlowDrawer)return;
+  quoteFlowDrawer.classList.add("open");
+  quoteFlowDrawerToggle?.setAttribute("aria-expanded","true");
+}
+
+function closeQuoteFlowDrawer(){
+  if(!quoteFlowDrawer)return;
+  quoteFlowDrawer.classList.remove("open");
+  quoteFlowDrawerToggle?.setAttribute("aria-expanded","false");
+}
+
+quoteFlowDrawerToggle?.addEventListener("click",()=>{
+  if(quoteFlowDrawer?.classList.contains("open"))closeQuoteFlowDrawer();
+  else openQuoteFlowDrawer();
+});
+
+quoteFlowDrawerClose?.addEventListener("click",closeQuoteFlowDrawer);
+
+quoteFlowDrawer?.querySelectorAll("[data-routing-view]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    if(window.matchMedia("(max-width:1280px)").matches){
+      closeQuoteFlowDrawer();
+    }
+  });
+});
+
+window.addEventListener("resize",syncQuoteFlowDrawerToggle);
+
+const quoteFlowObserver=new MutationObserver(syncQuoteFlowDrawerToggle);
+const quoteFlowSection=document.getElementById("quoteRoutingSection");
+if(quoteFlowSection){
+  quoteFlowObserver.observe(quoteFlowSection,{attributes:true,attributeFilter:["hidden"]});
+}
+
+syncQuoteFlowDrawerToggle();
+
 initSimpleAdminNavigation();
 
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
