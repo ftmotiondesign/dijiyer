@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=24">
+  <link rel="stylesheet" href="admin-advanced.css?v=25">
 </head>
 
 <body>
@@ -163,6 +163,40 @@
           <span>Destek</span><b id="quickSupportCount">0</b>
         </button>
       </div>
+
+      <section class="admin-ad-center-global" id="adCenterPersistentHub" hidden aria-label="Reklam kategorileri">
+        <div class="ad-center-hub">
+          <button type="button" class="ad-center-hub-card active" id="adCenterFocusBanner">
+            <span class="ad-center-hub-icon">🏢</span>
+            <span class="ad-center-hub-copy">
+              <strong>Kurum Reklamları</strong>
+              <small>Dijiyer'deki kayıtlı kurumları banner ve sponsor alanlarında yayınla.</small>
+              <em>7 farklı gösterim alanı</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterBannerCount">0 yayında</span>
+          </button>
+
+          <button type="button" class="ad-center-hub-card" id="adCenterOpenExternal">
+            <span class="ad-center-hub-icon">🌐</span>
+            <span class="ad-center-hub-copy">
+              <strong>Site / Affiliate Reklamları</strong>
+              <small>Harici markaları Ana Sayfa, Teklif, İş, Bayi ve Fırsatlar sayfalarında yayınla.</small>
+              <em>5 sayfada hedefli yayın</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterExternalCount">0 yayında</span>
+          </button>
+
+          <button type="button" class="ad-center-hub-card" id="adCenterOpenOpportunity">
+            <span class="ad-center-hub-icon">🎯</span>
+            <span class="ad-center-hub-copy">
+              <strong>KEŞFET / FIRSAT Sponsorları</strong>
+              <small>Kayıtlı kurumları Fırsatlar ekranında sponsorlu olarak öne çıkar.</small>
+              <em>Kurum havuzundan tek tıkla</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterOpportunityCount">0 yayında</span>
+          </button>
+        </div>
+      </section>
 
       <section id="overviewSection">
         <div class="section-title overview-title-row">
@@ -753,38 +787,6 @@
             <p id="bannerAdAdminCount">Reklamlar yükleniyor...</p>
           </div>
           <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Kurum Reklamı Ekle</button>
-        </div>
-
-        <div class="ad-center-hub">
-          <button type="button" class="ad-center-hub-card active" id="adCenterFocusBanner">
-            <span class="ad-center-hub-icon">🏢</span>
-            <span class="ad-center-hub-copy">
-              <strong>Kurum Reklamları</strong>
-              <small>Dijiyer'deki kayıtlı kurumları banner ve sponsor alanlarında yayınla.</small>
-              <em>7 farklı gösterim alanı</em>
-            </span>
-            <span class="ad-center-hub-count" id="adCenterBannerCount">0 yayında</span>
-          </button>
-
-          <button type="button" class="ad-center-hub-card" id="adCenterOpenExternal">
-            <span class="ad-center-hub-icon">🌐</span>
-            <span class="ad-center-hub-copy">
-              <strong>Site / Affiliate Reklamları</strong>
-              <small>Harici markaları Ana Sayfa, Teklif, İş, Bayi ve Fırsatlar sayfalarında yayınla.</small>
-              <em>5 sayfada hedefli yayın</em>
-            </span>
-            <span class="ad-center-hub-count" id="adCenterExternalCount">0 yayında</span>
-          </button>
-
-          <button type="button" class="ad-center-hub-card" id="adCenterOpenOpportunity">
-            <span class="ad-center-hub-icon">🎯</span>
-            <span class="ad-center-hub-copy">
-              <strong>KEŞFET / FIRSAT Sponsorları</strong>
-              <small>Kayıtlı kurumları Fırsatlar ekranında sponsorlu olarak öne çıkar.</small>
-              <em>Kurum havuzundan tek tıkla</em>
-            </span>
-            <span class="ad-center-hub-count" id="adCenterOpportunityCount">0 yayında</span>
-          </button>
         </div>
 
         <div class="banner-list-placement-note">
@@ -2170,8 +2172,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=56"></script>
-  <script src="admin-advanced.js?v=39"></script>
+<script src="admin.js?v=48"></script>
+  <script src="admin-advanced.js?v=40"></script>
 
 </body>
 </html>
