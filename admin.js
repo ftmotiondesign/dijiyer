@@ -3100,6 +3100,48 @@ function adminOfferListHtml(request) {
 }
 
 
+function normalizeCategory(value){
+  const raw=String(value||"")
+    .trim()
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g,"i")
+    .replace(/ş/g,"s")
+    .replace(/ğ/g,"g")
+    .replace(/ü/g,"u")
+    .replace(/ö/g,"o")
+    .replace(/ç/g,"c");
+
+  if(["surucu","surucu kursu","surucu kurslari","ehliyet"].includes(raw))return "surucu";
+  if(["kres","kres anaokulu","kres & anaokulu","anaokulu"].includes(raw))return "kres";
+  if(["yurt","ogrenci yurdu","ogrenci yurtlari"].includes(raw))return "yurt";
+  if(["egitim","egitim & kurslar","kurs","kurslar"].includes(raw))return "egitim";
+  if(["emlak","emlak & gayrimenkul","gayrimenkul"].includes(raw))return "emlak";
+  if(["oto","oto servis","oto servis & sanayi","sanayi"].includes(raw))return "oto";
+  if(["restoran","restoran & kafe","kafe"].includes(raw))return "restoran";
+  if(["guzellik","guzellik & bakim","bakim"].includes(raw))return "guzellik";
+  if(["saglik","saglik & klinik","klinik"].includes(raw))return "saglik";
+  if(["dugun","dugun & organizasyon","organizasyon"].includes(raw))return "dugun";
+  if(["evteknik","ev & teknik servis","teknik servis"].includes(raw))return "evteknik";
+  if(["turizm","turizm & konaklama","konaklama"].includes(raw))return "turizm";
+  if(["nakliyat","nakliyat & tasimacilik","tasimacilik"].includes(raw))return "nakliyat";
+  if(["temizlik","temizlik hizmetleri"].includes(raw))return "temizlik";
+  if(["mobilya","mobilya & dekorasyon","dekorasyon"].includes(raw))return "mobilya";
+  if(["teknoloji","bilgisayar & teknoloji","bilgisayar"].includes(raw))return "teknoloji";
+  if(["veteriner","veteriner & evcil hayvan","evcil hayvan"].includes(raw))return "veteriner";
+  if(["spor","spor & fitness","fitness"].includes(raw))return "spor";
+  if(["medya","fotograf & video","fotograf","video"].includes(raw))return "medya";
+  if(["reklam","matbaa, reklam & tasarim","matbaa","grafik tasarim"].includes(raw))return "reklam";
+  if(["insaat","insaat & tadilat","tadilat"].includes(raw))return "insaat";
+  if(["tarim","tarim & hayvancilik","hayvancilik"].includes(raw))return "tarim";
+  if(["hukuk","hukuk & danismanlik","avukat"].includes(raw))return "hukuk";
+  if(["muhasebe","muhasebe & mali musavirlik","mali musavirlik"].includes(raw))return "muhasebe";
+  if(["kurye","kurye & teslimat","teslimat"].includes(raw))return "kurye";
+  if(["perakende","magaza & perakende","magaza"].includes(raw))return "perakende";
+  if(["esnaf","yerel esnaf"].includes(raw))return "esnaf";
+  if(["diger"].includes(raw))return "diger";
+  return raw;
+}
+
 function quoteRoutingAgeMinutes(request){
   const value=request?.date || request?.createdAt || "";
   const time=new Date(value).getTime();
