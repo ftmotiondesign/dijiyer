@@ -1889,6 +1889,7 @@
       setBannerUploadProgress(100,"Yükleme tamamlandı");
       syncBannerMediaBadge();
       renderBannerAdminPreview();
+      renderBannerLivePlacementPreview();
       setTimeout(()=>setBannerUploadProgress(null,""),900);
     }catch(error){
       console.error("Cloudinary banner medya yüklemesi başarısız:",error);
@@ -1913,6 +1914,7 @@
     if($("bannerAdUploadMessage"))$("bannerAdUploadMessage").textContent="Medya temizlendi. Kaydedince kurum kapak görseli kullanılabilir.";
     syncBannerMediaBadge();
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   }
 
   function renderBannerAdminPreview(){
@@ -2530,6 +2532,7 @@
     $("bannerAdDistrict").innerHTML='<option value="">Tüm İlçeler</option>'+
       districts.map(d=>'<option value="'+escapeHtml(d)+'">'+escapeHtml(d)+'</option>').join("");
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   });
   ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",()=>{
     if(id==="bannerAdImageUrl" && String($(id)?.value||"").trim())$("bannerAdMediaType").value="image";
