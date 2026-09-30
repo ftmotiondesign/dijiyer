@@ -61,6 +61,63 @@
     else document.body.prepend(nav);
 
     markActive(nav);
+    watchMenuVisibility(nav);
+  }
+
+  const menuDefaults={
+    institutions:true,
+    quotes:true,
+    appointments:true,
+    jobs:true,
+    trade:true,
+    brands:true,
+    discover:true
+  };
+
+  function applyMenuVisibility(nav,data={}){
+    const saved=data?.topMenuVisibility && typeof data.topMenuVisibility==="object"
+      ? data.topMenuVisibility
+      : {};
+    const visibility={...menuDefaults,...saved};
+
+    nav.querySelectorAll("[data-market-key]").forEach(item=>{
+      const key=String(item.dataset.marketKey||"");
+      const visible=visibility[key]!==false;
+      item.hidden=!visible;
+      if(visible)item.style.removeProperty("display");
+      else item.style.setProperty("display","none","important");
+    });
+
+    const visibleItems=[...nav.querySelectorAll("[data-market-key]")]
+      .filter(item=>!item.hidden && item.style.display!=="none");
+    nav.hidden=visibleItems.length===0;
+  }
+
+  function watchMenuVisibility(nav){
+    let tries=0;
+
+    const connect=()=>{
+      tries++;
+      try{
+        if(window.firebase && firebase.apps && firebase.apps.length){
+          const db=firebase.firestore();
+          db.collection("siteSettings").doc("home").onSnapshot(snap=>{
+            applyMenuVisibility(nav,snap.exists ? (snap.data()||{}) : {});
+          },error=>{
+            console.warn("Üst menü görünürlük ayarı okunamadı:",error);
+            applyMenuVisibility(nav,{});
+          });
+          return;
+        }
+      }catch(error){
+        console.warn("Üst menü görünürlük bağlantısı başlatılamadı:",error);
+      }
+
+      if(tries<20)setTimeout(connect,250);
+      else applyMenuVisibility(nav,{});
+    };
+
+    connect();
   }
 
   if(document.readyState==="loading"){
