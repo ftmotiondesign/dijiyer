@@ -1142,11 +1142,25 @@ async function lockOffer(quoteId,institutionId,button){
   const quoteRef=db.collection("quoteRequests").doc(quoteId);
   const offerRef=quoteRef.collection("offers").doc(institutionId);
   const lockRef=quoteRef.collection("locks").doc("main");
+  let acceptanceControls=[];
   try{
+    // Ekran eski kalmış olsa bile ikinci kez kabul akışını hiç açma.
+    const existingLockSnap=await lockRef.get();
+    if(existingLockSnap.exists){
+      liveLock=existingLockSnap.data();
+      renderLiveTracking();
+      toast("Bu talep için teklif zaten kabul edildi.");
+      return;
+    }
+
     const previewSnap=await offerRef.get();
     if(!previewSnap.exists){ toast("Teklif bulunamadı."); return; }
     const previewOffer=previewSnap.data();
     if(!(await confirmOfferLock(previewOffer)))return;
+
+    // Son onaydan sonra ekrandaki tüm kabul kontrollerini anında kilitle.
+    acceptanceControls=[...results.querySelectorAll("[data-lock], [data-lock-consent], [data-djy-compare-lock]")];
+    acceptanceControls.forEach(control=>{ control.disabled=true; });
     button.disabled=true;
     button.textContent="Kabul ediliyor...";
     const publicLockedAt=new Date().toISOString();
@@ -1201,13 +1215,61 @@ async function lockOffer(quoteId,institutionId,button){
       });
     });
 
+    // Firestore dinleyicisini beklemeden ekranı anında kapat.
+    liveLock={
+      quoteId,
+      institutionId:previewOffer.institutionId,
+      institutionName:previewOffer.institutionName||"Kurum",
+      offerCode:previewOffer.offerCode,
+      price:Number(previewOffer.price),
+      lockedPrice:Number(previewOffer.price),
+      vatStatus:previewOffer.vatStatus||"",
+      scope:previewOffer.scope||"",
+      lockedScope:previewOffer.scope||"",
+      conditions:previewOffer.conditions||"",
+      extraFee:previewOffer.extraFee||"Yok",
+      offerCreatedAt:previewOffer.createdAt||"",
+      offerUpdatedAt:previewOffer.updatedAt||previewOffer.createdAt||"",
+      offerVersion:Math.max(1,Number(previewOffer.offerVersion||1)),
+      offerSnapshotVersion:1,
+      trackingCode:String(currentAccess?.trackingCode||""),
+      phoneHash:String(currentAccess?.phoneHash||""),
+      acceptanceConsent:true,
+      status:"locked",
+      registrationStatus:"pending",
+      acceptedAt:publicLockedAt,
+      lockedAt:publicLockedAt,
+      expiresAt:previewOffer.expiresAt,
+      expiresAtTs:previewOffer.expiresAtTs,
+      registrationDeadlineAt:previewOffer.expiresAt,
+      registrationDeadlineAtTs:previewOffer.expiresAtTs,
+      platformPayment:false,
+      paymentPolicy:"offline_direct_between_customer_and_institution"
+    };
+    renderLiveTracking();
+
     await recordPublicAcceptedEvent(quoteId,publicLockedAt);
-    toast("Teklif kabul edildi. Gerçek kayıt için süre dolmadan kurumla görüşün.");
+    toast("✓ Teklif kabul edildi ve kapatıldı.");
     await refreshTracking();
   }catch(error){
-    console.error(error);toast(error.message||"Teklif kabul edilemedi.");
+    console.error(error);
+    // Başka sekmede daha önce kabul edildiyse güncel kilidi ekrana taşı.
+    try{
+      const freshLockSnap=await lockRef.get();
+      if(freshLockSnap.exists){
+        liveLock=freshLockSnap.data();
+        renderLiveTracking();
+        toast("Bu talep için teklif zaten kabul edildi.");
+        return;
+      }
+    }catch(_){}
+    acceptanceControls.forEach(control=>{ control.disabled=false; });
+    toast(error.message||"Teklif kabul edilemedi.");
   }finally{
-    button.disabled=false;button.textContent="✓ Teklifi Kabul Et";
+    if(document.body.contains(button)){
+      button.disabled=false;
+      button.textContent="✓ Teklifi Kabul Et";
+    }
   }
 }
 
