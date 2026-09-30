@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=20">
+  <link rel="stylesheet" href="admin-advanced.css?v=21">
 </head>
 
 <body>
@@ -1122,22 +1122,83 @@
             <div class="external-ad-placement-box">
               <div class="external-ad-placement-head">
                 <div>
-                  <strong>Nerede Gösterilsin?</strong>
-                  <small>Reklamın yayınlanacağı sayfaları seçin. Birden fazla alan seçebilirsiniz.</small>
+                  <span class="external-ad-placement-kicker">YAYIN ALANLARI</span>
+                  <strong>Reklam nerede gösterilsin?</strong>
+                  <small>Bir veya birden fazla sayfa seçin. Kartın altında reklamın tam olarak hangi bölümde görüneceğini görebilirsiniz.</small>
                 </div>
                 <label class="external-ad-placement-all">
                   <input type="checkbox" id="externalAdPlacementAll">
-                  <span>Tümü</span>
+                  <span>
+                    <b>Tüm Sayfalar</b>
+                    <small>5 alanı birlikte seç</small>
+                  </span>
                 </label>
               </div>
+
               <div class="external-ad-placement-options">
-                <label><input type="checkbox" value="home" data-external-placement checked><span>🏠 Ana Sayfa</span></label>
-                <label><input type="checkbox" value="quote" data-external-placement><span>📝 Teklif Al</span></label>
-                <label><input type="checkbox" value="jobs" data-external-placement><span>💼 İş Fırsatları</span></label>
-                <label><input type="checkbox" value="brands" data-external-placement><span>🏷️ Bayi &amp; Servis</span></label>
-                <label><input type="checkbox" value="opportunities" data-external-placement><span>🎯 Fırsatlar</span></label>
+                <label class="external-ad-placement-card">
+                  <input type="checkbox" value="home" data-external-placement checked>
+                  <span class="external-ad-placement-card-check">✓</span>
+                  <span class="external-ad-placement-card-icon">🏠</span>
+                  <span class="external-ad-placement-card-copy">
+                    <strong>Ana Sayfa</strong>
+                    <small>Premium vitrinin hemen altında</small>
+                  </span>
+                  <span class="external-ad-placement-card-state">Seçili</span>
+                </label>
+
+                <label class="external-ad-placement-card">
+                  <input type="checkbox" value="quote" data-external-placement>
+                  <span class="external-ad-placement-card-check">✓</span>
+                  <span class="external-ad-placement-card-icon">📝</span>
+                  <span class="external-ad-placement-card-copy">
+                    <strong>Teklif Al</strong>
+                    <small>Teklif formu sayfasındaki reklam alanı</small>
+                  </span>
+                  <span class="external-ad-placement-card-state">Seçili</span>
+                </label>
+
+                <label class="external-ad-placement-card">
+                  <input type="checkbox" value="jobs" data-external-placement>
+                  <span class="external-ad-placement-card-check">✓</span>
+                  <span class="external-ad-placement-card-icon">💼</span>
+                  <span class="external-ad-placement-card-copy">
+                    <strong>İş Fırsatları</strong>
+                    <small>İş ilanları içeriğinin üst bölümünde</small>
+                  </span>
+                  <span class="external-ad-placement-card-state">Seçili</span>
+                </label>
+
+                <label class="external-ad-placement-card">
+                  <input type="checkbox" value="brands" data-external-placement>
+                  <span class="external-ad-placement-card-check">✓</span>
+                  <span class="external-ad-placement-card-icon">🏷️</span>
+                  <span class="external-ad-placement-card-copy">
+                    <strong>Bayi &amp; Servis</strong>
+                    <small>Marka ve servis rehberinin üst bölümünde</small>
+                  </span>
+                  <span class="external-ad-placement-card-state">Seçili</span>
+                </label>
+
+                <label class="external-ad-placement-card external-ad-placement-card-wide">
+                  <input type="checkbox" value="opportunities" data-external-placement>
+                  <span class="external-ad-placement-card-check">✓</span>
+                  <span class="external-ad-placement-card-icon">🎯</span>
+                  <span class="external-ad-placement-card-copy">
+                    <strong>Fırsatlar</strong>
+                    <small>Filtrelerin altında, sponsorlu kurum sonuçlarından önce</small>
+                  </span>
+                  <span class="external-ad-placement-card-state">Seçili</span>
+                </label>
               </div>
-              <p class="external-ad-placement-note" id="externalAdPlacementNote">Şu anda: Ana Sayfa</p>
+
+              <div class="external-ad-placement-summary">
+                <span class="external-ad-placement-summary-icon">📍</span>
+                <div>
+                  <strong id="externalAdPlacementCount">1 yayın alanı seçili</strong>
+                  <small id="externalAdPlacementNote">Ana Sayfa · Premium vitrinin altında</small>
+                </div>
+              </div>
             </div>
 
             <div class="external-ad-media-box">
@@ -2067,7 +2128,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=56"></script>
-  <script src="admin-advanced.js?v=35"></script>
+  <script src="admin-advanced.js?v=36"></script>
 
 </body>
 </html>
