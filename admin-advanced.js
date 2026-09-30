@@ -1773,8 +1773,33 @@
     renderBannerAdminPreview();
   });
 
+  async function openNewBannerAdEditor(){
+    setAdCenterHubActive("banner");
+    showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function"){
+      syncSimpleAdminNavigation("bannerAdsTabBtn");
+    }
+
+    if(typeof loadInstitutions==="function"){
+      await loadInstitutions();
+    }
+
+    resetBannerAdForm();
+
+    const form=$("bannerAdForm");
+    if(form){
+      form.classList.add("banner-ad-editor-attention");
+      form.scrollIntoView({behavior:"smooth",block:"start"});
+      window.setTimeout(()=>form.classList.remove("banner-ad-editor-attention"),1300);
+    }
+
+    window.setTimeout(()=>{
+      $("bannerAdInstitution")?.focus();
+    },380);
+  }
+
   $("bannerAdForm")?.addEventListener("submit",saveBannerAd);
-  $("bannerAdNewBtn")?.addEventListener("click",resetBannerAdForm);
+  $("bannerAdNewBtn")?.addEventListener("click",openNewBannerAdEditor);
   $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
   $("bannerAdSearch")?.addEventListener("input",()=>renderBannerAdsAdmin(false));
   $("bannerAdInstitution")?.addEventListener("change",()=>{
