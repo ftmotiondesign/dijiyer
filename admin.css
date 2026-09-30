@@ -7637,3 +7637,221 @@ details.matching-institutions .matching-buttons{
   opacity:.6;
   cursor:wait;
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · PROFESYONEL GELİR MERKEZİ
+   ========================================================= */
+.quote-routing-head-pro{
+  margin-bottom:12px;
+}
+.quote-routing-head-pro h3{
+  font-size:26px;
+}
+.quote-routing-hub{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:12px;
+}
+.quote-routing-hub-card{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  min-height:72px;
+  padding:12px 13px;
+  border:1px solid #dce5ef;
+  border-radius:14px;
+  background:#fff;
+  text-align:left;
+  cursor:pointer;
+  box-shadow:0 5px 16px rgba(15,23,42,.035);
+}
+.quote-routing-hub-card:hover{
+  border-color:#bfdbfe;
+  box-shadow:0 7px 20px rgba(15,23,42,.065);
+}
+.quote-routing-hub-card.active{
+  border-color:#93c5fd;
+  background:linear-gradient(135deg,#f8fbff,#eef6ff);
+}
+.quote-routing-hub-icon{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#eef4ff;
+  color:#1d4ed8;
+  font-size:18px;
+  font-weight:900;
+}
+.quote-routing-hub-copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.quote-routing-hub-copy strong{
+  color:#172033;
+  font-size:12px;
+}
+.quote-routing-hub-copy small{
+  color:#64748b;
+  font-size:9px;
+  line-height:1.35;
+}
+.quote-routing-hub-card>b{
+  min-width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#172033;
+  color:#fff;
+  font-size:11px;
+}
+.quote-routing-hub-card>i{
+  color:#1677ff;
+  font-size:17px;
+  font-style:normal;
+  font-weight:900;
+}
+.quote-routing-kpis-pro{
+  margin-bottom:12px;
+}
+.quote-routing-kpis-pro article{
+  min-height:102px;
+}
+.quote-routing-kpis-pro article.attention{
+  border-color:#fcd34d;
+  background:linear-gradient(180deg,#fffdf7,#fffaf0);
+}
+.quote-routing-kpis-pro article.success{
+  border-color:#bbf7d0;
+  background:linear-gradient(180deg,#fff,#f4fff8);
+}
+.quote-routing-primary-workspace{
+  margin-bottom:14px;
+  padding:16px;
+  border:1px solid #bfd8ff;
+  border-radius:17px;
+  background:
+    linear-gradient(180deg,#f8fbff 0,#fff 155px);
+  box-shadow:0 10px 28px rgba(30,64,175,.055);
+  scroll-margin-top:18px;
+}
+.quote-routing-workspace-head,
+.quote-routing-secondary-title{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:12px;
+}
+.quote-routing-workspace-head h4,
+.quote-routing-secondary-title h4{
+  margin:3px 0 3px;
+  color:#172033;
+  font-size:19px;
+}
+.quote-routing-workspace-head p,
+.quote-routing-secondary-title p{
+  margin:0;
+  color:#64748b;
+  font-size:10.5px;
+  line-height:1.5;
+}
+.quote-routing-workspace-head>small{
+  display:inline-flex;
+  padding:7px 9px;
+  border-radius:9px;
+  background:#172033;
+  color:#fff;
+  font-size:9px;
+  font-weight:850;
+}
+.quote-routing-primary-workspace .quote-routing-toolbar{
+  margin-bottom:10px;
+}
+.quote-routing-action-note{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin:0 0 12px;
+  padding:10px 12px;
+  border:1px solid #bfdbfe;
+  border-radius:11px;
+  background:#fff;
+}
+.quote-routing-action-note>span{
+  font-size:17px;
+}
+.quote-routing-action-note strong,
+.quote-routing-action-note small{
+  display:block;
+}
+.quote-routing-action-note strong{
+  color:#1d4ed8;
+  font-size:10.5px;
+}
+.quote-routing-action-note small{
+  margin-top:2px;
+  color:#64748b;
+  font-size:9.5px;
+  line-height:1.45;
+}
+.quote-routing-secondary-block{
+  margin-top:14px;
+  scroll-margin-top:18px;
+}
+#quoteRoutingRevenueBlock{
+  padding:15px;
+  border:1px solid #e3e9f1;
+  border-radius:16px;
+  background:#fbfcfe;
+}
+.quote-routing-policy.compact{
+  margin-bottom:12px;
+}
+.quote-routing-note-bottom{
+  margin-top:14px;
+}
+.quote-routing-primary-workspace .quote-routing-list{
+  gap:10px;
+}
+.quote-routing-primary-workspace .quote-routing-card{
+  box-shadow:0 5px 15px rgba(15,23,42,.035);
+}
+.quote-routing-primary-workspace .quote-routing-card-head{
+  padding:13px 14px;
+}
+.quote-routing-primary-workspace .quote-routing-card-head h4{
+  font-size:15px;
+}
+.quote-routing-primary-workspace .quote-routing-original{
+  padding:10px 14px;
+}
+.quote-routing-primary-workspace .quote-routing-tiers{
+  padding:0 14px 12px;
+}
+.quote-routing-primary-workspace .quote-routing-card-actions{
+  padding:10px 14px 13px;
+}
+@media(max-width:900px){
+  .quote-routing-hub{
+    grid-template-columns:1fr;
+  }
+  .quote-routing-workspace-head,
+  .quote-routing-secondary-title{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+@media(max-width:600px){
+  .quote-routing-primary-workspace,
+  #quoteRoutingRevenueBlock{
+    padding:11px;
+    border-radius:13px;
+  }
+}
