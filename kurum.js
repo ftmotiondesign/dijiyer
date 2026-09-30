@@ -42,9 +42,7 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
     status:"active",
     createdAt:new Date().toISOString(),
     targetInstitutionId:String(request.targetInstitutionId||institution?.id||""),
-    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum"),
-    requestType:"direct",
-    email:String(request.email||"")
+    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum")
   });
   return {trackingCode,trackingUrl:url,normalizedPhone};
 }
@@ -475,14 +473,12 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     subCategory,
     category:subCategory,
     service,
-    city:String(institution.city||""),
-    district:String(institution.district||""),
+    city:"__direct__",
+    district:"",
     name,
     phone,
-    email,
     note,
     status:"new",
-    requestType:"direct",
     date:new Date().toISOString(),
     targetInstitutionId:String(institution.id),
     targetInstitutionName:String(institution.name||"Kurum")
@@ -547,9 +543,10 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     event.target.reset();
   }catch(error){
     console.error("Doğrudan teklif talebi gönderilemedi:",error);
-    message.textContent=String(error?.code||"").includes("permission-denied")
-      ?"Teklif gönderilemedi. Doğrudan teklif için Firestore kuralı yayınlanmalıdır."
-      :"Teklif gönderilemedi. Lütfen tekrar deneyin.";
+    const errorCode=String(error?.code||"unknown");
+    message.textContent=errorCode.includes("permission-denied")
+      ?"Teklif gönderilemedi (permission-denied)."
+      :"Teklif gönderilemedi ("+errorCode+"). Lütfen tekrar deneyin.";
   }finally{
     submit.disabled=false;
     submit.textContent=oldText;
