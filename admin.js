@@ -60,6 +60,7 @@ const unmatchedSearchesTabBtn = document.getElementById("unmatchedSearchesTabBtn
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
 const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
+const institutionSubCategoryFilter = document.getElementById("institutionSubCategoryFilter");
 const institutionCityFilter = document.getElementById("institutionCityFilter");
 const institutionStatusFilter = document.getElementById("institutionStatusFilter");
 const institutionFeatureFilter = document.getElementById("institutionFeatureFilter");
@@ -1120,26 +1121,177 @@ function isInstitutionVipActive(item){
   return Boolean(item.vip);
 }
 
+
+const ADMIN_CATEGORY_TAXONOMY = {
+  egitim:{label:"Eğitim",subs:{
+    kres:"Kreş & Anaokulu",dershane:"Dershane / Kurs Merkezi",surucu:"Sürücü Kursu",
+    ozel_ders:"Özel Ders",dil_kursu:"Dil Kursu",etut:"Etüt Merkezi",ozel_okul:"Özel Okul",yurt:"Öğrenci Yurdu"
+  }},
+  otomotiv:{label:"Otomotiv",subs:{
+    oto_servis:"Oto Servis / Tamir",kaporta_boya:"Kaporta / Boya",oto_elektrik:"Oto Elektrik",
+    lastik_jant:"Lastik / Jant",oto_yikama:"Oto Yıkama / Kuaför",ekspertiz:"Oto Ekspertiz",
+    galeri:"Oto Galeri",rentacar:"Rent a Car",yedek_parca:"Yedek Parça",motosiklet:"Motosiklet Servisi"
+  }},
+  yemeicme:{label:"Yeme & İçme",subs:{
+    restoran:"Restoran",kafe:"Kafe",fastfood:"Fast Food",pastane:"Pastane",pizza:"Pizza",
+    doner:"Döner",pide_lahmacun:"Pide / Lahmacun",catering:"Catering",ev_yemekleri:"Ev Yemekleri"
+  }},
+  saglikguzellik:{label:"Sağlık & Güzellik",subs:{
+    dis_klinigi:"Diş Kliniği",klinik:"Sağlık Kliniği",psikolog:"Psikolog",diyetisyen:"Diyetisyen",
+    fizyoterapi:"Fizyoterapi",guzellik:"Güzellik Merkezi",kuafor:"Kuaför",berber:"Berber",spor:"Pilates / Fitness"
+  }},
+  evyapi:{label:"Ev & Yapı",subs:{
+    mobilya:"Mobilya",dekorasyon:"Dekorasyon",insaat:"İnşaat / Tadilat",elektrikci:"Elektrikçi",
+    tesisatci:"Tesisatçı",teknik_servis:"Beyaz Eşya / Teknik Servis",klima:"Klima Servisi",
+    cam_balkon:"Cam Balkon / PVC",temizlik:"Temizlik Hizmetleri"
+  }},
+  emlak:{label:"Emlak",subs:{
+    emlak_ofisi:"Emlak Ofisi",konut:"Konut",arsa:"Arsa / Tarla",ticari:"Ticari Gayrimenkul",gunluk_kiralik:"Günlük Kiralık"
+  }},
+  turizm:{label:"Turizm & Konaklama",subs:{
+    otel:"Otel",pansiyon:"Pansiyon",apart:"Apart",bungalov:"Bungalov",seyahat:"Seyahat Acentesi / Tur",kamp:"Kamp / Karavan"
+  }},
+  organizasyonmedya:{label:"Organizasyon & Medya",subs:{
+    dugun_salonu:"Düğün Salonu",organizasyon:"Organizasyon Firması",fotograf:"Fotoğrafçı",video:"Video Çekimi",
+    drone:"Drone Çekimi",gelinlik:"Gelinlik",cicekci:"Çiçekçi",reklam:"Reklam / Tasarım / Matbaa"
+  }},
+  tasimacilik:{label:"Taşımacılık & Teslimat",subs:{
+    nakliyat:"Evden Eve Nakliyat",kurye:"Kurye",sehirici:"Şehir İçi Taşımacılık",depolama:"Depolama"
+  }},
+  profesyonel:{label:"Profesyonel Hizmetler",subs:{
+    hukuk:"Avukat / Hukuk",muhasebe:"Muhasebe / Mali Müşavir",web:"Web Tasarım",
+    sosyal_medya:"Sosyal Medya / Ajans",bilgisayar:"Bilgisayar / Teknoloji",danismanlik:"Danışmanlık",
+    veteriner:"Veteriner / Pet Hizmetleri",tarim:"Tarım / Hayvancılık"
+  }},
+  alisveris:{label:"Alışveriş & Yerel Esnaf",subs:{
+    giyim:"Giyim",ayakkabi:"Ayakkabı",market:"Market",elektronik:"Elektronik / Telefon",
+    kirtasiye:"Kırtasiye",petshop:"Pet Shop",zuccaciye:"Züccaciye",esnaf:"Diğer Yerel Esnaf"
+  }},
+  diger:{label:"Diğer",subs:{diger:"Diğer Hizmet"}}
+};
+
+const ADMIN_LEGACY_CATEGORY_TO_TAXONOMY = {
+  kres:["egitim","kres"],dershane:["egitim","dershane"],surucu:["egitim","surucu"],
+  ozel_ders:["egitim","ozel_ders"],dil_kursu:["egitim","dil_kursu"],etut:["egitim","etut"],
+  ozel_okul:["egitim","ozel_okul"],yurt:["egitim","yurt"],egitim:["egitim","dershane"],
+  oto:["otomotiv","oto_servis"],oto_servis:["otomotiv","oto_servis"],kaporta_boya:["otomotiv","kaporta_boya"],
+  oto_elektrik:["otomotiv","oto_elektrik"],lastik_jant:["otomotiv","lastik_jant"],oto_yikama:["otomotiv","oto_yikama"],
+  ekspertiz:["otomotiv","ekspertiz"],galeri:["otomotiv","galeri"],rentacar:["otomotiv","rentacar"],
+  yedek_parca:["otomotiv","yedek_parca"],motosiklet:["otomotiv","motosiklet"],
+  restoran:["yemeicme","restoran"],kafe:["yemeicme","kafe"],fastfood:["yemeicme","fastfood"],pastane:["yemeicme","pastane"],
+  pizza:["yemeicme","pizza"],doner:["yemeicme","doner"],pide_lahmacun:["yemeicme","pide_lahmacun"],
+  catering:["yemeicme","catering"],ev_yemekleri:["yemeicme","ev_yemekleri"],
+  saglik:["saglikguzellik","klinik"],dis_klinigi:["saglikguzellik","dis_klinigi"],klinik:["saglikguzellik","klinik"],
+  psikolog:["saglikguzellik","psikolog"],diyetisyen:["saglikguzellik","diyetisyen"],fizyoterapi:["saglikguzellik","fizyoterapi"],
+  guzellik:["saglikguzellik","guzellik"],kuafor:["saglikguzellik","kuafor"],berber:["saglikguzellik","berber"],spor:["saglikguzellik","spor"],
+  mobilya:["evyapi","mobilya"],dekorasyon:["evyapi","dekorasyon"],insaat:["evyapi","insaat"],elektrikci:["evyapi","elektrikci"],
+  tesisatci:["evyapi","tesisatci"],teknik_servis:["evyapi","teknik_servis"],evteknik:["evyapi","teknik_servis"],
+  klima:["evyapi","klima"],cam_balkon:["evyapi","cam_balkon"],temizlik:["evyapi","temizlik"],
+  emlak:["emlak","emlak_ofisi"],emlak_ofisi:["emlak","emlak_ofisi"],konut:["emlak","konut"],arsa:["emlak","arsa"],
+  ticari:["emlak","ticari"],gunluk_kiralik:["emlak","gunluk_kiralik"],
+  turizm:["turizm","otel"],otel:["turizm","otel"],pansiyon:["turizm","pansiyon"],apart:["turizm","apart"],
+  bungalov:["turizm","bungalov"],seyahat:["turizm","seyahat"],kamp:["turizm","kamp"],
+  dugun:["organizasyonmedya","organizasyon"],dugun_salonu:["organizasyonmedya","dugun_salonu"],
+  organizasyon:["organizasyonmedya","organizasyon"],fotograf:["organizasyonmedya","fotograf"],medya:["organizasyonmedya","video"],
+  video:["organizasyonmedya","video"],drone:["organizasyonmedya","drone"],gelinlik:["organizasyonmedya","gelinlik"],
+  cicekci:["organizasyonmedya","cicekci"],reklam:["organizasyonmedya","reklam"],
+  nakliyat:["tasimacilik","nakliyat"],kurye:["tasimacilik","kurye"],sehirici:["tasimacilik","sehirici"],depolama:["tasimacilik","depolama"],
+  hukuk:["profesyonel","hukuk"],muhasebe:["profesyonel","muhasebe"],web:["profesyonel","web"],sosyal_medya:["profesyonel","sosyal_medya"],
+  teknoloji:["profesyonel","bilgisayar"],bilgisayar:["profesyonel","bilgisayar"],danismanlik:["profesyonel","danismanlik"],
+  veteriner:["profesyonel","veteriner"],tarim:["profesyonel","tarim"],
+  perakende:["alisveris","esnaf"],giyim:["alisveris","giyim"],ayakkabi:["alisveris","ayakkabi"],market:["alisveris","market"],
+  elektronik:["alisveris","elektronik"],kirtasiye:["alisveris","kirtasiye"],petshop:["alisveris","petshop"],
+  zuccaciye:["alisveris","zuccaciye"],esnaf:["alisveris","esnaf"],diger:["diger","diger"]
+};
+
+function resolveAdminInstitutionTaxonomy(item){
+  const explicitMain=String(item?.mainCategory||"").trim();
+  const explicitSub=String(item?.subCategory||"").trim();
+
+  if(explicitMain && ADMIN_CATEGORY_TAXONOMY[explicitMain]){
+    return [explicitMain,explicitSub || String(item?.category||"").trim() || ""];
+  }
+
+  const legacy=normalizeCategory(explicitSub || item?.category || "");
+  return ADMIN_LEGACY_CATEGORY_TO_TAXONOMY[legacy] || ["diger",legacy || "diger"];
+}
+
+function adminCategoryLabelsFor(item){
+  const [main,sub]=resolveAdminInstitutionTaxonomy(item);
+  return {
+    main,
+    sub,
+    mainLabel:ADMIN_CATEGORY_TAXONOMY[main]?.label || main || "Diğer",
+    subLabel:ADMIN_CATEGORY_TAXONOMY[main]?.subs?.[sub] || sub || "Diğer Hizmet"
+  };
+}
+
+function populateAdminSubCategorySelect(mainKey,select,selectedValue="",placeholder="Tüm alt kategoriler"){
+  if(!select)return;
+  const rows=Object.entries(ADMIN_CATEGORY_TAXONOMY[mainKey]?.subs||{});
+  select.innerHTML=rows.length
+    ? '<option value="">'+escapeHtml(placeholder)+'</option>'+
+      rows.map(([key,label])=>'<option value="'+escapeHtml(key)+'">'+escapeHtml(label)+'</option>').join("")
+    : '<option value="">Önce ana kategori seçin</option>';
+  select.disabled=!rows.length;
+
+  if(selectedValue){
+    const exists=[...select.options].some(option=>option.value===selectedValue);
+    if(!exists){
+      const option=document.createElement("option");
+      option.value=selectedValue;
+      option.textContent="Mevcut / tanımsız · "+selectedValue;
+      select.appendChild(option);
+    }
+    select.value=selectedValue;
+  }
+}
+
+function syncInstitutionSubCategoryFilter(){
+  const main=String(institutionCategoryFilter?.value||"");
+  populateAdminSubCategorySelect(main,institutionSubCategoryFilter,"","Tüm alt kategoriler");
+}
+
+function updateInstitutionEditCategorySummary(){
+  const main=String(document.getElementById("editCategory")?.value||"");
+  const sub=String(document.getElementById("editSubCategory")?.value||"");
+  const root=document.getElementById("editCategoryCurrent");
+  if(!root)return;
+
+  const mainLabel=ADMIN_CATEGORY_TAXONOMY[main]?.label || "Ana kategori seçilmedi";
+  const subLabel=ADMIN_CATEGORY_TAXONOMY[main]?.subs?.[sub] || (sub || "Alt kategori seçilmedi");
+  root.textContent=mainLabel+" → "+subLabel;
+}
+
+syncInstitutionSubCategoryFilter();
+
 function getFilteredManagedInstitutions() {
   const query = institutionSearch.value.trim().toLocaleLowerCase("tr-TR");
   const category = institutionCategoryFilter.value;
+  const subCategory = institutionSubCategoryFilter?.value || "";
   const city = institutionCityFilter.value;
   const status = institutionStatusFilter?.value || "";
   const feature = institutionFeatureFilter.value;
   const sort = institutionSort.value;
 
   let data = institutionRecords.filter(item => {
+    const taxonomy=adminCategoryLabelsFor(item);
     const haystack = [
       item.name,
       item.city,
       item.district,
       item.address,
       item.phone,
-      item.website
+      item.website,
+      taxonomy.mainLabel,
+      taxonomy.subLabel,
+      taxonomy.main,
+      taxonomy.sub
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
     const matchesQuery = !query || haystack.includes(query);
-    const matchesCategory = !category || item.category === category;
+    const matchesCategory = !category || taxonomy.main === category;
+    const matchesSubCategory = !subCategory || taxonomy.sub === subCategory;
     const matchesCity = !city || item.city === city;
     const isActive = String(item.status || "active") !== "passive";
     const matchesStatus =
@@ -1164,7 +1316,7 @@ function getFilteredManagedInstitutions() {
     }
     if (feature === "ad_paused") matchesFeature = getInstitutionAdState(item).status==="paused";
 
-    return matchesQuery && matchesCategory && matchesCity && matchesStatus && matchesFeature;
+    return matchesQuery && matchesCategory && matchesSubCategory && matchesCity && matchesStatus && matchesFeature;
   });
 
   if (sort === "name") {
@@ -1622,36 +1774,7 @@ function renderManagedInstitutions() {
     card.className = "institution-manage-card";
     card.dataset.institutionId = data.id;
 
-    const categoryLabels = {
-      surucu: "Sürücü Kursu",
-      kres: "Kreş & Anaokulu",
-      yurt: "Öğrenci Yurdu",
-      egitim: "Eğitim & Kurslar",
-      emlak: "Emlak & Gayrimenkul",
-      oto: "Oto Servis & Sanayi",
-      restoran: "Restoran & Kafe",
-      guzellik: "Güzellik & Bakım",
-      saglik: "Sağlık & Klinik",
-      dugun: "Düğün & Organizasyon",
-      evteknik: "Ev & Teknik Servis",
-      turizm: "Turizm & Konaklama",
-      nakliyat: "Nakliyat & Taşımacılık",
-      temizlik: "Temizlik Hizmetleri",
-      mobilya: "Mobilya & Dekorasyon",
-      teknoloji: "Bilgisayar & Teknoloji",
-      veteriner: "Veteriner & Evcil Hayvan",
-      spor: "Spor & Fitness",
-      medya: "Fotoğraf & Video",
-      reklam: "Matbaa, Reklam & Tasarım",
-      insaat: "İnşaat & Tadilat",
-      tarim: "Tarım & Hayvancılık",
-      hukuk: "Hukuk & Danışmanlık",
-      muhasebe: "Muhasebe & Mali Müşavirlik",
-      kurye: "Kurye & Teslimat",
-      perakende: "Mağaza & Perakende",
-      esnaf: "Yerel Esnaf",
-      diger: "Diğer"
-    };
+    const taxonomy=adminCategoryLabelsFor(data);
 
     const hasCoordinates =
       Number.isFinite(data.lat) && Number.isFinite(data.lng);
@@ -1680,7 +1803,7 @@ function renderManagedInstitutions() {
             <span>☎ ${escapeHtml(data.phone || "Telefon yok")}</span>
           </div>
           <div class="manage-badges">
-            <span>${escapeHtml(categoryLabels[data.category] || data.category || "Diğer")}</span>
+            <span>📁 ${escapeHtml(taxonomy.mainLabel)} · ${escapeHtml(taxonomy.subLabel)}</span>
             ${isInstitutionActive ? '<span class="badge-offer">Kurum Aktif</span>' : '<span class="badge-offer-off">Kurum Pasif</span>'}
             ${data.offer !== false ? '<span class="badge-offer">Teklif Açık</span>' : '<span class="badge-offer-off">Teklif Kapalı</span>'}
             ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
@@ -2192,13 +2315,19 @@ async function quickUpdateInstitution(id, field, value) {
   }
 }
 
-[institutionSearch, institutionCategoryFilter, institutionCityFilter, institutionStatusFilter, institutionFeatureFilter, institutionSort]
+[institutionSearch, institutionSubCategoryFilter, institutionCityFilter, institutionStatusFilter, institutionFeatureFilter, institutionSort]
+  .filter(Boolean)
   .forEach((element) => {
     element.addEventListener(
       element.tagName === "INPUT" ? "input" : "change",
       renderManagedInstitutions
     );
   });
+
+institutionCategoryFilter?.addEventListener("change",()=>{
+  syncInstitutionSubCategoryFilter();
+  renderManagedInstitutions();
+});
 
 document.querySelectorAll("[data-institution-stat-filter]").forEach(button => {
   button.addEventListener("click", () => {
@@ -2219,6 +2348,8 @@ document.querySelectorAll("[data-institution-status-filter]").forEach(button => 
 clearInstitutionFilters.addEventListener("click", () => {
   institutionSearch.value = "";
   institutionCategoryFilter.value = "";
+  syncInstitutionSubCategoryFilter();
+  if(institutionSubCategoryFilter)institutionSubCategoryFilter.value = "";
   institutionCityFilter.value = "";
   if (institutionStatusFilter) institutionStatusFilter.value = "";
   institutionFeatureFilter.value = "";
@@ -2710,25 +2841,20 @@ function openInstitutionEdit(id, data) {
   const saveMessage=document.getElementById("institutionEditSaveMessage");
   const saveBtn=document.getElementById("institutionEditSaveBtn");
   const categorySelect=document.getElementById("editCategory");
-  const currentCategory=String(data.category || "diger").trim() || "diger";
+  const subCategorySelect=document.getElementById("editSubCategory");
+  const [currentMain,currentSub]=resolveAdminInstitutionTaxonomy(data);
 
   document.getElementById("editInstitutionId").value = id;
   document.getElementById("editName").value = data.name || "";
 
-  // Eski veya yeni kategori değeri listede yoksa sessizce boş kalmasın.
-  // Mevcut değeri geçici seçenek olarak koruyoruz.
-  [...categorySelect.querySelectorAll('option[data-current-category="true"]')]
-    .forEach(option=>option.remove());
-
-  const categoryExists=[...categorySelect.options].some(option=>option.value===currentCategory);
-  if(!categoryExists){
-    const option=document.createElement("option");
-    option.value=currentCategory;
-    option.textContent="Mevcut kategori · "+currentCategory;
-    option.dataset.currentCategory="true";
-    categorySelect.appendChild(option);
-  }
-  categorySelect.value=currentCategory;
+  categorySelect.value=ADMIN_CATEGORY_TAXONOMY[currentMain] ? currentMain : "diger";
+  populateAdminSubCategorySelect(
+    categorySelect.value,
+    subCategorySelect,
+    currentSub,
+    "Alt kategori seçin"
+  );
+  updateInstitutionEditCategorySummary();
 
   document.getElementById("editCity").value = data.city || "";
   document.getElementById("editDistrict").value = data.district || "";
@@ -2769,6 +2895,13 @@ function openInstitutionEdit(id, data) {
 
   institutionEditModal.classList.remove("hidden");
 }
+
+document.getElementById("editCategory")?.addEventListener("change",()=>{
+  const main=String(document.getElementById("editCategory")?.value||"");
+  populateAdminSubCategorySelect(main,document.getElementById("editSubCategory"),"","Alt kategori seçin");
+  updateInstitutionEditCategorySummary();
+});
+document.getElementById("editSubCategory")?.addEventListener("change",updateInstitutionEditCategorySummary);
 
 document.getElementById("closeInstitutionEditModal").addEventListener("click", () => {
   institutionEditModal.classList.add("hidden");
@@ -2845,7 +2978,8 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const saveMessage=document.getElementById("institutionEditSaveMessage");
   const id=String(document.getElementById("editInstitutionId").value||"").trim();
   const name=String(document.getElementById("editName").value||"").trim();
-  const category=String(document.getElementById("editCategory").value||"").trim();
+  const mainCategory=String(document.getElementById("editCategory").value||"").trim();
+  const subCategory=String(document.getElementById("editSubCategory").value||"").trim();
   const city=String(document.getElementById("editCity").value||"").trim();
   const district=String(document.getElementById("editDistrict").value||"").trim();
   const latValue=String(document.getElementById("editLat").value||"").trim();
@@ -2870,9 +3004,14 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     document.getElementById("editName").focus();
     return;
   }
-  if(!category){
-    showSaveMessage("Kategori seçimi boş bırakılamaz.","error");
+  if(!mainCategory){
+    showSaveMessage("Ana kategori seçimi boş bırakılamaz.","error");
     document.getElementById("editCategory").focus();
+    return;
+  }
+  if(!subCategory){
+    showSaveMessage("Alt kategori seçimi boş bırakılamaz.","error");
+    document.getElementById("editSubCategory").focus();
     return;
   }
 
@@ -2918,7 +3057,11 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
 
   const updates={
     name,
-    category,
+    mainCategory,
+    subCategory,
+    category:subCategory,
+    mainCategoryLabel:ADMIN_CATEGORY_TAXONOMY[mainCategory]?.label || mainCategory,
+    subCategoryLabel:ADMIN_CATEGORY_TAXONOMY[mainCategory]?.subs?.[subCategory] || subCategory,
     city,
     district,
     location:[city,district].filter(Boolean).join(", "),
