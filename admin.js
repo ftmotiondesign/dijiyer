@@ -3067,6 +3067,364 @@ function adminOfferListHtml(request) {
   `;
 }
 
+
+function quoteRoutingAgeMinutes(request){
+  const value=request?.date || request?.createdAt || "";
+  const time=new Date(value).getTime();
+  if(!Number.isFinite(time))return 0;
+  return Math.max(0,Math.floor((Date.now()-time)/60000));
+}
+
+function quoteRoutingAgeLabel(minutes){
+  const mins=Math.max(0,Number(minutes||0));
+  if(mins<60)return mins+" dk";
+  const hours=Math.floor(mins/60);
+  const rest=mins%60;
+  if(hours<24)return hours+" sa"+(rest ? " "+rest+" dk" : "");
+  const days=Math.floor(hours/24);
+  const h=hours%24;
+  return days+" gün"+(h ? " "+h+" sa" : "");
+}
+
+function quoteRoutingDirectRequest(request){
+  return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
+}
+
+function quoteRoutingIsWaiting(request){
+  if(!quoteRoutingDirectRequest(request))return false;
+  if(request?.liveLock)return false;
+  if(Array.isArray(request?.liveOffers) && request.liveOffers.length)return false;
+  const status=String(request?.status||"new");
+  if(["done","archived"].includes(status))return false;
+  const wait=Number(quoteRoutingWaitMinutes?.value||30);
+  return quoteRoutingAgeMinutes(request)>=wait;
+}
+
+function quoteRoutingCandidateBundle(request){
+  const category=normalizeCategory(request?.subCategory || request?.category || "");
+  const city=String(request?.city||"").trim().toLocaleLowerCase("tr-TR");
+  const district=String(request?.district||"").trim().toLocaleLowerCase("tr-TR");
+  const originalTarget=String(request?.targetInstitutionId||"");
+  const areaMode=String(quoteRoutingAreaMode?.value||"district");
+
+  let base=institutionRecords.filter(inst=>{
+    const id=String(inst.id||"");
+    if(!id || id===originalTarget)return false;
+    if(String(inst.status||"active")==="passive")return false;
+    if(inst.offer===false)return false;
+
+    const instCategory=normalizeCategory(inst.subCategory || inst.category || "");
+    const instCity=String(inst.city||"").trim().toLocaleLowerCase("tr-TR");
+
+    return instCategory===category && instCity===city;
+  });
+
+  let scopeLabel="Aynı şehir";
+  if(areaMode==="district" && district){
+    const exact=base.filter(inst=>
+      String(inst.district||"").trim().toLocaleLowerCase("tr-TR")===district
+    );
+    if(exact.length){
+      base=exact;
+      scopeLabel="Aynı ilçe";
+    }else{
+      scopeLabel="İlçede kurum yok · aynı şehir";
+    }
+  }
+
+  const forwarded=new Set(
+    Array.isArray(request?.forwardInstitutionIds)
+      ? request.forwardInstitutionIds.map(String)
+      : []
+  );
+
+  const tierOf=inst=>{
+    if(Boolean(inst.vip))return "vip";
+    const adState=typeof getInstitutionAdState==="function"
+      ? getInstitutionAdState(inst)
+      : {advertiser:false};
+    if(Boolean(adState?.advertiser))return "ad";
+    return "standard";
+  };
+
+  const all=base
+    .map(inst=>({
+      ...inst,
+      routingTier:tierOf(inst),
+      alreadyForwarded:forwarded.has(String(inst.id))
+    }))
+    .sort((a,b)=>{
+      const rank={vip:1,ad:2,standard:3};
+      const diff=(rank[a.routingTier]||9)-(rank[b.routingTier]||9);
+      if(diff)return diff;
+      return String(a.name||"").localeCompare(String(b.name||""),"tr");
+    });
+
+  return {
+    scopeLabel,
+    all,
+    vip:all.filter(inst=>inst.routingTier==="vip"),
+    ad:all.filter(inst=>inst.routingTier==="ad"),
+    standard:all.filter(inst=>inst.routingTier==="standard")
+  };
+}
+
+function quoteRoutingInstitutionChips(rows){
+  if(!rows.length)return '<span class="quote-routing-none">Uygun kurum yok</span>';
+  return rows.map(inst=>{
+    const status=inst.alreadyForwarded ? " · iletildi" : "";
+    return '<span class="quote-routing-inst-chip '+inst.routingTier+(inst.alreadyForwarded?' sent':'')+'">'+
+      escapeHtml(inst.name||"Kurum")+status+
+    '</span>';
+  }).join("");
+}
+
+function quoteRoutingTierCard(tier,label,rows,requestId){
+  const available=rows.filter(inst=>!inst.alreadyForwarded);
+  const tierText=tier==="vip" ? "VIP" : tier==="ad" ? "Reklam Veren" : "Diğer";
+  return '<div class="quote-routing-tier tier-'+tier+'">'+
+    '<div class="quote-routing-tier-head"><div><span>'+tierText.toUpperCase()+'</span><strong>'+escapeHtml(label)+'</strong></div>'+
+    '<button type="button" data-routing-forward="'+escapeHtml(requestId)+'" data-routing-tier="'+tier+'" '+(available.length?'':'disabled')+'>'+
+    (available.length ? available.length+" kuruma ilet" : "İletilecek kurum yok")+
+    '</button></div>'+
+    '<div class="quote-routing-inst-list">'+quoteRoutingInstitutionChips(rows)+'</div>'+
+  '</div>';
+}
+
+function updateQuoteRoutingBadge(){
+  const waiting=quoteRequestRecords.filter(quoteRoutingIsWaiting).length;
+  if(quoteRoutingTabCount)quoteRoutingTabCount.textContent=String(waiting);
+}
+
+function renderQuoteRoutingAdmin(){
+  if(!quoteRoutingList)return;
+
+  const search=String(quoteRoutingSearch?.value||"").trim().toLocaleLowerCase("tr-TR");
+  let rows=quoteRequestRecords.filter(quoteRoutingIsWaiting);
+
+  if(search){
+    rows=rows.filter(request=>{
+      const haystack=[
+        request.name,
+        request.phone,
+        request.service,
+        request.city,
+        request.district,
+        request.targetInstitutionName
+      ].map(value=>String(value||"").toLocaleLowerCase("tr-TR")).join(" ");
+      return haystack.includes(search);
+    });
+  }
+
+  const bundles=rows.map(request=>({
+    request,
+    candidates:quoteRoutingCandidateBundle(request)
+  }));
+
+  const vipCount=bundles.reduce((sum,row)=>sum+row.candidates.vip.filter(x=>!x.alreadyForwarded).length,0);
+  const adCount=bundles.reduce((sum,row)=>sum+row.candidates.ad.filter(x=>!x.alreadyForwarded).length,0);
+  const forwardedCount=quoteRequestRecords.filter(request=>
+    Array.isArray(request.forwardInstitutionIds) && request.forwardInstitutionIds.length
+  ).length;
+
+  if(quoteRoutingWaitingCount)quoteRoutingWaitingCount.textContent=String(rows.length);
+  if(quoteRoutingVipCount)quoteRoutingVipCount.textContent=String(vipCount);
+  if(quoteRoutingAdCount)quoteRoutingAdCount.textContent=String(adCount);
+  if(quoteRoutingForwardedCount)quoteRoutingForwardedCount.textContent=String(forwardedCount);
+  updateQuoteRoutingBadge();
+
+  if(!rows.length){
+    quoteRoutingList.innerHTML=
+      '<div class="quote-routing-empty"><strong>Şu anda dağıtım bekleyen özel teklif yok.</strong><span>Belirlediğiniz yanıt süresini aşan ve henüz teklif almamış özel talepler burada görünür.</span></div>';
+    return;
+  }
+
+  quoteRoutingList.innerHTML=bundles.map(({request,candidates})=>{
+    const age=quoteRoutingAgeMinutes(request);
+    const history=Array.isArray(request.forwardHistory)?request.forwardHistory:[];
+    const last=history.length?history[history.length-1]:null;
+    const totalForwarded=Array.isArray(request.forwardInstitutionIds)?request.forwardInstitutionIds.length:0;
+
+    return '<article class="quote-routing-card" data-routing-quote="'+escapeHtml(request.id)+'">'+
+      '<div class="quote-routing-card-head">'+
+        '<div><span class="quote-routing-code">#'+escapeHtml(String(request.id||"").slice(0,9).toUpperCase())+'</span>'+
+        '<h4>'+escapeHtml(request.service||"Teklif Talebi")+'</h4>'+
+        '<p>'+escapeHtml(request.name||"Müşteri")+' · '+escapeHtml([request.city,request.district].filter(Boolean).join(" / ")||"-")+'</p></div>'+
+        '<div class="quote-routing-wait"><span>Yanıt bekliyor</span><strong>'+escapeHtml(quoteRoutingAgeLabel(age))+'</strong></div>'+
+      '</div>'+
+      '<div class="quote-routing-original">'+
+        '<div><span>İlk hedef kurum</span><strong>'+escapeHtml(request.targetInstitutionName||"Kurum")+'</strong></div>'+
+        '<div><span>Dağıtım kapsamı</span><strong>'+escapeHtml(candidates.scopeLabel)+'</strong></div>'+
+        '<div><span>Daha önce iletildi</span><strong>'+totalForwarded+' kurum</strong></div>'+
+        '<div><span>Son dağıtım</span><strong>'+(last?formatDate(last.date):"-")+'</strong></div>'+
+      '</div>'+
+      '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
+      '<div class="quote-routing-tiers">'+
+        quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id)+
+        quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id)+
+        quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id)+
+      '</div>'+
+      '<div class="quote-routing-card-actions">'+
+        '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talebi Aç</button>'+
+        '<a href="https://wa.me/'+normalizeWhatsApp(request.phone)+'" target="_blank" rel="noopener">Müşteriye WhatsApp</a>'+
+      '</div>'+
+    '</article>';
+  }).join("");
+
+  quoteRoutingList.querySelectorAll("[data-routing-forward]").forEach(button=>{
+    button.addEventListener("click",async()=>{
+      await forwardQuoteRoutingTier(
+        button.dataset.routingForward,
+        button.dataset.routingTier,
+        button
+      );
+    });
+  });
+
+  quoteRoutingList.querySelectorAll("[data-routing-open]").forEach(button=>{
+    button.addEventListener("click",()=>openQuoteDetailModal(button.dataset.routingOpen));
+  });
+}
+
+async function forwardQuoteRoutingTier(requestId,tier,button){
+  const request=quoteRequestRecords.find(item=>String(item.id)===String(requestId));
+  if(!request)return;
+
+  const candidates=quoteRoutingCandidateBundle(request);
+  const rows=(candidates[tier]||[]).filter(inst=>!inst.alreadyForwarded);
+  if(!rows.length){
+    alert("Bu öncelik grubunda iletilecek yeni kurum yok.");
+    return;
+  }
+
+  const tierLabel=tier==="vip" ? "VIP kurumlara" : tier==="ad" ? "reklam veren kurumlara" : "diğer kurumlara";
+  const ok=confirm(
+    request.service+" talebini "+rows.length+" "+tierLabel+" iletmek istiyor musunuz?\n\n"+
+    "Müşterinin talebi değişmez. Seçilen kurumlara yalnızca bu talebi görme ve teklif verme yetkisi açılır."
+  );
+  if(!ok)return;
+
+  const oldText=button?.textContent||"İlet";
+  if(button){
+    button.disabled=true;
+    button.textContent="İletiliyor...";
+  }
+
+  try{
+    const ref=db.collection("quoteRequests").doc(requestId);
+    await db.runTransaction(async tx=>{
+      const snap=await tx.get(ref);
+      if(!snap.exists)throw new Error("Talep bulunamadı.");
+
+      const data=snap.data();
+      if(data.liveLock)throw new Error("Bu talepte seçim yapılmış.");
+      const existingIds=Array.isArray(data.forwardInstitutionIds)
+        ? data.forwardInstitutionIds.map(String)
+        : [];
+      const set=new Set(existingIds);
+      const newIds=[];
+
+      rows.forEach(inst=>{
+        const id=String(inst.id||"");
+        if(id && !set.has(id)){
+          set.add(id);
+          newIds.push(id);
+        }
+      });
+
+      if(!newIds.length)throw new Error("Bu kurumlara daha önce iletilmiş.");
+
+      const history=Array.isArray(data.forwardHistory)?data.forwardHistory:[];
+      const now=new Date().toISOString();
+
+      tx.update(ref,{
+        forwardInstitutionIds:[...set],
+        forwardHistory:[
+          ...history,
+          {
+            tier,
+            tierLabel,
+            institutionIds:newIds,
+            institutionNames:rows.filter(inst=>newIds.includes(String(inst.id))).map(inst=>String(inst.name||"Kurum")),
+            date:now
+          }
+        ].slice(-50),
+        redistributionStatus:"forwarded",
+        lastForwardedAt:now,
+        lastForwardTier:tier,
+        updatedAt:now
+      });
+    });
+
+    alert(rows.length+" kuruma teklif fırsatı iletildi.");
+    await loadQuoteRequests();
+    renderQuoteRoutingAdmin();
+  }catch(error){
+    console.error("Teklif dağıtımı yapılamadı:",error);
+    alert(error.message||"Teklif dağıtımı yapılamadı.");
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=oldText;
+    }
+  }
+}
+
+async function loadLeadRoutingSettings(){
+  if(!leadPriceSingle)return;
+  try{
+    const snap=await db.collection("siteSettings").doc("leadRouting").get();
+    const data=snap.exists?snap.data():{};
+    const prices=data.packagePrices||{};
+    leadPriceSingle.value=prices.single??"";
+    leadPrice10.value=prices.credit10??"";
+    leadPrice25.value=prices.credit25??"";
+    leadPrice50.value=prices.credit50??"";
+  }catch(error){
+    console.warn("Teklif paketi fiyatları okunamadı:",error);
+  }
+}
+
+async function saveLeadRoutingSettings(){
+  if(!leadPackageSaveBtn)return;
+  const oldText=leadPackageSaveBtn.textContent;
+  leadPackageSaveBtn.disabled=true;
+  leadPackageSaveBtn.textContent="Kaydediliyor...";
+  if(leadPackageMessage)leadPackageMessage.textContent="";
+
+  try{
+    await db.collection("siteSettings").doc("leadRouting").set({
+      packagePrices:{
+        single:Number(leadPriceSingle?.value||0),
+        credit10:Number(leadPrice10?.value||0),
+        credit25:Number(leadPrice25?.value||0),
+        credit50:Number(leadPrice50?.value||0)
+      },
+      priorityOrder:["vip","advertiser","standard"],
+      creditUnit:"1 yönlendirilmiş müşteri fırsatı = 1 kredi",
+      platformPayment:false,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+    if(leadPackageMessage)leadPackageMessage.textContent="✓ Teklif kredisi paketleri kaydedildi.";
+  }catch(error){
+    console.error("Teklif paketi kaydedilemedi:",error);
+    if(leadPackageMessage)leadPackageMessage.textContent="Paket fiyatları kaydedilemedi.";
+  }finally{
+    leadPackageSaveBtn.disabled=false;
+    leadPackageSaveBtn.textContent=oldText;
+  }
+}
+
+quoteRoutingWaitMinutes?.addEventListener("change",renderQuoteRoutingAdmin);
+quoteRoutingAreaMode?.addEventListener("change",renderQuoteRoutingAdmin);
+quoteRoutingSearch?.addEventListener("input",renderQuoteRoutingAdmin);
+quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
+  if(!institutionRecords.length)await loadInstitutions();
+  await loadQuoteRequests();
+  renderQuoteRoutingAdmin();
+});
+leadPackageSaveBtn?.addEventListener("click",saveLeadRoutingSettings);
+
 async function loadQuoteRequests() {
   adminQuoteActivityCache.clear();
   quoteRequestsList.innerHTML = "Teklif talepleri yükleniyor...";
