@@ -9159,3 +9159,47 @@ details.matching-institutions .matching-buttons{
     padding-left:12px;
   }
 }
+
+
+/* ===== ÜST MENÜ YÖNETİM SAYFASI ===== */
+.top-menu-admin-page .top-menu-pages-admin{
+  margin:0 0 16px;
+}
+.top-menu-admin-title{
+  margin-bottom:12px;
+}
+.top-menu-category-divider{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:18px 0 12px;
+  padding:13px 14px;
+  border:1px solid #d9e5f3;
+  border-radius:12px;
+  background:linear-gradient(135deg,#f8fbff,#fff);
+}
+.top-menu-category-divider>div:first-child{
+  display:grid;
+  gap:2px;
+}
+.top-menu-category-divider span{
+  color:#1677ff;
+  font-size:7.5px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.top-menu-category-divider strong{
+  color:#203650;
+  font-size:13px;
+}
+.top-menu-category-divider small{
+  color:#7b899b;
+  font-size:8px;
+}
+@media(max-width:760px){
+  .top-menu-category-divider{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
