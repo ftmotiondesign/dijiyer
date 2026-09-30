@@ -1925,10 +1925,10 @@ const ADMIN_AD_PLACEMENTS = {
   page_top_mini:{
     icon:"▰",
     name:"Üst Mini Banner",
-    page:"Teklif / İş / Bayi",
+    page:"Tüm Müşteri Sayfaları",
     size:"728 × 90 px",
     device:"Mobil + Masaüstü",
-    description:"Teklif Al, İş Fırsatları ve Bayi & Servis sayfalarının üstünde."
+    description:"Ana sayfa dahil müşteri tarafındaki sayfaların üst bölümünde aynı standart düzende görünür."
   }
 };
 
