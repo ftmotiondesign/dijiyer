@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=20">
+  <link rel="stylesheet" href="admin-advanced.css?v=21">
 </head>
 
 <body>
@@ -612,11 +612,31 @@
           </div>
         </div>
 
+        <div class="opportunity-kpis">
+          <button type="button" class="active" data-opportunity-kpi="all">
+            <span>Tüm Kurumlar</span><strong id="opportunityKpiTotal">0</strong>
+          </button>
+          <button type="button" data-opportunity-kpi="sponsored">
+            <span>Sponsorlu</span><strong id="opportunityKpiSponsored">0</strong>
+          </button>
+          <button type="button" data-opportunity-kpi="missing">
+            <span>Medya Eksik</span><strong id="opportunityKpiMissing">0</strong>
+          </button>
+          <button type="button" data-opportunity-kpi="expiring">
+            <span>Süresi Dolacak</span><strong id="opportunityKpiExpiring">0</strong>
+          </button>
+        </div>
+
         <div class="opportunity-admin-toolbar">
           <input type="search" id="opportunitySponsorSearch" placeholder="Kurum adı, il, ilçe veya sektör ara...">
           <select id="opportunitySponsorFilter">
             <option value="all">Tüm kurumlar</option>
-            <option value="sponsored">Fırsat sponsorları</option>
+            <option value="sponsored">Sponsorlu</option>
+            <option value="paused">Sponsor pasif</option>
+            <option value="scheduled">Planlanmış</option>
+            <option value="expiring">Süresi dolacak</option>
+            <option value="expired">Süresi dolmuş</option>
+            <option value="missing">Medya eksik</option>
             <option value="normal">Sponsor olmayanlar</option>
           </select>
         </div>
@@ -1921,6 +1941,7 @@
 
       <input type="file" id="opportunitySponsorImageFile" accept="image/jpeg,image/png,image/webp" hidden>
       <input type="file" id="opportunitySponsorVideoFile" accept="video/mp4,video/webm" hidden>
+      <input type="file" id="opportunityQuickMediaFile" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" hidden>
 
       <div class="opportunity-upload-progress hidden" id="opportunitySponsorUploadProgress">
         <div><span id="opportunitySponsorUploadProgressBar"></span></div>
@@ -1928,11 +1949,29 @@
       </div>
       <p class="opportunity-upload-message" id="opportunitySponsorUploadMessage"></p>
 
+      <div class="opportunity-sponsor-settings-grid">
+        <label>
+          <span>Başlangıç Tarihi</span>
+          <input type="date" id="opportunitySponsorStartAt">
+          <small>Boş bırakırsanız hemen başlayabilir.</small>
+        </label>
+        <label>
+          <span>Bitiş Tarihi</span>
+          <input type="date" id="opportunitySponsorEndAt">
+          <small>Boş bırakırsanız süre sınırı olmaz.</small>
+        </label>
+        <label>
+          <span>Sponsor Önceliği</span>
+          <input type="number" id="opportunitySponsorPriority" min="1" max="99" value="10">
+          <small>1 en üst sıradır. Küçük sayı önce gösterilir.</small>
+        </label>
+      </div>
+
       <label class="opportunity-sponsor-switch">
         <input type="checkbox" id="opportunitySponsorActive">
         <span></span>
         <b>Fırsat Sponsor Aktif</b>
-        <small>Aktif olduğunda kurum Fırsat sayfasında sponsorlu olarak en üstte gösterilir.</small>
+        <small>Tarih aralığı uygunsa kurum sponsorlu olarak en üstte gösterilir.</small>
       </label>
 
       <div class="opportunity-sponsor-modal-actions">
@@ -1951,7 +1990,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=55"></script>
-  <script src="admin-advanced.js?v=31"></script>
+  <script src="admin-advanced.js?v=32"></script>
 
 </body>
 </html>
