@@ -321,21 +321,20 @@ async function loadBundle(access){
     throw error;
   }
 
+  let engagementRows=[];
   try{
     engagementSnap=await quoteRef.collection("engagement").get();
+    engagementRows=engagementSnap.docs.map(d=>({id:d.id,...d.data()}));
   }catch(error){
-    console.error("ENGAGEMENT okunamadı:",error);
-    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
-      throw new Error("AŞAMA 2C: engagement koleksiyonu okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/engagement/{institutionId} için get,list izni gerekli.");
-    }
-    throw error;
+    console.warn("Kurum yanıt durumları okunamadı; teklif takip ekranı bu özet olmadan açılıyor:",error);
+    engagementRows=[];
   }
 
   return {
     access,
     offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
     lock:lockSnap.exists?lockSnap.data():null,
-    engagement:engagementSnap.docs.map(d=>({id:d.id,...d.data()}))
+    engagement:engagementRows
   };
 }
 
@@ -847,7 +846,7 @@ form.addEventListener("submit",async e=>{
       console.error("Takip erişim belgesi okunamadı:",error);
       const rawMessage=String(error?.message||"");
       if(/missing or insufficient permissions/i.test(rawMessage)){
-        throw new Error("AŞAMA 1: Takip kodu doğrulama belgesi okunamıyor. Firestore Rules içinde quoteAccess/{phoneHash}/codes/{trackingCode} için get izni eksik.");
+        throw new Error("Takip kodu doğrulanamadı. Lütfen takip kodunu ve telefon numarasını kontrol edin.");
       }
       throw error;
     }
@@ -859,11 +858,7 @@ form.addEventListener("submit",async e=>{
     try{
       initialBundle=await loadBundle(currentAccess);
     }catch(error){
-      console.error("Teklif takip alt verileri okunamadı:",error);
-      const rawMessage=String(error?.message||"");
-      if(/missing or insufficient permissions/i.test(rawMessage)){
-        throw new Error("AŞAMA 2: Takip kodu doğrulandı fakat teklif/kurum durumu verileri okunamıyor. offers, locks veya engagement Rules iznini kontrol edin.");
-      }
+      console.error("Teklif takip verileri okunamadı:",error);
       throw error;
     }
 
