@@ -8172,12 +8172,15 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
 
     categoryPreview.dataset.category = key || '';
     categoryPreview.classList.remove('hidden');
+    categoryPreview.classList.remove('attention');
+    void categoryPreview.offsetWidth;
+    categoryPreview.classList.add('attention');
 
     if(categoryPreviewIcon){
       categoryPreviewIcon.textContent = key ? (categoryIcons[key] || '•') : '☰';
     }
     if(categoryPreviewEyebrow){
-      categoryPreviewEyebrow.textContent = key ? 'SEÇİLEN KATEGORİ' : 'TÜM KURUMLAR';
+      categoryPreviewEyebrow.textContent = key ? '✓ SEÇİMİN HAZIR' : 'TÜM KURUMLAR';
     }
     if(categoryPreviewTitle){
       categoryPreviewTitle.textContent = meta?.label || 'Tüm Kurumlar';
