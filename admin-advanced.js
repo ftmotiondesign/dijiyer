@@ -3235,20 +3235,6 @@
     return promotionPackageInstitutionRecords;
   }
 
-  function promotionPackageTriggerText(item){
-    const key=String(item?.serviceKey||"").toLowerCase();
-    const name=String(item?.name||"").toLocaleLowerCase("tr-TR");
-
-    if(item?.featured)return "⭐ EN ÇOK ÖNERİLEN";
-    if(key.includes("premium") || name.includes("premium"))return "◆ MAKSİMUM GÖRÜNÜRLÜK";
-    if(key.includes("regional") || name.includes("bölgesel"))return "📍 YEREL MÜŞTERİ İÇİN";
-    if(key.includes("video") || name.includes("video"))return "🎬 DAHA FAZLA DİKKAT";
-    if(key.includes("combo") || name.includes("mekan"))return "🌐 EN KAPSAMLI TANITIM";
-    if(key.includes("plus") || name.includes("plus"))return "↗ DAHA FAZLA GÖRÜNÜRLÜK";
-    if(key.includes("starter") || name.includes("başlangıç"))return "⚡ HIZLI BAŞLANGIÇ";
-    return "✨ PROFİLİNİ GÜÇLENDİR";
-  }
-
   function selectedPromotionPackages(){
     return promotionPackageRecords.filter(item=>selectedPromotionPackageIds.has(item.id));
   }
@@ -3295,14 +3281,7 @@
       const selectedState=selectedPromotionPackageIds.has(btn.dataset.packageSelect);
       btn.classList.toggle("is-selected",selectedState);
       btn.setAttribute("aria-pressed",selectedState?"true":"false");
-      btn.innerHTML=selectedState?"✓ SEÇİLİ PAKET":"+ Paketi Seç";
-      const card=btn.closest("[data-package-card]");
-      const hint=card?.querySelector(".promotion-package-choice-hint");
-      if(hint){
-        hint.classList.toggle("selected",selectedState);
-        const item=promotionPackageRecords.find(x=>String(x.id)===String(btn.dataset.packageSelect));
-        hint.textContent=selectedState?"✓ BU PAKET SEÇİLDİ":promotionPackageTriggerText(item);
-      }
+      btn.innerHTML=selectedState?"✓ Seçildi":"+ Paketi Seç";
     });
   }
 
@@ -3580,17 +3559,12 @@
         <div class="promotion-package-admin-includes">
           ${(item.includes||[]).slice(0,5).map(x=>'<span>✓ '+escapeHtml(x)+'</span>').join("") || '<span>İçerik eklenmemiş.</span>'}
         </div>
-        <div class="promotion-package-choice-hint ${selectedPromotionPackageIds.has(item.id)?"selected":""}">
-          ${selectedPromotionPackageIds.has(item.id)
-            ? "✓ BU PAKET SEÇİLDİ"
-            : escapeHtml(promotionPackageTriggerText(item))}
-        </div>
         <button type="button"
           class="promotion-package-select-btn ${selectedPromotionPackageIds.has(item.id)?"is-selected":""}"
           data-package-select="${escapeHtml(item.id)}"
           aria-pressed="${selectedPromotionPackageIds.has(item.id)?"true":"false"}"
           ${item.active===false?"disabled":""}>
-          ${selectedPromotionPackageIds.has(item.id)?"✓ SEÇİLİ PAKET":"+ Paketi Seç"}
+          ${selectedPromotionPackageIds.has(item.id)?"✓ Seçildi":"+ Paketi Seç"}
         </button>
         <div class="promotion-package-admin-card-actions">
           <button type="button" data-package-edit="${escapeHtml(item.id)}">Düzenle</button>
