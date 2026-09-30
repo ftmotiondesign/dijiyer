@@ -121,6 +121,17 @@
     advancedTabIds.forEach(id => $(id)?.classList.remove("active"));
   }
 
+  function setAdCenterHubActive(mode){
+    const map={
+      banner:"adCenterFocusBanner",
+      external:"adCenterOpenExternal",
+      opportunity:"adCenterOpenOpportunity"
+    };
+    Object.entries(map).forEach(([key,id])=>{
+      $(id)?.classList.toggle("active",key===mode);
+    });
+  }
+
   function showAdvancedSection(sectionId, tabId) {
     baseSectionIds.forEach(id => {
       const el = $(id);
@@ -139,6 +150,7 @@
   });
 
   $("bannerAdsTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("banner");
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
     await renderBannerAdsAdmin(true);
@@ -166,6 +178,7 @@
   });
 
   $("externalAdsTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("external");
     showAdvancedSection("externalAdsSection","externalAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("externalAdsTabBtn");
     await renderExternalAdsAdmin(true);
@@ -1691,29 +1704,41 @@
     await renderBannerAdsAdmin(false);
   };
 
-  $("adCenterFocusBanner")?.addEventListener("click",()=>{
-    $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
-    window.setTimeout(()=>$("bannerAdInstitution")?.focus(),350);
-  });
-
-  $("adCenterOpenExternal")?.addEventListener("click",async()=>{
-    showAdvancedSection("externalAdsSection","bannerAdsTabBtn");
-    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
-    await renderExternalAdsAdmin(true);
-  });
-
-  $("adCenterOpenOpportunity")?.addEventListener("click",async()=>{
-    showAdvancedSection("opportunitySponsorsSection","bannerAdsTabBtn");
-    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
-    if(typeof loadInstitutions==="function")await loadInstitutions();
-    renderOpportunitySponsorsAdmin();
-  });
-
-  $("externalAdsBackCenter")?.addEventListener("click",async()=>{
+  $("adCenterFocusBanner")?.addEventListener("click",async()=>{
+    setAdCenterHubActive("banner");
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
     await renderBannerAdsAdmin(true);
-    if(externalAdRecords.length)renderExternalAdList();
+    $("bannerAdsSection")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+
+  $("adCenterOpenExternal")?.addEventListener("click",async()=>{
+    setAdCenterHubActive("external");
+    showAdvancedSection("externalAdsSection","externalAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("externalAdsTabBtn");
+    await renderExternalAdsAdmin(true);
+    $("externalAdsSection")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+
+  $("adCenterOpenOpportunity")?.addEventListener("click",async()=>{
+    setAdCenterHubActive("opportunity");
+    showAdvancedSection("opportunitySponsorsSection","opportunitySponsorsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("opportunitySponsorsTabBtn");
+    await Promise.all([
+      typeof loadInstitutions==="function" ? loadInstitutions() : Promise.resolve(),
+      typeof loadInstitutionAccounts==="function" ? loadInstitutionAccounts() : Promise.resolve(),
+      loadAdAnalyticsRecords()
+    ]);
+    renderOpportunitySponsorsAdmin();
+    $("opportunitySponsorsSection")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+
+  $("externalAdsBackCenter")?.addEventListener("click",async()=>{
+    setAdCenterHubActive("banner");
+    showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
+    await renderBannerAdsAdmin(true);
+    $("adCenterPersistentHub")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
 
   $("bannerAdPlacement")?.addEventListener("change",()=>{
@@ -6081,6 +6106,7 @@
   });
 
   $("opportunitySponsorsTabBtn")?.addEventListener("click",async()=>{
+    setAdCenterHubActive("opportunity");
     showAdvancedSection("opportunitySponsorsSection","opportunitySponsorsTabBtn");
     if(typeof syncSimpleAdminNavigation==="function"){
       syncSimpleAdminNavigation("opportunitySponsorsTabBtn");
