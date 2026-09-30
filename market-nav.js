@@ -460,11 +460,48 @@
     connect();
   }
 
+  function ensureLegalUi(){
+    const legalLinks=
+      '<a href="aydinlatma-metni.html">Kişisel Veriler ve Aydınlatma</a>'+
+      '<a href="gizlilik.html">Gizlilik</a>'+
+      '<a href="kullanim-kosullari.html">Kullanım Koşulları</a>';
+
+    let footer=document.querySelector(".dijiyer-legal-footer");
+    if(footer){
+      if(!footer.querySelector('[href="gizlilik.html"]')){
+        const wrap=document.createElement("div");
+        wrap.className="dijiyer-global-legal-links";
+        wrap.innerHTML=legalLinks;
+        footer.appendChild(wrap);
+      }
+    }else if(!document.body.classList.contains("legal-page")){
+      footer=document.createElement("footer");
+      footer.className="dijiyer-global-legal-footer";
+      footer.innerHTML=
+        '<span>© '+new Date().getFullYear()+' Dijiyer</span>'+
+        '<nav>'+legalLinks+'</nav>';
+      document.body.appendChild(footer);
+    }
+
+    ["quoteForm","directQuoteForm"].forEach(id=>{
+      const form=document.getElementById(id);
+      if(!form||form.querySelector(".dijiyer-form-legal-note"))return;
+      const note=document.createElement("p");
+      note.className="dijiyer-form-legal-note";
+      note.innerHTML=
+        'Kişisel verilerinizin nasıl işlendiğini '+
+        '<a href="aydinlatma-metni.html" target="_blank" rel="noopener">Aydınlatma Metni</a> '+
+        've <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a> üzerinden inceleyebilirsiniz.';
+      form.appendChild(note);
+    });
+  }
+
   function build(){
     cleanLiteralNewlineArtifacts();
     markLegacyHeaders();
     buildGlobalTopbar();
     buildNav();
+    ensureLegalUi();
     requestAnimationFrame(()=>{
       cleanLiteralNewlineArtifacts();
       markLegacyHeaders();
