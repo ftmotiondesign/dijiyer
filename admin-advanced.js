@@ -1266,49 +1266,49 @@
 
   const BANNER_PLACEMENT_GUIDE = {
     search:{
-      label:"Ana Sayfa · Kurum Listesi",
+      label:"Ana Sayfa · Kurum Listesi",size:"1200 × 450 px",
       icon:"🔎",page:"ANA SAYFA",
       title:"Kurum listesindeki 2. kurumdan sonra",
       description:"Kullanıcı kurumları incelerken sonuç akışının içinde görünür.",
       device:"Mobil + Masaüstü",type:"Akış içi reklam"
     },
     home_sponsor:{
-      label:"Ana Sayfa · Bölgenizde Öne Çıkanlar",
+      label:"Ana Sayfa · Bölgenizde Öne Çıkanlar",size:"1500 × 600 px",
       icon:"📣",page:"ANA SAYFA",
       title:"Bölgenizde Öne Çıkanlar sponsor alanı",
       description:"Ana sayfadaki sponsorlu işletmeler bölümünde kurum kartı olarak görünür.",
       device:"Mobil + Masaüstü",type:"Sponsor kurum"
     },
     premium_home:{
-      label:"Ana Sayfa · Premium Vitrin",
+      label:"Ana Sayfa · Premium Vitrin",size:"1600 × 600 px",
       icon:"◆",page:"ANA SAYFA",
       title:"Geniş Premium Vitrin",
       description:"Ana sayfanın en görünür geniş reklam alanında yayınlanır.",
       device:"Mobil + Masaüstü",type:"Premium vitrin"
     },
     mobile_sponsor:{
-      label:"Ana Sayfa (Mobil) · 2’li Sponsor",
+      label:"Ana Sayfa (Mobil) · 2’li Sponsor",size:"1080 × 600 px",
       icon:"📱",page:"ANA SAYFA",
       title:"Premium vitrinin altındaki 2’li sponsor alanı",
       description:"Mobilde iki reklam yan yana ve kaydırmalı biçimde gösterilir.",
       device:"Sadece Mobil",type:"2’li sponsor"
     },
     sidebar_sponsor:{
-      label:"Ana Sayfa (Masaüstü) · Yan Sponsor",
+      label:"Ana Sayfa (Masaüstü) · Yan Sponsor",size:"900 × 330 px",
       icon:"▤",page:"ANA SAYFA",
       title:"Kurum sonuçlarının yanındaki sponsor alanı",
       description:"Masaüstünde filtre ve sonuç bölgesinin yanında görünür.",
       device:"Sadece Masaüstü",type:"Yan reklam"
     },
     detail_banner:{
-      label:"Kurum Önizleme · Alt Banner",
+      label:"Kurum Önizleme · Alt Banner",size:"1200 × 300 px",
       icon:"🏢",page:"KURUM ÖNİZLEME",
       title:"Hızlı kurum önizlemesinin altındaki banner",
       description:"Masaüstünde kullanıcı kurumun hızlı detayını açtığında alt bölümde görünür.",
       device:"Sadece Masaüstü",type:"Detay bannerı"
     },
     page_top_mini:{
-      label:"Teklif / İş / Bayi · Üst Mini Banner",
+      label:"Teklif / İş / Bayi · Üst Mini Banner",size:"728 × 90 px",
       icon:"▰",page:"TEKLİF · İŞ · BAYİ",
       title:"Ana Sayfa butonunun yanındaki mini banner",
       description:"Teklif Al, İş Fırsatları ve Bayi & Servis sayfalarının üst kısmında görünür.",
@@ -1328,6 +1328,7 @@
     if($("bannerPlacementGuidePage"))$("bannerPlacementGuidePage").textContent=meta.page;
     if($("bannerPlacementGuideTitle"))$("bannerPlacementGuideTitle").textContent=meta.title;
     if($("bannerPlacementGuideDescription"))$("bannerPlacementGuideDescription").textContent=meta.description;
+    if($("bannerPlacementGuideSize"))$("bannerPlacementGuideSize").textContent=meta.size || "Ölçü belirtilmedi";
     if($("bannerPlacementGuideDevice"))$("bannerPlacementGuideDevice").textContent=meta.device;
     if($("bannerPlacementGuideType"))$("bannerPlacementGuideType").textContent=meta.type;
   }
