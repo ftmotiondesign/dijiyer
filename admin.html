@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=50">
+  <link rel="stylesheet" href="admin.css?v=51">
   <link rel="stylesheet" href="admin-advanced.css?v=38">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -2389,14 +2389,27 @@
           </div>
         </div>
 
-        <div class="quote-routing-kpis">
-          <article><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Belirlenen süreyi aşan yanıtsız özel talepler</small></article>
-          <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong><small>Uygun VIP kurum sayısı</small></article>
-          <article><span>Reklam Veren Aday</span><strong id="quoteRoutingAdCount">0</strong><small>Uygun reklam veren kurum sayısı</small></article>
-          <article><span>Dağıtılmış Talep</span><strong id="quoteRoutingForwardedCount">0</strong><small>Daha önce başka kurumlara iletilenler</small></article>
+        <div class="quote-routing-kpis quote-routing-kpis-expanded">
+          <article><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Henüz teklif almayan uygun talepler</small></article>
+          <article><span>Yönlendirilmiş</span><strong id="quoteRoutingForwardedCount">0</strong><small>Başka kurumlara açılan talepler</small></article>
+          <article><span>Teklif Dönen</span><strong id="quoteRoutingRespondedCount">0</strong><small>Yönlendirme sonrası teklif gelen talepler</small></article>
+          <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong><small>Dağıtıma uygun VIP kurumlar</small></article>
+          <article class="credit-kpi"><span>Toplam Kredi Bakiyesi</span><strong id="leadCreditBalanceTotal">0</strong><small>Kurumların kullanılabilir net kredisi</small></article>
+          <article class="credit-kpi"><span>Kullanılan Kredi</span><strong id="leadCreditUsedTotal">0</strong><small>Yönlendirilmiş tekliflerden kullanılan</small></article>
         </div>
 
-        <div class="quote-routing-toolbar">
+        <div class="quote-routing-toolbar quote-routing-toolbar-expanded">
+          <label>
+            <span>Akış durumu</span>
+            <select id="quoteRoutingStatusFilter">
+              <option value="all" selected>Tüm özel talepler</option>
+              <option value="waiting">Dağıtım bekleyen</option>
+              <option value="forwarded">Yönlendirilmiş / yanıt bekleyen</option>
+              <option value="responded">Teklif gelen</option>
+              <option value="completed">Kayıt sürecine geçen</option>
+            </select>
+          </label>
+
           <label>
             <span>Yanıt bekleme süresi</span>
             <select id="quoteRoutingWaitMinutes">
@@ -2424,32 +2437,143 @@
           </label>
         </div>
 
-        <div class="lead-package-admin">
-          <div class="lead-package-admin-head">
-            <div>
-              <span>GELİR MODELİ</span>
-              <h4>Teklif Kredisi Paketleri</h4>
-              <p>1 yönlendirilmiş müşteri fırsatını 1 teklif kredisi olarak paketleyebilirsiniz. Ödeme işlemini şimdilik Dijiyer dışında/fatura ile takip edebilirsiniz.</p>
+        <div class="quote-routing-command-grid">
+          <div class="lead-package-admin">
+            <div class="lead-package-admin-head">
+              <div>
+                <span>GELİR MODELİ</span>
+                <h4>Teklif Kredisi Paketleri</h4>
+                <p>Yönlendirilmiş bir kurum müşteriye teklif gönderdiğinde 1 kredi kullanılır. Paket ödemeleri şimdilik Dijiyer dışında/fatura ile takip edilir.</p>
+              </div>
+              <button type="button" id="leadPackageSaveBtn">Paketleri Kaydet</button>
             </div>
-            <button type="button" id="leadPackageSaveBtn">Paketleri Kaydet</button>
+
+            <div class="lead-package-grid">
+              <label><span>Tekli Kredi</span><input type="number" min="0" step="1" id="leadPriceSingle" placeholder="₺"></label>
+              <label><span>10 Kredi</span><input type="number" min="0" step="1" id="leadPrice10" placeholder="₺"></label>
+              <label><span>25 Kredi</span><input type="number" min="0" step="1" id="leadPrice25" placeholder="₺"></label>
+              <label><span>50 Kredi</span><input type="number" min="0" step="1" id="leadPrice50" placeholder="₺"></label>
+            </div>
+            <p id="leadPackageMessage" class="lead-package-message"></p>
           </div>
 
-          <div class="lead-package-grid">
-            <label><span>Tekli Fırsat</span><input type="number" min="0" step="1" id="leadPriceSingle" placeholder="₺"></label>
-            <label><span>10 Kredi</span><input type="number" min="0" step="1" id="leadPrice10" placeholder="₺"></label>
-            <label><span>25 Kredi</span><input type="number" min="0" step="1" id="leadPrice25" placeholder="₺"></label>
-            <label><span>50 Kredi</span><input type="number" min="0" step="1" id="leadPrice50" placeholder="₺"></label>
+          <div class="lead-credit-summary-card">
+            <div>
+              <span>KREDİ MUHASEBESİ</span>
+              <h4>Teklif Kredisi Takibi</h4>
+              <p>Kurumlara yüklenen, kullanılan ve eksi bakiyeye düşen kredileri tek ekrandan izleyin.</p>
+            </div>
+            <div class="lead-credit-mini-kpis">
+              <span><small>Yüklenen</small><strong id="leadCreditLoadedTotal">0</strong></span>
+              <span><small>Kullanılan</small><strong id="leadCreditUsedSummary">0</strong></span>
+              <span><small>Net Bakiye</small><strong id="leadCreditBalanceSummary">0</strong></span>
+              <span><small>Eksi Bakiye</small><strong id="leadCreditDebtCount">0</strong></span>
+            </div>
           </div>
-          <p id="leadPackageMessage" class="lead-package-message"></p>
         </div>
 
+        <section class="lead-credit-panel">
+          <div class="lead-credit-panel-head">
+            <div>
+              <span class="quote-management-eyebrow">KURUM BAZLI KREDİ TAKİBİ</span>
+              <h4>Kredi Hesapları</h4>
+              <p>Kredi ekleyin/çıkarın, yönlendirilen fırsat ve geri dönen teklif sayılarını karşılaştırın.</p>
+            </div>
+            <button type="button" id="leadCreditRefreshBtn" class="quote-refresh-btn"><span>↻</span> Kredi Kayıtlarını Yenile</button>
+          </div>
+
+          <div class="lead-credit-toolbar">
+            <input type="search" id="leadCreditSearch" placeholder="Kurum adı, şehir veya kategori ara...">
+            <select id="leadCreditStatusFilter">
+              <option value="">Tüm kredi durumları</option>
+              <option value="positive">Kredisi olan</option>
+              <option value="zero">Bakiyesi sıfır</option>
+              <option value="debt">Eksi bakiyede</option>
+              <option value="used">Kredi kullanmış</option>
+            </select>
+          </div>
+
+          <div class="lead-credit-table-wrap">
+            <table class="lead-credit-table">
+              <thead>
+                <tr>
+                  <th>Kurum</th>
+                  <th>Öncelik</th>
+                  <th>Yönlendirme</th>
+                  <th>Teklif Dönen</th>
+                  <th>Yüklenen</th>
+                  <th>Kullanılan</th>
+                  <th>Bakiye</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="leadCreditTableBody">
+                <tr><td colspan="8">Kredi hesapları yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="lead-credit-ledger">
+            <div class="lead-credit-ledger-head">
+              <strong>Son Kredi Hareketleri</strong>
+              <small>En yeni 20 işlem</small>
+            </div>
+            <div id="leadCreditLedgerList" class="lead-credit-ledger-list">
+              <div class="empty-state">Henüz kredi hareketi yok.</div>
+            </div>
+          </div>
+        </section>
+
         <div class="quote-routing-note">
-          <strong>Nasıl çalışır?</strong>
-          <span>Özel talep önce hedef kuruma gider. Hedef kurum cevap vermezse yönetim bu ekrandan aynı kategori ve bölgedeki kurumları öncelik sırasıyla seçer. Müşterinin talebi silinmez; yalnızca seçilen kurumlara görüntüleme ve teklif verme yetkisi açılır.</span>
+          <strong>Tek sayfa akışı</strong>
+          <span>Özel talep, ilk hedef kurum, yönlendirilen kurumlar, geri dönen teklifler ve kullanılan kredi aynı ekranda izlenir. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
+        </div>
+
+        <div class="quote-routing-list-head">
+          <div>
+            <span class="quote-management-eyebrow">TEKLİF AKIŞI</span>
+            <h4>Tüm Özel Teklifler</h4>
+          </div>
+          <small id="quoteRoutingListCount">0 kayıt</small>
         </div>
 
         <div id="quoteRoutingList" class="quote-routing-list">
-          <div class="empty-state">Dağıtım bekleyen talepler yükleniyor...</div>
+          <div class="empty-state">Özel teklif akışı yükleniyor...</div>
+        </div>
+
+        <div class="lead-credit-modal" id="leadCreditModal" hidden>
+          <div class="lead-credit-modal-card">
+            <div class="lead-credit-modal-head">
+              <div>
+                <span>KREDİ YÖNETİMİ</span>
+                <h4 id="leadCreditModalInstitution">Kurum</h4>
+                <p>Mevcut bakiye: <strong id="leadCreditModalBalance">0</strong> kredi</p>
+              </div>
+              <button type="button" id="leadCreditModalCloseBtn" aria-label="Kapat">×</button>
+            </div>
+            <input type="hidden" id="leadCreditInstitutionId">
+            <div class="lead-credit-form-grid">
+              <label><span>İşlem</span>
+                <select id="leadCreditAction">
+                  <option value="add">Kredi Ekle</option>
+                  <option value="remove">Kredi Çıkar</option>
+                </select>
+              </label>
+              <label><span>Kredi Adedi</span><input type="number" min="1" step="1" id="leadCreditAmount" value="10"></label>
+            </div>
+            <div class="lead-credit-quick">
+              <button type="button" data-lead-credit-quick="1">+1</button>
+              <button type="button" data-lead-credit-quick="10">+10</button>
+              <button type="button" data-lead-credit-quick="25">+25</button>
+              <button type="button" data-lead-credit-quick="50">+50</button>
+            </div>
+            <label class="lead-credit-note"><span>Not / Paket</span><input type="text" id="leadCreditNote" maxlength="180" placeholder="Örn. 10 kredi paketi · fatura ödendi"></label>
+            <p id="leadCreditModalMessage" class="lead-package-message"></p>
+            <div class="lead-credit-modal-actions">
+              <button type="button" id="leadCreditModalCancelBtn">Vazgeç</button>
+              <button type="button" id="leadCreditModalSaveBtn">Kredi İşlemini Kaydet</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -3065,7 +3189,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=53"></script>
+<script src="admin.js?v=54"></script>
   <script src="admin-advanced.js?v=54"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
