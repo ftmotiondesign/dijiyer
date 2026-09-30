@@ -5351,6 +5351,7 @@
         opportunitySponsorStartAt:"",
         opportunitySponsorEndAt:"",
         opportunitySponsorPriority:10,
+        opportunitySponsorCampaignId:"",
         opportunitySponsorUpdatedAt:now,
         updatedAt:now
       };
@@ -5454,10 +5455,31 @@
     if(typeof syncSimpleAdminNavigation==="function"){
       syncSimpleAdminNavigation("opportunitySponsorsTabBtn");
     }
-    if(typeof loadInstitutions==="function"){
-      await loadInstitutions();
-    }
+    await Promise.all([
+      typeof loadInstitutions==="function" ? loadInstitutions() : Promise.resolve(),
+      typeof loadInstitutionAccounts==="function" ? loadInstitutionAccounts() : Promise.resolve(),
+      loadAdAnalyticsRecords()
+    ]);
     renderOpportunitySponsorsAdmin();
+  });
+
+  $("opportunityStatsRefreshBtn")?.addEventListener("click",async()=>{
+    const button=$("opportunityStatsRefreshBtn");
+    const old=button?.textContent||"↻ İstatistikleri Yenile";
+    if(button){
+      button.disabled=true;
+      button.textContent="Yenileniyor...";
+    }
+    await Promise.all([
+      typeof loadInstitutions==="function" ? loadInstitutions() : Promise.resolve(),
+      typeof loadInstitutionAccounts==="function" ? loadInstitutionAccounts() : Promise.resolve(),
+      loadAdAnalyticsRecords()
+    ]);
+    renderOpportunitySponsorsAdmin();
+    if(button){
+      button.disabled=false;
+      button.textContent=old;
+    }
   });
 
   $("opportunitySponsorSearch")?.addEventListener("input",renderOpportunitySponsorsAdmin);
