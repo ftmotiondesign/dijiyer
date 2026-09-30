@@ -162,7 +162,7 @@ const ADMIN_TAB_META = {
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
-  opportunitySponsorsTabBtn:["ads","Fırsat Sayfası","Fırsat sayfasında sponsorlu görünecek kurumları ve mobil medyalarını yönetin."],
+  opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
   mediaArchiveTabBtn:["ads","Medya Arşivi","Fırsat ve banner medyalarını, kullanım durumlarını ve temizleme işlemlerini yönetin."],
   externalAdsTabBtn:["ads","Harici Reklamlar","Marka ve affiliate bannerlarını ekleyin, zamanlayın ve yayında döndürün."],
   promotionOrdersTabBtn:["ads","Siparişler","Kurumların tanıtım ve reklam siparişlerini fiyatlandırın, ödeme ve yayın sürecini yönetin."],
