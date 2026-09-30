@@ -3504,33 +3504,64 @@
   }
 
   async function loadPromotionPackageInstitutions(){
-    const select = $("promotionPackageInstitutionSelect");
+    const select=$("promotionPackageInstitutionSelect");
     if(!select)return [];
 
     const keepValue=String(select.value||"");
-    try{
-      const snapshot=await db.collection("institutions").get();
-      promotionPackageInstitutionRecords=snapshot.docs
-        .map(doc=>({id:doc.id,...doc.data()}))
+
+    const useRecords=records=>{
+      promotionPackageInstitutionRecords=[...(records||[])]
+        .filter(item=>item&&item.id)
         .sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
 
       select.innerHTML='<option value="">Kurum seçin...</option>'+
         promotionPackageInstitutionRecords.map(item=>{
           const place=[item.city,item.district].filter(Boolean).join(" / ");
-          return '<option value="'+escapeHtml(item.id)+'">'+
+          return '<option value="'+escapeHtml(String(item.id))+'">'+
             escapeHtml(item.name||"Kurum")+(place?' · '+escapeHtml(place):'')+
           '</option>';
         }).join("");
 
-      if(keepValue && promotionPackageInstitutionRecords.some(x=>x.id===keepValue)){
+      if(keepValue && promotionPackageInstitutionRecords.some(
+        x=>String(x.id)===keepValue
+      )){
         select.value=keepValue;
       }
+
+      return promotionPackageInstitutionRecords;
+    };
+
+    try{
+      if(Array.isArray(institutionRecords)&&institutionRecords.length){
+        return useRecords(institutionRecords);
+      }
+
+      if(typeof loadInstitutions==="function"){
+        await loadInstitutions();
+        if(Array.isArray(institutionRecords)&&institutionRecords.length){
+          return useRecords(institutionRecords);
+        }
+      }
+
+      const snapshot=await db.collection("institutions").get();
+      return useRecords(
+        snapshot.docs.map(doc=>({id:doc.id,...doc.data()}))
+      );
     }catch(error){
       console.error("Paket kurumları yüklenemedi:",error);
+
+      if(Array.isArray(institutionRecords)&&institutionRecords.length){
+        return useRecords(institutionRecords);
+      }
+
       promotionPackageInstitutionRecords=[];
-      select.innerHTML='<option value="">Kurumlar yüklenemedi</option>';
+      select.innerHTML='<option value="">Kurum bulunamadı</option>';
+      if($("promotionPackageSelectionMessage")){
+        $("promotionPackageSelectionMessage").textContent=
+          "Kurum listesi alınamadı. Yönetim panelini yenileyip tekrar deneyin.";
+      }
+      return [];
     }
-    return promotionPackageInstitutionRecords;
   }
 
   function selectedPromotionPackages(){
