@@ -4576,12 +4576,46 @@
      ========================================================= */
   let selectedOpportunityInstitutionId="";
 
+  function opportunityTodayKey(){
+    const d=new Date();
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const day=String(d.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+day;
+  }
+
+  function opportunitySponsorState(inst){
+    const mediaUrl=String(inst?.opportunitySponsorMediaUrl||"").trim();
+    const enabled=inst?.opportunitySponsorActive===true;
+    const startAt=String(inst?.opportunitySponsorStartAt||"").slice(0,10);
+    const endAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10);
+    const today=opportunityTodayKey();
+
+    const missing=enabled&&!mediaUrl;
+    const scheduled=enabled&&Boolean(mediaUrl)&&Boolean(startAt)&&startAt>today;
+    const expired=enabled&&Boolean(mediaUrl)&&Boolean(endAt)&&endAt<today;
+    const active=enabled&&Boolean(mediaUrl)&&!scheduled&&!expired;
+    const paused=!enabled&&Boolean(mediaUrl);
+    const normal=!enabled&&!mediaUrl;
+
+    let expiring=false;
+    let daysLeft=null;
+    if(active&&endAt){
+      const todayDate=new Date(today+"T00:00:00");
+      const endDate=new Date(endAt+"T00:00:00");
+      daysLeft=Math.ceil((endDate.getTime()-todayDate.getTime())/86400000);
+      expiring=daysLeft>=0&&daysLeft<=3;
+    }
+
+    return {
+      mediaUrl,enabled,startAt,endAt,missing,scheduled,expired,active,paused,normal,
+      expiring,daysLeft,
+      priority:Math.max(1,Math.min(99,Number(inst?.opportunitySponsorPriority||10)||10))
+    };
+  }
+
   function opportunitySponsorActive(inst){
-    return Boolean(
-      inst &&
-      inst.opportunitySponsorActive===true &&
-      String(inst.opportunitySponsorMediaUrl||"").trim()
-    );
+    return opportunitySponsorState(inst).active;
   }
 
   function opportunitySponsorMediaHtml(inst){
@@ -4594,6 +4628,18 @@
     return '<img src="'+escapeHtml(url)+'" alt="">';
   }
 
+  function opportunityStateBadge(state){
+    if(state.active&&state.expiring){
+      return '<span class="opportunity-sponsor-badge warning">⏳ '+state.daysLeft+' gün kaldı</span>';
+    }
+    if(state.active)return '<span class="opportunity-sponsor-badge active">★ Yayında</span>';
+    if(state.scheduled)return '<span class="opportunity-sponsor-badge scheduled">🗓 Planlandı</span>';
+    if(state.expired)return '<span class="opportunity-sponsor-badge expired">Süresi Doldu</span>';
+    if(state.missing)return '<span class="opportunity-sponsor-badge missing">⚠ Medya Eksik</span>';
+    if(state.paused)return '<span class="opportunity-sponsor-badge passive">Sponsor Pasif</span>';
+    return '<span class="opportunity-sponsor-badge">Normal</span>';
+  }
+
   function renderOpportunitySponsorsAdmin(){
     const root=$("opportunitySponsorList");
     if(!root)return;
@@ -4602,32 +4648,54 @@
     const filter=String($("opportunitySponsorFilter")?.value||"all");
 
     const records=[...(institutionRecords||[])];
+    const states=records.map(inst=>({inst,state:opportunitySponsorState(inst)}));
     const total=records.length;
-    const sponsored=records.filter(opportunitySponsorActive).length;
+    const sponsored=states.filter(row=>row.state.active).length;
+    const missing=states.filter(row=>row.state.missing).length;
+    const expiring=states.filter(row=>row.state.expiring).length;
 
     if($("opportunitySponsorCount")){
       $("opportunitySponsorCount").textContent=
-        sponsored+" sponsorlu · "+(total-sponsored)+" normal · "+total+" toplam kurum";
+        sponsored+" sponsorlu · "+(total-sponsored)+" diğer · "+total+" toplam kurum";
     }
     if($("opportunitySponsorsTabCount")){
       $("opportunitySponsorsTabCount").textContent=String(sponsored);
     }
+    if($("opportunityKpiTotal"))$("opportunityKpiTotal").textContent=String(total);
+    if($("opportunityKpiSponsored"))$("opportunityKpiSponsored").textContent=String(sponsored);
+    if($("opportunityKpiMissing"))$("opportunityKpiMissing").textContent=String(missing);
+    if($("opportunityKpiExpiring"))$("opportunityKpiExpiring").textContent=String(expiring);
 
-    const rows=records
-      .filter(inst=>{
-        const active=opportunitySponsorActive(inst);
-        if(filter==="sponsored"&&!active)return false;
-        if(filter==="normal"&&active)return false;
+    const rows=states
+      .filter(({inst,state})=>{
+        if(filter==="sponsored"&&!state.active)return false;
+        if(filter==="paused"&&!state.paused)return false;
+        if(filter==="scheduled"&&!state.scheduled)return false;
+        if(filter==="expiring"&&!state.expiring)return false;
+        if(filter==="expired"&&!state.expired)return false;
+        if(filter==="missing"&&!state.missing)return false;
+        if(filter==="normal"&&!state.normal)return false;
         if(!query)return true;
         return normalize([
           inst.name,inst.city,inst.district,inst.category,inst.mainCategory,inst.subCategory
         ].filter(Boolean).join(" ")).includes(query);
       })
       .sort((a,b)=>{
-        const aActive=opportunitySponsorActive(a);
-        const bActive=opportunitySponsorActive(b);
-        if(aActive!==bActive)return aActive?-1:1;
-        return String(a.name||"").localeCompare(String(b.name||""),"tr");
+        const rank=row=>{
+          if(row.state.active)return 0;
+          if(row.state.scheduled)return 1;
+          if(row.state.paused)return 2;
+          if(row.state.missing)return 3;
+          if(row.state.expired)return 4;
+          return 5;
+        };
+        const rankDiff=rank(a)-rank(b);
+        if(rankDiff!==0)return rankDiff;
+        if(a.state.active&&b.state.active){
+          const priorityDiff=a.state.priority-b.state.priority;
+          if(priorityDiff!==0)return priorityDiff;
+        }
+        return String(a.inst.name||"").localeCompare(String(b.inst.name||""),"tr");
       });
 
     if(!rows.length){
@@ -4635,44 +4703,78 @@
       return;
     }
 
-    root.innerHTML=rows.map(inst=>{
-      const active=opportunitySponsorActive(inst);
+    root.innerHTML=rows.map(({inst,state})=>{
       const institutionActive=String(inst.status||"active")!=="passive";
       const logo=String(inst.logoUrl||inst.coverUrl||"").trim();
-      const thumb=active
+      const thumb=state.mediaUrl
         ? opportunitySponsorMediaHtml(inst)
         : (logo
             ? '<img src="'+escapeHtml(logo)+'" alt="">'
             : '<span>🏢</span>');
       const location=[inst.city,inst.district].filter(Boolean).join(" / ")||"Bölge yok";
       const sector=inst.subCategory||inst.category||inst.mainCategory||"Sektör yok";
+      const mediaLabel=state.mediaUrl
+        ? (inst.opportunitySponsorMediaType==="video"?"🎬 Video Var":"🖼 Görsel Var")
+        : "Medya Yok";
+      const scheduleLabel=state.startAt||state.endAt
+        ? [state.startAt||"Hemen",state.endAt||"Süresiz"].join(" → ")
+        : "Süresiz";
+      const primaryAction=state.mediaUrl
+        ? '<button type="button" data-opportunity-media="'+escapeHtml(inst.id)+'">Medya Değiştir</button>'
+        : '<button type="button" class="primary" data-opportunity-sponsor="'+escapeHtml(inst.id)+'">Fırsat Sponsor Yap</button>';
+      const toggleAction=state.mediaUrl
+        ? '<button type="button" class="'+(state.enabled?"danger-lite":"success-lite")+'" data-opportunity-toggle="'+escapeHtml(inst.id)+'" data-next="'+(state.enabled?"false":"true")+'">'+
+            (state.enabled?"Pasif Yap":"Aktif Yap")+
+          '</button>'
+        : "";
 
-      return '<article class="opportunity-sponsor-row '+(active?"is-sponsored":"")+'">'+
+      return '<article class="opportunity-sponsor-row '+(state.active?"is-sponsored":"")+'">'+
         '<div class="opportunity-sponsor-thumb">'+thumb+'</div>'+
         '<div class="opportunity-sponsor-copy">'+
           '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
           '<small>'+escapeHtml(location+" · "+sector)+'</small>'+
           '<div class="opportunity-sponsor-badges">'+
             '<span class="opportunity-sponsor-badge '+(institutionActive?"":"passive")+'">'+(institutionActive?"Kurum Aktif":"Kurum Pasif")+'</span>'+
-            (active
-              ? '<span class="opportunity-sponsor-badge active">★ Fırsat Sponsor</span>'
-              : '<span class="opportunity-sponsor-badge">Normal</span>')+
-            (inst.opportunitySponsorMediaUrl
-              ? '<span class="opportunity-sponsor-badge">'+(inst.opportunitySponsorMediaType==="video"?"🎬 Video":"🖼 Görsel")+'</span>'
-              : '')+
+            opportunityStateBadge(state)+
+            '<span class="opportunity-sponsor-badge">'+escapeHtml(mediaLabel)+'</span>'+
+            (state.mediaUrl?'<span class="opportunity-sponsor-badge">Öncelik '+state.priority+'</span>':"")+
+            (state.mediaUrl?'<span class="opportunity-sponsor-badge">'+escapeHtml(scheduleLabel)+'</span>':"")+
           '</div>'+
         '</div>'+
         '<div class="opportunity-sponsor-row-actions">'+
-          '<button type="button" class="primary '+(active?"active":"")+'" data-opportunity-sponsor="'+escapeHtml(inst.id)+'">'+
-            (active?"Sponsor Düzenle":"Fırsat Sponsor")+
-          '</button>'+
+          primaryAction+
+          (state.mediaUrl?'<button type="button" data-opportunity-preview="'+escapeHtml(inst.id)+'">Önizle</button>':"")+
+          toggleAction+
+          '<a href="firsatlar.html?kurum='+encodeURIComponent(String(inst.id))+'" target="_blank" rel="noopener">Fırsatta Gör</a>'+
         '</div>'+
       '</article>';
     }).join("");
 
     root.querySelectorAll("[data-opportunity-sponsor]").forEach(button=>{
+      button.addEventListener("click",()=>openOpportunitySponsorModal(button.dataset.opportunitySponsor));
+    });
+
+    root.querySelectorAll("[data-opportunity-preview]").forEach(button=>{
+      button.addEventListener("click",()=>openOpportunitySponsorModal(button.dataset.opportunityPreview));
+    });
+
+    root.querySelectorAll("[data-opportunity-media]").forEach(button=>{
       button.addEventListener("click",()=>{
-        openOpportunitySponsorModal(button.dataset.opportunitySponsor);
+        selectedOpportunityInstitutionId=String(button.dataset.opportunityMedia||"");
+        const input=$("opportunityQuickMediaFile");
+        if(input){
+          input.value="";
+          input.click();
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-toggle]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        quickToggleOpportunitySponsor(
+          button.dataset.opportunityToggle,
+          button.dataset.next==="true"
+        );
       });
     });
   }
