@@ -131,6 +131,11 @@ const quoteCompareTitle = document.getElementById("quoteCompareTitle");
 const quoteCompareMeta = document.getElementById("quoteCompareMeta");
 const quoteCompareHighlights = document.getElementById("quoteCompareHighlights");
 const quoteCompareTableBody = document.getElementById("quoteCompareTableBody");
+const quoteDetailModal = document.getElementById("quoteDetailModal");
+const closeQuoteDetailModal = document.getElementById("closeQuoteDetailModal");
+const quoteDetailTitle = document.getElementById("quoteDetailTitle");
+const quoteDetailMeta = document.getElementById("quoteDetailMeta");
+const quoteDetailBody = document.getElementById("quoteDetailBody");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
@@ -2907,9 +2912,9 @@ function getAdminQuoteLiveState(request) {
 function getAdminQuoteStateMeta(state) {
   const map = {
     new: ["Yeni / Teklif Yok", "status-new"],
-    offered: ["Teklif Geldi", "status-offered"],
-    locked: ["Fiyat Kilitlendi", "status-locked"],
-    used: ["Kullanıldı", "status-used"],
+    offered: ["Teklif Aktif", "status-offered"],
+    locked: ["Kayıt Bekliyor", "status-locked"],
+    used: ["Gerçek Kayıt Tamamlandı", "status-used"],
     expired: ["Süresi Doldu", "status-expired"],
     sent: ["İletildi", "status-sent"],
     done: ["Sonuçlandı", "status-done"],
@@ -4096,6 +4101,186 @@ function getAdminOfferCompareState(offer, request) {
   return { label:"Aktif Teklif", cls:"active" };
 }
 
+function adminQuoteDetailMatchingInstitutions(request) {
+  if (!request) return [];
+
+  if (request.targetInstitutionId) {
+    const target = institutionRecords.find(item =>
+      String(item.id) === String(request.targetInstitutionId)
+    );
+    return target ? [target] : [];
+  }
+
+  const requestCategory = normalizeCategory(request.subCategory || request.category || "");
+  const requestCity = String(request.city || "").trim().toLocaleLowerCase("tr-TR");
+  const requestDistrict = String(request.district || "").trim().toLocaleLowerCase("tr-TR");
+
+  const cityMatches = institutionRecords.filter(inst => {
+    const active = String(inst.status || "active") !== "passive";
+    const offerOpen = inst.offer !== false;
+    const institutionCategory = normalizeCategory(inst.subCategory || inst.category || "");
+    const institutionCity = String(inst.city || "").trim().toLocaleLowerCase("tr-TR");
+    return active && offerOpen && institutionCategory === requestCategory && institutionCity === requestCity;
+  });
+
+  if (!requestDistrict) return cityMatches;
+
+  const exact = cityMatches.filter(inst =>
+    String(inst.district || "").trim().toLocaleLowerCase("tr-TR") === requestDistrict
+  );
+
+  return exact.length ? exact : cityMatches;
+}
+
+function adminQuoteDetailState(request) {
+  const lock = request?.liveLock || null;
+  const offers = Array.isArray(request?.liveOffers) ? request.liveOffers : [];
+  if (lock) {
+    if (lock.status === "used" || lock.registrationStatus === "completed") {
+      return {label:"Gerçek Kayıt Tamamlandı", cls:"completed"};
+    }
+    const deadline = lock.registrationDeadlineAt || lock.expiresAt;
+    if (deadline && new Date(deadline).getTime() <= Date.now()) {
+      return {label:"Kabul Edildi · Süresi Doldu", cls:"expired"};
+    }
+    return {label:"Kayıt Bekliyor", cls:"locked"};
+  }
+  if (offers.length) return {label:"Teklif Aktif", cls:"active"};
+  return {label:"Teklif Bekleniyor", cls:"waiting"};
+}
+
+function openQuoteDetailModal(requestId) {
+  const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
+  if (!request || !quoteDetailModal || !quoteDetailBody) return;
+
+  const offers = Array.isArray(request.liveOffers) ? request.liveOffers : [];
+  const lock = request.liveLock || null;
+  const matching = adminQuoteDetailMatchingInstitutions(request);
+  const state = adminQuoteDetailState(request);
+  const requestCode = String(request.id || "").slice(0, 9).toUpperCase();
+  const targetInstitution = request.targetInstitutionId
+    ? institutionRecords.find(item => String(item.id) === String(request.targetInstitutionId))
+    : null;
+
+  if (quoteDetailTitle) quoteDetailTitle.textContent = request.service || "Teklif Talebi";
+  if (quoteDetailMeta) {
+    quoteDetailMeta.textContent = [
+      "#" + requestCode,
+      request.targetInstitutionId ? "Doğrudan teklif" : "Toplu teklif",
+      formatDate(request.date)
+    ].join(" · ");
+  }
+
+  const deadline = lock ? (lock.registrationDeadlineAt || lock.expiresAt || "") : "";
+  const lockInstitutionName = lock
+    ? (lock.institutionName || institutionRecords.find(item => String(item.id) === String(lock.institutionId || ""))?.name || "Kurum")
+    : "";
+
+  const institutionHtml = matching.length
+    ? matching.slice(0, 12).map(inst => {
+        const offer = offers.find(item => String(item.institutionId || item.id || "") === String(inst.id));
+        const phoneDigits = normalizeWhatsApp(inst.phone || inst.whatsapp || "");
+        return '<article class="quote-detail-institution-card"><div><strong>' +
+          escapeHtml(inst.name || "Kurum") +
+          '</strong><span>' + escapeHtml([inst.city,inst.district].filter(Boolean).join(" / ") || "-") +
+          '</span><small>' + (offer ? "✓ Teklif verdi" : "Henüz teklif vermedi") +
+          '</small></div><div class="quote-detail-institution-actions"><a href="kurum.html?id=' +
+          encodeURIComponent(inst.id) +
+          '" target="_blank" rel="noopener">Sayfayı Gör</a>' +
+          (phoneDigits ? '<a class="wa" href="https://wa.me/' + phoneDigits + '" target="_blank" rel="noopener">WhatsApp</a>' : "") +
+          '</div></article>';
+      }).join("")
+    : '<div class="quote-detail-empty warning"><strong>Uygun kurum bulunamadı.</strong><span>Bu talebin şehir, ilçe ve kategori bilgileriyle eşleşen teklif alımı açık kurum görünmüyor.</span></div>';
+
+  const offersHtml = offers.length
+    ? '<div class="quote-detail-offers">' + offers.map(offer => {
+        const selected = lock && String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
+        const expired = offer.expiresAt && new Date(offer.expiresAt).getTime() <= Date.now();
+        const offerState = selected
+          ? ((lock.status === "used" || lock.registrationStatus === "completed") ? "Gerçek Kayıt Tamamlandı" : (expired ? "Kabul Edildi · Süresi Doldu" : "Kayıt Bekliyor"))
+          : (expired ? "Süresi Doldu" : "Teklif Aktif");
+        const institutionId = String(offer.institutionId || offer.id || "");
+        return '<article class="quote-detail-offer-card"><div class="quote-detail-offer-head"><div><span class="quote-detail-mini-label">KURUM TEKLİFİ</span><h4>' +
+          escapeHtml(offer.institutionName || "Kurum") + '</h4><small>Teklif No: ' + escapeHtml(offer.offerCode || "-") +
+          '</small></div><div class="quote-detail-offer-side"><strong>' + quoteMoney(offer.price) +
+          '</strong><span class="quote-detail-state">' + escapeHtml(offerState) + '</span></div></div>' +
+          '<div class="quote-detail-offer-grid"><div><span>KDV</span><strong>' + escapeHtml(offer.vatStatus || "-") +
+          '</strong></div><div><span>Ek ücret</span><strong>' + escapeHtml(offer.extraFee || "Yok") +
+          '</strong></div><div><span>Son geçerlilik</span><strong>' + (offer.expiresAt ? formatDate(offer.expiresAt) : "-") +
+          '</strong></div><div><span>Gönderim</span><strong>' + formatDate(offer.updatedAt || offer.createdAt) +
+          '</strong></div></div><div class="quote-detail-scope"><span>Teklif kapsamı</span><strong>' + escapeHtml(offer.scope || "Kapsam belirtilmemiş.") +
+          '</strong></div>' +
+          (offer.conditions ? '<div class="quote-detail-condition"><span>Özel şart</span><strong>' + escapeHtml(offer.conditions) + '</strong></div>' : "") +
+          (institutionId ? '<div class="quote-detail-inline-actions"><a href="kurum.html?id=' + encodeURIComponent(institutionId) + '" target="_blank" rel="noopener">Kurum Sayfasını Aç ↗</a></div>' : "") +
+          '</article>';
+      }).join("") + '</div>'
+    : '<div class="quote-detail-empty"><strong>Henüz kurum teklifi yok.</strong><span>Uygun kurum teklif gönderdiğinde fiyat ve kapsam burada görünecek.</span></div>';
+
+  let html = "";
+  html += '<div class="quote-detail-status-strip state-' + state.cls + '"><div><span>SON DURUM</span><strong>' + escapeHtml(state.label) + '</strong></div><div class="quote-detail-status-stats"><span><b>' + offers.length + '</b> kurum teklifi</span><span><b>' + matching.length + '</b> uygun kurum</span>' + (lock ? '<span><b>✓</b> teklif kabulü var</span>' : "") + '</div></div>';
+
+  html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>MÜŞTERİ VE TALEP</span><h3>Talep Bilgileri</h3></div></div><div class="quote-detail-info-grid">' +
+    '<div><span>Müşteri</span><strong>' + escapeHtml(request.name || "-") + '</strong></div>' +
+    '<div><span>Telefon</span><strong>' + escapeHtml(request.phone || "-") + '</strong></div>' +
+    '<div><span>E-posta</span><strong>' + escapeHtml(request.email || "-") + '</strong></div>' +
+    '<div><span>Talep konusu</span><strong>' + escapeHtml(request.service || "-") + '</strong></div>' +
+    '<div><span>Konum</span><strong>' + escapeHtml([request.city,request.district].filter(Boolean).join(" / ") || "-") + '</strong></div>' +
+    '<div><span>Talep türü</span><strong>' + (request.targetInstitutionId ? "Doğrudan kurum talebi" : "Toplu teklif") + '</strong></div>' +
+    '<div><span>Kategori</span><strong>' + escapeHtml(request.subCategory || request.category || "-") + '</strong></div>' +
+    '<div><span>Talep tarihi</span><strong>' + formatDate(request.date) + '</strong></div></div>' +
+    '<div class="quote-detail-note"><span>Müşteri notu</span><strong>' + escapeHtml(request.note || "Not eklenmemiş.") + '</strong></div></section>';
+
+  if (request.targetInstitutionId) {
+    html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>HEDEF KURUM</span><h3>' + escapeHtml(request.targetInstitutionName || targetInstitution?.name || "Kurum") + '</h3></div>' +
+      (targetInstitution ? '<a class="quote-detail-head-link" href="kurum.html?id=' + encodeURIComponent(targetInstitution.id) + '" target="_blank" rel="noopener">Kurum Sayfası ↗</a>' : "") +
+      '</div><p class="quote-detail-helper">Bu talep toplu havuza açılmadan yalnızca hedef kuruma gönderilmiştir.</p></section>';
+  }
+
+  if (lock) {
+    const completed = lock.status === "used" || lock.registrationStatus === "completed";
+    html += '<section class="quote-detail-section accepted"><div class="quote-detail-section-head"><div><span>KABUL EDİLEN TEKLİF</span><h3>' + escapeHtml(lockInstitutionName) + '</h3></div><span class="quote-detail-state">' + escapeHtml(state.label) + '</span></div>' +
+      '<div class="quote-detail-info-grid"><div><span>Kabul edilen fiyat</span><strong>' + quoteMoney(lock.price) + '</strong></div>' +
+      '<div><span>Teklif no</span><strong>' + escapeHtml(lock.offerCode || "-") + '</strong></div>' +
+      '<div><span>Kabul tarihi</span><strong>' + formatDate(lock.acceptedAt || lock.lockedAt) + '</strong></div>' +
+      '<div><span>Gerçek kayıt son tarihi</span><strong>' + (deadline ? formatDate(deadline) : "-") + '</strong></div>' +
+      '<div><span>Kayıt durumu</span><strong>' + (completed ? "Gerçek kayıt tamamlandı" : "Gerçek kayıt bekleniyor") + '</strong></div>' +
+      '<div><span>Doğrulama</span><strong>' + (lock.trackingCode ? "✓ Telefon + takip kodu" : "Takip kaydı") + '</strong></div></div>' +
+      '<div class="quote-detail-payment-warning"><strong>🛡️ Dijiyer üzerinden ödeme yapılmaz.</strong><span>Ücret, kapora veya kayıt bedeli yalnızca müşteri ile kurum arasında doğrudan gerçekleştirilir.</span></div></section>';
+  }
+
+  html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>GELEN FİYATLAR</span><h3>Kurum Teklifleri (' + offers.length + ')</h3></div></div>' + offersHtml + '</section>';
+  html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>EŞLEŞME</span><h3>' + (request.targetInstitutionId ? "Hedef Kurum" : "Uygun Kurumlar") + " (" + matching.length + ')</h3></div></div><div class="quote-detail-institutions">' + institutionHtml + '</div></section>';
+
+  html += '<div class="quote-detail-footer-actions"><a class="primary" href="https://wa.me/' + normalizeWhatsApp(request.phone) + '" target="_blank" rel="noopener">Müşteriye WhatsApp</a>' +
+    (offers.length ? '<button type="button" data-detail-compare>Teklifleri Karşılaştır (' + offers.length + ')</button>' : "") +
+    '<button type="button" data-detail-activity>Teklif Hareketleri</button></div>';
+
+  quoteDetailBody.innerHTML = html;
+
+  quoteDetailBody.querySelector("[data-detail-compare]")?.addEventListener("click",() => {
+    quoteDetailModal.classList.add("hidden");
+    openQuoteCompareModal(request.id);
+  });
+
+  quoteDetailBody.querySelector("[data-detail-activity]")?.addEventListener("click",async() => {
+    quoteDetailModal.classList.add("hidden");
+    await openQuoteActivityModal(request.id);
+  });
+
+  quoteDetailModal.classList.remove("hidden");
+}
+
+closeQuoteDetailModal?.addEventListener("click",() => quoteDetailModal?.classList.add("hidden"));
+quoteDetailModal?.addEventListener("click",event => {
+  if (event.target === quoteDetailModal) quoteDetailModal.classList.add("hidden");
+});
+
+document.addEventListener("keydown",event => {
+  if (event.key === "Escape" && quoteDetailModal && !quoteDetailModal.classList.contains("hidden")) {
+    quoteDetailModal.classList.add("hidden");
+  }
+});
+
 function openQuoteCompareModal(requestId) {
   const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
   if (!request) return;
@@ -4760,6 +4945,8 @@ function renderQuoteRequests() {
       </div>
 
       <div class="quote-actions">
+        <button type="button" class="quote-open-btn">↗ Teklifi Aç</button>
+
         <button
           type="button"
           class="quote-compare-btn"
@@ -4826,6 +5013,10 @@ function renderQuoteRequests() {
       button.addEventListener("click", async () => {
         await updateQuoteStatus(request.id, button.dataset.status);
       });
+    });
+
+    card.querySelector(".quote-open-btn")?.addEventListener("click", () => {
+      openQuoteDetailModal(request.id);
     });
 
     card.querySelector(".quote-compare-btn")?.addEventListener("click", () => {
