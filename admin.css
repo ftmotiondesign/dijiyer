@@ -6932,7 +6932,6 @@ button{
   font-size:8.5px;
   font-weight:850;
 }
-
 .lead-credit-empty-cell{
   text-align:center;
   color:#94a3b8 !important;
@@ -6946,13 +6945,8 @@ button{
 .lead-credit-ledger-head{
   display:flex;
   justify-content:space-between;
-  align-items:flex-end;
-  gap:12px;
+  align-items:center;
   margin-bottom:8px;
-}
-.lead-credit-ledger-head>div{
-  display:grid;
-  gap:2px;
 }
 .lead-credit-ledger-head strong{font-size:11px;color:#172033}
 .lead-credit-ledger-head small{font-size:8.5px;color:#94a3b8}
@@ -6962,39 +6956,13 @@ button{
 }
 .lead-credit-ledger-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto 110px auto;
+  grid-template-columns:minmax(0,1fr) auto 110px;
   gap:10px;
   align-items:center;
-  padding:9px 10px;
+  padding:8px 10px;
   border:1px solid #edf1f5;
   border-radius:9px;
   background:#fbfcfe;
-}
-.lead-credit-ledger-row.usage{
-  border-left:4px solid #16a34a;
-  background:#fbfffc;
-}
-.lead-credit-ledger-main code{
-  display:inline-block;
-  margin-top:4px;
-  padding:3px 5px;
-  border-radius:5px;
-  background:#f1f5f9;
-  color:#64748b;
-  font-size:7.5px;
-}
-.lead-credit-open-quote{
-  min-height:29px;
-  border:1px solid #bfdbfe;
-  border-radius:7px;
-  background:#eff6ff;
-  color:#1d4ed8;
-  padding:0 8px;
-  font-size:8px;
-  font-weight:850;
-}
-.lead-credit-no-quote{
-  color:#cbd5e1 !important;
 }
 .lead-credit-ledger-row>div strong,
 .lead-credit-ledger-row>div small{
@@ -7178,8 +7146,6 @@ button{
   .quote-routing-list-head{flex-direction:column;align-items:stretch}
   .lead-credit-ledger-row{grid-template-columns:1fr auto}
   .lead-credit-ledger-row>small{grid-column:1/-1}
-  .lead-credit-open-quote,
-  .lead-credit-no-quote{grid-column:1/-1}
 }
 
 
