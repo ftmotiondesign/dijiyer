@@ -3355,7 +3355,7 @@ function renderQuoteRoutingAdmin(){
     const canForward=request.allowAlternativeInstitutions===true && !request.liveLock && offers.length===0 && ["waiting","forwarded"].includes(flow);
     const consentHtml=request.allowAlternativeInstitutions===true
       ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Uygun kurumlara yönlendirilebilir.</span></div>'
-      : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Başka kuruma iletmeden önce açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">Müşteriden İzin Alındı</button></div>';
+      : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Başka kuruma iletmeden önce açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">✓ İzin Aldım</button></div>';
 
     const offerNames=routedOffers.map(offer=>escapeHtml(offer.institutionName||"Kurum")).join(", ");
     const responseHtml=routedOffers.length
