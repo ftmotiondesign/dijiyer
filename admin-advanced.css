@@ -4439,3 +4439,99 @@
     flex:1;
   }
 }
+
+
+/* =========================================================
+   KURUM REKLAMLARI · HIZLI İŞ AKIŞI V2
+   ========================================================= */
+.banner-existing-ad-alert{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:10px 11px;
+  border:1px solid #f2c879;
+  border-radius:10px;
+  background:#fff9ed;
+}
+.banner-existing-ad-alert.hidden{display:none}
+.banner-existing-ad-alert.acknowledged{opacity:.72}
+.banner-existing-ad-alert>div:first-child{display:grid;gap:2px}
+.banner-existing-ad-alert span{color:#b45309;font-size:6.5px;font-weight:950;letter-spacing:.07em}
+.banner-existing-ad-alert strong{color:#68410b;font-size:9px}
+.banner-existing-ad-alert small{color:#8a6a38;font-size:7px;line-height:1.4}
+.banner-existing-ad-actions{display:flex;gap:5px;flex-wrap:wrap}
+.banner-existing-ad-actions button{
+  min-height:28px;padding:0 8px;border:1px solid #e8c98c;border-radius:7px;background:#fff;color:#8a5709;font-size:6.5px;font-weight:900
+}
+.banner-existing-ad-actions button:first-child{background:#b45309;border-color:#b45309;color:#fff}
+
+.banner-institution-selected-actions{display:flex;gap:5px;align-items:center}
+.banner-institution-selected-actions button{
+  min-height:29px;padding:0 8px;border:1px solid #bcd5f4;border-radius:8px;background:#fff;color:#1677ff;font-size:7px;font-weight:900
+}
+.banner-institution-selected-actions button:first-child{border-color:#bbf7d0;color:#15803d;background:#f0fdf4}
+
+.banner-institution-history{margin-top:7px;padding:8px;border:1px solid #e0e7ef;border-radius:9px;background:#fff}
+.banner-institution-history.hidden{display:none}
+.banner-history-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.banner-history-head>div{display:grid;gap:2px}
+.banner-history-head span{color:#738196;font-size:6px;font-weight:950;letter-spacing:.06em}
+.banner-history-head strong{color:#334155;font-size:8px}
+.banner-history-head button{min-height:26px;padding:0 7px;border:1px solid #d7e1ec;border-radius:7px;background:#fff;color:#526278;font-size:6.5px;font-weight:850}
+.banner-history-list{display:grid;gap:4px;margin-top:7px}
+.banner-history-list.hidden{display:none}
+.banner-history-list button{display:grid;grid-template-columns:1fr 1.3fr auto;gap:6px;align-items:center;padding:6px;border:1px solid #edf1f5;border-radius:7px;background:#fbfdff;text-align:left}
+.banner-history-list span{color:#1677ff;font-size:6px;font-weight:850}
+.banner-history-list strong{overflow:hidden;color:#334155;font-size:7px;text-overflow:ellipsis;white-space:nowrap}
+.banner-history-list small{color:#7d8998;font-size:6px;white-space:nowrap}
+.banner-history-empty{color:#7d8998;font-size:7px}
+
+.banner-ad-templates{padding:9px;border:1px solid #dce7f4;border-radius:10px;background:#f9fbfe}
+.banner-ad-templates-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:7px}
+.banner-ad-templates-head>div{display:grid;gap:2px}
+.banner-ad-templates-head span{color:#1677ff;font-size:6.5px;font-weight:950;letter-spacing:.07em}
+.banner-ad-templates-head strong{color:#31465f;font-size:9px}
+.banner-ad-templates-head small{color:#8491a2;font-size:6.5px}
+.banner-ad-template-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.banner-ad-template-buttons button{min-height:34px;padding:0 7px;border:1px solid #d6e1ed;border-radius:8px;background:#fff;color:#40556f;font-size:7px;font-weight:850}
+.banner-ad-template-buttons button:hover{border-color:#9fc8fa;background:#f4f9ff;color:#1268da}
+
+.banner-live-placement-preview{padding:9px;border:1px solid #dce5ef;border-radius:10px;background:#f8fafc}
+.banner-live-placement-preview-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px}
+.banner-live-placement-preview-head strong{font-size:8.5px;color:#334155}
+.banner-live-placement-preview-head small{font-size:6.5px;color:#7d8998}
+.banner-live-placement-stage{min-height:145px;overflow:hidden;border:1px solid #dce4ed;border-radius:9px;background:#fff}
+.banner-live-page-chrome{height:20px;display:flex;align-items:center;gap:4px;padding:0 7px;background:#eef2f7}
+.banner-live-page-chrome i{width:5px;height:5px;border-radius:50%;background:#c3cfdd}
+.banner-live-context{padding:10px;display:grid;gap:8px}
+.banner-live-context-line{height:20px;border-radius:6px;background:#eef3f8}
+.banner-live-context-line.short{width:72%}
+.banner-live-ad{position:relative;min-height:72px;overflow:hidden;border-radius:8px;background:#1e3a5f}
+.banner-live-ad img,.banner-live-ad video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.banner-live-ad-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(9,24,43,.82),rgba(9,24,43,.18))}
+.banner-live-ad-copy{position:relative;z-index:2;min-height:72px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;padding:8px;color:#fff}
+.banner-live-ad-copy span{font-size:5.5px;font-weight:950;letter-spacing:.06em}
+.banner-live-ad-copy strong{font-size:10px}
+.banner-live-ad-copy small{font-size:6.5px;color:rgba(255,255,255,.86)}
+.banner-live-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:24px;color:#fff}
+.banner-live-placement-stage.placement-page_top_mini .banner-live-ad{min-height:46px;max-width:88%;margin:auto}
+.banner-live-placement-stage.placement-page_top_mini .banner-live-ad-copy{min-height:46px;padding:6px}
+.banner-live-placement-stage.placement-sidebar_sponsor .banner-live-ad{width:45%;margin-left:auto}
+.banner-live-placement-stage.placement-mobile_sponsor .banner-live-context{max-width:230px;margin:auto}
+.banner-live-placement-stage.placement-mobile_sponsor .banner-live-ad{min-height:82px}
+.banner-live-placement-stage.placement-premium_home .banner-live-ad{min-height:92px}
+.banner-live-placement-stage.placement-detail_banner .banner-live-ad{min-height:58px}
+
+.banner-save-actions{display:grid!important;grid-template-columns:auto 1fr 1.2fr}
+.banner-save-next-btn{border:1px solid #9fc8fa!important;background:#eef6ff!important;color:#1268da!important;font-weight:900!important}
+
+@media(max-width:650px){
+  .banner-existing-ad-alert{grid-template-columns:1fr}
+  .banner-institution-selected-actions{grid-column:1/-1;width:100%}
+  .banner-institution-selected-actions button{flex:1}
+  .banner-ad-templates-head{align-items:flex-start;flex-direction:column}
+  .banner-ad-template-buttons{grid-template-columns:1fr}
+  .banner-history-list button{grid-template-columns:1fr}
+  .banner-save-actions{grid-template-columns:1fr!important}
+}
