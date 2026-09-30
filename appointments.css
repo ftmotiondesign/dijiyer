@@ -1,0 +1,65 @@
+/* Dijiyer Randevu - public institution profile */
+.kp-appointment-btn{
+  background:linear-gradient(135deg,#6d28d9,#7c3aed)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 10px 24px rgba(109,40,217,.22);
+}
+.kp-appointment-modal{
+  position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;
+  padding:18px;background:rgba(15,23,42,.58);backdrop-filter:blur(6px);
+}
+.kp-appointment-modal.hidden{display:none}
+.kp-appointment-card{
+  width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;
+  box-shadow:0 30px 80px rgba(15,23,42,.28);padding:24px;
+}
+.kp-appointment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.kp-appointment-head small{display:block;color:#7c3aed;font-size:12px;font-weight:900;letter-spacing:.08em;margin-bottom:6px}
+.kp-appointment-head h2{margin:0;color:#0f172a;font-size:25px}
+.kp-appointment-head p{margin:7px 0 0;color:#64748b;font-size:14px}
+.kp-appointment-close{
+  width:42px;height:42px;border:0;border-radius:14px;background:#f1f5f9;color:#334155;
+  font-size:24px;cursor:pointer;flex:0 0 auto;
+}
+.kp-appointment-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.kp-appointment-field{display:flex;flex-direction:column;gap:7px}
+.kp-appointment-field.full{grid-column:1/-1}
+.kp-appointment-field label{font-size:12px;font-weight:900;color:#475569;letter-spacing:.03em}
+.kp-appointment-field input,.kp-appointment-field select,.kp-appointment-field textarea{
+  width:100%;box-sizing:border-box;border:1px solid #dbe3ee;background:#fff;border-radius:13px;
+  padding:12px 13px;font:inherit;color:#0f172a;outline:none;
+}
+.kp-appointment-field input:focus,.kp-appointment-field select:focus,.kp-appointment-field textarea:focus{
+  border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.10)
+}
+.kp-appointment-slots{display:flex;flex-wrap:wrap;gap:8px;min-height:42px}
+.kp-appointment-slot{
+  border:1px solid #dbe3ee;background:#fff;color:#334155;border-radius:12px;padding:9px 12px;
+  font-weight:800;cursor:pointer;transition:.16s ease;
+}
+.kp-appointment-slot:hover{border-color:#7c3aed;color:#6d28d9}
+.kp-appointment-slot.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.kp-appointment-slot:disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.kp-appointment-empty{
+  width:100%;border:1px dashed #cbd5e1;border-radius:12px;padding:13px;color:#64748b;background:#f8fafc;font-size:13px
+}
+.kp-appointment-submit{
+  width:100%;border:0;border-radius:14px;padding:14px 16px;background:#7c3aed;color:#fff;
+  font-weight:900;font-size:15px;cursor:pointer;margin-top:16px
+}
+.kp-appointment-submit:disabled{opacity:.55;cursor:not-allowed}
+.kp-appointment-note{margin:10px 0 0;font-size:12px;color:#64748b;text-align:center}
+.kp-appointment-message{margin:12px 0 0;font-size:13px;font-weight:800;text-align:center;color:#475569}
+.kp-appointment-message.success{color:#15803d}
+.kp-appointment-message.error{color:#b91c1c}
+.kp-appointment-success{
+  border:1px solid #bbf7d0;background:#f0fdf4;border-radius:16px;padding:16px;margin-top:14px;color:#166534
+}
+.kp-appointment-success strong{display:block;font-size:16px;margin-bottom:4px}
+@media(max-width:640px){
+  .kp-appointment-modal{padding:0;align-items:flex-end}
+  .kp-appointment-card{border-radius:24px 24px 0 0;padding:20px;max-height:94vh}
+  .kp-appointment-grid{grid-template-columns:1fr}
+  .kp-appointment-field.full{grid-column:auto}
+}
