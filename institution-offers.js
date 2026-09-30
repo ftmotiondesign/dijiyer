@@ -256,7 +256,7 @@ function offerRemainingLabel(expiresAt){
 
 function institutionQuoteIsTerminal(quote){
   const status=String(quote?.status||"").trim().toLowerCase();
-  return ["done","archived","closed","cancelled","canceled","completed","used"].includes(status);
+  return ["done","archived","closed","accepted","cancelled","canceled","completed","used"].includes(status);
 }
 
 function institutionOfferBelongsToCurrentInstitution(offer,docId=""){
