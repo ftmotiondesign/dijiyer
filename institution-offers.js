@@ -1090,9 +1090,23 @@ async function saveRealOffer(form){
   const routedLead=isRoutedLeadForCurrentInstitution(quote);
   const nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
 
-  if(!quote || institutionQuoteIsTerminal(quote)){
-    alert("Bu teklif talebi kapalı olduğu için yeni teklif gönderilemez.");
+  if(!quote){
+    alert("Teklif talebi bulunamadı.");
     renderQuotes();
+    return;
+  }
+
+  if(institutionQuoteIsTerminal(quote)){
+    const effectiveLock=institutionEffectiveLock(quote);
+    if(effectiveLock){
+      alert(institutionLockBelongsToCurrentInstitution(effectiveLock,existing)
+        ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
+        : "Müşteri başka bir teklifi seçti.");
+    }else{
+      alert("Bu teklif talebi kapalı olduğu için yeni teklif gönderilemez.");
+    }
+    renderQuotes();
+    renderSummary();
     return;
   }
 
@@ -1250,9 +1264,30 @@ async function saveRealOffer(form){
     console.error("Gerçek teklif kaydedilemedi:",error);
     const errorCode=String(error?.code||"unknown");
     const errorMessage=String(error?.message||"Bilinmeyen hata");
+
+    if(errorCode.includes("permission-denied")){
+      try{
+        const freshLockSnap=await db.collection("quoteRequests").doc(quoteId)
+          .collection("locks").doc("main").get();
+
+        if(freshLockSnap.exists){
+          const freshLock=freshLockSnap.data();
+          institutionLockMap.set(quoteId,freshLock);
+          renderQuotes();
+          renderSummary();
+          alert(institutionLockBelongsToCurrentInstitution(freshLock,existing)
+            ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
+            : "Müşteri başka bir teklifi seçti.");
+          return;
+        }
+      }catch(lockError){
+        console.warn("Kilit durumu hata sonrası doğrulanamadı:",lockError);
+      }
+    }
+
     alert(
       errorCode.includes("permission-denied")
-        ? "Teklif kaydedilemedi (permission-denied). Firebase kuralları güncel değil veya bu işlem kurala takıldı.\n\n"+errorMessage
+        ? "Teklif kaydedilemedi. Talep kapanmış veya teklif artık düzenlenemiyor. Sayfayı yenileyip tekrar kontrol edin."
         : "Teklif kaydedilemedi ("+errorCode+").\n\n"+errorMessage
     );
   }finally{
