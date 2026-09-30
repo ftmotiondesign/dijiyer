@@ -1,4 +1,5 @@
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -298,67 +299,180 @@ exports.sendQuoteForwardedEmail = onDocumentWritten(
 }
 );
 
-exports.sendSecondOfferOpportunityEmail = onDocumentWritten(
-  {
-    document: "quoteRequests/{quoteId}/engagement/{institutionId}",
-    region: "europe-west1",
-    secrets: [SMTP_USER, SMTP_PASS]
-  },
-  async function secondOfferOpportunityHandler(event) {
-  const afterSnap=event.data?.after;
-  if(!afterSnap?.exists)return;
-  const after=afterSnap.data()||{};
-  const before=event.data?.before?.exists?(event.data.before.data()||{}):{};
-  const firstViewedNow=Boolean(after.viewedAt)&&!before.viewedAt;
-  if(!firstViewedNow||after.revisionRequestedAt)return;
 
-  const quoteId=String(event.params.quoteId||"");
-  const institutionId=String(event.params.institutionId||"");
-  if(!quoteId||!institutionId)return;
-
-  const db=admin.firestore();
-  const quoteRef=db.collection("quoteRequests").doc(quoteId);
-  const [quoteSnap,offerSnap,lockSnap]=await Promise.all([
-    quoteRef.get(),
-    quoteRef.collection("offers").doc(institutionId).get(),
-    quoteRef.collection("locks").doc("main").get()
-  ]);
-  if(!quoteSnap.exists||!offerSnap.exists||lockSnap.exists)return;
-
-  const quote=quoteSnap.data()||{};
-  const terminalStatuses=new Set(["done","archived","closed","cancelled","canceled","completed","used"]);
-  if(terminalStatuses.has(String(quote.status||"").toLowerCase()))return;
-
-  const offer=offerSnap.data()||{};
-  if(Math.max(1,Number(offer.offerVersion||1))!==1)return;
-  if(offer.expiresAt&&new Date(offer.expiresAt).getTime()<=Date.now())return;
-
-  const accountSnap=await db.collection("institutionUsers")
-    .where("institutionId","==",institutionId).limit(5).get();
-  const accountDoc=accountSnap.docs.find(doc=>{
-    const data=doc.data()||{};
-    return data.status==="approved"&&validEmail(data.email);
-  });
-  if(!accountDoc)return;
-
-  const account=accountDoc.data()||{};
-  const to=validEmail(account.email);
-  const institutionName=String(account.institutionName||offer.institutionName||"Kurum");
-  const panelUrl=String(PUBLIC_BASE_URL.value()||"").replace(/\/$/,"")+"/institution.html";
-
-  await sendDijiyerMail({
-    to,
-    subject:`Dijiyer · Teklifiniz görüntülendi · ${String(quote.service||"Teklif Talebi")}`,
-    title:"Teklifiniz görüntülendi",
-    intro:"Müşteri teklifinizi görüntüledi ancak henüz kabul etmedi.",
-    lines:[
-      `Kurum: ${institutionName}`,
-      "Talep hâlâ açıksa fiyatı veya şartları iyileştiren 2. bir teklif sunabilirsiniz.",
-      "2. teklif için yeni teklif kredisi kullanılmaz."
-    ],
-    buttonText:"2. Teklif Fırsatını Gör",
-    buttonUrl:panelUrl
-  });
-  console.log("2. teklif fırsatı e-postası kuruma gönderildi:",quoteId,institutionId);
+function secondOfferDelayMinutes(offer){
+  const validityHours=Math.max(1,Number(offer?.validityHours||48));
+  const halfValidity=Math.floor(validityHours*60/2);
+  return Math.max(30,Math.min(180,halfValidity||180));
 }
+
+function isTerminalQuoteStatus(value){
+  return new Set(["done","archived","closed","cancelled","canceled","completed","used"])
+    .has(String(value||"").trim().toLowerCase());
+}
+
+async function customerRespondedAfterOffer(quoteRef,institutionId,offer){
+  const offerAt=new Date(offer.updatedAt||offer.createdAt||0).getTime();
+  if(!Number.isFinite(offerAt)||offerAt<=0)return false;
+
+  try{
+    const engagementSnap=await quoteRef.collection("engagement").doc(institutionId).get();
+    if(engagementSnap.exists){
+      const engagement=engagementSnap.data()||{};
+      const revisionAt=new Date(engagement.revisionRequestedAt||0).getTime();
+      if(Number.isFinite(revisionAt)&&revisionAt>offerAt)return true;
+    }
+  }catch(error){
+    console.warn("2. teklif engagement kontrolü atlandı:",quoteRef.id,institutionId,error);
+  }
+
+  try{
+    const messagesSnap=await quoteRef.collection("conversations").doc(institutionId)
+      .collection("messages").get();
+    return messagesSnap.docs.some(doc=>{
+      const row=doc.data()||{};
+      if(String(row.sender||"")!=="customer")return false;
+      const messageAt=new Date(row.date||0).getTime();
+      return Number.isFinite(messageAt)&&messageAt>offerAt;
+    });
+  }catch(error){
+    console.warn("2. teklif mesaj kontrolü atlandı:",quoteRef.id,institutionId,error);
+    return false;
+  }
+}
+
+exports.processSecondOfferInvites = onSchedule(
+  {
+    schedule:"every 15 minutes",
+    timeZone:"Europe/Istanbul",
+    region:"europe-west1"
+  },
+  async () => {
+    const db=admin.firestore();
+    const nowMs=Date.now();
+    const quoteSnap=await db.collection("quoteRequests")
+      .orderBy("date","desc")
+      .limit(400)
+      .get();
+
+    let created=0;
+    let checked=0;
+
+    for(const quoteDoc of quoteSnap.docs){
+      const quote=quoteDoc.data()||{};
+      if(isTerminalQuoteStatus(quote.status))continue;
+
+      const quoteRef=quoteDoc.ref;
+      const lockSnap=await quoteRef.collection("locks").doc("main").get();
+      if(lockSnap.exists)continue;
+
+      const offersSnap=await quoteRef.collection("offers").get();
+
+      for(const offerDoc of offersSnap.docs){
+        const offer=offerDoc.data()||{};
+        checked++;
+
+        const institutionId=String(offer.institutionId||offerDoc.id||"");
+        if(!institutionId)continue;
+        if(Math.max(1,Number(offer.offerVersion||1))!==1)continue;
+
+        const expiryMs=new Date(offer.expiresAt||0).getTime();
+        if(Number.isFinite(expiryMs)&&expiryMs<=nowMs)continue;
+
+        const baseMs=new Date(offer.updatedAt||offer.createdAt||0).getTime();
+        if(!Number.isFinite(baseMs)||baseMs<=0)continue;
+
+        const eligibleAt=baseMs+secondOfferDelayMinutes(offer)*60000;
+        if(nowMs<eligibleAt)continue;
+
+        const inviteRef=quoteRef.collection("secondOfferInvites").doc(institutionId);
+        const inviteSnap=await inviteRef.get();
+        if(inviteSnap.exists)continue;
+
+        if(await customerRespondedAfterOffer(quoteRef,institutionId,offer))continue;
+
+        const invitedAt=new Date().toISOString();
+        await inviteRef.set({
+          institutionId,
+          institutionName:String(offer.institutionName||"Kurum"),
+          status:"open",
+          reason:"customer_no_response",
+          firstOfferPrice:Number(offer.price||0),
+          offerVersion:1,
+          invitedAt,
+          expiresAt:String(offer.expiresAt||""),
+          decision:"",
+          respondedAt:""
+        });
+        created++;
+      }
+    }
+
+    console.log("2. teklif daveti zamanlayıcısı tamamlandı",{checked,created});
+  }
 );
+
+exports.sendSecondOfferOpportunityEmail = onDocumentCreated(
+  {
+    document:"quoteRequests/{quoteId}/secondOfferInvites/{institutionId}",
+    region:"europe-west1",
+    secrets:[SMTP_USER,SMTP_PASS]
+  },
+  async (event) => {
+    const invite=event.data?.data()||{};
+    if(String(invite.status||"")!=="open")return;
+
+    const quoteId=String(event.params.quoteId||"");
+    const institutionId=String(event.params.institutionId||"");
+    if(!quoteId||!institutionId)return;
+
+    const db=admin.firestore();
+    const quoteRef=db.collection("quoteRequests").doc(quoteId);
+    const [quoteSnap,offerSnap,lockSnap]=await Promise.all([
+      quoteRef.get(),
+      quoteRef.collection("offers").doc(institutionId).get(),
+      quoteRef.collection("locks").doc("main").get()
+    ]);
+
+    if(!quoteSnap.exists||!offerSnap.exists||lockSnap.exists)return;
+
+    const quote=quoteSnap.data()||{};
+    const offer=offerSnap.data()||{};
+    if(isTerminalQuoteStatus(quote.status))return;
+    if(Math.max(1,Number(offer.offerVersion||1))!==1)return;
+    if(offer.expiresAt&&new Date(offer.expiresAt).getTime()<=Date.now())return;
+
+    const accountSnap=await db.collection("institutionUsers")
+      .where("institutionId","==",institutionId)
+      .limit(5)
+      .get();
+
+    const accountDoc=accountSnap.docs.find(doc=>{
+      const data=doc.data()||{};
+      return data.status==="approved"&&validEmail(data.email);
+    });
+    if(!accountDoc)return;
+
+    const account=accountDoc.data()||{};
+    const to=validEmail(account.email);
+    const institutionName=String(account.institutionName||offer.institutionName||"Kurum");
+    const panelUrl=String(PUBLIC_BASE_URL.value()||"").replace(/\/$/,"")+"/institution.html";
+
+    await sendDijiyerMail({
+      to,
+      subject:`Dijiyer · 2. teklif fırsatı · ${String(quote.service||"Teklif Talebi")}`,
+      title:"2. teklif fırsatı",
+      intro:"İlk teklifiniz henüz kabul edilmedi ve müşteriden yeni bir dönüş gelmedi.",
+      lines:[
+        `Kurum: ${institutionName}`,
+        "Talep hâlâ açık. İsterseniz fiyatı veya şartları güncelleyerek 2. teklif sunabilirsiniz.",
+        "2. teklif için yeni teklif kredisi kullanılmaz."
+      ],
+      buttonText:"2. Teklif Fırsatını Gör",
+      buttonUrl:panelUrl
+    });
+
+    console.log("2. teklif fırsatı e-postası kuruma gönderildi:",quoteId,institutionId);
+  }
+);
+
