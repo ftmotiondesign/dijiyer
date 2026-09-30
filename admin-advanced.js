@@ -4950,7 +4950,7 @@
                 '<span><b>%'+stats.ctr.toFixed(1)+'</b> CTR</span>'+
               '</div>'
             : '')+
-        '</div'>
+        '</div>'+
         '<div class="opportunity-sponsor-row-actions">'+
           primaryAction+
           toggleAction+
