@@ -234,11 +234,12 @@ function newOfferAlertHtml(){
   if(!latestNewOfferNotice)return "";
   const age=Date.now()-Number(latestNewOfferNotice.at||0);
   if(age>30000)return "";
+  const alternative=latestNewOfferNotice.sourceType==="alternative";
   return `
     <div class="new-offer-live-alert">
       <span class="new-offer-live-icon">🔔</span>
       <div>
-        <strong>Yeni teklif geldi</strong>
+        <strong>${alternative?"Alternatif kurumdan yeni teklif geldi":"Yeni teklif geldi"}</strong>
         <small>${safe(latestNewOfferNotice.institutionName||"Kurum")} · ${money(latestNewOfferNotice.price)}</small>
       </div>
       <button type="button" data-jump-new-offer="${safe(latestNewOfferNotice.id||"")}">Teklifi Gör</button>
@@ -561,15 +562,17 @@ function startLiveTracking(access){
           if(change.type==="added"){
             const offerId=String(offer.institutionId||change.doc.id);
             newlyArrivedOfferIds.add(offerId);
+            const alternative=offer.sourceType==="alternative";
             latestNewOfferNotice={
               id:offerId,
               institutionName:offer.institutionName||"Kurum",
               price:Number(offer.price||0),
+              sourceType:String(offer.sourceType||""),
               at:Date.now()
             };
 
             toast(
-              "🔔 Yeni teklif geldi · "+
+              (alternative?"🔔 Alternatif kurumdan teklif geldi · ":"🔔 Yeni teklif geldi · ")+
               (offer.institutionName||"Kurum")+
               " · "+
               money(offer.price)
@@ -577,10 +580,15 @@ function startLiveTracking(access){
 
             try{
               if("Notification" in window && Notification.permission==="granted" && document.hidden){
-                new Notification("Dijiyer · Yeni teklif geldi",{
-                  body:(offer.institutionName||"Kurum")+" · "+money(offer.price),
-                  tag:"dijiyer-new-offer-"+offerId
-                });
+                new Notification(
+                  alternative
+                    ? "Dijiyer · Alternatif kurumdan teklif geldi"
+                    : "Dijiyer · Yeni teklif geldi",
+                  {
+                    body:(offer.institutionName||"Kurum")+" · "+money(offer.price),
+                    tag:"dijiyer-new-offer-"+offerId
+                  }
+                );
               }
             }catch(_){}
 
@@ -604,7 +612,9 @@ function startLiveTracking(access){
           if(nextVersion && nextVersion!==previousVersion){
             const version=Number(offer.offerVersion||0);
             const secondOffer=version===2;
+            const alternative=offer.sourceType==="alternative";
             const notificationText=
+              (alternative?"Alternatif kurum · ":"")+
               (offer.institutionName||"Kurum")+
               (secondOffer?" 2. teklifini gönderdi: ":" teklifini güncelledi: ")+
               money(offer.price)+
@@ -616,10 +626,17 @@ function startLiveTracking(access){
 
             try{
               if("Notification" in window && Notification.permission==="granted" && document.hidden){
-                new Notification(secondOffer?"Dijiyer · 2. teklif geldi":"Dijiyer · Teklif güncellendi",{
-                  body:notificationText,
-                  tag:"dijiyer-offer-update-"+String(offer.institutionId||change.doc.id)
-                });
+                new Notification(
+                  secondOffer
+                    ? (alternative
+                        ? "Dijiyer · Alternatif kurumdan 2. teklif"
+                        : "Dijiyer · 2. teklif geldi")
+                    : "Dijiyer · Teklif güncellendi",
+                  {
+                    body:notificationText,
+                    tag:"dijiyer-offer-update-"+String(offer.institutionId||change.doc.id)
+                  }
+                );
               }
             }catch(_){}
           }
