@@ -587,6 +587,35 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - KURUM TEKLİF ARŞİVİ
+    // "Sil" işlemi gerçek veriyi silmez; yalnızca ilgili kurumun panelinde gizler.
+    // =====================================================
+    match /institutionQuoteArchive/{archiveId} {
+      allow read: if
+        onayliKurumKullanicisi()
+        && resource.data.institutionId == bagliKurumId();
+
+      allow create: if
+        onayliKurumKullanicisi()
+        && request.resource.data.institutionId == bagliKurumId()
+        && request.resource.data.quoteId is string
+        && request.resource.data.quoteId.size() > 0
+        && request.resource.data.archived is bool;
+
+      allow update: if
+        onayliKurumKullanicisi()
+        && resource.data.institutionId == bagliKurumId()
+        && request.resource.data.institutionId == resource.data.institutionId
+        && request.resource.data.quoteId == resource.data.quoteId
+        && request.resource.data.archived is bool;
+
+      allow delete: if
+        onayliKurumKullanicisi()
+        && resource.data.institutionId == bagliKurumId();
+    }
+
+
+    // =====================================================
     // DİJİYER - TEKLİF TAKİP KODU
     // =====================================================
     match /quoteAccess/{phoneHash}/codes/{trackingCode} {
