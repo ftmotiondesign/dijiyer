@@ -1303,10 +1303,20 @@ function renderManagedInstitutions() {
         </div>
       </div>
 
+      <div class="institution-status-manager ${isInstitutionActive ? "is-active" : "is-passive"}">
+        <div class="institution-status-copy">
+          <span>KURUM DURUMU</span>
+          <strong>${isInstitutionActive ? "Aktif" : "Pasif"}</strong>
+          <small>${isInstitutionActive ? "Kurum kullanıcı tarafında yayında." : "Kurum kullanıcı tarafında gizli."}</small>
+        </div>
+        <div class="institution-status-buttons">
+          <button type="button" class="institution-activate-btn" ${isInstitutionActive ? "disabled" : ""}>✓ Aktif Yap</button>
+          <button type="button" class="institution-passivate-btn" ${!isInstitutionActive ? "disabled" : ""}>⏸ Pasif Yap</button>
+          <button type="button" class="institution-status-delete-btn">🗑 Sil</button>
+        </div>
+      </div>
+
       <div class="institution-primary-actions">
-        <button class="quick-toggle ${isInstitutionActive ? "on" : ""}" data-field="status">
-          ● ${isInstitutionActive ? "Aktif" : "Pasif"}
-        </button>
         <button class="quick-toggle ${data.offer !== false ? "on" : ""}" data-field="offer">
           ₺ ${data.offer !== false ? "Teklif Açık" : "Teklif Kapalı"}
         </button>
@@ -1478,6 +1488,23 @@ function renderManagedInstitutions() {
 
     card.querySelector(".delete-institution-btn").addEventListener("click", () => {
       deleteInstitution(data.id, data.name || "Kurum");
+    });
+
+    card.querySelector(".institution-status-delete-btn")?.addEventListener("click", () => {
+      deleteInstitution(data.id, data.name || "Kurum");
+    });
+
+    card.querySelector(".institution-activate-btn")?.addEventListener("click", async () => {
+      await updateInstitutionStatus(data.id, true);
+    });
+
+    card.querySelector(".institution-passivate-btn")?.addEventListener("click", async () => {
+      const ok = confirm(
+        (data.name || "Bu kurum") +
+        " pasif yapılacak. Kullanıcı tarafında kurum listelerinde ve kurum profilinde görünmeyecek. Devam edilsin mi?"
+      );
+      if (!ok) return;
+      await updateInstitutionStatus(data.id, false);
     });
 
     const mapBtn = card.querySelector(".map-institution-btn");
