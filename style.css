@@ -15718,3 +15718,68 @@ to{opacity:1;transform:none}
 .site-section-disabled{
   display:none !important;
 }
+
+
+/* =========================================================
+   SABİT FIRSATLAR BUTONU
+   Sol altta, Teklif Takip ile aynı hizada.
+   ========================================================= */
+.opportunities-floating-btn{
+  position:fixed;
+  left:12px;
+  bottom:12px;
+  z-index:1900;
+  min-height:46px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:18px;
+  background:linear-gradient(135deg,#f59e0b,#f97316);
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:-.01em;
+  box-shadow:0 10px 26px rgba(202,96,10,.28);
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .18s ease,box-shadow .18s ease,bottom .18s ease;
+}
+.opportunities-floating-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 13px 30px rgba(202,96,10,.34);
+}
+.opportunities-floating-btn:active{
+  transform:scale(.97);
+}
+.opportunities-floating-icon{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:rgba(255,255,255,.18);
+  font-size:13px;
+  line-height:1;
+}
+.opportunities-floating-label{
+  white-space:nowrap;
+}
+.opportunities-floating-btn.compare-active{
+  bottom:92px;
+}
+
+@media(max-width:640px){
+  .opportunities-floating-btn{
+    left:10px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    min-height:44px;
+    padding:0 12px;
+    border-radius:16px;
+    font-size:12px;
+  }
+  .opportunities-floating-btn.compare-active{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 78px);
+  }
+}
