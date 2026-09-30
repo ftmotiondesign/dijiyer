@@ -502,7 +502,10 @@ function initMap(){
 async function loadReviews(){
   if(institution.isDemo){reviews=[];renderReviews();return}
   try{
-    const snap=await db.collection("institutionReviews").where("institutionId","==",String(institution.id)).get();
+    const snap=await db.collection("institutionReviews")
+      .where("institutionId","==",String(institution.id))
+      .where("status","==","published")
+      .get();
     reviews=snap.docs.map(doc=>({id:doc.id,...doc.data()})).filter(r=>!r.status||r.status==="published").sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
     if(reviews.length){
       const avg=reviews.reduce((sum,r)=>sum+Number(r.rating||0),0)/reviews.length;
@@ -845,7 +848,7 @@ document.getElementById("reviewForm").addEventListener("submit",async event=>{
     institutionId:String(institution.id),
     rating:currentRating,
     text,
-    status:"published",
+    status:"pending",
     date:new Date().toISOString()
   };
 
@@ -863,8 +866,8 @@ document.getElementById("reviewForm").addEventListener("submit",async event=>{
     document.querySelectorAll("#recommendPicker button").forEach(x=>x.classList.remove("active"));
 
     msg.textContent=typeof reviewData.recommend==="boolean"
-      ?"✓ Yorumunuz ve tavsiye oyunuz yayınlandı."
-      :"✓ Yorumunuz yayınlandı.";
+      ?"✓ Yorumunuz ve tavsiye oyunuz incelemeye alındı."
+      :"✓ Yorumunuz incelemeye alındı.";
 
     await loadReviews();
     setTimeout(closeReviewModal,850);
