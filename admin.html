@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=55">
+  <link rel="stylesheet" href="admin.css?v=56">
   <link rel="stylesheet" href="admin-advanced.css?v=38">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -154,62 +154,62 @@
         <div class="admin-dashboard-main">
 
       <nav class="admin-main-nav" aria-label="Yönetim ana menüsü">
-        <button type="button" class="admin-main-nav-btn active" data-admin-main="overview">
+        <a href="admin.html#genel-bakis" class="admin-main-nav-btn active" data-admin-main="overview">
           <span>Ana Sayfa</span>
-        </button>
-        <button type="button" class="admin-main-nav-btn" data-admin-main="quotes">
+        </a>
+        <a href="admin.html#teklifler" class="admin-main-nav-btn" data-admin-main="quotes">
           <span>Teklifler</span>
-        </button>
-        <button type="button" class="admin-main-nav-btn admin-main-nav-revenue" data-admin-main="unanswered">
+        </a>
+        <a href="admin.html#yanitsiz-teklifler" class="admin-main-nav-btn admin-main-nav-revenue" data-admin-main="unanswered">
           <span class="admin-main-nav-revenue-copy">
             <small>GELİR FIRSATI</small>
             <strong>Yanıtsız Teklifler</strong>
           </span>
           <b id="quoteRoutingMainCount" class="admin-main-nav-revenue-count">0</b>
-        </button>
-        <button type="button" class="admin-main-nav-btn" data-admin-main="institutions">
+        </a>
+        <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions">
           <span>Kurumlar</span>
-        </button>
-        <button type="button" class="admin-main-nav-btn" data-admin-main="business">
+        </a>
+        <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business">
           <span>İş &amp; Ticaret</span>
-        </button>
-        <button type="button" class="admin-main-nav-btn" data-admin-main="support">
+        </a>
+        <a href="admin.html#destek" class="admin-main-nav-btn" data-admin-main="support">
           <span>İletişim</span>
-        </button>
-        <button type="button" class="admin-main-nav-btn" data-admin-main="system">
+        </a>
+        <a href="admin.html#sistem" class="admin-main-nav-btn" data-admin-main="system">
           <span>Yönetim</span>
-        </button>
+        </a>
       </nav>
 
       <div class="admin-tabs admin-subtabs" id="adminSubtabs">
-        <button class="admin-tab active" id="overviewTabBtn" data-admin-group="overview">Genel Bakış</button>
+        <a href="admin.html#genel-bakis" class="admin-tab active" id="overviewTabBtn" data-admin-group="overview">Genel Bakış</a>
 
-        <button class="admin-tab" id="quotesTabBtn" data-admin-group="quotes">Talepler</button>
-        <button class="admin-tab" id="quoteRoutingTabBtn" data-admin-group="unanswered">⚡ Yanıtsız Teklifler <span id="quoteRoutingTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="issuesTabBtn" data-admin-group="quotes">Sorunlar <span id="issueTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="offerReportTabBtn" data-admin-group="quotes">Teklif Raporu</button>
+        <a href="admin.html#teklifler" class="admin-tab" id="quotesTabBtn" data-admin-group="quotes">Talepler</a>
+        <a href="admin.html#yanitsiz-teklifler" class="admin-tab" id="quoteRoutingTabBtn" data-admin-group="unanswered">⚡ Yanıtsız Teklifler <span id="quoteRoutingTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#sorunlar" class="admin-tab" id="issuesTabBtn" data-admin-group="quotes">Sorunlar <span id="issueTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#teklif-raporu" class="admin-tab" id="offerReportTabBtn" data-admin-group="quotes">Teklif Raporu</a>
 
-        <button class="admin-tab" id="institutionsTabBtn" data-admin-group="institutions">Kurumlar</button>
-        <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
-        <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
-        <button class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></button>
+        <a href="admin.html#kurumlar" class="admin-tab" id="institutionsTabBtn" data-admin-group="institutions">Kurumlar</a>
+        <a href="admin.html#basvurular" class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</a>
+        <a href="admin.html#hesaplar" class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</a>
+        <a href="admin.html#bulunamayan-aramalar" class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></a>
 
-        <button class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></button>
+        <a href="admin.html#is-ticaret" class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></a>
 
-        <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="mediaArchiveTabBtn" data-admin-group="ads">🗂 Medya Arşivi <span id="mediaArchiveTabCount" class="admin-tab-count">0</span></button>
-                <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads" hidden>🌐 Site / Affiliate Reklamları <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
-<button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
-        <button class="admin-tab" id="vipInstitutionsTabBtn" data-admin-group="ads">👑 VIP Kurumlar</button>
-        <button class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</button>
+        <a href="admin.html#reklam-merkezi" class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#kesfet-firsat" class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#medya-arsivi" class="admin-tab" id="mediaArchiveTabBtn" data-admin-group="ads">🗂 Medya Arşivi <span id="mediaArchiveTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#harici-reklamlar" class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads" hidden>🌐 Site / Affiliate Reklamları <span id="externalAdsTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#siparisler" class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#paketler" class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</a>
+        <a href="admin.html#vip-kurumlar" class="admin-tab" id="vipInstitutionsTabBtn" data-admin-group="ads">👑 VIP Kurumlar</a>
+        <a href="admin.html#reklam-takvimi" class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#gelir-raporu" class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</a>
 
-        <button class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</button>
+        <a href="admin.html#destek" class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#duyurular" class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</a>
 
-        <button class="admin-tab" id="systemTabBtn" data-admin-group="system">Sistem</button>
+        <a href="admin.html#sistem" class="admin-tab" id="systemTabBtn" data-admin-group="system">Sistem</a>
       </div>
 
       <div class="admin-section-context">
@@ -3180,7 +3180,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=59"></script>
+<script src="admin.js?v=60"></script>
   <script src="admin-advanced.js?v=54"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
