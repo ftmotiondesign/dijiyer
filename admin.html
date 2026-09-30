@@ -7,8 +7,8 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=34">
-  <link rel="stylesheet" href="admin-advanced.css?v=18">
+  <link rel="stylesheet" href="admin.css?v=35">
+  <link rel="stylesheet" href="admin-advanced.css?v=19">
 </head>
 
 <body>
@@ -124,6 +124,7 @@
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 Fırsat Sayfası <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
                 <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads">🌐 Harici Reklamlar <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
 <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
@@ -583,6 +584,45 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+
+      <section id="opportunitySponsorsSection" hidden>
+        <div class="section-title banner-admin-title">
+          <div>
+            <h3>🎯 Fırsat Sayfası Yönetimi</h3>
+            <p id="opportunitySponsorCount">Kurumlar yükleniyor...</p>
+          </div>
+          <a class="opportunity-page-preview-link" href="firsatlar.html" target="_blank" rel="noopener">Fırsat Sayfasını Gör</a>
+        </div>
+
+        <div class="opportunity-admin-guide">
+          <div>
+            <span>1</span>
+            <p><strong>Tüm kurumlar burada</strong><small>Kayıtlı kurumların tamamını tek listeden yönetin.</small></p>
+          </div>
+          <div>
+            <span>2</span>
+            <p><strong>Fırsat Sponsor</strong><small>Sponsor olacak kurumun butonuna basın.</small></p>
+          </div>
+          <div>
+            <span>3</span>
+            <p><strong>Mobil medya yükleyin</strong><small>Görsel veya video yükleyip yayına alın.</small></p>
+          </div>
+        </div>
+
+        <div class="opportunity-admin-toolbar">
+          <input type="search" id="opportunitySponsorSearch" placeholder="Kurum adı, il, ilçe veya sektör ara...">
+          <select id="opportunitySponsorFilter">
+            <option value="all">Tüm kurumlar</option>
+            <option value="sponsored">Fırsat sponsorları</option>
+            <option value="normal">Sponsor olmayanlar</option>
+          </select>
+        </div>
+
+        <div id="opportunitySponsorList" class="opportunity-sponsor-list">
+          <div class="advanced-empty">Kurumlar yükleniyor...</div>
+        </div>
       </section>
 
       <section id="bannerAdsSection" hidden>
@@ -1780,6 +1820,64 @@
     </div>
   </div>
 
+
+  <div id="opportunitySponsorModal" class="opportunity-sponsor-modal hidden" aria-hidden="true">
+    <div class="opportunity-sponsor-modal-card">
+      <button type="button" class="opportunity-sponsor-modal-close" id="opportunitySponsorModalClose" aria-label="Kapat">×</button>
+
+      <div class="opportunity-sponsor-modal-head">
+        <span>FIRSAT SAYFASI SPONSORU</span>
+        <h2 id="opportunitySponsorModalTitle">Kurum</h2>
+        <p id="opportunitySponsorModalMeta"></p>
+      </div>
+
+      <div class="opportunity-media-size-note">
+        <span>ÖNERİLEN MOBİL MEDYA EBATI</span>
+        <strong>1080 × 1350 px · 4:5 dikey</strong>
+        <small>Görsel veya videoyu bu ölçüde hazırlayın. Fırsat sayfasındaki sponsor kartı mobilde bu orana göre gösterilir.</small>
+      </div>
+
+      <input type="hidden" id="opportunitySponsorInstitutionId">
+      <input type="hidden" id="opportunitySponsorMediaUrl">
+      <input type="hidden" id="opportunitySponsorMediaType" value="image">
+
+      <div class="opportunity-sponsor-preview" id="opportunitySponsorPreview">
+        <div class="opportunity-sponsor-preview-empty">
+          <span>🖼️</span>
+          <strong>Henüz sponsor medyası yok</strong>
+          <small>1080 × 1350 px görsel veya video yükleyin.</small>
+        </div>
+      </div>
+
+      <div class="opportunity-upload-actions">
+        <button type="button" id="opportunitySponsorImageBtn">🖼 Görsel Yükle</button>
+        <button type="button" id="opportunitySponsorVideoBtn">🎬 Video Yükle</button>
+        <button type="button" class="muted" id="opportunitySponsorMediaClearBtn">Medyayı Kaldır</button>
+      </div>
+
+      <input type="file" id="opportunitySponsorImageFile" accept="image/jpeg,image/png,image/webp" hidden>
+      <input type="file" id="opportunitySponsorVideoFile" accept="video/mp4,video/webm" hidden>
+
+      <div class="opportunity-upload-progress hidden" id="opportunitySponsorUploadProgress">
+        <div><span id="opportunitySponsorUploadProgressBar"></span></div>
+        <small id="opportunitySponsorUploadProgressText"></small>
+      </div>
+      <p class="opportunity-upload-message" id="opportunitySponsorUploadMessage"></p>
+
+      <label class="opportunity-sponsor-switch">
+        <input type="checkbox" id="opportunitySponsorActive">
+        <span></span>
+        <b>Fırsat Sponsor Aktif</b>
+        <small>Aktif olduğunda kurum Fırsat sayfasında sponsorlu olarak en üstte gösterilir.</small>
+      </label>
+
+      <div class="opportunity-sponsor-modal-actions">
+        <button type="button" class="secondary" id="opportunitySponsorCancelBtn">Vazgeç</button>
+        <button type="button" class="primary" id="opportunitySponsorSaveBtn">Kaydet ve Yayınla</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FIREBASE -->
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1788,8 +1886,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=53"></script>
-  <script src="admin-advanced.js?v=29"></script>
+<script src="admin.js?v=54"></script>
+  <script src="admin-advanced.js?v=30"></script>
 
 </body>
 </html>
