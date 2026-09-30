@@ -8026,3 +8026,70 @@ details.matching-institutions .matching-buttons{
     width:max-content;
   }
 }
+
+
+/* Yanıtsız teklifler · kabul edilen teklif özeti */
+.quote-routing-accepted{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:0 14px 11px;
+  padding:10px 11px;
+  border:1px solid #bbf7d0;
+  border-left:4px solid #16a34a;
+  border-radius:11px;
+  background:linear-gradient(135deg,#f0fdf4,#f8fff9);
+}
+.quote-routing-accepted-icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#dcfce7;
+  color:#15803d;
+  font-size:18px;
+  font-weight:950;
+}
+.quote-routing-accepted-copy{
+  min-width:0;
+}
+.quote-routing-accepted-copy>span{
+  display:block;
+  color:#15803d;
+  font-size:7.5px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.quote-routing-accepted-copy>strong{
+  display:block;
+  margin-top:2px;
+  color:#14532d;
+  font-size:12px;
+}
+.quote-routing-accepted-copy>small{
+  display:block;
+  margin-top:2px;
+  color:#64748b;
+  font-size:9px;
+}
+.quote-routing-accepted>em{
+  padding:6px 8px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#15803d;
+  font-size:8px;
+  font-style:normal;
+  font-weight:900;
+  white-space:nowrap;
+}
+@media(max-width:620px){
+  .quote-routing-accepted{
+    grid-template-columns:36px minmax(0,1fr);
+  }
+  .quote-routing-accepted>em{
+    grid-column:1/-1;
+    width:max-content;
+  }
+}
