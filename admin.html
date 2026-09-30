@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=22">
+  <link rel="stylesheet" href="admin-advanced.css?v=23">
 </head>
 
 <body>
@@ -893,13 +893,13 @@
               </div>
               <label>Gösterim Alanı
                 <select id="bannerAdPlacement">
-                  <option value="search">🔎 Ana Sayfa · Kurum listesi · 2. kurumdan sonra</option>
-                  <option value="home_sponsor">📣 Ana Sayfa · Bölgenizde Öne Çıkanlar</option>
-                  <option value="premium_home">◆ Ana Sayfa · Geniş Premium Vitrin</option>
-                  <option value="mobile_sponsor">📱 Ana Sayfa (Mobil) · Premium altı 2’li alan</option>
-                  <option value="sidebar_sponsor">▤ Ana Sayfa (Masaüstü) · Sonuçların yanında</option>
-                  <option value="detail_banner">🏢 Kurum Önizleme (Masaüstü) · Alt banner</option>
-                  <option value="page_top_mini">▰ Teklif / İş / Bayi · Sayfa üstü mini banner</option>
+                  <option value="search">🔎 Ana Sayfa · Kurum listesi · 2. kurumdan sonra · 1200×450 px</option>
+                  <option value="home_sponsor">📣 Ana Sayfa · Bölgenizde Öne Çıkanlar · 1500×600 px</option>
+                  <option value="premium_home">◆ Ana Sayfa · Geniş Premium Vitrin · 1600×600 px</option>
+                  <option value="mobile_sponsor">📱 Ana Sayfa (Mobil) · Premium altı 2’li alan · 1080×600 px</option>
+                  <option value="sidebar_sponsor">▤ Ana Sayfa (Masaüstü) · Sonuçların yanında · 900×330 px</option>
+                  <option value="detail_banner">🏢 Kurum Önizleme (Masaüstü) · Alt banner · 1200×300 px</option>
+                  <option value="page_top_mini">▰ Teklif / İş / Bayi · Sayfa üstü mini banner · 728×90 px</option>
                 </select>
               </label>
 
@@ -911,9 +911,14 @@
                   <small id="bannerPlacementGuideDescription">Kullanıcı kurumları incelerken akışın içinde görünür.</small>
                 </div>
                 <div class="banner-placement-live-meta">
+                  <strong class="banner-placement-size-chip" id="bannerPlacementGuideSize">1200 × 450 px</strong>
                   <b id="bannerPlacementGuideDevice">Mobil + Masaüstü</b>
                   <em id="bannerPlacementGuideType">Akış içi reklam</em>
                 </div>
+              </div>
+              <div class="banner-placement-size-note">
+                <span>📐</span>
+                <p><strong>Önerilen hazırlama ebadı</strong> yukarıda gösterilir. Reklam alanları responsive çalıştığı için görsel farklı ekranlarda kırpılabilir; önemli yazı ve logoları orta güvenli alanda tutun.</p>
               </div>
             </div>
 
@@ -2166,7 +2171,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=56"></script>
-  <script src="admin-advanced.js?v=38"></script>
+  <script src="admin-advanced.js?v=39"></script>
 
 </body>
 </html>
