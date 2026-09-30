@@ -21,9 +21,11 @@ let currentAccess=null;
 let stopOffersListener=null;
 let stopLockListener=null;
 let stopEngagementListener=null;
+let stopPublicStatusListener=null;
 let liveOffers=[];
 let liveLock=null;
 let liveEngagement=[];
+let livePublicStatus=null;
 const offerUpdateVersions=new Map();
 const engagementResponseVersions=new Map();
 let offerListenerInitialized=false;
@@ -467,6 +469,7 @@ async function loadBundle(access){
   let offersSnap;
   let lockSnap;
   let engagementSnap;
+  let publicStatusSnap;
 
   try{
     offersSnap=await quoteRef.collection("offers").get();
@@ -497,11 +500,19 @@ async function loadBundle(access){
     engagementRows=[];
   }
 
+  try{
+    publicStatusSnap=await quoteRef.collection("publicStatus").doc("main").get();
+  }catch(error){
+    console.warn("Teklif yönlendirme durumu okunamadı:",error);
+    publicStatusSnap=null;
+  }
+
   return {
     access,
     offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
     lock:lockSnap.exists?lockSnap.data():null,
-    engagement:engagementRows
+    engagement:engagementRows,
+    publicStatus:publicStatusSnap?.exists?publicStatusSnap.data():null
   };
 }
 
@@ -509,9 +520,11 @@ function stopLiveTracking(){
   if(typeof stopOffersListener==="function") stopOffersListener();
   if(typeof stopLockListener==="function") stopLockListener();
   if(typeof stopEngagementListener==="function") stopEngagementListener();
+  if(typeof stopPublicStatusListener==="function") stopPublicStatusListener();
   stopOffersListener=null;
   stopLockListener=null;
   stopEngagementListener=null;
+  stopPublicStatusListener=null;
 }
 
 function renderLiveTracking(){
@@ -520,7 +533,8 @@ function renderLiveTracking(){
     access:currentAccess,
     offers:liveOffers,
     lock:liveLock,
-    engagement:liveEngagement
+    engagement:liveEngagement,
+    publicStatus:livePublicStatus
   });
 }
 
@@ -588,14 +602,26 @@ function startLiveTracking(access){
           const nextVersion=String(offer.updatedAt||"");
 
           if(nextVersion && nextVersion!==previousVersion){
-            toast(
+            const version=Number(offer.offerVersion||0);
+            const secondOffer=version===2;
+            const notificationText=
               (offer.institutionName||"Kurum")+
-              " teklifini güncelledi: "+
+              (secondOffer?" 2. teklifini gönderdi: ":" teklifini güncelledi: ")+
               money(offer.price)+
               " · "+
               offerValidityText(offer)+
-              " geçerli"
-            );
+              " geçerli";
+
+            toast((secondOffer?"🔔 2. teklif geldi · ":"🔔 ")+notificationText);
+
+            try{
+              if("Notification" in window && Notification.permission==="granted" && document.hidden){
+                new Notification(secondOffer?"Dijiyer · 2. teklif geldi":"Dijiyer · Teklif güncellendi",{
+                  body:notificationText,
+                  tag:"dijiyer-offer-update-"+String(offer.institutionId||change.doc.id)
+                });
+              }
+            }catch(_){}
           }
         });
       }
@@ -621,6 +647,28 @@ function startLiveTracking(access){
     error=>{
       console.error("Fiyat kilidi canlı izlenemedi:",error);
     }
+  );
+
+  stopPublicStatusListener=quoteRef.collection("publicStatus").doc("main").onSnapshot(
+    snapshot=>{
+      const previous=livePublicStatus;
+      livePublicStatus=snapshot.exists?snapshot.data():null;
+
+      if(previous?.lastForwardedAt!==livePublicStatus?.lastForwardedAt && livePublicStatus?.status==="forwarded"){
+        const text=livePublicStatus.message || "Talebiniz uygun diğer kurumlara iletildi.";
+        toast("↗ "+text);
+        try{
+          if("Notification" in window && Notification.permission==="granted" && document.hidden){
+            new Notification("Dijiyer · Talebiniz diğer kurumlara iletildi",{
+              body:text,
+              tag:"dijiyer-forwarded-"+access.quoteId
+            });
+          }
+        }catch(_){}
+      }
+      renderLiveTracking();
+    },
+    error=>console.warn("Yönlendirme durumu canlı izlenemedi:",error)
   );
 
   stopEngagementListener=quoteRef.collection("engagement").onSnapshot(
@@ -661,6 +709,7 @@ async function refreshTracking(){
     liveOffers=bundle.offers;
     liveLock=bundle.lock;
     liveEngagement=bundle.engagement||[];
+    livePublicStatus=bundle.publicStatus||null;
     renderLiveTracking();
     toast("Teklifler güncellendi.");
   }catch(error){
@@ -734,6 +783,16 @@ function lockedHtml(bundle){
 
 function offerHtml(bundle,offer){
   const state=offerState(offer,bundle.lock);
+  const version=Math.max(1,Number(offer.offerVersion||1));
+  const targetInstitutionId=String(bundle.publicStatus?.targetInstitutionId||bundle.access?.targetInstitutionId||"");
+  const institutionId=String(offer.institutionId||offer.id||"");
+  const alternative=offer.sourceType==="alternative" || Boolean(targetInstitutionId && institutionId && targetInstitutionId!==institutionId);
+  const sourceNotice=alternative
+    ? '<div class="alternative-offer-notice"><b>↗ Alternatif kurum teklifi</b><span>İlk seçtiğiniz kurumun yanıt süresi sonrasında talebiniz bu kuruma yönlendirildi.</span></div>'
+    : "";
+  const versionNotice=version>=2
+    ? '<div class="offer-version-badge">🔔 '+version+'. teklif · Güncellenmiş teklif</div>'
+    : "";
   return `
     <article class="offer-card">
       <div class="offer-head">
@@ -743,6 +802,8 @@ function offerHtml(bundle,offer){
         </div>
         <span class="status ${state==="expired"||state==="closed"?"red":state==="locked"||state==="used"?"green":""}">${stateLabel(state)}</span>
       </div>
+      ${sourceNotice}
+      ${versionNotice}
 
       <div class="offer-price">${money(offer.price)}</div>
       <div class="offer-updated-meta">
@@ -792,6 +853,22 @@ function offerFairnessToolbarHtml(count){
     </div>
   `;
 }
+function routingStatusHtml(access,publicStatus){
+  if(publicStatus?.status!=="forwarded")return "";
+  const count=Number(publicStatus.forwardedInstitutionCount||0);
+  const message=publicStatus.message || "Talebiniz uygun diğer kurumlara iletildi.";
+  return `
+    <div class="customer-routing-status">
+      <div class="customer-routing-status-icon">↗</div>
+      <div>
+        <span>TEKLİF SÜRECİ GÜNCELLENDİ</span>
+        <strong>${safe(message)}</strong>
+        <small>${count>0?safe(count+" uygun kuruma iletildi · Yanıtlar geldikçe burada göreceksiniz."):"Alternatif kurumlardan yanıt bekleniyor."}</small>
+      </div>
+    </div>
+  `;
+}
+
 function render(bundle){
   const access=bundle.access;
   const offers=sortOffersForCustomer(bundle.offers);
@@ -821,6 +898,7 @@ function render(bundle){
 
     ${directStatus}
     ${bulkSummary}
+    ${routingStatusHtml(access,bundle.publicStatus)}
     ${newOfferAlertHtml()}
 
     ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
