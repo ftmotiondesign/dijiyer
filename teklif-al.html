@@ -64,7 +64,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=64" />
+  <link rel="stylesheet" href="style.css?v=65" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="standalone-quote-page">
@@ -1209,27 +1209,55 @@
     <div class="modal-card quote-success-card">
       <button type="button" class="modal-close" data-close="quoteSuccessModal" onclick="document.getElementById('quoteSuccessModal').classList.add('hidden'); return false;">×</button>
 
-      <div class="quote-success-check">✓</div>
-      <h2>Teklif Talebiniz Gönderildi</h2>
-      <p id="quoteSuccessCount">Talebiniz uygun kurumlarla eşleştiriliyor.</p>
-
-      <div class="quote-success-code-box">
-        <span>TAKİP KODUNUZ</span>
-        <strong id="quoteSuccessCode">-</strong>
+      <div class="quote-success-hero">
+        <div class="quote-success-check">✓</div>
+        <div>
+          <span>TALEBİNİZ BAŞARIYLA OLUŞTURULDU</span>
+          <h2>Şimdi teklifleri takip edebilirsiniz</h2>
+          <p id="quoteSuccessCount">Talebiniz uygun kurumlarla eşleştiriliyor.</p>
+        </div>
       </div>
 
-      <label class="quote-success-link-label">Özel Teklif Linkiniz
+      <div class="quote-success-summary">
+        <article>
+          <span>Talep No</span>
+          <strong id="quoteSuccessRequestId">-</strong>
+        </article>
+        <article>
+          <span>Takip Kodu</span>
+          <strong id="quoteSuccessCode">-</strong>
+        </article>
+        <article>
+          <span>Hizmet</span>
+          <strong id="quoteSuccessService">-</strong>
+        </article>
+        <article>
+          <span>Konum</span>
+          <strong id="quoteSuccessLocation">-</strong>
+        </article>
+      </div>
+
+      <div class="quote-success-next">
+        <strong>Şimdi ne olacak?</strong>
+        <div>
+          <span><b>1</b> Uygun işletmeler talebinizi görür.</span>
+          <span><b>2</b> Gelen fiyat teklifleri takip ekranınıza düşer.</span>
+          <span><b>3</b> Size uygun teklifi karşılaştırıp seçersiniz.</span>
+        </div>
+      </div>
+
+      <label class="quote-success-link-label">Özel Teklif Takip Linkiniz
         <input id="quoteSuccessLink" type="text" readonly>
       </label>
 
       <div class="quote-success-note">
-        🔐 Tekliflerinizi başka telefondan açmak için bu takip kodu ile talep formunda yazdığınız telefon numarasını kullanacaksınız.
+        🔐 Takip kodunuzu saklayın. Başka bir cihazdan açarken talepte kullandığınız telefon numarasıyla birlikte kullanabilirsiniz.
       </div>
 
       <div class="quote-success-actions">
-        <button type="button" class="btn btn-primary" id="quoteOpenTrackingBtn">Tekliflerimi Gör</button>
-        <button type="button" class="btn btn-light" id="quoteCopyTrackingBtn">Linki Kopyala</button>
-        <button type="button" class="btn btn-whatsapp" id="quoteWhatsappTrackingBtn">WhatsApp'tan Kendime Gönder</button>
+        <button type="button" class="btn btn-primary" id="quoteOpenTrackingBtn">Tekliflerimi Takip Et →</button>
+        <button type="button" class="btn btn-light" id="quoteCopyTrackingBtn">Takip Linkini Kopyala</button>
+        <button type="button" class="btn btn-whatsapp" id="quoteWhatsappTrackingBtn">WhatsApp'a Gönder</button>
       </div>
     </div>
   </div>
@@ -1586,7 +1614,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=65"></script>
+<script src="script.js?v=66"></script>
 <script src="offers.js?v=2"></script>
 
 <script>
