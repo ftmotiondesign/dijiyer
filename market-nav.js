@@ -130,7 +130,31 @@
     `;
   }
 
+  function cleanLiteralNewlineArtifacts(){
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    const remove=[];
+    while(walker.nextNode()){
+      const node=walker.currentNode;
+      const parent=node.parentElement;
+      if(!parent || /^(SCRIPT|STYLE|TEXTAREA|PRE|CODE)$/i.test(parent.tagName))continue;
+      const value=String(node.nodeValue||"");
+      if(/^(?:\s*\\n\s*)+$/.test(value))remove.push(node);
+    }
+    remove.forEach(node=>node.remove());
+  }
+
+  function markLegacyHeaders(){
+    document.querySelectorAll("body > header").forEach(header=>{
+      if(!header.classList.contains("dijiyer-global-topbar")){
+        header.classList.add("dijiyer-legacy-topbar");
+      }
+    });
+  }
+
   function buildGlobalTopbar(){
+    cleanLiteralNewlineArtifacts();
+    markLegacyHeaders();
+
     if(document.querySelector(".dijiyer-global-topbar"))return;
 
     const header=document.createElement("header");
@@ -437,8 +461,14 @@
   }
 
   function build(){
+    cleanLiteralNewlineArtifacts();
+    markLegacyHeaders();
     buildGlobalTopbar();
     buildNav();
+    requestAnimationFrame(()=>{
+      cleanLiteralNewlineArtifacts();
+      markLegacyHeaders();
+    });
   }
 
   if(document.readyState==="loading"){
