@@ -4535,3 +4535,191 @@
   .banner-history-list button{grid-template-columns:1fr}
   .banner-save-actions{grid-template-columns:1fr!important}
 }
+
+
+/* =========================================================
+   KURUM REKLAMLARI · KOMPAKT DÜZEN
+   ========================================================= */
+.banner-compact-section{
+  border:1px solid #dfe6ee;
+  border-radius:10px;
+  background:#fff;
+  overflow:hidden;
+}
+.banner-compact-section>summary{
+  min-height:44px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) 18px;
+  gap:8px;
+  align-items:center;
+  padding:7px 9px;
+  list-style:none;
+  cursor:pointer;
+  background:#fbfcfe;
+}
+.banner-compact-section>summary::-webkit-details-marker{display:none}
+.banner-compact-section>summary>span{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#eef5ff;
+  color:#1677ff;
+  font-size:8px;
+  font-weight:950;
+}
+.banner-compact-section>summary>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.banner-compact-section>summary strong{
+  color:#31465f;
+  font-size:9px;
+}
+.banner-compact-section>summary small{
+  color:#8491a2;
+  font-size:6.7px;
+}
+.banner-compact-section>summary>b{
+  color:#8a99aa;
+  font-size:10px;
+  transition:transform .18s ease;
+}
+.banner-compact-section[open]>summary{
+  border-bottom:1px solid #e8edf3;
+  background:#f7fbff;
+}
+.banner-compact-section[open]>summary>b{
+  transform:rotate(180deg);
+}
+.banner-compact-section-body{
+  display:grid;
+  gap:8px;
+  padding:9px;
+}
+
+/* Kurum seçildikten sonra arama listesini kapat; yalnız seçili kurum kalsın. */
+.banner-institution-finder.has-selection{
+  padding:7px;
+  background:#f9fcff;
+}
+.banner-institution-finder.has-selection .banner-institution-finder-head,
+.banner-institution-finder.has-selection .banner-institution-quick-filters,
+.banner-institution-finder.has-selection .banner-institution-finder-search,
+.banner-institution-finder.has-selection .banner-institution-finder-filters,
+.banner-institution-finder.has-selection .banner-institution-results-head,
+.banner-institution-finder.has-selection .banner-institution-results{
+  display:none!important;
+}
+.banner-institution-finder.has-selection .banner-institution-selected{
+  margin-top:0;
+  min-height:52px;
+}
+.banner-institution-finder.has-selection .banner-institution-history{
+  margin-top:6px;
+}
+
+/* Formu daha sıkı tut. */
+.banner-ad-editor{
+  gap:7px!important;
+  padding:10px!important;
+}
+.banner-ad-templates{
+  padding:7px!important;
+}
+.banner-ad-template-buttons button{
+  min-height:30px!important;
+}
+.banner-placement-box,
+.banner-target-box,
+.banner-media-upload{
+  padding:8px!important;
+}
+.banner-form-grid{
+  gap:6px!important;
+}
+.banner-ad-editor input,
+.banner-ad-editor select{
+  padding:7px 8px!important;
+}
+.banner-preview-admin{
+  min-height:92px!important;
+  padding:10px!important;
+}
+.banner-live-placement-stage{
+  min-height:118px!important;
+}
+
+/* Sağdaki reklam listesini masaüstünde yatay ve kompakt karta çevir. */
+@media(min-width:1100px){
+  .banner-admin-layout{
+    grid-template-columns:minmax(390px,.9fr) minmax(560px,1.1fr);
+    gap:9px;
+  }
+  .banner-ad-list-panel{
+    padding:10px!important;
+  }
+  .banner-ad-admin-list{
+    gap:6px!important;
+  }
+  .banner-admin-card{
+    display:grid;
+    grid-template-columns:180px minmax(0,1fr);
+    grid-template-rows:auto auto;
+    min-height:118px;
+  }
+  .banner-admin-card-visual{
+    grid-column:1;
+    grid-row:1 / 3;
+    min-height:118px!important;
+    padding:8px!important;
+  }
+  .banner-admin-card-visual strong{
+    font-size:10px!important;
+  }
+  .banner-admin-card-visual small{
+    font-size:6.8px!important;
+  }
+  .banner-admin-card-meta{
+    grid-column:2;
+    grid-row:1;
+    padding:6px!important;
+    gap:4px!important;
+  }
+  .banner-admin-card-meta>div{
+    padding:4px 5px!important;
+  }
+  .banner-admin-card-meta span{
+    font-size:6px!important;
+  }
+  .banner-admin-card-meta strong{
+    font-size:7.2px!important;
+  }
+  .banner-admin-card-actions{
+    grid-column:2;
+    grid-row:2;
+    padding:5px 6px!important;
+    gap:4px!important;
+    flex-wrap:wrap;
+  }
+  .banner-admin-card-actions button{
+    padding:5px 6px!important;
+    font-size:6.8px!important;
+  }
+  .banner-state{
+    padding:3px 5px!important;
+    font-size:6.5px!important;
+  }
+}
+
+@media(max-width:650px){
+  .banner-compact-section>summary{
+    grid-template-columns:26px minmax(0,1fr) 16px;
+  }
+  .banner-compact-section>summary>span{
+    width:26px;
+    height:26px;
+  }
+}
