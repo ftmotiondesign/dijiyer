@@ -780,18 +780,52 @@ document.querySelectorAll("[data-top-menu-toggle]").forEach(toggle=>{
 
 const CATEGORY_VISIBILITY_DEFAULTS={};
 let categoryVisibilitySettings={};
+let customCategoryTaxonomySettings={};
+
+function applyAdminCustomCategoryTaxonomy(custom){
+  if(!custom || typeof custom!=="object")return;
+
+  Object.entries(custom).forEach(([mainKey,main])=>{
+    const key=String(mainKey||"").trim();
+    const label=String(main?.label||"").trim();
+    if(!key || !label)return;
+
+    if(!ADMIN_CATEGORY_TAXONOMY[key]){
+      ADMIN_CATEGORY_TAXONOMY[key]={label,subs:{}};
+    }else if(main?.label){
+      ADMIN_CATEGORY_TAXONOMY[key].label=label;
+    }
+
+    const subs=main?.subs && typeof main.subs==="object" ? main.subs : {};
+    Object.entries(subs).forEach(([subKey,subLabel])=>{
+      const childKey=String(subKey||"").trim();
+      const childLabel=String(subLabel||"").trim();
+      if(childKey && childLabel){
+        ADMIN_CATEGORY_TAXONOMY[key].subs[childKey]=childLabel;
+      }
+    });
+  });
+}
 
 function initializeCategoryVisibilityDefaults(){
-  if(Object.keys(CATEGORY_VISIBILITY_DEFAULTS).length)return;
-
   Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
-    CATEGORY_VISIBILITY_DEFAULTS["main:"+mainKey]=true;
+    const mainVisibilityKey="main:"+mainKey;
+    if(!Object.prototype.hasOwnProperty.call(CATEGORY_VISIBILITY_DEFAULTS,mainVisibilityKey)){
+      CATEGORY_VISIBILITY_DEFAULTS[mainVisibilityKey]=true;
+    }
+
     Object.keys(main.subs||{}).forEach(subKey=>{
-      CATEGORY_VISIBILITY_DEFAULTS["sub:"+mainKey+":"+subKey]=true;
+      const subVisibilityKey="sub:"+mainKey+":"+subKey;
+      if(!Object.prototype.hasOwnProperty.call(CATEGORY_VISIBILITY_DEFAULTS,subVisibilityKey)){
+        CATEGORY_VISIBILITY_DEFAULTS[subVisibilityKey]=true;
+      }
     });
   });
 
-  categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+  categoryVisibilitySettings={
+    ...CATEGORY_VISIBILITY_DEFAULTS,
+    ...categoryVisibilitySettings
+  };
 }
 
 function categoryVisibilityValue(key){
@@ -815,89 +849,130 @@ function renderCategoryAdmin(){
   const filter=String(document.getElementById("categoryAdminFilter")?.value||"all");
 
   let mainTotal=0,mainActive=0,subTotal=0,subActive=0;
-  const cards=[];
+  const rows=[];
 
-  Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
-    const mainState=categoryVisibilityValue("main:"+mainKey);
-    const subs=Object.entries(main.subs||{});
-    mainTotal++;
-    if(mainState)mainActive++;
-    subTotal+=subs.length;
-    subActive+=subs.filter(([subKey])=>categoryVisibilityValue("sub:"+mainKey+":"+subKey)).length;
+  Object.entries(ADMIN_CATEGORY_TAXONOMY)
+    .sort((a,b)=>String(a[1]?.label||"").localeCompare(String(b[1]?.label||""),"tr"))
+    .forEach(([mainKey,main])=>{
+      const mainState=categoryVisibilityValue("main:"+mainKey);
+      const subs=Object.entries(main.subs||{})
+        .sort((a,b)=>String(a[1]||"").localeCompare(String(b[1]||""),"tr"));
 
-    const haystack=[main.label,...subs.map(([,label])=>label)]
-      .join(" ").toLocaleLowerCase("tr-TR");
-    if(query && !haystack.includes(query))return;
-    if(filter==="active" && !mainState)return;
-    if(filter==="passive" && mainState)return;
+      mainTotal++;
+      if(mainState)mainActive++;
+      subTotal+=subs.length;
+      subActive+=subs.filter(([subKey])=>categoryVisibilityValue("sub:"+mainKey+":"+subKey)).length;
 
-    const subHtml=subs.map(([subKey,label])=>{
-      const key="sub:"+mainKey+":"+subKey;
-      const active=categoryVisibilityValue(key);
-      return '<div class="category-sub-row '+(active?'':'is-passive')+'">'+
-        '<div><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(subKey)+'</small></div>'+
-        '<span class="category-admin-state '+(active?'active':'passive')+'">'+(active?'Aktif':'Pasif')+'</span>'+
-        '<label class="overview-visibility-switch">'+
-          '<input type="checkbox" data-category-visibility="'+escapeHtml(key)+'" '+(active?'checked':'')+'>'+
-          '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
-        '</label>'+
-      '</div>';
-    }).join("");
+      const haystack=[main.label,...subs.map(([,label])=>label)]
+        .join(" ").toLocaleLowerCase("tr-TR");
 
-    cards.push(
-      '<article class="category-main-card '+(mainState?'':'is-passive')+'" data-category-main="'+escapeHtml(mainKey)+'">'+
-        '<div class="category-main-head">'+
-          '<div><span>ANA KATEGORİ</span><h4>'+escapeHtml(main.label)+'</h4><small>'+subs.length+' alt kategori</small></div>'+
-          '<div class="category-main-actions">'+
-            '<span class="category-admin-state '+(mainState?'active':'passive')+'">'+(mainState?'Aktif':'Pasif')+'</span>'+
-            '<label class="overview-visibility-switch">'+
-              '<input type="checkbox" data-category-visibility="main:'+escapeHtml(mainKey)+'" '+(mainState?'checked':'')+'>'+
-              '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
-            '</label>'+
-          '</div>'+
-        '</div>'+
-        '<div class="category-sub-list">'+subHtml+'</div>'+
-      '</article>'
-    );
-  });
+      if(query && !haystack.includes(query))return;
+      if(filter==="active" && !mainState)return;
+      if(filter==="passive" && mainState)return;
+
+      const subHtml=subs.length
+        ? subs.map(([subKey,label])=>{
+            const key="sub:"+mainKey+":"+subKey;
+            const active=categoryVisibilityValue(key);
+            return '<div class="category-sub-row '+(active?'':'is-passive')+'">'+
+              '<div class="category-sub-copy"><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(subKey)+'</small></div>'+
+              '<span class="category-admin-state '+(active?'active':'passive')+'">'+(active?'Aktif':'Pasif')+'</span>'+
+              '<label class="overview-visibility-switch" title="Alt kategoriyi aktif / pasif yap">'+
+                '<input type="checkbox" data-category-visibility="'+escapeHtml(key)+'" '+(active?'checked':'')+'>'+
+                '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
+              '</label>'+
+            '</div>';
+          }).join("")
+        : '<div class="category-empty-subs">Henüz alt kategori yok. <button type="button" data-add-sub-for="'+escapeHtml(mainKey)+'">＋ Alt kategori ekle</button></div>';
+
+      const autoOpen=Boolean(query);
+      rows.push(
+        '<details class="category-main-card '+(mainState?'':'is-passive')+'" data-category-main="'+escapeHtml(mainKey)+'" '+(autoOpen?'open':'')+'>'+
+          '<summary class="category-main-head">'+
+            '<div class="category-main-summary-copy">'+
+              '<span class="category-main-chevron" aria-hidden="true">›</span>'+
+              '<div><span>ANA KATEGORİ</span><h4>'+escapeHtml(main.label)+'</h4><small>'+subs.length+' alt kategori</small></div>'+
+            '</div>'+
+            '<div class="category-main-actions">'+
+              '<button type="button" class="category-inline-add-sub" data-add-sub-for="'+escapeHtml(mainKey)+'">＋ Alt Kategori</button>'+
+              '<span class="category-admin-state '+(mainState?'active':'passive')+'">'+(mainState?'Aktif':'Pasif')+'</span>'+
+              '<label class="overview-visibility-switch" title="Ana kategoriyi aktif / pasif yap">'+
+                '<input type="checkbox" data-category-visibility="main:'+escapeHtml(mainKey)+'" '+(mainState?'checked':'')+'>'+
+                '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
+              '</label>'+
+            '</div>'+
+          '</summary>'+
+          '<div class="category-sub-list">'+subHtml+'</div>'+
+        '</details>'
+      );
+    });
 
   document.getElementById("categoryMainTotal").textContent=String(mainTotal);
   document.getElementById("categoryMainActive").textContent=String(mainActive);
   document.getElementById("categorySubTotal").textContent=String(subTotal);
   document.getElementById("categorySubActive").textContent=String(subActive);
 
-  root.innerHTML=cards.length
-    ? cards.join("")
+  root.innerHTML=rows.length
+    ? rows.join("")
     : '<div class="empty-state">Bu filtrede kategori bulunamadı.</div>';
 
   root.querySelectorAll("[data-category-visibility]").forEach(toggle=>{
+    toggle.addEventListener("click",event=>event.stopPropagation());
+    toggle.closest("label")?.addEventListener("click",event=>event.stopPropagation());
     toggle.addEventListener("change",()=>saveCategoryVisibilitySetting(
       String(toggle.dataset.categoryVisibility||""),
       toggle.checked,
       toggle
     ));
   });
+
+  root.querySelectorAll("[data-add-sub-for]").forEach(button=>{
+    button.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      openCategoryAddModal("sub",String(button.dataset.addSubFor||""));
+    });
+  });
 }
 
 async function loadCategoryVisibilitySettings(){
-  initializeCategoryVisibilityDefaults();
   const message=document.getElementById("categoryAdminMessage");
   if(message)message.textContent="Kategoriler yükleniyor...";
+
   try{
     const snap=await db.collection("siteSettings").doc("home").get();
-    const saved=snap.exists && snap.data()?.categoryVisibility && typeof snap.data().categoryVisibility==="object"
-      ? snap.data().categoryVisibility
+    const data=snap.exists ? (snap.data()||{}) : {};
+
+    customCategoryTaxonomySettings=
+      data.customCategoryTaxonomy && typeof data.customCategoryTaxonomy==="object"
+        ? data.customCategoryTaxonomy
+        : {};
+
+    applyAdminCustomCategoryTaxonomy(customCategoryTaxonomySettings);
+    initializeCategoryVisibilityDefaults();
+
+    const saved=data.categoryVisibility && typeof data.categoryVisibility==="object"
+      ? data.categoryVisibility
       : {};
+
     categoryVisibilitySettings={
       ...CATEGORY_VISIBILITY_DEFAULTS,
       ...saved
     };
+
+    refreshAdminCategorySelects();
+
     if(message)message.textContent="";
   }catch(error){
-    console.error("Kategori görünürlük ayarları okunamadı:",error);
-    categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+    console.error("Kategori ayarları okunamadı:",error);
+    initializeCategoryVisibilityDefaults();
+    categoryVisibilitySettings={
+      ...CATEGORY_VISIBILITY_DEFAULTS,
+      ...categoryVisibilitySettings
+    };
     if(message)message.textContent="Kategori ayarları okunamadı.";
   }
+
   renderCategoryAdmin();
 }
 
@@ -929,6 +1004,222 @@ async function saveCategoryVisibilitySetting(key,visible,toggle){
     if(current)current.disabled=false;
   }
 }
+
+function refreshAdminCategorySelects(){
+  const entries=Object.entries(ADMIN_CATEGORY_TAXONOMY)
+    .sort((a,b)=>String(a[1]?.label||"").localeCompare(String(b[1]?.label||""),"tr"));
+
+  const fill=(select,placeholder)=>{
+    if(!select)return;
+    const selected=String(select.value||"");
+    select.innerHTML=(placeholder?'<option value="">'+escapeHtml(placeholder)+'</option>':"")+
+      entries.map(([key,item])=>'<option value="'+escapeHtml(key)+'">'+escapeHtml(item.label)+'</option>').join("");
+    if(selected && [...select.options].some(option=>option.value===selected)){
+      select.value=selected;
+    }
+  };
+
+  fill(document.getElementById("institutionCategoryFilter"),"Tüm ana kategoriler");
+  fill(document.getElementById("editCategory"),"");
+
+  syncInstitutionSubCategoryFilter();
+}
+
+function categorySlug(value){
+  return String(value||"")
+    .trim()
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ç/g,"c")
+    .replace(/ğ/g,"g")
+    .replace(/ı/g,"i")
+    .replace(/ö/g,"o")
+    .replace(/ş/g,"s")
+    .replace(/ü/g,"u")
+    .replace(/[^a-z0-9]+/g,"_")
+    .replace(/^_+|_+$/g,"")
+    .slice(0,60);
+}
+
+function populateCategoryAddParent(selected=""){
+  const select=document.getElementById("categoryAddParent");
+  if(!select)return;
+
+  const entries=Object.entries(ADMIN_CATEGORY_TAXONOMY)
+    .sort((a,b)=>String(a[1]?.label||"").localeCompare(String(b[1]?.label||""),"tr"));
+
+  select.innerHTML=entries
+    .map(([key,item])=>'<option value="'+escapeHtml(key)+'">'+escapeHtml(item.label)+'</option>')
+    .join("");
+
+  if(selected && [...select.options].some(option=>option.value===selected)){
+    select.value=selected;
+  }
+}
+
+function openCategoryAddModal(type="main",parentKey=""){
+  const modal=document.getElementById("categoryAddModal");
+  const form=document.getElementById("categoryAddForm");
+  const typeInput=document.getElementById("categoryAddType");
+  const parentWrap=document.getElementById("categoryAddParentWrap");
+  const nameInput=document.getElementById("categoryAddName");
+  const keyInput=document.getElementById("categoryAddKey");
+  const title=document.getElementById("categoryAddTitle");
+  const help=document.getElementById("categoryAddHelp");
+  const nameLabel=document.getElementById("categoryAddNameLabel");
+  const message=document.getElementById("categoryAddMessage");
+
+  if(!modal||!form)return;
+
+  form.reset();
+  if(message)message.textContent="";
+  if(typeInput)typeInput.value=type;
+
+  const isSub=type==="sub";
+  parentWrap?.classList.toggle("hidden",!isSub);
+
+  if(isSub){
+    populateCategoryAddParent(parentKey);
+    if(title)title.textContent="Yeni Alt Kategori";
+    if(help)help.textContent="Alt kategorinin bağlı olacağı ana kategoriyi seçin ve adını yazın.";
+    if(nameLabel)nameLabel.textContent="Alt Kategori Adı";
+    if(nameInput)nameInput.placeholder="Örn. Kedi & Köpek Kuaförü";
+  }else{
+    if(title)title.textContent="Yeni Ana Kategori";
+    if(help)help.textContent="Yeni ana kategori adını yazın. Sistem kodunu otomatik oluşturur.";
+    if(nameLabel)nameLabel.textContent="Ana Kategori Adı";
+    if(nameInput)nameInput.placeholder="Örn. Evcil Hayvan Hizmetleri";
+  }
+
+  if(keyInput)keyInput.value="";
+  modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden","false");
+  window.setTimeout(()=>nameInput?.focus(),30);
+}
+
+function closeCategoryAddModal(){
+  const modal=document.getElementById("categoryAddModal");
+  modal?.classList.add("hidden");
+  modal?.setAttribute("aria-hidden","true");
+}
+
+async function saveCustomCategoryFromModal(event){
+  event.preventDefault();
+
+  const type=String(document.getElementById("categoryAddType")?.value||"main");
+  const name=String(document.getElementById("categoryAddName")?.value||"").trim();
+  const customKey=String(document.getElementById("categoryAddKey")?.value||"").trim();
+  const key=categorySlug(customKey||name);
+  const parentKey=String(document.getElementById("categoryAddParent")?.value||"").trim();
+  const message=document.getElementById("categoryAddMessage");
+  const saveBtn=document.getElementById("categoryAddSave");
+
+  if(!name){
+    if(message)message.textContent="Kategori adı gerekli.";
+    return;
+  }
+
+  if(!key){
+    if(message)message.textContent="Geçerli bir kategori kodu oluşturulamadı.";
+    return;
+  }
+
+  if(type==="main" && ADMIN_CATEGORY_TAXONOMY[key]){
+    if(message)message.textContent="Bu kodla bir ana kategori zaten var.";
+    return;
+  }
+
+  if(type==="sub"){
+    if(!parentKey || !ADMIN_CATEGORY_TAXONOMY[parentKey]){
+      if(message)message.textContent="Önce ana kategori seçin.";
+      return;
+    }
+    if(ADMIN_CATEGORY_TAXONOMY[parentKey]?.subs?.[key]){
+      if(message)message.textContent="Bu alt kategori zaten var.";
+      return;
+    }
+  }
+
+  if(saveBtn)saveBtn.disabled=true;
+  if(message)message.textContent="Kaydediliyor...";
+
+  const next=JSON.parse(JSON.stringify(customCategoryTaxonomySettings||{}));
+
+  if(type==="main"){
+    next[key]={label:name,subs:{}};
+  }else{
+    if(!next[parentKey]){
+      next[parentKey]={
+        label:String(ADMIN_CATEGORY_TAXONOMY[parentKey]?.label||parentKey),
+        subs:{}
+      };
+    }
+    if(!next[parentKey].subs || typeof next[parentKey].subs!=="object"){
+      next[parentKey].subs={};
+    }
+    next[parentKey].subs[key]=name;
+  }
+
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      customCategoryTaxonomy:next,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+
+    customCategoryTaxonomySettings=next;
+    applyAdminCustomCategoryTaxonomy(next);
+    initializeCategoryVisibilityDefaults();
+
+    const visibilityKey=type==="main"
+      ? "main:"+key
+      : "sub:"+parentKey+":"+key;
+
+    categoryVisibilitySettings[visibilityKey]=true;
+
+    await db.collection("siteSettings").doc("home").set({
+      categoryVisibility:{...categoryVisibilitySettings}
+    },{merge:true});
+
+    refreshAdminCategorySelects();
+    renderCategoryAdmin();
+    closeCategoryAddModal();
+
+    const adminMessage=document.getElementById("categoryAdminMessage");
+    if(adminMessage){
+      adminMessage.textContent="✓ "+name+" eklendi.";
+      window.setTimeout(()=>{
+        if(adminMessage.textContent.startsWith("✓"))adminMessage.textContent="";
+      },1800);
+    }
+
+    if(type==="sub"){
+      const card=document.querySelector('[data-category-main="'+CSS.escape(parentKey)+'"]');
+      if(card?.tagName==="DETAILS")card.open=true;
+    }
+  }catch(error){
+    console.error("Yeni kategori kaydedilemedi:",error);
+    if(message)message.textContent="Kategori kaydedilemedi.";
+  }finally{
+    if(saveBtn)saveBtn.disabled=false;
+  }
+}
+
+document.getElementById("addMainCategoryBtn")?.addEventListener("click",()=>openCategoryAddModal("main"));
+document.getElementById("addSubCategoryBtn")?.addEventListener("click",()=>openCategoryAddModal("sub"));
+document.getElementById("categoryAddClose")?.addEventListener("click",closeCategoryAddModal);
+document.getElementById("categoryAddCancel")?.addEventListener("click",closeCategoryAddModal);
+document.getElementById("categoryAddForm")?.addEventListener("submit",saveCustomCategoryFromModal);
+document.getElementById("categoryAddName")?.addEventListener("input",event=>{
+  const keyInput=document.getElementById("categoryAddKey");
+  if(keyInput && !keyInput.dataset.edited){
+    keyInput.value=categorySlug(event.target.value);
+  }
+});
+document.getElementById("categoryAddKey")?.addEventListener("input",event=>{
+  event.target.dataset.edited=event.target.value ? "1" : "";
+});
+document.getElementById("categoryAddModal")?.addEventListener("click",event=>{
+  if(event.target?.id==="categoryAddModal")closeCategoryAddModal();
+});
 
 const categoriesTabBtn=document.getElementById("categoriesTabBtn");
 const categoriesSection=document.getElementById("categoriesSection");
