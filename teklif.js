@@ -617,6 +617,10 @@ function startLiveTracking(access){
             );
 
             try{
+              window.DijiyerCustomerNotifyOffer?.();
+            }catch(_){};
+
+            try{
               if("Notification" in window && Notification.permission==="granted" && document.hidden){
                 new Notification(
                   alternative
@@ -661,6 +665,9 @@ function startLiveTracking(access){
               " geçerli";
 
             toast((secondOffer?"🔔 2. teklif geldi · ":"🔔 ")+notificationText);
+            try{
+              window.DijiyerCustomerNotifyOffer?.();
+            }catch(_){};
 
             try{
               if("Notification" in window && Notification.permission==="granted" && document.hidden){
