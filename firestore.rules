@@ -197,6 +197,175 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - RANDEVU AYARLARI
+    // =====================================================
+    match /appointmentSettings/{institutionId} {
+
+      // Müşteri uygun gün/saatleri görebilsin.
+      allow read: if true;
+
+      // Kurum yalnızca kendi randevu ayarlarını yönetebilir.
+      allow create, update, delete: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+        );
+    }
+
+
+    // =====================================================
+    // DİJİYER - RANDEVULAR
+    // =====================================================
+    match /appointments/{appointmentId} {
+
+      // Randevu üyelik olmadan oluşturulabilir; kişisel bilgiler herkese açılmaz.
+      // Randevu ve saat kilidi aynı transaction/batch içinde oluşturulmalıdır.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'institutionId',
+          'institutionName',
+          'customerName',
+          'customerPhone',
+          'service',
+          'date',
+          'time',
+          'durationMinutes',
+          'note',
+          'slotId',
+          'bookingCode',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.institutionName is string
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() >= 2
+        && request.resource.data.customerName.size() <= 80
+        && request.resource.data.customerPhone is string
+        && request.resource.data.customerPhone.size() >= 10
+        && request.resource.data.customerPhone.size() <= 20
+        && request.resource.data.service is string
+        && request.resource.data.service.size() > 0
+        && request.resource.data.service.size() <= 120
+        && request.resource.data.date is string
+        && request.resource.data.date.size() == 10
+        && request.resource.data.time is string
+        && request.resource.data.time.size() == 5
+        && request.resource.data.durationMinutes in [15, 30, 45, 60]
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 500
+        && request.resource.data.slotId is string
+        && request.resource.data.slotId.size() > 0
+        && request.resource.data.bookingCode is string
+        && request.resource.data.bookingCode.size() == 8
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string
+        && getAfter(
+          /databases/$(database)/documents/appointmentSlots/$(request.resource.data.institutionId)/slots/$(request.resource.data.slotId)
+        ).data.appointmentId == appointmentId
+        && getAfter(
+          /databases/$(database)/documents/appointmentSlots/$(request.resource.data.institutionId)/slots/$(request.resource.data.slotId)
+        ).data.institutionId == request.resource.data.institutionId
+        && getAfter(
+          /databases/$(database)/documents/appointmentSlots/$(request.resource.data.institutionId)/slots/$(request.resource.data.slotId)
+        ).data.date == request.resource.data.date
+        && getAfter(
+          /databases/$(database)/documents/appointmentSlots/$(request.resource.data.institutionId)/slots/$(request.resource.data.slotId)
+        ).data.time == request.resource.data.time;
+
+      // Kişisel randevu bilgilerini yalnız yönetici veya ilgili kurum okuyabilir.
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+        );
+
+      // Kurum yalnızca randevu durumunu değiştirebilir.
+      allow update: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+          && request.resource.data.institutionId == resource.data.institutionId
+          && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status in [
+            'pending',
+            'approved',
+            'rejected',
+            'completed',
+            'cancelled'
+          ]
+          && request.resource.data.updatedAt is string
+        );
+
+      allow delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - RANDEVU DOLU SAAT KİLİTLERİ
+    // =====================================================
+    match /appointmentSlots/{institutionId}/slots/{slotId} {
+
+      // Bu koleksiyonda kişisel bilgi yoktur; yalnız dolu saatler tutulur.
+      allow get, list: if true;
+
+      // Aynı slot dokümanı ikinci kez oluşturulamadığı için çift rezervasyon engellenir.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'appointmentId',
+          'institutionId',
+          'date',
+          'time',
+          'status',
+          'createdAt'
+        ])
+        && request.resource.data.appointmentId is string
+        && request.resource.data.appointmentId.size() > 0
+        && request.resource.data.institutionId == institutionId
+        && request.resource.data.date is string
+        && request.resource.data.date.size() == 10
+        && request.resource.data.time is string
+        && request.resource.data.time.size() == 5
+        && request.resource.data.status == 'active'
+        && request.resource.data.createdAt is string
+        && getAfter(
+          /databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)
+        ).data.institutionId == institutionId
+        && getAfter(
+          /databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)
+        ).data.slotId == slotId
+        && getAfter(
+          /databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)
+        ).data.date == request.resource.data.date
+        && getAfter(
+          /databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)
+        ).data.time == request.resource.data.time;
+
+      // Reddedilen/iptal edilen randevunun slotunu ilgili kurum serbest bırakabilir.
+      allow delete: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+        );
+
+      allow update: if false;
+    }
+
+
+    // =====================================================
     // DİJİYER - KURUM BAŞVURULARI
     // =====================================================
     match /institutionApplications/{applicationId} {
