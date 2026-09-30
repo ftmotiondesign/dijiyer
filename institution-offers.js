@@ -332,6 +332,9 @@ function institutionEffectiveLock(quote){
     lockedScope:String(offer?.scope||quote.note||quote.service||""),
     conditions:String(offer?.conditions||""),
     extraFee:String(offer?.extraFee||"Yok"),
+    extraFeeAmount:Number(offer?.extraFeeAmount||0),
+    extraFeeRequired:String(offer?.extraFeeRequired||""),
+    extraFeeNote:String(offer?.extraFeeNote||""),
     acceptedAt:String(quote.acceptedAt||""),
     lockedAt:String(quote.acceptedAt||""),
     expiresAt:String(offer?.expiresAt||""),
@@ -636,6 +639,10 @@ function sellerOfferFormHtml(quote,offer){
   const scope=offer?.scope || quote.note || quote.service || "";
   const vat=offer?.vatStatus || "Dahil";
   const conditions=offer?.conditions || "";
+  const extraFee=offer?.extraFee || "Yok";
+  const extraFeeAmount=Number(offer?.extraFeeAmount||0) || "";
+  const extraFeeRequired=offer?.extraFeeRequired || "Zorunlu";
+  const extraFeeNote=offer?.extraFeeNote || "";
   const selectedHours=offerValidityHours(offer);
 
   const durationOption=(value,label)=>
@@ -668,11 +675,30 @@ function sellerOfferFormHtml(quote,offer){
         <small class="offer-validity-help">Varsayılan 2 gündür. Müşteri teklifi kabul etse bile bu süre içinde kurumla doğrudan görüşüp gerçek kaydını tamamlamalıdır.</small>
       </label>
       <label>Ek Ücret
-        <select name="extraFee">
-          <option value="Yok" ${offer?.extraFee!=="Var"?"selected":""}>Yok</option>
-          <option value="Var" ${offer?.extraFee==="Var"?"selected":""}>Var</option>
+        <select name="extraFee" data-extra-fee-select>
+          <option value="Yok" ${extraFee!=="Var"?"selected":""}>Yok</option>
+          <option value="Var" ${extraFee==="Var"?"selected":""}>Var</option>
         </select>
       </label>
+
+      <div class="full" data-extra-fee-details style="${extraFee==="Var"?"":"display:none;"}">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px;border:1px solid #fed7aa;background:#fff7ed;border-radius:12px;margin-top:2px">
+          <label>Ek Ücret Tutarı
+            <input name="extraFeeAmount" type="number" min="1" step="1" value="${offerSafe(extraFeeAmount)}" placeholder="Örn. 750">
+          </label>
+          <label>Zorunluluk
+            <select name="extraFeeRequired">
+              <option value="Zorunlu" ${extraFeeRequired==="Zorunlu"?"selected":""}>Zorunlu</option>
+              <option value="Opsiyonel" ${extraFeeRequired==="Opsiyonel"?"selected":""}>Opsiyonel</option>
+            </select>
+          </label>
+          <label style="grid-column:1/-1">Ek Ücret Açıklaması
+            <input name="extraFeeNote" maxlength="180" value="${offerSafe(extraFeeNote)}" placeholder="Örn. Dosya ve kayıt işlemleri için.">
+          </label>
+          <small style="grid-column:1/-1;color:#9a3412">Müşteri bu bilgileri teklif kartında açıkça görecek.</small>
+        </div>
+      </div>
+
       <label class="full">Kabul / Özel Şartlar <span style="font-weight:400">(opsiyonel)</span>
         <input name="conditions" value="${offerSafe(conditions)}" placeholder="Örn. Bu fiyat yalnızca belirtilen ürün/hizmet için geçerlidir.">
       </label>
@@ -1001,6 +1027,9 @@ quoteCardHtml = function(quote,compact=false){
           <span class="quote-status status-interested">Teklif Aktif</span>
         </div>
         <div class="quote-note">${offerSafe(offer.scope || "")}</div>
+        ${offer.extraFee==="Var"
+          ? `<div class="quote-note" style="border-left-color:#f59e0b"><strong>Ek ücret:</strong> ${offerMoney(offer.extraFeeAmount||0)} · ${offerSafe(offer.extraFeeRequired||"Zorunlu")}<br>${offerSafe(offer.extraFeeNote||"")}</div>`
+          : ""}
         ${secondOfferPromptHtml(quote,offer)}
         <details class="offer-edit-details" data-offer-edit-details="${offerSafe(quote.id)}" style="margin-top:10px">
           <summary style="cursor:pointer;font-weight:800;color:#1677ff">${institutionOfferVersion(offer)===1?"2. teklif / düzenle":"Teklifi düzenle"}</summary>
@@ -1086,6 +1115,19 @@ renderQuotes = function(){
   updateInstitutionResponseCountdowns();
 
   institutionQuotesList.querySelectorAll("[data-real-offer-form]").forEach(form=>{
+    const extraSelect=form.querySelector("[data-extra-fee-select]");
+    const extraDetails=form.querySelector("[data-extra-fee-details]");
+    const syncExtraFeeFields=()=>{
+      const show=extraSelect?.value==="Var";
+      if(extraDetails)extraDetails.style.display=show?"":"none";
+      ["extraFeeAmount","extraFeeNote"].forEach(name=>{
+        const field=form.elements[name];
+        if(field)field.required=Boolean(show);
+      });
+    };
+    extraSelect?.addEventListener("change",syncExtraFeeFields);
+    syncExtraFeeFields();
+
     form.addEventListener("submit",async e=>{
       e.preventDefault();
       await saveRealOffer(form);
@@ -1218,6 +1260,24 @@ async function saveRealOffer(form){
   const price=Number(form.elements.price.value);
   if(!price || price<=0){ alert("Geçerli bir teklif fiyatı girin."); return; }
 
+  const extraFee=String(form.elements.extraFee.value||"Yok");
+  const extraFeeAmount=extraFee==="Var" ? Number(form.elements.extraFeeAmount?.value||0) : 0;
+  const extraFeeRequired=extraFee==="Var" ? String(form.elements.extraFeeRequired?.value||"Zorunlu") : "";
+  const extraFeeNote=extraFee==="Var" ? String(form.elements.extraFeeNote?.value||"").trim() : "";
+
+  if(extraFee==="Var"){
+    if(!extraFeeAmount || extraFeeAmount<=0){
+      alert("Ek ücret tutarını girin.");
+      form.elements.extraFeeAmount?.focus();
+      return;
+    }
+    if(!extraFeeNote){
+      alert("Ek ücret açıklamasını yazın.");
+      form.elements.extraFeeNote?.focus();
+      return;
+    }
+  }
+
   const hours=Number(form.elements.durationHours.value || 48);
   const expiry=new Date(Date.now()+hours*3600000);
   const code=existing?.offerCode || makeOfferCode();
@@ -1234,7 +1294,10 @@ async function saveRealOffer(form){
     price,
     vatStatus:form.elements.vatStatus.value,
     scope:form.elements.scope.value.trim(),
-    extraFee:form.elements.extraFee.value,
+    extraFee,
+    extraFeeAmount,
+    extraFeeRequired,
+    extraFeeNote,
     conditions:form.elements.conditions.value.trim(),
     expiresAt:expiry.toISOString(),
     expiresAtTs:firebase.firestore.Timestamp.fromDate(expiry),
@@ -1273,6 +1336,9 @@ async function saveRealOffer(form){
         vatStatus:String(existing.vatStatus||""),
         scope:String(existing.scope||""),
         extraFee:String(existing.extraFee||""),
+        extraFeeAmount:Number(existing.extraFeeAmount||0),
+        extraFeeRequired:String(existing.extraFeeRequired||""),
+        extraFeeNote:String(existing.extraFeeNote||""),
         conditions:String(existing.conditions||""),
         expiresAt:String(existing.expiresAt||""),
         sourceType:String(existing.sourceType||source.type||""),
