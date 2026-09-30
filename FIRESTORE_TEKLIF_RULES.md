@@ -233,3 +233,58 @@ quoteRequests/{quoteId}/conversations/{institutionId}/messages/{messageId}
 - Kurum revizyon talebinden sonra teklifi güncellediğinde müşteriye otomatik revizyon yanıtı oluşturulur.
 
 Güncel tam Rules dosyası: `firestore_teklif_takip_pro.rules` sürümüdür.
+
+
+## 8) Bulunamayan Aramalar
+
+Teklif Al sayfasında kullanıcı bir hizmet/kategori arayıp sonuç bulamadığında, kategori yapısını gerçek aramalara göre geliştirebilmek için yalnızca sınırlı arama verisi kaydedilir.
+
+Firestore yolu:
+
+```text
+unmatchedSearches/{searchId}
+```
+
+Bu blok mevcut `match /databases/{database}/documents { ... }` yapısında, en sondaki catch-all kuralından **önce** eklenmelidir:
+
+```firestore
+match /unmatchedSearches/{searchId} {
+  allow create: if request.resource.data.keys().hasOnly([
+      "query",
+      "normalizedQuery",
+      "mainCategory",
+      "mainCategoryLabel",
+      "city",
+      "district",
+      "resultCount",
+      "reason",
+      "suggestionLabels",
+      "status",
+      "source",
+      "createdAt"
+    ])
+    && request.resource.data.query is string
+    && request.resource.data.query.size() >= 2
+    && request.resource.data.query.size() <= 160
+    && request.resource.data.normalizedQuery is string
+    && request.resource.data.mainCategory is string
+    && request.resource.data.mainCategoryLabel is string
+    && request.resource.data.city is string
+    && request.resource.data.district is string
+    && request.resource.data.resultCount is number
+    && request.resource.data.resultCount >= 0
+    && request.resource.data.reason in [
+      "category_not_found",
+      "no_institution_result"
+    ]
+    && request.resource.data.suggestionLabels is list
+    && request.resource.data.suggestionLabels.size() <= 3
+    && request.resource.data.status == "new"
+    && request.resource.data.source == "teklif-al"
+    && request.resource.data.createdAt is string;
+
+  allow read, update, delete: if isAdmin();
+}
+```
+
+Bu kayıtlar telefon, ad-soyad veya serbest teklif notu içermez; yalnızca arama kelimesi, kategori bağlamı, yaklaşık seçili il/ilçe ve öneri etiketleri tutulur.
