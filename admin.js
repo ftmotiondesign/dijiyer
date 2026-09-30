@@ -1196,7 +1196,7 @@ function adminAdRateFor(placement,days){
 
 function adminAdRateText(value){
   const amount=Math.max(0,Number(value||0));
-  if(amount===0)return "Ücretsiz";
+  if(amount===0)return "Fiyat belirlenmedi";
   return new Intl.NumberFormat("tr-TR").format(amount)+" TL";
 }
 
@@ -1801,6 +1801,11 @@ function renderManagedInstitutions() {
         const daysSelect=card.querySelector('[data-placement-days="'+placement+'"]');
         const days=Math.max(1,Number(daysSelect?.value||30));
         const price=adminAdRateFor(placement,days);
+
+        if(price<=0){
+          alert("Bu reklam alanı ve süre için henüz ücret belirlenmedi. Reklam → Paketler → Yönetici Reklam Tarifesi bölümünden fiyat girin.");
+          return;
+        }
 
         if (typeof window.openBannerAdForInstitution === "function") {
           window.openBannerAdForInstitution(data.id,{placement,price,days});
