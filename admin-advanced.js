@@ -4720,12 +4720,15 @@
         ? [state.startAt||"Hemen",state.endAt||"Süresiz"].join(" → ")
         : "Süresiz";
       const primaryAction=state.mediaUrl
-        ? '<button type="button" data-opportunity-media="'+escapeHtml(inst.id)+'">Medya Değiştir</button>'
+        ? '<button type="button" class="primary" data-opportunity-edit="'+escapeHtml(inst.id)+'">Düzenle</button>'
         : '<button type="button" class="primary" data-opportunity-sponsor="'+escapeHtml(inst.id)+'">Fırsat Sponsor Yap</button>';
       const toggleAction=state.mediaUrl
         ? '<button type="button" class="'+(state.enabled?"danger-lite":"success-lite")+'" data-opportunity-toggle="'+escapeHtml(inst.id)+'" data-next="'+(state.enabled?"false":"true")+'">'+
             (state.enabled?"Pasif Yap":"Aktif Yap")+
           '</button>'
+        : "";
+      const deleteAction=state.mediaUrl
+        ? '<button type="button" class="danger-lite" data-opportunity-delete="'+escapeHtml(inst.id)+'">Sil</button>'
         : "";
 
       return '<article class="opportunity-sponsor-row '+(state.active?"is-sponsored":"")+'">'+
@@ -4743,8 +4746,8 @@
         '</div>'+
         '<div class="opportunity-sponsor-row-actions">'+
           primaryAction+
-          (state.mediaUrl?'<button type="button" data-opportunity-preview="'+escapeHtml(inst.id)+'">Önizle</button>':"")+
           toggleAction+
+          deleteAction+
           '<a href="firsatlar.html?kurum='+encodeURIComponent(String(inst.id))+'" target="_blank" rel="noopener">Fırsatta Gör</a>'+
         '</div>'+
       '</article>';
@@ -4752,6 +4755,14 @@
 
     root.querySelectorAll("[data-opportunity-sponsor]").forEach(button=>{
       button.addEventListener("click",()=>openOpportunitySponsorModal(button.dataset.opportunitySponsor));
+    });
+
+    root.querySelectorAll("[data-opportunity-edit]").forEach(button=>{
+      button.addEventListener("click",()=>openOpportunitySponsorModal(button.dataset.opportunityEdit));
+    });
+
+    root.querySelectorAll("[data-opportunity-delete]").forEach(button=>{
+      button.addEventListener("click",()=>deleteOpportunitySponsor(button.dataset.opportunityDelete));
     });
 
     root.querySelectorAll("[data-opportunity-preview]").forEach(button=>{
@@ -4813,10 +4824,7 @@
     textEl.textContent=textValue||("Yükleniyor... %"+Math.round(Number(percent)||0));
   }
 
-  function openOpportunitySponsorModal(institutionId){
-    const inst=(institutionRecords||[]).find(
-      item=>String(item.id)===String(institutionId)
-    );
+  function fillOpportunitySponsorEditor(inst){
     if(!inst)return;
 
     selectedOpportunityInstitutionId=String(inst.id);
@@ -4839,10 +4847,61 @@
     );
     $("opportunitySponsorUploadMessage").textContent=
       url
-        ? "Mevcut sponsor medyası yüklü. Değiştirmek için yeni görsel veya video seçebilirsiniz."
+        ? "Mevcut sponsor medyası yüklü. Buradan görsel/video, tarih, öncelik ve yayın durumunu değiştirebilirsiniz."
         : "Önerilen ölçü: 1080 × 1350 px (4:5).";
     opportunitySponsorProgress(null,"");
     opportunitySponsorPreview(url,type);
+  }
+
+  function openOpportunitySponsorModal(institutionId){
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(institutionId)
+    );
+    if(!inst)return;
+
+    $("opportunitySponsorInstitutionChooser")?.classList.add("hidden");
+    fillOpportunitySponsorEditor(inst);
+
+    const modal=$("opportunitySponsorModal");
+    modal?.classList.remove("hidden");
+    modal?.setAttribute("aria-hidden","false");
+  }
+
+  function openNewOpportunitySponsorModal(){
+    const records=[...(institutionRecords||[])].sort((a,b)=>
+      String(a.name||"").localeCompare(String(b.name||""),"tr")
+    );
+    const select=$("opportunitySponsorInstitutionSelect");
+    if(select){
+      select.innerHTML=
+        '<option value="">Kurum seçin...</option>'+
+        records.map(inst=>{
+          const state=opportunitySponsorState(inst);
+          const suffix=state.mediaUrl
+            ? (state.active?" · Yayında":" · Sponsor kaydı var")
+            : "";
+          return '<option value="'+escapeHtml(String(inst.id))+'">'+
+            escapeHtml(String(inst.name||"Kurum")+suffix)+
+          '</option>';
+        }).join("");
+      select.value="";
+    }
+
+    selectedOpportunityInstitutionId="";
+    $("opportunitySponsorInstitutionId").value="";
+    $("opportunitySponsorMediaUrl").value="";
+    $("opportunitySponsorMediaType").value="image";
+    $("opportunitySponsorActive").checked=false;
+    $("opportunitySponsorStartAt").value="";
+    $("opportunitySponsorEndAt").value="";
+    $("opportunitySponsorPriority").value="10";
+    $("opportunitySponsorModalTitle").textContent="Yeni Sponsor Ekle";
+    $("opportunitySponsorModalMeta").textContent="Önce sponsor olacak kurumu seçin.";
+    $("opportunitySponsorUploadMessage").textContent="Kurum seçildikten sonra 1080 × 1350 px görsel veya video yükleyebilirsiniz.";
+    opportunitySponsorProgress(null,"");
+    opportunitySponsorPreview("","image");
+
+    $("opportunitySponsorInstitutionChooser")?.classList.remove("hidden");
 
     const modal=$("opportunitySponsorModal");
     modal?.classList.remove("hidden");
@@ -5050,6 +5109,48 @@
   }
 
 
+  async function deleteOpportunitySponsor(institutionId){
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(institutionId)
+    );
+    if(!inst)return;
+
+    const approved=window.confirm(
+      (inst.name||"Bu kurum")+
+      " için Fırsat sponsor kaydını silmek istediğinize emin misiniz?\n\n"+
+      "Sponsor yayını, tarihleri ve sayfadaki medya bağlantısı kaldırılır. Kurum kaydı silinmez."
+    );
+    if(!approved)return;
+
+    try{
+      const now=new Date().toISOString();
+      const updates={
+        opportunitySponsorActive:false,
+        opportunitySponsorMediaUrl:"",
+        opportunitySponsorMediaType:"image",
+        opportunitySponsorStartAt:"",
+        opportunitySponsorEndAt:"",
+        opportunitySponsorPriority:10,
+        opportunitySponsorUpdatedAt:now,
+        updatedAt:now
+      };
+
+      await db.collection("institutions").doc(String(inst.id)).update(updates);
+      Object.assign(inst,updates);
+
+      addAudit("Fırsat sponsor kaydı silindi",inst.name||inst.id);
+      renderOpportunitySponsorsAdmin();
+
+      if(String(selectedOpportunityInstitutionId)===String(inst.id)){
+        closeOpportunitySponsorModal();
+      }
+    }catch(error){
+      console.error("Fırsat sponsor kaydı silinemedi:",error);
+      alert("Sponsor kaydı silinemedi. Firestore yazma izinlerini kontrol edin.");
+    }
+  }
+
+
   async function quickToggleOpportunitySponsor(institutionId,nextActive){
     const inst=(institutionRecords||[]).find(
       item=>String(item.id)===String(institutionId)
@@ -5097,6 +5198,36 @@
       alert("Sponsor durumu değiştirilemedi.");
     }
   }
+
+  $("opportunitySponsorNewBtn")?.addEventListener("click",async()=>{
+    if(typeof loadInstitutions==="function"){
+      await loadInstitutions();
+    }
+    renderOpportunitySponsorsAdmin();
+    openNewOpportunitySponsorModal();
+  });
+
+  $("opportunitySponsorInstitutionSelect")?.addEventListener("change",event=>{
+    const id=String(event.target.value||"").trim();
+    if(!id){
+      selectedOpportunityInstitutionId="";
+      $("opportunitySponsorInstitutionId").value="";
+      $("opportunitySponsorModalTitle").textContent="Yeni Sponsor Ekle";
+      $("opportunitySponsorModalMeta").textContent="Önce sponsor olacak kurumu seçin.";
+      $("opportunitySponsorMediaUrl").value="";
+      $("opportunitySponsorMediaType").value="image";
+      $("opportunitySponsorActive").checked=false;
+      $("opportunitySponsorStartAt").value="";
+      $("opportunitySponsorEndAt").value="";
+      $("opportunitySponsorPriority").value="10";
+      $("opportunitySponsorUploadMessage").textContent="Kurum seçildikten sonra medya yükleyebilirsiniz.";
+      opportunitySponsorPreview("","image");
+      return;
+    }
+
+    const inst=(institutionRecords||[]).find(item=>String(item.id)===id);
+    if(inst)fillOpportunitySponsorEditor(inst);
+  });
 
   $("opportunitySponsorsTabBtn")?.addEventListener("click",async()=>{
     showAdvancedSection("opportunitySponsorsSection","opportunitySponsorsTabBtn");
