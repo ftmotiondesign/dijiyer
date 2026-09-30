@@ -42,7 +42,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=54" />
+  <link rel="stylesheet" href="style.css?v=55" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="home-page">
@@ -55,9 +55,14 @@
       </div>
     </div>
 
-    <div class="searchbar">
-      <span>⌕</span>
-      <input id="searchInput" type="search" placeholder="Sürücü kursu, kreş, yurt veya hizmet ara..." />
+    <div class="searchbar" role="search" aria-label="Dijiyer kurum ve hizmet arama">
+      <span class="searchbar-icon">⌕</span>
+      <input id="searchInput" type="search" autocomplete="off" placeholder="Kurum, hizmet veya sektör ara..." />
+      <button type="button" class="desktop-location-trigger" id="desktopLocationBtn" aria-label="Konum seç">
+        <span>📍</span>
+        <strong id="desktopLocationText">Çanakkale, Merkez</strong>
+      </button>
+      <button type="button" class="desktop-search-submit" id="desktopSearchSubmitBtn">Ara</button>
     </div>
 
     <div class="location-picker" id="locationPicker">
@@ -135,6 +140,16 @@
       </div>
     </div>
   </header>
+  <nav class="desktop-market-nav" aria-label="Dijiyer ana menü">
+    <div class="desktop-market-nav-inner">
+      <a href="#resultsSection" class="active">Kurumlar</a>
+      <a href="teklif-al.html">Teklif Al</a>
+      <a href="is-firsatlari.html">İş Fırsatları</a>
+      <a href="bayi-servis.html">Bayi &amp; Servis</a>
+      <a href="firsatlar.html">Keşfet / Fırsat</a>
+      <button type="button" data-advertise-home>Reklam Ver</button>
+    </div>
+  </nav>
 
   <section class="home-hero">
     <div class="home-hero-inner">
@@ -192,45 +207,34 @@
     </div>
   </section>
 
-  <section class="main-portals-section" aria-label="Dijiyer ana hizmetleri">
+  <section class="main-portals-section desktop-category-hub" aria-label="Dijiyer kategorileri">
     <div class="main-portals-heading">
       <div>
-        <span>DİJİYER'DE NE YAPMAK İSTİYORSUN?</span>
-        <h2>İhtiyacına göre doğrudan ilgili alana geç</h2>
+        <span>HIZLI KEŞFET</span>
+        <h2>Kategori seç, yakınındaki kurumları hemen gör</h2>
       </div>
-      <small>Teklif · İş · Bayi &amp; Servis</small>
+      <small>Kurum · Hizmet · Teklif</small>
     </div>
 
-    <div class="main-portals-grid">
-      <a class="main-portal-card portal-quote" href="teklif-al.html">
-        <span class="main-portal-icon">🏷</span>
-        <div class="main-portal-copy">
-          <small>ÜCRETSİZ TEKLİF</small>
-          <strong>Teklif Al</strong>
-          <p>İhtiyacını yaz, uygun işletmelerden fiyatları tek yerde karşılaştır.</p>
-        </div>
-        <span class="main-portal-arrow">→</span>
-      </a>
+    <div class="desktop-category-grid">
+      <button type="button" data-desktop-category="egitim"><span>📚</span><strong>Eğitim</strong><small>Kurs · Anaokulu · Sürücü</small></button>
+      <button type="button" data-desktop-category="otomotiv"><span>🚗</span><strong>Otomotiv</strong><small>Servis · Lastik · Ekspertiz</small></button>
+      <button type="button" data-desktop-category="yemeicme"><span>🍽️</span><strong>Yeme &amp; İçme</strong><small>Restoran · Kafe · Fast Food</small></button>
+      <button type="button" data-desktop-category="saglikguzellik"><span>🩺</span><strong>Sağlık &amp; Güzellik</strong><small>Klinik · Kuaför · Spor</small></button>
+      <button type="button" data-desktop-category="evyapi"><span>🏠</span><strong>Ev &amp; Yapı</strong><small>Mobilya · Tadilat · Servis</small></button>
+      <button type="button" data-desktop-category="emlak"><span>🏢</span><strong>Emlak</strong><small>Konut · Arsa · Ticari</small></button>
+      <button type="button" data-desktop-category="turizm"><span>🏨</span><strong>Turizm</strong><small>Otel · Tur · Konaklama</small></button>
+      <button type="button" data-desktop-category="organizasyonmedya"><span>📸</span><strong>Organizasyon</strong><small>Fotoğraf · Drone · Reklam</small></button>
+      <button type="button" data-desktop-category="tasimacilik"><span>🚚</span><strong>Taşımacılık</strong><small>Nakliyat · Kurye · Depolama</small></button>
+      <button type="button" data-desktop-category="profesyonel"><span>💼</span><strong>Profesyonel</strong><small>Hukuk · Web · Danışmanlık</small></button>
+      <button type="button" data-desktop-category="alisveris"><span>🛒</span><strong>Yerel Esnaf</strong><small>Market · Giyim · Elektronik</small></button>
+      <button type="button" data-desktop-category=""><span>☰</span><strong>Tüm Kurumlar</strong><small>Bütün kategorileri göster</small></button>
+    </div>
 
-      <a class="main-portal-card portal-jobs" href="is-firsatlari.html">
-        <span class="main-portal-icon">💼</span>
-        <div class="main-portal-copy">
-          <small>İŞ &amp; EK KAZANÇ</small>
-          <strong>İş Fırsatları</strong>
-          <p>Yakınındaki işleri, eleman ilanlarını ve ek kazanç fırsatlarını keşfet.</p>
-        </div>
-        <span class="main-portal-arrow">→</span>
-      </a>
-
-      <a class="main-portal-card portal-brands" href="bayi-servis.html">
-        <span class="main-portal-icon">🔧</span>
-        <div class="main-portal-copy">
-          <small>MARKA REHBERİ</small>
-          <strong>Bayi &amp; Servis Bul</strong>
-          <p>Büyük markaların yetkili bayi, mağaza ve servis noktalarına ulaş.</p>
-        </div>
-        <span class="main-portal-arrow">→</span>
-      </a>
+    <div class="desktop-service-shortcuts">
+      <a href="teklif-al.html"><span>🏷</span><div><strong>Ücretsiz Teklif Al</strong><small>İhtiyacını yaz, işletmeler fiyat versin.</small></div><b>→</b></a>
+      <a href="is-firsatlari.html"><span>💼</span><div><strong>İş Fırsatları</strong><small>İş, eleman ve ek kazanç ilanlarını gör.</small></div><b>→</b></a>
+      <a href="bayi-servis.html"><span>🔧</span><div><strong>Bayi &amp; Servis Bul</strong><small>Markaya göre yetkili noktaları keşfet.</small></div><b>→</b></a>
     </div>
   </section>
 
@@ -390,10 +394,10 @@
   <section class="premium-home-showcase" id="premiumHomeShowcase" aria-label="Premium sponsorlu vitrin">
     <div class="premium-showcase-heading">
       <div>
-        <span class="premium-showcase-kicker">PREMIUM SPONSORLU</span>
-        <strong>Ana Sayfa Vitrini</strong>
+        <span class="premium-showcase-kicker">SPONSORLU VİTRİN</span>
+        <strong>Öne Çıkan Kurumlar</strong>
       </div>
-      <small>Dijiyer'in en görünür reklam alanı</small>
+      <small>Bölgenizde öne çıkan işletmeler</small>
     </div>
 
     <div class="premium-showcase-stage" id="premiumShowcaseStage">
@@ -1290,7 +1294,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=61"></script>
+<script src="script.js?v=62"></script>
 <script src="offers.js?v=2"></script>
 </body>
 </html>
