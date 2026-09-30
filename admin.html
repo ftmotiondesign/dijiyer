@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=22">
+  <link rel="stylesheet" href="admin-advanced.css?v=19">
 </head>
 
 <body>
@@ -594,7 +594,10 @@
             <h3>🎯 Fırsat Sayfası Yönetimi</h3>
             <p id="opportunitySponsorCount">Kurumlar yükleniyor...</p>
           </div>
-          <a class="opportunity-page-preview-link" href="firsatlar.html" target="_blank" rel="noopener">Fırsat Sayfasını Gör</a>
+          <div class="opportunity-title-actions">
+            <button type="button" class="opportunity-add-sponsor-btn" id="opportunitySponsorNewBtn">＋ Yeni Sponsor Ekle</button>
+            <a class="opportunity-page-preview-link" href="firsatlar.html" target="_blank" rel="noopener">Fırsat Sayfasını Gör</a>
+          </div>
         </div>
 
         <div class="opportunity-admin-guide">
@@ -1913,6 +1916,16 @@
         <span>FIRSAT SAYFASI SPONSORU</span>
         <h2 id="opportunitySponsorModalTitle">Kurum</h2>
         <p id="opportunitySponsorModalMeta"></p>
+      </div>
+
+      <div class="opportunity-institution-chooser hidden" id="opportunitySponsorInstitutionChooser">
+        <label>
+          <span>Sponsor Olacak Kurum</span>
+          <select id="opportunitySponsorInstitutionSelect">
+            <option value="">Kurum seçin...</option>
+          </select>
+          <small>Kayıtlı kurumlardan birini seçin. Daha önce sponsor olan bir kurumu seçerseniz mevcut ayarları açılır.</small>
+        </label>
       </div>
 
       <div class="opportunity-media-size-note">
