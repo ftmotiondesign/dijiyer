@@ -77,7 +77,13 @@ function offerState(offer,lock){
   return offer.expiresAt&&new Date(offer.expiresAt).getTime()<=Date.now()?"expired":"offered";
 }
 function stateLabel(s){
-  return {offered:"Fiyat Garantili",locked:"Fiyat Kilitli",used:"Kullanıldı",expired:"Süresi Doldu",closed:"Başka teklif seçildi"}[s]||s;
+  return {
+    offered:"Teklif Aktif",
+    locked:"Kayıt Bekliyor",
+    used:"Gerçek Kayıt Tamamlandı",
+    expired:"Süresi Doldu",
+    closed:"Başka teklif seçildi"
+  }[s]||s;
 }
 
 function offerValidityHoursFromDates(offer){
@@ -94,6 +100,7 @@ function offerValidityText(offer){
   if(h===3)return "3 saat";
   if(h===12)return "12 saat";
   if(h===24)return "24 saat";
+  if(h===48)return "2 gün";
   if(h===72)return "3 gün";
   if(h===168)return "7 gün";
   if(h>24 && h%24===0)return (h/24)+" gün";
@@ -103,22 +110,25 @@ function acceptanceTermsHtml(offer){
   const validity=offerValidityText(offer);
   return `
     <div class="offer-acceptance-box">
-      <div class="offer-acceptance-title">Teklifi kabul etme şartları</div>
+      <div class="offer-acceptance-title">Teklif ve gerçek kayıt şartları</div>
       <div class="offer-acceptance-grid">
         <div><span>Fiyat</span><strong>${money(offer.price)}</strong></div>
         <div><span>Geçerlilik</span><strong>${safe(validity)}</strong></div>
-        <div><span>Son kabul</span><strong>${fmtDate(offer.expiresAt)}</strong></div>
+        <div><span>Son geçerlilik</span><strong>${fmtDate(offer.expiresAt)}</strong></div>
         <div><span>KDV</span><strong>${safe(offer.vatStatus||"-")}</strong></div>
         <div><span>Ek ücret</span><strong>${safe(offer.extraFee||"Yok")}</strong></div>
       </div>
       <div class="offer-acceptance-warning">
-        ⏱ Bu fiyat <b>${safe(validity)}</b> için geçerlidir. Bu süre içinde fiyatı kilitlemezseniz teklif geçersiz olur.
+        ⏱ Bu fiyat ve özellikler <b>${safe(validity)}</b> boyunca geçerlidir. Teklifi kabul etseniz bile kesin kayıt oluşmaz. Son geçerlilik tarihine kadar kurumla doğrudan görüşüp gerçek kaydınızı tamamlamanız gerekir. Süre dolarsa fiyat ve şartlar garanti edilmez; kurumla yeniden görüşmeniz gerekir.
+      </div>
+      <div class="offer-payment-warning">
+        <b>🛡️ Dijiyer üzerinden ödeme yapılmaz.</b>
+        <span>Ücret, kapora veya kayıt bedeli yalnızca müşteri ile kurum arasında doğrudan yapılır. Dijiyer ödeme aracısı değildir.</span>
       </div>
       ${offer.conditions?`<div class="offer-condition"><span>Özel şart</span><strong>${safe(offer.conditions)}</strong></div>`:""}
     </div>
   `;
 }
-
 
 function getLocalRequestDetail(access){
   try{
@@ -493,24 +503,61 @@ function lockedHtml(bundle){
   const lock=bundle.lock;
   const state=lockState(lock);
   const verifyUrl=location.origin+location.pathname.replace(/[^/]*$/,"")+"institution.html?offer="+encodeURIComponent(lock.offerCode||"");
+  const institutionId=String(lock.institutionId||"");
+  const institutionUrl="kurum.html?id="+encodeURIComponent(institutionId);
+  const renewUrl=institutionUrl+"&teklif=1";
+  const acceptedAt=lock.acceptedAt||lock.lockedAt||"";
+  const deadline=lock.registrationDeadlineAt||lock.expiresAt||"";
+  const title=state==="used"
+    ? "Gerçek Kayıt Tamamlandı"
+    : state==="expired"
+      ? "Teklif Süresi Doldu · Yeniden Görüşün"
+      : "Teklif Kabul Edildi · Kayıt Bekleniyor";
+
   return `
     <article class="locked-card">
-      <div class="locked-check">✓</div>
-      <h2>${state==="used"?"Teklif Kullanıldı":state==="expired"?"Teklifin Süresi Doldu":"Fiyatınız Kilitlendi"}</h2>
-      <div class="locked-code">GARANTİLİ TEKLİF · ${safe(lock.offerCode||"")}</div>
+      <div class="locked-check">${state==="expired"?"!":"✓"}</div>
+      <h2>${title}</h2>
+      <div class="locked-code">DOĞRULANMIŞ TEKLİF · ${safe(lock.offerCode||"")}</div>
       <div class="locked-price">${money(lock.price)}</div>
       <div class="offer-scope">${safe(lock.scope||"")}</div>
       <div class="locked-terms-box">
-        <strong>Kilitlenen şartlar</strong>
+        <strong>Kabul edilen teklif kaydı</strong>
         <div><span>Fiyat</span><b>${money(lock.price)}</b></div>
         <div><span>KDV</span><b>${safe(lock.vatStatus||"-")}</b></div>
-        <div><span>Son geçerlilik</span><b>${fmtDate(lock.expiresAt)}</b></div>
+        <div><span>Kabul tarihi</span><b>${fmtDate(acceptedAt)}</b></div>
+        <div><span>Gerçek kayıt için son tarih</span><b>${fmtDate(deadline)}</b></div>
         ${lock.conditions?`<div><span>Özel şart</span><b>${safe(lock.conditions)}</b></div>`:""}
-        <p>Bu kayıt kilitlendikten sonra firma fiyatı ve şartları değiştiremez.</p>
+        <p>Teklif kabul edildiği andaki fiyat ve şartlar kayıt altına alınmıştır; kurum bu kabul kaydını sonradan sessizce değiştiremez.</p>
+      </div>
+      ${state==="locked"?`
+        <div class="registration-status-note">
+          <strong>⏳ Gerçek kayıt henüz tamamlanmadı</strong>
+          <span>Bu kabul kesin kayıt değildir. Yukarıdaki son tarihe kadar kurumla doğrudan görüşüp kaydınızı tamamlamanız gerekir.</span>
+        </div>
+      `:""}
+      ${state==="expired"?`
+        <div class="registration-expired-note">
+          <strong>Teklifin geçerlilik süresi sona erdi.</strong>
+          <span>Bu fiyat ve şartlar artık garanti edilmez. Kurumla yeniden görüşebilir veya güncel bir teklif isteyebilirsiniz.</span>
+        </div>
+      `:""}
+      ${state==="used"?`
+        <div class="registration-completed-note">
+          <strong>✓ Kurum gerçek kaydı tamamlandı olarak işaretledi.</strong>
+          <span>Tamamlanma: ${fmtDate(lock.registrationCompletedAt||lock.usedAt||"")}</span>
+        </div>
+      `:""}
+      <div class="offer-payment-warning locked-payment-warning">
+        <b>🛡️ Dijiyer üzerinden ödeme yapılmaz.</b>
+        <span>Ödeme, kapora veya kayıt bedeli yalnızca sizinle kurum arasında doğrudan gerçekleştirilir. Dijiyer ödeme aracısı değildir.</span>
       </div>
       <div id="lockedQr" class="qr-box" data-url="${safe(verifyUrl)}"></div>
-      <div class="countdown" data-countdown="${safe(lock.expiresAt||"")}"></div>
-      ${state==="locked"?`<div class="offer-actions" style="justify-content:center"><button class="report-btn" data-report>⚠ Teklifle İlgili Sorun Bildir</button></div>`:""}
+      ${state==="locked"?`<div class="countdown" data-countdown="${safe(deadline)}"></div>`:""}
+      <div class="offer-actions locked-main-actions">
+        ${institutionId?`<a class="secondary tracking-action-btn" href="${safe(state==="expired"?renewUrl:institutionUrl)}"><span class="tracking-action-icon">${state==="expired"?"↻":"🏢"}</span><span>${state==="expired"?"Kurumdan Yeni Teklif İste":"Kurum Sayfasını Aç"}</span></a>`:""}
+        ${state==="locked"?`<button class="report-btn" data-report>⚠ Teklifle İlgili Sorun Bildir</button>`:""}
+      </div>
     </article>`;
 }
 
@@ -540,7 +587,7 @@ function offerHtml(bundle,offer){
       ${acceptanceTermsHtml(offer)}
 
       ${state==="offered"
-        ? `<div class="offer-actions"><button class="lock-btn accept-lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}">✓ Şartları Kabul Et ve Fiyatı Kilitle</button></div>`
+        ? `<label class="offer-consent-row"><input type="checkbox" data-lock-consent data-institution-id="${safe(offer.institutionId)}"><span>Teklif şartlarını, geçerlilik süresini ve Dijiyer üzerinden ödeme yapılmadığı bilgisini okudum.</span></label><div class="offer-actions"><button class="lock-btn accept-lock-btn" data-lock data-institution-id="${safe(offer.institutionId)}" disabled>✓ Teklifi Kabul Et</button></div>`
         : ""}
     </article>`;
 }
@@ -688,8 +735,23 @@ function render(bundle){
     }
   };
 
+  results.querySelectorAll("[data-lock-consent]").forEach(consent=>{
+    const institutionId=consent.dataset.institutionId;
+    const button=results.querySelector(`[data-lock][data-institution-id="${CSS.escape(institutionId)}"]`);
+    const sync=()=>{ if(button)button.disabled=!consent.checked; };
+    consent.addEventListener("change",sync);
+    sync();
+  });
+
   results.querySelectorAll("[data-lock]").forEach(btn=>{
-    btn.addEventListener("click",()=>lockOffer(access.quoteId,btn.dataset.institutionId,btn));
+    btn.addEventListener("click",()=>{
+      const consent=results.querySelector(`[data-lock-consent][data-institution-id="${CSS.escape(btn.dataset.institutionId)}"]`);
+      if(consent && !consent.checked){
+        toast("Teklif ve ödeme şartlarını okuyup onaylamanız gerekir.");
+        return;
+      }
+      lockOffer(access.quoteId,btn.dataset.institutionId,btn);
+    });
   });
   const report=results.querySelector("[data-report]");
   if(report)report.addEventListener("click",()=>openOfferIssueModal(access.quoteId,bundle.lock.offerCode));
@@ -714,16 +776,25 @@ async function recordPublicAcceptedEvent(quoteId,date){
 function confirmOfferLock(offer){
   const validity=offerValidityText(offer);
   const lines=[
-    "Bu teklifi kabul edip fiyatı kilitlemek üzeresiniz.",
+    "Bu teklifi kabul etmek üzeresiniz.",
     "",
     "Firma: "+(offer.institutionName||"Kurum"),
     "Fiyat: "+money(offer.price),
     "Geçerlilik: "+validity,
-    "Son kabul: "+fmtDate(offer.expiresAt),
+    "Son geçerlilik: "+fmtDate(offer.expiresAt),
     "KDV: "+(offer.vatStatus||"-")
   ];
   if(offer.conditions)lines.push("Özel şart: "+offer.conditions);
-  lines.push("", "Kilitledikten sonra firma bu teklifin fiyatını ve şartlarını değiştiremez.", "Devam etmek istiyor musunuz?");
+  lines.push(
+    "",
+    "Bu işlem kesin kayıt değildir. Belirtilen son tarihe kadar kurumla doğrudan görüşüp gerçek kaydınızı tamamlamanız gerekir.",
+    "Süre dolarsa fiyat ve şartlar garanti edilmez ve kurumla yeniden görüşülür.",
+    "",
+    "Dijiyer üzerinden ödeme yapılmaz. Ücret, kapora veya kayıt bedeli yalnızca müşteri ile kurum arasında doğrudan yapılır.",
+    "",
+    "Teklif kabul edildiği andaki fiyat ve şartlar kayıt altına alınacaktır.",
+    "Devam etmek istiyor musunuz?"
+  );
   return window.confirm(lines.join("\n"));
 }
 async function lockOffer(quoteId,institutionId,button){
@@ -751,27 +822,51 @@ async function lockOffer(quoteId,institutionId,button){
         institutionId:offer.institutionId,
         institutionName:offer.institutionName||"Kurum",
         offerCode:offer.offerCode,
+
+        // Kabul anındaki teklif kopyası
         price:Number(offer.price),
+        lockedPrice:Number(offer.price),
         vatStatus:offer.vatStatus||"",
         scope:offer.scope||"",
+        lockedScope:offer.scope||"",
         conditions:offer.conditions||"",
-        expiresAt:offer.expiresAt,
-        expiresAtTs:offer.expiresAtTs,
+        extraFee:offer.extraFee||"Yok",
+        offerCreatedAt:offer.createdAt||"",
+        offerUpdatedAt:offer.updatedAt||offer.createdAt||"",
+        offerVersion:offer.updatedAt||offer.createdAt||publicLockedAt,
+        offerSnapshotVersion:1,
+
+        // Takip kodu + telefon özeti bu kabul kaydına bağlanır
+        trackingCode:String(currentAccess?.trackingCode||""),
+        phoneHash:String(currentAccess?.phoneHash||""),
+        acceptanceConsent:true,
+
+        // Teklif kabul edildi; gerçek kayıt kurumda ayrıca tamamlanır
         status:"locked",
+        registrationStatus:"pending",
+        acceptedAt:publicLockedAt,
+        acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
         lockedAt:publicLockedAt,
         lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
-        lockedPrice:Number(offer.price),
-        lockedScope:offer.scope||""
+
+        expiresAt:offer.expiresAt,
+        expiresAtTs:offer.expiresAtTs,
+        registrationDeadlineAt:offer.expiresAt,
+        registrationDeadlineAtTs:offer.expiresAtTs,
+
+        // Dijiyer ödeme aracısı değildir
+        platformPayment:false,
+        paymentPolicy:"offline_direct_between_customer_and_institution"
       });
     });
 
     await recordPublicAcceptedEvent(quoteId,publicLockedAt);
-    toast("Fiyat kilitlendi.");
+    toast("Teklif kabul edildi. Gerçek kayıt için süre dolmadan kurumla görüşün.");
     await refreshTracking();
   }catch(error){
     console.error(error);toast(error.message||"Teklif kilitlenemedi.");
   }finally{
-    button.disabled=false;button.textContent="✓ Şartları Kabul Et ve Fiyatı Kilitle";
+    button.disabled=false;button.textContent="✓ Teklifi Kabul Et";
   }
 }
 
