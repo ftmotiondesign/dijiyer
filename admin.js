@@ -1090,7 +1090,10 @@ function openCategoryAddModal(type="main",parentKey=""){
     if(nameInput)nameInput.placeholder="Örn. Evcil Hayvan Hizmetleri";
   }
 
-  if(keyInput)keyInput.value="";
+  if(keyInput){
+    keyInput.value="";
+    delete keyInput.dataset.edited;
+  }
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden","false");
   window.setTimeout(()=>nameInput?.focus(),30);
