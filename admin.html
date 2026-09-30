@@ -791,6 +791,28 @@
         </div>
 
         <div id="institutionsList"></div>
+
+        <section class="review-moderation-panel" aria-labelledby="reviewModerationTitle">
+          <div class="review-moderation-head">
+            <div>
+              <span>YORUM MODERASYONU</span>
+              <h4 id="reviewModerationTitle">Kurum yorumlarını incele</h4>
+              <p id="reviewModerationCount">Yorumlar hazırlanıyor...</p>
+            </div>
+            <div class="review-moderation-actions">
+              <select id="reviewModerationFilter" aria-label="Yorum durumu">
+                <option value="pending">Onay bekleyenler</option>
+                <option value="published">Yayındaki yorumlar</option>
+                <option value="rejected">Reddedilenler</option>
+                <option value="">Tümü</option>
+              </select>
+              <button type="button" id="reviewModerationRefresh">↻ Yenile</button>
+            </div>
+          </div>
+          <div id="reviewModerationList" class="review-moderation-list">
+            <div class="empty-state">Yorumlar hazırlanıyor...</div>
+          </div>
+        </section>
       </section>
 
       <section id="issuesSection" hidden>
