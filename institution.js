@@ -3535,8 +3535,22 @@ auth.onAuthStateChanged(async user => {
     }
 
   } catch (error) {
-    console.error(error);
-    showPanelError("Kurum paneli yüklenemedi.");
+    console.error("Kurum paneli başlangıç hatası:", error);
+    const code=String(error?.code||"").trim();
+    const detail=String(error?.message||"").trim();
+    const shortDetail=detail.length>180 ? detail.slice(0,180)+"…" : detail;
+
+    if(code.includes("resource-exhausted")){
+      showPanelError("Kurum paneli yüklenemedi · Firestore kotası/kapasitesi dolu (resource-exhausted).");
+    }else if(code.includes("permission-denied")){
+      showPanelError("Kurum paneli yüklenemedi · Firestore yetki hatası (permission-denied).");
+    }else{
+      showPanelError(
+        "Kurum paneli yüklenemedi" +
+        (code ? " · "+code : "") +
+        (shortDetail ? " · "+shortDetail : "")
+      );
+    }
   }
 });
 
