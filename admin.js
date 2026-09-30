@@ -235,6 +235,66 @@ const quickApplicationCount = document.getElementById("quickApplicationCount");
 const quickIssueCount = document.getElementById("quickIssueCount");
 const quickSupportCount = document.getElementById("quickSupportCount");
 
+const ADMIN_TAB_ROUTES = {
+  overviewTabBtn:"genel-bakis",
+  quotesTabBtn:"teklifler",
+  quoteRoutingTabBtn:"yanitsiz-teklifler",
+  issuesTabBtn:"sorunlar",
+  offerReportTabBtn:"teklif-raporu",
+  institutionsTabBtn:"kurumlar",
+  applicationsTabBtn:"basvurular",
+  accountsTabBtn:"hesaplar",
+  unmatchedSearchesTabBtn:"bulunamayan-aramalar",
+  businessOpportunitiesTabBtn:"is-ticaret",
+  bannerAdsTabBtn:"reklam-merkezi",
+  opportunitySponsorsTabBtn:"kesfet-firsat",
+  mediaArchiveTabBtn:"medya-arsivi",
+  externalAdsTabBtn:"harici-reklamlar",
+  promotionOrdersTabBtn:"siparisler",
+  promotionPackagesTabBtn:"paketler",
+  vipInstitutionsTabBtn:"vip-kurumlar",
+  adCalendarTabBtn:"reklam-takvimi",
+  adRevenueTabBtn:"gelir-raporu",
+  supportTabBtn:"destek",
+  announcementsTabBtn:"duyurular",
+  systemTabBtn:"sistem"
+};
+
+const ADMIN_ROUTE_TABS = Object.fromEntries(
+  Object.entries(ADMIN_TAB_ROUTES).map(([tabId,route])=>[route,tabId])
+);
+
+let adminRouteFromHistory=false;
+
+function adminRouteForTab(tabId){
+  return ADMIN_TAB_ROUTES[tabId] || "genel-bakis";
+}
+
+function adminTabFromLocation(){
+  const route=decodeURIComponent(
+    String(window.location.hash||"")
+      .replace(/^#/,"")
+      .trim()
+  );
+  return ADMIN_ROUTE_TABS[route] || "";
+}
+
+function writeAdminRoute(tabId){
+  const route=adminRouteForTab(tabId);
+  const nextHash="#"+route;
+  if(window.location.hash===nextHash)return;
+  history.pushState({adminTab:tabId},"",nextHash);
+}
+
+function scrollAdminToTop(){
+  requestAnimationFrame(()=>{
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+  });
+}
+
 const ADMIN_TAB_META = {
   overviewTabBtn:["overview","Genel Bakış","Bugün ilgilenmeniz gereken konuları ve temel rakamları görün."],
   quotesTabBtn:["quotes","Teklif Talepleri","Müşteri taleplerini, gelen teklifleri ve tüm teklif hareketlerini yönetin."],
@@ -316,6 +376,12 @@ function initSimpleAdminNavigation(){
   Object.keys(ADMIN_TAB_META).forEach(tabId=>{
     document.getElementById(tabId)?.addEventListener("click",()=>{
       syncSimpleAdminNavigation(tabId);
+
+      if(!adminRouteFromHistory){
+        writeAdminRoute(tabId);
+      }
+
+      scrollAdminToTop();
     });
   });
 
@@ -338,13 +404,41 @@ function initSimpleAdminNavigation(){
 }
 
 function restoreSimpleAdminNavigation(){
+  const routeTab=adminTabFromLocation();
   const saved=localStorage.getItem("dijiyerAdminLastTab");
-  if(saved && ADMIN_TAB_META[saved] && document.getElementById(saved)){
-    document.getElementById(saved).click();
-  }else{
-    syncSimpleAdminNavigation("overviewTabBtn");
+  const target=
+    routeTab && ADMIN_TAB_META[routeTab] && document.getElementById(routeTab)
+      ? routeTab
+      : (
+          saved && ADMIN_TAB_META[saved] && document.getElementById(saved)
+            ? saved
+            : "overviewTabBtn"
+        );
+
+  adminRouteFromHistory=true;
+  document.getElementById(target)?.click();
+  adminRouteFromHistory=false;
+
+  if(!window.location.hash){
+    history.replaceState(
+      {adminTab:target},
+      "",
+      "#"+adminRouteForTab(target)
+    );
   }
+
+  window.scrollTo({top:0,behavior:"auto"});
 }
+
+window.addEventListener("popstate",()=>{
+  const tabId=adminTabFromLocation();
+  if(!tabId || !ADMIN_TAB_META[tabId])return;
+
+  adminRouteFromHistory=true;
+  document.getElementById(tabId)?.click();
+  adminRouteFromHistory=false;
+  window.scrollTo({top:0,behavior:"auto"});
+});
 
 initSimpleAdminNavigation();
 
