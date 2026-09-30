@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-  <link rel="stylesheet" href="kurum.css?v=10">
+  <link rel="stylesheet" href="kurum.css?v=11">
   <link rel="stylesheet" href="kurum-premium.css?v=6">\n  <link rel="stylesheet" href="appointments.css?v=1">
 </head>
 <body>
@@ -102,6 +102,18 @@
             <input id="directQuoteEmail" type="email" maxlength="160" autocomplete="email" placeholder="ornek@email.com">
           </label>
 
+          <label class="kp-response-wait-field">
+            <span>Bu kurumdan ne kadar süre yanıt bekleyelim?</span>
+            <select id="directQuoteResponseWait" required>
+              <option value="15">15 dakika · Acil</option>
+              <option value="30" selected>30 dakika · Önerilen</option>
+              <option value="45">45 dakika</option>
+              <option value="60">1 saat</option>
+              <option value="1440">1 gün</option>
+            </select>
+            <small class="kp-field-help">Seçtiğiniz süre talebin gönderildiği anda başlar.</small>
+          </label>
+
           <div class="kp-direct-assurance">
             <span>✓</span>
             <div>
@@ -121,8 +133,8 @@
           <label class="kp-alternative-consent">
             <input id="directQuoteAlternativeConsent" type="checkbox">
             <span>
-              <strong>Yanıt gelmezse diğer uygun kurumlara iletilebilir</strong>
-              <small>Bu kurum teklif vermezse, talebimin aynı bölge ve hizmet alanındaki diğer uygun kurumlara Dijiyer tarafından iletilmesine izin veriyorum. Bu durumda iletişim bilgilerim yalnızca seçilen kurumlarla paylaşılır.</small>
+              <strong>Seçtiğim sürede yanıt gelmezse diğer uygun kurumlara iletilebilir</strong>
+              <small>Bu kurum seçtiğim süre içinde teklif vermezse, talebimin aynı bölge ve hizmet alanındaki diğer uygun kurumlara Dijiyer tarafından iletilmesine izin veriyorum. İletişim bilgilerim yalnızca seçilen kurumlarla paylaşılır.</small>
             </span>
           </label>
 
@@ -181,7 +193,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-  <script src="kurum.js?v=21"></script>
+  <script src="kurum.js?v=22"></script>
   <script src="kurum-premium.js?v=7"></script>\n  <script src="appointments.js?v=1"></script>
 </body>
 </html>
