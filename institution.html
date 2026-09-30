@@ -106,6 +106,10 @@
           <p><strong>Geçmiş korunur</strong><small>Teklif ve mesaj hareketlerini panelden takip edebilirsiniz.</small></p>
         </div>
         <div>
+          <span class="seller-trust-point-icon">🛡️</span>
+          <p><strong>Ödeme kurumla doğrudan</strong><small>Dijiyer üzerinden ödeme veya kapora alınmaz.</small></p>
+        </div>
+        <div>
           <span class="seller-trust-point-icon">?</span>
           <p><strong>Destek yanınızda</strong><small>Sorun halinde Dijiyer Destek süreci inceleyebilir.</small></p>
         </div>
@@ -418,9 +422,9 @@
           </article>
 
           <article>
-            <span>Fiyat Kilitlendi</span>
+            <span>Kayıt Bekliyor</span>
             <strong id="lockedQuoteCount">0</strong>
-            <small>Müşterinin seçtiği teklifler</small>
+            <small>Teklifi kabul edip gerçek kaydı bekleyen müşteriler</small>
           </article>
 
           <article>
@@ -515,9 +519,9 @@
             <option value="">Tümü</option>
             <option value="new">Yeni</option>
             <option value="offered">Teklif Verildi</option>
-            <option value="locked">Fiyat Kilitlendi</option>
+            <option value="locked">Kayıt Bekliyor</option>
             <option value="expired">Süresi Doldu</option>
-            <option value="used">Kullanıldı</option>
+            <option value="used">Gerçek Kayıt Tamamlandı</option>
             <option value="not_interested">İlgilenmiyorum</option>
           </select>
         </div>
@@ -533,10 +537,10 @@
             Teklif Verildi <span id="shortcutCountOffered">0</span>
           </button>
           <button type="button" class="quote-shortcut" data-quote-shortcut="locked">
-            Kilitlenen <span id="shortcutCountLocked">0</span>
+            Kayıt Bekliyor <span id="shortcutCountLocked">0</span>
           </button>
           <button type="button" class="quote-shortcut" data-quote-shortcut="used">
-            Kullanıldı <span id="shortcutCountUsed">0</span>
+            Gerçek Kayıt <span id="shortcutCountUsed">0</span>
           </button>
           <button type="button" class="quote-shortcut" data-quote-shortcut="expired">
             Süresi Doldu <span id="shortcutCountExpired">0</span>
@@ -1668,7 +1672,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="institution.js?v=15"></script>
   <script src="institution-layout.js?v=3"></script>
-  <script src="institution-offers.js?v=20"></script>
+  <script src="institution-offers.js?v=21"></script>
   <script src="institution-communication.js?v=11"></script>
   <script src="institution-announcements.js?v=2"></script>
 </body>
