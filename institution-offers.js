@@ -1,5 +1,38 @@
 let institutionOfferMap = new Map();
 let institutionLockMap = new Map();
+let institutionLeadCreditBalance = 0;
+
+function isRoutedLeadForCurrentInstitution(quote){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId)return false;
+
+  const forwarded=Array.isArray(quote?.forwardInstitutionIds)
+    ? quote.forwardInstitutionIds.map(String)
+    : [];
+
+  return forwarded.includes(institutionId)
+    && String(quote?.targetInstitutionId||"")!==institutionId;
+}
+
+async function refreshInstitutionLeadCreditBalance(){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId){
+    institutionLeadCreditBalance=0;
+    return 0;
+  }
+
+  try{
+    const snap=await db.collection("leadCreditAccounts").doc(institutionId).get();
+    institutionLeadCreditBalance=snap.exists
+      ? Number(snap.data()?.balance||0)
+      : 0;
+  }catch(error){
+    console.warn("Teklif kredisi okunamadı:",error);
+    institutionLeadCreditBalance=0;
+  }
+
+  return institutionLeadCreditBalance;
+}
 
 function offerSafe(v){
   return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -89,7 +122,10 @@ loadMatchedQuotes = async function(){
   try{
     quoteRecords = await fetchInstitutionMatchedQuotes();
 
-    await loadQuoteResponses();
+    await Promise.all([
+      loadQuoteResponses(),
+      refreshInstitutionLeadCreditBalance()
+    ]);
 
     institutionOfferMap = new Map();
     institutionLockMap = new Map();
@@ -253,6 +289,21 @@ renderSummary = function(){
 };
 
 function sellerOfferFormHtml(quote,offer){
+  const routedLead=isRoutedLeadForCurrentInstitution(quote);
+
+  if(!offer && routedLead && institutionLeadCreditBalance<=0){
+    return `
+      <div class="offer-credit-blocked">
+        <div class="offer-credit-blocked-icon">🔒</div>
+        <div>
+          <strong>Teklif vermek için kredi gerekli</strong>
+          <p>Bu müşteri fırsatı Dijiyer tarafından kurumunuza yönlendirildi. Mevcut teklif krediniz <b>0</b> olduğu için şu anda fiyat teklifi gönderemezsiniz.</p>
+          <small>Kredi yüklendiğinde teklif formu otomatik olarak aktif hale gelir.</small>
+        </div>
+      </div>
+    `;
+  }
+
   const price=offer?.price ?? "";
   const scope=offer?.scope || quote.note || quote.service || "";
   const vat=offer?.vatStatus || "Dahil";
@@ -382,7 +433,7 @@ quoteCardHtml = function(quote,compact=false){
       <div class="quote-card-head">
         <div>
           <div class="quote-service">${offerSafe(quote.service || "Teklif Talebi")}</div>
-          ${routedToThisInstitution?'<div class="quote-routed-badge">⚡ Dijiyer yönlendirmesi · yeni müşteri fırsatı</div>':""}
+          ${routedToThisInstitution?'<div class="quote-routed-badge">⚡ Dijiyer yönlendirmesi · yeni müşteri fırsatı · Kredi: '+offerSafe(institutionLeadCreditBalance)+'</div>':""}
           <div class="quote-location">
             📍 ${offerSafe([quote.city,quote.district].filter(Boolean).join(" / "))}
             ${sameDistrict ? '<span class="district-badge">Aynı ilçe</span>' : '<span class="city-badge">Aynı şehir</span>'}
@@ -432,12 +483,23 @@ async function saveRealOffer(form){
   const quote=quoteRecords.find(q=>q.id===quoteId);
   const lock=institutionLockMap.get(quoteId);
   const existing=institutionOfferMap.get(quoteId);
+  const routedLead=isRoutedLeadForCurrentInstitution(quote);
 
   if(lock){
     alert(lock.institutionId===currentAccount.institutionId
       ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
       : "Müşteri başka bir teklifi seçti.");
     return;
+  }
+
+  if(!existing && routedLead){
+    const freshBalance=await refreshInstitutionLeadCreditBalance();
+
+    if(freshBalance<=0){
+      alert("Teklif vermek için kredi yüklemeniz gerekiyor. Mevcut teklif krediniz: 0");
+      renderQuotes();
+      return;
+    }
   }
 
   if(existing){
