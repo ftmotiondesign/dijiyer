@@ -3734,6 +3734,8 @@ function renderQuoteRoutingAdmin(){
   if(quoteRoutingForwardedCount)quoteRoutingForwardedCount.textContent=String(forwardedCount);
   if(quoteRoutingRespondedCount)quoteRoutingRespondedCount.textContent=String(respondedCount);
   if(quoteRoutingListCount)quoteRoutingListCount.textContent=rows.length+" kayıt";
+  const quoteRoutingHubWaiting=document.getElementById("quoteRoutingHubWaiting");
+  if(quoteRoutingHubWaiting)quoteRoutingHubWaiting.textContent=String(waitingRows.length);
   updateQuoteRoutingBadge();
 
   if(!rows.length){
@@ -4310,6 +4312,8 @@ function renderLeadCreditAdmin(){
   [leadCreditUsedTotal,leadCreditUsedSummary].forEach(el=>{if(el)el.textContent=String(totals.used);});
   if(leadCreditLoadedTotal)leadCreditLoadedTotal.textContent=String(totals.loaded);
   if(leadCreditDebtCount)leadCreditDebtCount.textContent=String(totals.debt);
+  const quoteRoutingHubCredit=document.getElementById("quoteRoutingHubCredit");
+  if(quoteRoutingHubCredit)quoteRoutingHubCredit.textContent=String(totals.balance);
 
   if(!rows.length){
     leadCreditTableBody.innerHTML='<tr><td colspan="8" class="lead-credit-empty-cell">Bu filtreye uygun kurum yok.</td></tr>';
@@ -4737,6 +4741,23 @@ quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
 leadPackageSaveBtn?.addEventListener("click",saveLeadRoutingSettings);
 leadCreditSearch?.addEventListener("input",renderLeadCreditAdmin);
 leadCreditStatusFilter?.addEventListener("change",renderLeadCreditAdmin);
+
+document.querySelectorAll("[data-routing-jump]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const targetId=String(button.dataset.routingJump||"");
+    const target=document.getElementById(targetId);
+    if(!target)return;
+
+    document.querySelectorAll(".quote-routing-hub-card").forEach(item=>{
+      item.classList.toggle("active",item===button);
+    });
+
+    target.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  });
+});
 leadCreditRefreshBtn?.addEventListener("click",async()=>{
   await reconcileLeadCreditUsage();
   await loadLeadCreditData();
