@@ -931,7 +931,7 @@
         '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
         '<small>'+escapeHtml(location)+' · '+escapeHtml(bannerCategoryLabel(bannerInstitutionCategory(inst))||"Sektör belirtilmemiş")+'</small>'+
       '</div>'+
-      '<button type="button" data-banner-institution-change>Değiştir</button>';
+      '<button type="button" data-banner-institution-change>Başka Kurum Seç</button>';
 
     root.querySelector("[data-banner-institution-change]")?.addEventListener("click",()=>{
       $("bannerAdInstitution").value="";
