@@ -260,3 +260,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
   .kp-recommend-score strong{font-size:17px}
   .kp-recommend-picker{grid-template-columns:1fr 86px}
 }
+
+
+/* YORUM MODERASYON BILGISI V1 */
+.kp-review-rules{
+  margin-top:8px;
+  padding:8px 9px;
+  border:1px solid #d9e6f5;
+  border-radius:8px;
+  background:#f7faff;
+  color:#63758b;
+  font-size:8px;
+  font-weight:750;
+  line-height:1.45;
+}
+.kp-recommend-score.has-data strong{
+  font-size:16px;
+}
