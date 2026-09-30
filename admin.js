@@ -3570,9 +3570,7 @@ function quoteRoutingFlowStatus(request){
   if(request?.liveLock || ["done","archived"].includes(String(request?.status||"")))return "completed";
   const forwarded=Array.isArray(request?.forwardInstitutionIds) && request.forwardInstitutionIds.length>0;
   const offers=Array.isArray(request?.liveOffers) ? request.liveOffers : [];
-  const forwardedSet=new Set((request?.forwardInstitutionIds||[]).map(String));
-  const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
-  if(routedOffers.length)return "responded";
+  if(offers.length)return "responded";
   if(forwarded)return "forwarded";
   if(quoteRoutingAgeMinutes(request)>=Number(quoteRoutingWaitMinutes?.value||30))return "waiting";
   return "fresh";
@@ -3845,9 +3843,10 @@ function renderQuoteRoutingAdmin(){
       ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Uygun kurumlara yönlendirilebilir.</span></div>'
       : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Başka kuruma iletmeden önce açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">✓ İzin Aldım</button></div>';
 
-    const offerNames=routedOffers.map(offer=>escapeHtml(offer.institutionName||"Kurum")).join(", ");
-    const responseHtml=routedOffers.length
-      ? '<div class="quote-routing-response"><strong>✓ '+routedOffers.length+' yönlendirilmiş kurum teklif verdi</strong><span>'+offerNames+'</span></div>'
+    const responseOffers=offers;
+    const offerNames=responseOffers.map(offer=>escapeHtml(offer.institutionName||"Kurum")).join(", ");
+    const responseHtml=responseOffers.length
+      ? '<div class="quote-routing-response"><strong>✓ '+responseOffers.length+' kurum teklif verdi</strong><span>'+offerNames+'</span></div>'
       : '';
 
     const acceptedLock=request.liveLock||null;
