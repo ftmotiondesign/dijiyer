@@ -16,6 +16,21 @@ const phoneInput=document.getElementById("trackingPhone");
 const submitBtn=document.getElementById("trackingSubmitBtn");
 const message=document.getElementById("trackingMessage");
 const results=document.getElementById("trackingResults");
+
+function ensureTrackingInputsInteractive(){
+  [codeInput,phoneInput].forEach(input=>{
+    if(!input)return;
+    input.disabled=false;
+    input.readOnly=false;
+    input.removeAttribute("disabled");
+    input.removeAttribute("readonly");
+    input.style.pointerEvents="auto";
+    input.style.userSelect="text";
+  });
+}
+
+ensureTrackingInputsInteractive();
+document.addEventListener("DOMContentLoaded",ensureTrackingInputsInteractive,{once:true});
 let currentAccess=null;
 let stopOffersListener=null;
 let stopLockListener=null;
