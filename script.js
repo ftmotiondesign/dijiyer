@@ -5016,7 +5016,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     const errorCode = String(error?.code || 'unknown');
     showToast(
       errorCode.includes('permission-denied')
-        ? 'Teklif gönderilemedi (permission-denied). Firestore kuralını kontrol edin.'
+        ? 'Teklif gönderilemedi (permission-denied) · Proje: ' + (firebase.app().options.projectId || '-') + ' · ' + (error?.message || '')
         : 'Teklif gönderilemedi (' + errorCode + '). Lütfen tekrar deneyin.'
     );
   } finally {
@@ -5233,7 +5233,7 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
   const errorCode = String(error?.code || 'unknown');
   showToast(
     errorCode.includes('permission-denied')
-      ? 'Kurum kaydı gönderilemedi (permission-denied). Firestore kuralını kontrol edin.'
+      ? 'Kurum kaydı gönderilemedi (permission-denied) · Proje: ' + (firebase.app().options.projectId || '-') + ' · ' + (error?.message || '')
       : 'Kurum kaydı gönderilemedi (' + errorCode + ').'
   );
 });
