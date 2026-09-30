@@ -1398,3 +1398,57 @@ button,input{font:inherit}.hidden{display:none!important}
   background:#eef2ff;color:#4338ca;
   font-size:11px;font-weight:900;
 }
+
+
+/* OFFER_ACCEPT_FINAL_CONFIRM_V1 */
+.offer-accept-confirm-modal{
+  position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.66);
+  display:flex;align-items:center;justify-content:center;padding:22px;
+  backdrop-filter:blur(5px)
+}
+.offer-accept-confirm-card{
+  width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;
+  box-shadow:0 30px 80px rgba(15,23,42,.28);padding:28px;position:relative
+}
+.offer-accept-confirm-close{
+  position:absolute;right:16px;top:14px;border:0;background:#f1f5f9;width:36px;height:36px;
+  border-radius:50%;font-size:24px;line-height:1;cursor:pointer;color:#475569
+}
+.offer-accept-confirm-icon{
+  width:54px;height:54px;border-radius:16px;background:#dcfce7;color:#15803d;
+  display:grid;place-items:center;font-size:28px;font-weight:900;margin-bottom:14px
+}
+.offer-accept-confirm-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;color:#15803d}
+.offer-accept-confirm-card h2{margin:6px 0 8px;font-size:26px;color:#0f172a}
+.offer-accept-confirm-lead{margin:0 0 18px;color:#475569;line-height:1.55}
+.offer-accept-confirm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.offer-accept-confirm-grid>div,.offer-accept-confirm-scope{
+  border:1px solid #e2e8f0;background:#f8fafc;border-radius:14px;padding:12px 14px
+}
+.offer-accept-confirm-grid span,.offer-accept-confirm-scope span{
+  display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:4px
+}
+.offer-accept-confirm-grid strong,.offer-accept-confirm-scope strong{color:#0f172a}
+.offer-accept-confirm-scope{margin-bottom:10px;line-height:1.45}
+.offer-accept-confirm-warning{
+  display:flex;gap:8px;flex-direction:column;background:#fff7ed;border:1px solid #fed7aa;
+  color:#9a3412;border-radius:14px;padding:13px 14px;margin:14px 0
+}
+.offer-accept-confirm-check{
+  display:flex;gap:10px;align-items:flex-start;border:1px solid #bbf7d0;background:#f0fdf4;
+  border-radius:14px;padding:13px 14px;color:#166534;font-weight:700;line-height:1.45
+}
+.offer-accept-confirm-check input{margin-top:3px;transform:scale(1.15)}
+.offer-accept-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.offer-accept-confirm-actions button{
+  border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer
+}
+.offer-accept-confirm-actions .secondary{background:#e2e8f0;color:#334155}
+.offer-accept-confirm-actions .primary{background:#16a34a;color:#fff}
+.offer-accept-confirm-actions .primary:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:640px){
+  .offer-accept-confirm-card{padding:22px 16px;border-radius:20px}
+  .offer-accept-confirm-grid{grid-template-columns:1fr}
+  .offer-accept-confirm-actions{flex-direction:column-reverse}
+  .offer-accept-confirm-actions button{width:100%}
+}
