@@ -116,8 +116,26 @@ service cloud.firestore {
           (
             talep.keys().hasAny(['requestType'])
             && talep.requestType == 'bulk'
-            && talep.category == bagliKurum().category
             && talep.city == bagliKurum().city
+            && (
+              (
+                talep.keys().hasAny(['category'])
+                && bagliKurum().keys().hasAny(['category'])
+                && talep.category == bagliKurum().category
+              )
+              ||
+              (
+                talep.keys().hasAny(['subCategory'])
+                && bagliKurum().keys().hasAny(['subCategory'])
+                && talep.subCategory == bagliKurum().subCategory
+              )
+              ||
+              (
+                talep.keys().hasAny(['mainCategory'])
+                && bagliKurum().keys().hasAny(['mainCategory'])
+                && talep.mainCategory == bagliKurum().mainCategory
+              )
+            )
             && (
               talep.district == ''
               || talep.district == bagliKurum().district
@@ -520,8 +538,26 @@ service cloud.firestore {
             (
               resource.data.keys().hasAny(['requestType'])
               && resource.data.requestType == 'bulk'
-              && resource.data.category == bagliKurum().category
               && resource.data.city == bagliKurum().city
+              && (
+                (
+                  resource.data.keys().hasAny(['category'])
+                  && bagliKurum().keys().hasAny(['category'])
+                  && resource.data.category == bagliKurum().category
+                )
+                ||
+                (
+                  resource.data.keys().hasAny(['subCategory'])
+                  && bagliKurum().keys().hasAny(['subCategory'])
+                  && resource.data.subCategory == bagliKurum().subCategory
+                )
+                ||
+                (
+                  resource.data.keys().hasAny(['mainCategory'])
+                  && bagliKurum().keys().hasAny(['mainCategory'])
+                  && resource.data.mainCategory == bagliKurum().mainCategory
+                )
+              )
               && (
                 resource.data.district == ''
                 || resource.data.district == bagliKurum().district
