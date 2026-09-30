@@ -1036,6 +1036,15 @@
     renderBannerAdminPreview();
 
     $("bannerInstitutionFinderSearch")?.blur();
+
+    const headlineInput=$("bannerAdHeadline");
+    if(headlineInput){
+      window.setTimeout(()=>{
+        headlineInput.scrollIntoView({behavior:"smooth",block:"center"});
+        headlineInput.focus({preventScroll:true});
+        headlineInput.select?.();
+      },180);
+    }
   }
 
   function resetBannerInstitutionFinderFilters(){
