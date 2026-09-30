@@ -4265,90 +4265,6 @@ async function reconcileLeadCreditUsage(){
   }
 }
 
-let activeLeadCreditInstitutionFilter="";
-
-function renderLeadCreditLedger(){
-  if(!leadCreditLedgerList)return;
-
-  const meta=document.getElementById("leadCreditLedgerMeta");
-  const filterId=String(activeLeadCreditInstitutionFilter||"");
-  const institution=filterId
-    ? institutionRecords.find(item=>String(item.id)===filterId)
-    : null;
-
-  const source=filterId
-    ? leadCreditLedgerRecords.filter(item=>String(item.institutionId||"")===filterId)
-    : leadCreditLedgerRecords.slice(0,20);
-
-  if(meta){
-    meta.textContent=filterId
-      ? (source.length+" hareket · "+(institution?.name||"Kurum"))
-      : "En yeni 20 işlem";
-  }
-
-  if(!source.length){
-    leadCreditLedgerList.innerHTML=
-      '<div class="empty-state">'+
-        (filterId
-          ? 'Bu kurum için henüz kredi hareketi yok.'
-          : 'Henüz kredi hareketi yok.')+
-      '</div>';
-    return;
-  }
-
-  const filterBanner=filterId
-    ? '<div class="lead-credit-ledger-filter">'+
-        '<div><strong>'+escapeHtml(institution?.name||"Kurum")+'</strong><small>Yalnızca bu kurumun kredi hareketleri gösteriliyor.</small></div>'+
-        '<button type="button" data-lead-credit-filter-clear>Tüm Hareketler</button>'+
-      '</div>'
-    : '';
-
-  leadCreditLedgerList.innerHTML=filterBanner+source.map(item=>{
-    const delta=Number(item.delta||0);
-    const request=item.quoteId
-      ? quoteRequestRecords.find(record=>String(record.id)===String(item.quoteId))
-      : null;
-    const isUsage=String(item.type||"")==="offer_usage" || Boolean(item.quoteId);
-    const service=String(item.service||request?.service||"").trim();
-    const customer=String(request?.name||"").trim();
-    const location=[request?.city,request?.district].filter(Boolean).join(" / ");
-    const detailParts=[
-      isUsage ? "Teklif kredisi kullanımı" : String(item.note||item.type||"Kredi hareketi"),
-      service,
-      customer ? "Müşteri: "+customer : "",
-      location
-    ].filter(Boolean);
-
-    return '<div class="lead-credit-ledger-row '+(isUsage?'usage':'')+'">'+
-      '<div class="lead-credit-ledger-main">'+
-        '<strong>'+escapeHtml(item.institutionName||institution?.name||"Kurum")+'</strong>'+
-        '<small>'+escapeHtml(detailParts.join(" · "))+'</small>'+
-        (item.quoteId
-          ? '<code>Talep: #'+escapeHtml(String(item.quoteId).slice(0,9).toUpperCase())+'</code>'
-          : '')+
-      '</div>'+
-      '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
-      '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
-      (item.quoteId
-        ? '<button type="button" class="lead-credit-open-quote" data-lead-credit-quote="'+escapeHtml(String(item.quoteId))+'">Talebi Aç</button>'
-        : '<span class="lead-credit-no-quote">—</span>')+
-    '</div>';
-  }).join("");
-
-  leadCreditLedgerList.querySelector("[data-lead-credit-filter-clear]")?.addEventListener("click",()=>{
-    activeLeadCreditInstitutionFilter="";
-    renderLeadCreditLedger();
-  });
-
-  leadCreditLedgerList.querySelectorAll("[data-lead-credit-quote]").forEach(button=>{
-    button.addEventListener("click",()=>{
-      const quoteId=String(button.dataset.leadCreditQuote||"");
-      if(!quoteId)return;
-      openQuoteDetailModal(quoteId);
-    });
-  });
-}
-
 function renderLeadCreditAdmin(){
   if(!leadCreditTableBody)return;
   const accountMap=leadCreditAccountMap();
@@ -4404,28 +4320,51 @@ function renderLeadCreditAdmin(){
         '<td>'+row.totalLoaded+'</td>'+
         '<td>'+row.totalUsed+'</td>'+
         '<td><strong class="lead-credit-balance '+balanceClass+'">'+row.balance+'</strong></td>'+
-        '<td><div class="lead-credit-row-actions">'+
-          (row.totalUsed>0
-            ? '<button type="button" class="lead-credit-usage-btn" data-lead-credit-usage="'+escapeHtml(row.inst.id)+'">Kullanımları Gör</button>'
-            : '')+
-          '<button type="button" class="lead-credit-manage-btn" data-lead-credit-manage="'+escapeHtml(row.inst.id)+'">Kredi Yönet</button>'+
-        '</div></td>'+
+        '<td><button type="button" class="lead-credit-manage-btn" data-lead-credit-manage="'+escapeHtml(row.inst.id)+'">Kredi Yönet</button></td>'+
       '</tr>';
     }).join("");
   }
 
-  renderLeadCreditLedger();
+  if(leadCreditLedgerList){
+    const recent=leadCreditLedgerRecords.slice(0,20);
+    const meta=document.getElementById("leadCreditLedgerMeta");
+    if(meta)meta.textContent="En yeni 20 işlem";
 
-  leadCreditTableBody.querySelectorAll("[data-lead-credit-usage]").forEach(button=>{
-    button.addEventListener("click",()=>{
-      activeLeadCreditInstitutionFilter=String(button.dataset.leadCreditUsage||"");
-      renderLeadCreditLedger();
-      document.querySelector(".lead-credit-ledger")?.scrollIntoView({
-        behavior:"smooth",
-        block:"start"
+    leadCreditLedgerList.innerHTML=recent.length?recent.map(item=>{
+      const delta=Number(item.delta||0);
+      const request=item.quoteId
+        ? quoteRequestRecords.find(record=>String(record.id)===String(item.quoteId))
+        : null;
+      const usage=String(item.type||"")==="offer_usage" || Boolean(item.quoteId);
+      const service=String(item.service||request?.service||"").trim();
+      const customer=String(request?.name||"").trim();
+
+      const detail=[
+        usage ? "Teklif kredisi kullanımı" : String(item.note||item.type||"Kredi hareketi"),
+        service,
+        customer ? "Müşteri: "+customer : ""
+      ].filter(Boolean).join(" · ");
+
+      return '<div class="lead-credit-ledger-row '+(usage?'usage':'')+'">'+
+        '<div class="lead-credit-ledger-main"><strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong>'+
+          '<small>'+escapeHtml(detail)+'</small>'+
+          (item.quoteId?'<code>Talep #'+escapeHtml(String(item.quoteId).slice(0,9).toUpperCase())+'</code>':'')+
+        '</div>'+
+        '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
+        '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
+        (item.quoteId
+          ? '<button type="button" class="lead-credit-open-quote" data-lead-credit-quote="'+escapeHtml(String(item.quoteId))+'">Talebi Aç</button>'
+          : '<span class="lead-credit-no-quote">—</span>')+
+      '</div>';
+    }).join(""):'<div class="empty-state">Henüz kredi hareketi yok.</div>';
+
+    leadCreditLedgerList.querySelectorAll("[data-lead-credit-quote]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const quoteId=String(button.dataset.leadCreditQuote||"");
+        if(quoteId)openQuoteDetailModal(quoteId);
       });
     });
-  });
+  }
 
   leadCreditTableBody.querySelectorAll("[data-lead-credit-manage]").forEach(button=>{
     button.addEventListener("click",()=>openLeadCreditModal(button.dataset.leadCreditManage));
