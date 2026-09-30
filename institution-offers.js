@@ -56,7 +56,22 @@ function syncInstitutionOfferStateWatchers(){
         else institutionLockMap.delete(quoteId);
 
         if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
-          if(!before && after && institutionLockBelongsToCurrentInstitution(after,institutionOfferMap.get(quoteId))){
+          const ownOffer=institutionOfferMap.get(quoteId)||null;
+          const belongsHere=after && institutionLockBelongsToCurrentInstitution(after,ownOffer);
+
+          if(belongsHere){
+            const quote=quoteRecords.find(item=>String(item.id)===quoteId);
+            if(quote){
+              quote.status="accepted";
+              quote.acceptedInstitutionId=String(after.institutionId||currentInstitutionId);
+              quote.acceptedInstitutionName=String(after.institutionName||currentInstitution?.name||"Kurum");
+              quote.acceptedOfferCode=String(after.offerCode||ownOffer?.offerCode||"");
+              quote.acceptedPrice=Number(after.price||ownOffer?.price||0);
+              quote.acceptedAt=String(after.acceptedAt||after.lockedAt||new Date().toISOString());
+            }
+          }
+
+          if(!before && belongsHere){
             try{ showToast("✓ Müşteri teklifinizi kabul etti. Teklif kapatıldı ve artık düzenlenemez."); }catch(_){}
           }
           renderQuotes();
