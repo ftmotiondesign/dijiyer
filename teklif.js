@@ -1212,6 +1212,13 @@ async function lockOffer(quoteId,institutionId,button){
       previewOffer={id:previewSnap.id,...previewSnap.data()};
     }
 
+    const offerExpiryMs=new Date(previewOffer.expiresAt||0).getTime();
+    if(Number.isFinite(offerExpiryMs) && offerExpiryMs<=Date.now()){
+      toast("Bu fiyat teklifinin geçerlilik süresi dolmuş. Kurumdan güncel teklif isteyin.");
+      renderLiveTracking();
+      return;
+    }
+
     if(!(await confirmOfferLock(previewOffer)))return;
 
     acceptanceControls=[...results.querySelectorAll("[data-lock], [data-lock-consent], [data-djy-compare-lock]")];
@@ -1299,7 +1306,13 @@ async function lockOffer(quoteId,institutionId,button){
           return;
         }
       }catch(_){}
-      toast("Teklif kabul edilemedi. Teklif güncellenmiş, süresi dolmuş veya talep kapanmış olabilir.");
+      const expiryMs=new Date(previewOffer?.expiresAt||0).getTime();
+      if(Number.isFinite(expiryMs) && expiryMs>Date.now()){
+        toast("Teklif hâlâ geçerli fakat kabul kaydı Firestore tarafından reddedildi. Teklif ekranda kalacak; sistemi düzeltiyoruz.");
+      }else{
+        toast("Bu fiyat teklifinin geçerlilik süresi dolmuş. Kurumdan güncel teklif isteyin.");
+      }
+      renderLiveTracking();
     }else if(code.includes("resource-exhausted")){
       toast("Firestore geçici olarak yoğun. Birkaç saniye sonra tekrar deneyin.");
     }else{
