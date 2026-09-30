@@ -4385,3 +4385,57 @@
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* =========================================================
+   KURUM BULUCU · SATIR İŞLEMLERİ
+   ========================================================= */
+.banner-institution-result{
+  cursor:default;
+}
+.banner-institution-result-actions{
+  grid-column:2/-1;
+  display:flex;
+  justify-content:flex-end;
+  gap:5px;
+  padding-top:2px;
+}
+.banner-institution-result-actions button{
+  min-height:26px;
+  padding:0 8px;
+  border:1px solid #d7e1ec;
+  border-radius:7px;
+  background:#fff;
+  color:#53667d;
+  font-size:6.6px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.banner-institution-result-actions button:hover{
+  border-color:#a9c9ef;
+  background:#f7fbff;
+  color:#1268da;
+}
+.banner-institution-result-actions button.primary{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+.banner-institution-result-actions button.primary:hover{
+  background:#0f69e8;
+}
+.banner-institution-result-actions button:disabled{
+  cursor:default;
+  opacity:.7;
+}
+@media(max-width:650px){
+  .banner-institution-result-actions{
+    grid-column:1/-1;
+    justify-content:stretch;
+    padding-left:46px;
+  }
+  .banner-institution-result-actions button{
+    flex:1;
+  }
+}
