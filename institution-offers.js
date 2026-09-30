@@ -180,12 +180,35 @@ function institutionArchiveDocId(quoteId){
   return String(currentAccount?.institutionId||"")+"__"+String(quoteId||"");
 }
 
+function institutionArchiveStorageKey(){
+  return "dijiyerInstitutionQuoteArchive:"+String(currentAccount?.institutionId||"");
+}
+
+function readInstitutionArchiveLocal(){
+  try{
+    const raw=localStorage.getItem(institutionArchiveStorageKey());
+    const rows=raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(rows)?rows.map(String):[]);
+  }catch(_){
+    return new Set();
+  }
+}
+
+function writeInstitutionArchiveLocal(){
+  try{
+    localStorage.setItem(
+      institutionArchiveStorageKey(),
+      JSON.stringify([...institutionArchivedQuoteIds])
+    );
+  }catch(_){}
+}
+
 function institutionQuoteIsArchived(quoteId){
   return institutionArchivedQuoteIds.has(String(quoteId||""));
 }
 
 async function loadInstitutionQuoteArchive(){
-  institutionArchivedQuoteIds=new Set();
+  institutionArchivedQuoteIds=readInstitutionArchiveLocal();
   const institutionId=String(currentAccount?.institutionId||"");
   if(!institutionId)return;
 
@@ -196,12 +219,14 @@ async function loadInstitutionQuoteArchive(){
 
     snap.forEach(doc=>{
       const data=doc.data()||{};
-      if(data.archived===true && data.quoteId){
-        institutionArchivedQuoteIds.add(String(data.quoteId));
-      }
+      const quoteId=String(data.quoteId||"");
+      if(!quoteId)return;
+      if(data.archived===true)institutionArchivedQuoteIds.add(quoteId);
+      if(data.archived===false)institutionArchivedQuoteIds.delete(quoteId);
     });
+    writeInstitutionArchiveLocal();
   }catch(error){
-    console.warn("Arşivlenmiş teklifler okunamadı:",error);
+    console.warn("Firestore arşiv senkronizasyonu kullanılamıyor; yerel arşiv kullanılacak:",error);
   }
 }
 
@@ -217,35 +242,35 @@ async function setInstitutionQuoteArchived(quoteId,archived){
     return;
   }
 
-  const ref=db.collection("institutionQuoteArchive").doc(institutionArchiveDocId(id));
-
   if(archived){
     const ok=window.confirm("Bu talebi teklif listenizden kaldırmak istiyor musunuz? Sistem kaydı silinmez; Arşiv bölümünden geri getirebilirsiniz.");
     if(!ok)return;
-
-    await ref.set({
-      institutionId,
-      quoteId:id,
-      archived:true,
-      archivedAt:new Date().toISOString(),
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
     institutionArchivedQuoteIds.add(id);
-    try{ showToast("Talep arşive alındı."); }catch(_){}
   }else{
-    await ref.set({
-      institutionId,
-      quoteId:id,
-      archived:false,
-      restoredAt:new Date().toISOString(),
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
     institutionArchivedQuoteIds.delete(id);
-    try{ showToast("Talep tekrar listeye alındı."); }catch(_){}
   }
 
+  writeInstitutionArchiveLocal();
   renderQuotes();
   renderSummary();
+
+  try{
+    const ref=db.collection("institutionQuoteArchive").doc(institutionArchiveDocId(id));
+    await ref.set({
+      institutionId,
+      quoteId:id,
+      archived:Boolean(archived),
+      archivedAt:archived ? new Date().toISOString() : "",
+      restoredAt:archived ? "" : new Date().toISOString(),
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+  }catch(error){
+    console.warn("Arşiv Firestore'a kaydedilemedi; bu tarayıcıda yerel olarak saklandı:",error);
+  }
+
+  try{
+    showToast(archived ? "Talep arşive alındı." : "Talep tekrar listeye alındı.");
+  }catch(_){}
 }
 
 function visibleInstitutionQuoteRecords(){
@@ -1186,7 +1211,7 @@ renderQuotes = function(){
         await setInstitutionQuoteArchived(String(btn.dataset.archiveQuote||""),true);
       }catch(error){
         console.error("Talep arşivlenemedi:",error);
-        alert("Talep arşivlenemedi. Firestore yetkisini kontrol edin.");
+        alert("Talep arşivlenemedi.");
       }finally{
         if(document.body.contains(btn))btn.disabled=false;
       }
@@ -1200,7 +1225,7 @@ renderQuotes = function(){
         await setInstitutionQuoteArchived(String(btn.dataset.restoreQuote||""),false);
       }catch(error){
         console.error("Talep arşivden çıkarılamadı:",error);
-        alert("Talep geri getirilemedi. Firestore yetkisini kontrol edin.");
+        alert("Talep geri getirilemedi.");
       }finally{
         if(document.body.contains(btn))btn.disabled=false;
       }
