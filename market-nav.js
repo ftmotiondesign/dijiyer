@@ -68,6 +68,14 @@
     const count=localOfferCount();
     return `
       <div class="dijiyer-global-topbar-inner">
+        <a class="dijiyer-global-brand" href="index.html" aria-label="Dijiyer ana sayfası" title="Ana sayfaya dön">
+          <span class="dijiyer-global-brand-mark">D</span>
+          <span class="dijiyer-global-brand-copy">
+            <strong>Dijiyer</strong>
+            <small>Bul. Karşılaştır. Teklif Al.</small>
+          </span>
+        </a>
+
         <div class="dijiyer-global-search" role="search" aria-label="Dijiyer kurum ve hizmet arama">
           <span class="dijiyer-global-search-icon">⌕</span>
           <input id="globalMarketSearchInput" type="search" autocomplete="off" placeholder="Kurum, hizmet veya sektör ara...">
