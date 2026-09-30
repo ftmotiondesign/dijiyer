@@ -597,6 +597,10 @@ service cloud.firestore {
           'registrationRequired',
           'platformPayment',
           'paymentPolicy',
+          'offerVersion',
+          'sourceType',
+          'sourceLabel',
+          'secondOfferSentAt',
           'createdAt',
           'updatedAt'
         ])
@@ -614,6 +618,10 @@ service cloud.firestore {
         && request.resource.data.platformPayment == false
         && request.resource.data.paymentPolicy
             == 'offline_direct_between_customer_and_institution'
+        && request.resource.data.offerVersion is number
+        && request.resource.data.offerVersion >= 1
+        && request.resource.data.sourceType is string
+        && request.resource.data.sourceLabel is string
         && request.resource.data.expiresAtTs is timestamp
         && request.resource.data.expiresAtTs > request.time
         );
@@ -648,12 +656,20 @@ service cloud.firestore {
               'registrationRequired',
               'platformPayment',
               'paymentPolicy',
+              'offerVersion',
+              'sourceType',
+              'sourceLabel',
+              'secondOfferSentAt',
               'updatedAt'
             ])
         && request.resource.data.registrationRequired == true
         && request.resource.data.platformPayment == false
         && request.resource.data.paymentPolicy
             == 'offline_direct_between_customer_and_institution'
+        && request.resource.data.offerVersion is number
+        && request.resource.data.offerVersion >= 1
+        && request.resource.data.sourceType is string
+        && request.resource.data.sourceLabel is string
         && request.resource.data.expiresAtTs is timestamp
         && request.resource.data.expiresAtTs > request.time;
 
