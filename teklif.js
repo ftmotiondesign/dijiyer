@@ -302,13 +302,30 @@ function directResponseHtml(access,engagementRows,offers){
     response?.institutionName||
     "Seçtiğiniz kurum";
 
-  if(offers.length){
+  const targetId=String(access?.targetInstitutionId||"");
+  const targetOffer=offers.find(offer=>
+    String(offer.institutionId||offer.id||"")===targetId
+  );
+
+  if(targetOffer){
     return `
       <div class="direct-customer-status success">
         <span class="direct-status-icon">₺</span>
         <div>
           <strong>${safe(institutionName)} fiyat teklifini gönderdi</strong>
           <p>Teklif aşağıda hazır. Fiyatı ve şartları inceleyebilirsiniz.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  if(offers.length){
+    return `
+      <div class="direct-customer-status success alternative">
+        <span class="direct-status-icon">🔔</span>
+        <div>
+          <strong>Talebinize ${offers.length} yeni teklif geldi</strong>
+          <p>İlk seçtiğiniz kurum dışında uygun kurumlardan gelen teklifleri aşağıda inceleyebilirsiniz.</p>
         </div>
       </div>
     `;
@@ -528,7 +545,7 @@ function startLiveTracking(access){
           const offer={id:change.doc.id,...change.doc.data()};
 
           if(change.type==="added"){
-            const offerId=String(change.doc.id);
+            const offerId=String(offer.institutionId||change.doc.id);
             newlyArrivedOfferIds.add(offerId);
             latestNewOfferNotice={
               id:offerId,
