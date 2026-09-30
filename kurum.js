@@ -4,7 +4,7 @@ const db=publicApp.firestore();
 const params=new URLSearchParams(location.search);
 const institutionId=String(params.get("id")||params.get("kurum")||"").trim();
 const preview=params.get("onizleme")==="1";
-let institution=null,reviews=[],publicMap=null,currentRating=0;
+let institution=null,reviews=[],publicMap=null,currentRating=0,currentRecommendation=null;
 
 const categoryLabels={kres:"Kreş & Anaokulu",dershane:"Dershane / Kurs Merkezi",surucu:"Sürücü Kursu",ozel_ders:"Özel Ders",dil_kursu:"Dil Kursu",etut:"Etüt Merkezi",ozel_okul:"Özel Okul",yurt:"Öğrenci Yurdu",oto_servis:"Oto Servis / Tamir",kaporta_boya:"Kaporta / Boya",oto_elektrik:"Oto Elektrik",lastik_jant:"Lastik / Jant",oto_yikama:"Oto Yıkama / Kuaför",ekspertiz:"Oto Ekspertiz",galeri:"Oto Galeri",rentacar:"Rent a Car",yedek_parca:"Yedek Parça",motosiklet:"Motosiklet Servisi",restoran:"Restoran",kafe:"Kafe",fastfood:"Fast Food",pastane:"Pastane",pizza:"Pizza",doner:"Döner",pide_lahmacun:"Pide / Lahmacun",catering:"Catering",ev_yemekleri:"Ev Yemekleri",dis_klinigi:"Diş Kliniği",klinik:"Sağlık Kliniği",psikolog:"Psikolog",diyetisyen:"Diyetisyen",fizyoterapi:"Fizyoterapi",guzellik:"Güzellik Merkezi",kuafor:"Kuaför",berber:"Berber",spor:"Pilates / Fitness",mobilya:"Mobilya",dekorasyon:"Dekorasyon",insaat:"İnşaat / Tadilat",elektrikci:"Elektrikçi",tesisatci:"Tesisatçı",teknik_servis:"Beyaz Eşya / Teknik Servis",klima:"Klima Servisi",cam_balkon:"Cam Balkon / PVC",temizlik:"Temizlik Hizmetleri",emlak_ofisi:"Emlak Ofisi",konut:"Konut",arsa:"Arsa / Tarla",ticari:"Ticari Gayrimenkul",gunluk_kiralik:"Günlük Kiralık",otel:"Otel",pansiyon:"Pansiyon",apart:"Apart",bungalov:"Bungalov",seyahat:"Seyahat Acentesi / Tur",kamp:"Kamp / Karavan",dugun_salonu:"Düğün Salonu",organizasyon:"Organizasyon Firması",fotograf:"Fotoğrafçı",video:"Video Çekimi",drone:"Drone Çekimi",gelinlik:"Gelinlik",cicekci:"Çiçekçi",reklam:"Reklam / Tasarım / Matbaa",nakliyat:"Evden Eve Nakliyat",kurye:"Kurye",sehirici:"Şehir İçi Taşımacılık",depolama:"Depolama",hukuk:"Avukat / Hukuk",muhasebe:"Muhasebe / Mali Müşavir",web:"Web Tasarım",sosyal_medya:"Sosyal Medya / Ajans",bilgisayar:"Bilgisayar / Teknoloji",danismanlik:"Danışmanlık",veteriner:"Veteriner / Pet Hizmetleri",tarim:"Tarım / Hayvancılık",giyim:"Giyim",ayakkabi:"Ayakkabı",market:"Market",elektronik:"Elektronik / Telefon",kirtasiye:"Kırtasiye",petshop:"Pet Shop",zuccaciye:"Züccaciye",esnaf:"Diğer Yerel Esnaf",diger:"Diğer Hizmet"};
 
@@ -375,9 +375,15 @@ function renderProfile(){
               <span class="eyebrow">DEĞERLENDİRMELER</span>
               <h2>Müşteri Yorumları</h2>
             </div>
-            <div class="kp-review-score">
-              <strong id="reviewScore">${ratingText(x.rating)}</strong>
-              <span id="reviewCount">${Number(x.reviewCount||0)} değerlendirme</span>
+            <div class="kp-review-summary">
+              <div class="kp-review-score">
+                <strong id="reviewScore">${ratingText(x.rating)}</strong>
+                <span id="reviewCount">${Number(x.reviewCount||0)} değerlendirme</span>
+              </div>
+              <div class="kp-recommend-score" id="recommendScoreBox">
+                <strong id="recommendRate">-</strong>
+                <span id="recommendCount">Tavsiye oyu yok</span>
+              </div>
             </div>
           </div>
 
@@ -499,7 +505,17 @@ async function loadReviews(){
       const avg=reviews.reduce((sum,r)=>sum+Number(r.rating||0),0)/reviews.length;
       institution.rating=Number(avg.toFixed(1));
       institution.reviewCount=reviews.length;
+    }else{
+      institution.reviewCount=0;
     }
+
+    const recommendationVotes=reviews.filter(r=>typeof r.recommend==="boolean");
+    const recommendationYes=recommendationVotes.filter(r=>r.recommend===true).length;
+    institution.recommendationCount=recommendationVotes.length;
+    institution.recommendationRate=recommendationVotes.length
+      ? Math.round((recommendationYes/recommendationVotes.length)*100)
+      : null;
+
     renderReviews();
   }catch(error){console.error(error);document.getElementById("reviewsList").innerHTML='<div class="kp-empty">Yorumlar yüklenemedi.</div>'}
 }
@@ -507,10 +523,45 @@ async function loadReviews(){
 function renderReviews(){
   const list=document.getElementById("reviewsList");
   if(!list||!institution)return;
-  const score=document.getElementById("reviewScore"),count=document.getElementById("reviewCount");
+
+  const score=document.getElementById("reviewScore");
+  const count=document.getElementById("reviewCount");
+  const recommendRate=document.getElementById("recommendRate");
+  const recommendCount=document.getElementById("recommendCount");
+  const recommendBox=document.getElementById("recommendScoreBox");
+
   if(score)score.textContent=ratingText(institution.rating);
   if(count)count.textContent=Number(institution.reviewCount||reviews.length||0)+" değerlendirme";
-  list.innerHTML=reviews.length?reviews.slice(0,8).map(r=>`<article class="kp-review"><div class="kp-review-top"><strong>Dijiyer Kullanıcısı</strong><span>${"★".repeat(Math.max(1,Math.min(5,Number(r.rating||0))))}</span></div><p>${escapeHtml(r.text||"")}</p></article>`).join(""):'<div class="kp-empty">Henüz yorum yapılmamış. İlk değerlendirmeyi siz yapabilirsiniz.</div>';
+
+  const recommendationCount=Number(institution.recommendationCount||0);
+  const recommendationRate=Number(institution.recommendationRate);
+
+  if(recommendRate){
+    recommendRate.textContent=recommendationCount>0 && Number.isFinite(recommendationRate)
+      ? "%"+Math.round(recommendationRate)
+      : "-";
+  }
+  if(recommendCount){
+    recommendCount.textContent=recommendationCount>0
+      ? recommendationCount+" tavsiye oyu"
+      : "Tavsiye oyu yok";
+  }
+  if(recommendBox){
+    recommendBox.classList.toggle("has-data",recommendationCount>0);
+  }
+
+  list.innerHTML=reviews.length
+    ? reviews.slice(0,8).map(r=>{
+        const recommendation=typeof r.recommend==="boolean"
+          ? '<span class="kp-review-recommend '+(r.recommend?'yes':'no')+'">'+(r.recommend?'👍 Tavsiye ediyor':'Tavsiye etmiyor')+'</span>'
+          : '';
+        return '<article class="kp-review">'+
+          '<div class="kp-review-top"><strong>Dijiyer Kullanıcısı</strong><span>'+"★".repeat(Math.max(1,Math.min(5,Number(r.rating||0))))+'</span></div>'+
+          (recommendation?'<div class="kp-review-recommend-row">'+recommendation+'</div>':'')+
+          '<p>'+escapeHtml(r.text||"")+'</p>'+
+        '</article>';
+      }).join("")
+    : '<div class="kp-empty">Henüz yorum yapılmamış. İlk değerlendirmeyi siz yapabilirsiniz.</div>';
 }
 
 async function loadSimilar(){
@@ -651,19 +702,45 @@ function closeReviewModal(){document.getElementById("reviewModal").classList.add
 document.getElementById("reviewModalClose").addEventListener("click",closeReviewModal);
 document.getElementById("reviewModal").addEventListener("click",event=>{if(event.target.id==="reviewModal")closeReviewModal()});
 document.querySelectorAll("#ratingPicker [data-rating]").forEach(button=>button.addEventListener("click",()=>{currentRating=Number(button.dataset.rating||0);document.querySelectorAll("#ratingPicker [data-rating]").forEach(x=>x.classList.toggle("active",Number(x.dataset.rating)<=currentRating))}));
+document.querySelectorAll("#recommendPicker [data-recommend]").forEach(button=>button.addEventListener("click",()=>{
+  currentRecommendation=button.dataset.recommend==="true";
+  document.querySelectorAll("#recommendPicker [data-recommend]").forEach(x=>{
+    x.classList.toggle("active",x===button);
+  });
+}));
 
 document.getElementById("reviewForm").addEventListener("submit",async event=>{
   event.preventDefault();
   const msg=document.getElementById("reviewMessage"),text=document.getElementById("reviewText").value.trim();
   if(institution.isDemo){msg.textContent="Demo kurum için yorum kaydı oluşturulamaz.";return}
   if(!currentRating){msg.textContent="Lütfen 1-5 yıldız seçin.";return}
+  if(typeof currentRecommendation!=="boolean"){msg.textContent="Bu kurumu tavsiye edip etmediğinizi seçin.";return}
   if(!text){msg.textContent="Lütfen yorumunuzu yazın.";return}
   const button=event.target.querySelector('button[type="submit"]'),old=button.textContent;
   button.disabled=true;button.textContent="Gönderiliyor...";
   try{
-    await db.collection("institutionReviews").add({institutionId:String(institution.id),rating:currentRating,text,status:"published",date:new Date().toISOString()});
-    event.target.reset();currentRating=0;document.querySelectorAll("#ratingPicker button").forEach(x=>x.classList.remove("active"));msg.textContent="Yorumunuz yayınlandı.";await loadReviews();setTimeout(closeReviewModal,650);
-  }catch(error){console.error(error);msg.textContent="Yorum gönderilemedi."}
+    await db.collection("institutionReviews").add({
+      institutionId:String(institution.id),
+      rating:currentRating,
+      recommend:currentRecommendation,
+      text,
+      status:"published",
+      date:new Date().toISOString()
+    });
+    event.target.reset();
+    currentRating=0;
+    currentRecommendation=null;
+    document.querySelectorAll("#ratingPicker button").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll("#recommendPicker button").forEach(x=>x.classList.remove("active"));
+    msg.textContent="Yorumunuz ve tavsiye oyunuz yayınlandı.";
+    await loadReviews();
+    setTimeout(closeReviewModal,650);
+  }catch(error){
+    console.error(error);
+    msg.textContent=String(error?.code||"").includes("permission-denied")
+      ?"Yorum gönderilemedi. Firestore yorum kuralını yayınlayın."
+      :"Yorum gönderilemedi.";
+  }
   finally{button.disabled=false;button.textContent=old}
 });
 
