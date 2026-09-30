@@ -67,6 +67,29 @@ service cloud.firestore {
         );
     }
 
+    function teklifTalebiAcik(quoteId) {
+      let talep = get(
+        /databases/$(database)/documents/quoteRequests/$(quoteId)
+      ).data;
+
+      return !exists(
+          /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+        )
+        && (
+          !talep.keys().hasAny(['status'])
+          ||
+          ![
+            'done',
+            'archived',
+            'closed',
+            'cancelled',
+            'canceled',
+            'completed',
+            'used'
+          ].hasAny([talep.status])
+        );
+    }
+
     function kurumTalebineErisebilir(quoteId) {
       let talep = get(
         /databases/$(database)/documents/quoteRequests/$(quoteId)
@@ -528,6 +551,17 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - MÜŞTERİYE AÇIK TEKLİF SÜREÇ DURUMU
+    // Kişisel veri içermez; yönlendirme/yanıt durumunu takip ekranına taşır.
+    // =====================================================
+    match /quoteRequests/{quoteId}/publicStatus/{statusId} {
+      allow get: if statusId == 'main';
+      allow list: if false;
+      allow create, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - GELEN FİYAT TEKLİFLERİ
     // =====================================================
     match /quoteRequests/{quoteId}/offers/{institutionId} {
@@ -545,6 +579,7 @@ service cloud.firestore {
           onayliKurumKullanicisi()
           && bagliKurumId() == institutionId
         && kurumTalebineErisebilir(quoteId)
+        && teklifTalebiAcik(quoteId)
         && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
         && request.resource.data.keys().hasOnly([
           'institutionId',
@@ -588,6 +623,7 @@ service cloud.firestore {
         onayliKurumKullanicisi()
         && bagliKurumId() == institutionId
         && kurumTalebineErisebilir(quoteId)
+        && teklifTalebiAcik(quoteId)
         && resource.data.institutionId == institutionId
         && request.resource.data.institutionId == institutionId
         && request.resource.data.offerCode == resource.data.offerCode
