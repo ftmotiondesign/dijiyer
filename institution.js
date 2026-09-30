@@ -2562,8 +2562,8 @@ function getSupportQuoteStateLabel(state) {
     new:"Yeni talep",
     offered:"Teklif verildi",
     interested:"Teklif verildi",
-    locked:"Fiyat kilitlendi",
-    used:"Kullanıldı",
+    locked:"Kayıt bekliyor",
+    used:"Gerçek kayıt tamamlandı",
     expired:"Süresi doldu",
     closed:"Başka teklif seçildi",
     not_interested:"İlgilenmiyorum"
