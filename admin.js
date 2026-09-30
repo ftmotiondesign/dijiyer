@@ -499,6 +499,24 @@ if(adminHeaderBrand){
   window.addEventListener("popstate",syncAdminBrandHref);
 }
 
+const adminBackToTop=document.getElementById("adminBackToTop");
+
+function updateAdminBackToTop(){
+  if(!adminBackToTop)return;
+  adminBackToTop.hidden=window.scrollY<420;
+}
+
+window.addEventListener("scroll",updateAdminBackToTop,{passive:true});
+
+adminBackToTop?.addEventListener("click",()=>{
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+});
+
+updateAdminBackToTop();
+
 initSimpleAdminNavigation();
 
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
