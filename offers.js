@@ -86,7 +86,7 @@
     return expired ? "expired" : "offered";
   }
   function stateLabel(state){
-    return {offered:"Fiyat Garantili",locked:"Fiyat Kilitli",used:"Kullanıldı",expired:"Süresi Doldu",closed:"Başka teklif seçildi"}[state] || state;
+    return {offered:"Teklif Aktif",locked:"Kabul Edildi",used:"Gerçek Kayıt Tamamlandı",expired:"Süresi Doldu",closed:"Başka teklif seçildi"}[state] || state;
   }
 
   async function getRequestBundle(quoteId){
@@ -183,7 +183,9 @@
         </div>
         ${state === "offered" ? `
           <div class="customer-offer-actions">
-            <button class="offer-lock-btn" data-lock-offer data-quote-id="${safe(bundle.id)}" data-institution-id="${safe(offer.institutionId)}">🔒 Fiyatı Kilitle</button>
+            ${bundle.quote?.trackingUrl
+              ? `<button class="offer-lock-btn" data-accept-via-tracking="${safe(bundle.quote.trackingUrl)}">✓ Teklifi İncele ve Kabul Et</button>`
+              : `<button class="offer-lock-btn" data-open-tracking-fallback>Takip Ekranından Kabul Et</button>`}
           </div>` : ""}
       </div>
     `;
@@ -333,6 +335,17 @@
   }
 
   function bindMyOfferActions(){
+    myOffersList.querySelectorAll("[data-accept-via-tracking]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const url=String(btn.dataset.acceptViaTracking||"");
+        if(url)window.location.href=url;
+      });
+    });
+    myOffersList.querySelectorAll("[data-open-tracking-fallback]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        showToast("Teklifi güvenli şekilde kabul etmek için talebinizin takip ekranını açın.");
+      });
+    });
     myOffersList.querySelectorAll("[data-lock-offer]").forEach(btn=>{
       btn.addEventListener("click",()=>lockOffer(btn.dataset.quoteId,btn.dataset.institutionId,btn));
     });
