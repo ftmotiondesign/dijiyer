@@ -6442,3 +6442,59 @@ button{
     width:100%;
   }
 }
+
+
+.quote-routing-consent{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 16px 12px;
+  padding:10px 11px;
+  border-radius:10px;
+}
+.quote-routing-consent strong,
+.quote-routing-consent span{
+  display:block;
+}
+.quote-routing-consent strong{
+  font-size:10.5px;
+  white-space:nowrap;
+}
+.quote-routing-consent span{
+  flex:1;
+  font-size:9.5px;
+  line-height:1.45;
+}
+.quote-routing-consent.ok{
+  border:1px solid #bbf7d0;
+  background:#f0fdf4;
+  color:#166534;
+}
+.quote-routing-consent.blocked{
+  border:1px solid #f8d78b;
+  background:#fffaf0;
+  color:#92400e;
+}
+.quote-routing-consent button{
+  min-height:31px;
+  border:0;
+  border-radius:8px;
+  background:#f59e0b;
+  color:#fff;
+  padding:0 10px;
+  font-size:9px;
+  font-weight:850;
+  flex:0 0 auto;
+}
+@media(max-width:620px){
+  .quote-routing-consent{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .quote-routing-consent strong{
+    white-space:normal;
+  }
+  .quote-routing-consent button{
+    width:100%;
+  }
+}
