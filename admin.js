@@ -356,9 +356,25 @@ function openSimpleAdminTab(tabId){
   if(button)button.click();
 }
 
+function adminLinkShouldOpenNormally(event){
+  return Boolean(
+    event &&
+    (
+      event.button!==0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+  );
+}
+
 function initSimpleAdminNavigation(){
-  document.querySelectorAll("[data-admin-main]").forEach(button=>{
-    button.addEventListener("click",()=>{
+  document.querySelectorAll("[data-admin-main]").forEach(link=>{
+    link.addEventListener("click",(event)=>{
+      if(adminLinkShouldOpenNormally(event))return;
+      event.preventDefault();
+
       const map={
         overview:"overviewTabBtn",
         quotes:"quotesTabBtn",
@@ -369,12 +385,15 @@ function initSimpleAdminNavigation(){
         support:"supportTabBtn",
         system:"systemTabBtn"
       };
-      openSimpleAdminTab(map[button.dataset.adminMain] || "overviewTabBtn");
+      openSimpleAdminTab(map[link.dataset.adminMain] || "overviewTabBtn");
     });
   });
 
   Object.keys(ADMIN_TAB_META).forEach(tabId=>{
-    document.getElementById(tabId)?.addEventListener("click",()=>{
+    document.getElementById(tabId)?.addEventListener("click",(event)=>{
+      if(adminLinkShouldOpenNormally(event))return;
+      event.preventDefault();
+
       syncSimpleAdminNavigation(tabId);
 
       if(!adminRouteFromHistory){
