@@ -5466,3 +5466,33 @@
   border-color:#86efac;
   background:#dcfce7;
 }
+
+
+/* Medya arşivi toplu işlem butonlarını her zaman görünür tut */
+.media-archive-bulk-actions{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+  width:100%;
+}
+.media-archive-selected-count{
+  grid-column:1/-1 !important;
+  margin-right:0 !important;
+}
+.media-archive-bulk-actions button{
+  width:100%;
+  min-width:0;
+  white-space:normal;
+  line-height:1.2;
+  padding:8px 7px;
+}
+.media-archive-bulk-actions button:disabled{
+  opacity:.58;
+  visibility:visible !important;
+  display:inline-flex !important;
+}
+@media(max-width:760px){
+  .media-archive-bulk-actions{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
