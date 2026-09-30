@@ -66,8 +66,8 @@
       ["Revizyon istendi",engagement.revisionRequestedAt,!!engagement.revisionRequestedAt],
       ["Teklif güncellendi",offer.updatedAt && offer.updatedAt!==offer.createdAt ? offer.updatedAt : null,!!(offer.updatedAt&&offer.updatedAt!==offer.createdAt)],
       ["Revizyon yanıtlandı",engagement.revisionRespondedAt,!!engagement.revisionRespondedAt],
-      ["Fiyat kilitlendi",bundle.lock?.institutionId===offer.institutionId ? bundle.lock.lockedAt : null,bundle.lock?.institutionId===offer.institutionId],
-      ["Teklif kullanıldı",bundle.lock?.institutionId===offer.institutionId ? bundle.lock.usedAt : null,bundle.lock?.institutionId===offer.institutionId && bundle.lock.status==="used"]
+      ["Teklif kabul edildi / kayıt bekliyor",bundle.lock?.institutionId===offer.institutionId ? (bundle.lock.acceptedAt||bundle.lock.lockedAt) : null,bundle.lock?.institutionId===offer.institutionId],
+      ["Gerçek kayıt tamamlandı",bundle.lock?.institutionId===offer.institutionId ? (bundle.lock.registrationCompletedAt||bundle.lock.usedAt) : null,bundle.lock?.institutionId===offer.institutionId && bundle.lock.status==="used"]
     ];
     return `<div class="djy-timeline-title">Teklif Süreci</div>`+items.map(([label,date,done])=>`
       <div class="djy-timeline-row ${done?"done":""}">
