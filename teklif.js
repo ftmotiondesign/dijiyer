@@ -1221,18 +1221,15 @@ async function lockOffer(quoteId,institutionId,button){
   const offerRef=quoteRef.collection("offers").doc(institutionId);
   const lockRef=quoteRef.collection("locks").doc("main");
   let acceptanceControls=[];
-  let transactionStarted=false;
 
   acceptInProgress=true;
   try{
-    // Canlı dinleyici zaten bir kabul kaydı gördüyse Firestore'a tekrar istek gönderme.
     if(liveLock || localAcceptedQuote(quoteId)){
       toast("Bu talep için teklif zaten kabul edildi.");
       renderLiveTracking();
       return;
     }
 
-    // Önce canlı bellekteki teklifi kullan. Sadece bulunamazsa tek belge okuması yap.
     let previewOffer=liveOffers.find(offer=>String(offer.institutionId||offer.id||"")===String(institutionId))||null;
     if(!previewOffer){
       const previewSnap=await offerRef.get();
@@ -1246,75 +1243,11 @@ async function lockOffer(quoteId,institutionId,button){
     acceptanceControls.forEach(control=>{ control.disabled=true; });
     button.disabled=true;
     button.textContent="Kabul ediliyor...";
+
     const publicLockedAt=new Date().toISOString();
-    transactionStarted=true;
-
-    await db.runTransaction(async tx=>{
-      const [offerSnap,lockSnap,quoteSnap]=await Promise.all([
-        tx.get(offerRef),
-        tx.get(lockRef),
-        tx.get(quoteRef)
-      ]);
-
-      if(lockSnap.exists)throw new Error("Bu talep için daha önce bir teklif kabul edildi.");
-      if(!offerSnap.exists)throw new Error("Teklif bulunamadı.");
-      if(!quoteSnap.exists)throw new Error("Talep bulunamadı.");
-
-      const quoteData=quoteSnap.data()||{};
-      if(["accepted","closed","completed","used","cancelled","canceled"].includes(String(quoteData.status||"").toLowerCase())){
-        throw new Error("Bu talep daha önce kapatıldı.");
-      }
-
-      const offer=offerSnap.data();
-      if(!offer.expiresAtTs||offer.expiresAtTs.toMillis()<=Date.now())throw new Error("Teklifin süresi dolmuş.");
-
-      tx.set(lockRef,{
-        quoteId,
-        institutionId:offer.institutionId,
-        institutionName:offer.institutionName||"Kurum",
-        offerCode:offer.offerCode,
-        price:Number(offer.price),
-        lockedPrice:Number(offer.price),
-        vatStatus:offer.vatStatus||"",
-        scope:offer.scope||"",
-        lockedScope:offer.scope||"",
-        conditions:offer.conditions||"",
-        extraFee:offer.extraFee||"Yok",
-        offerCreatedAt:offer.createdAt||"",
-        offerUpdatedAt:offer.updatedAt||offer.createdAt||"",
-        offerVersion:Math.max(1,Number(offer.offerVersion||1)),
-        offerSnapshotVersion:1,
-        trackingCode:String(currentAccess?.trackingCode||""),
-        phoneHash:String(currentAccess?.phoneHash||""),
-        acceptanceConsent:true,
-        status:"locked",
-        registrationStatus:"pending",
-        acceptedAt:publicLockedAt,
-        acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
-        lockedAt:publicLockedAt,
-        lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
-        expiresAt:offer.expiresAt,
-        expiresAtTs:offer.expiresAtTs,
-        registrationDeadlineAt:offer.expiresAt,
-        registrationDeadlineAtTs:offer.expiresAtTs,
-        platformPayment:false,
-        paymentPolicy:"offline_direct_between_customer_and_institution"
-      });
-
-      tx.update(quoteRef,{
-        status:"accepted",
-        acceptedInstitutionId:String(offer.institutionId||institutionId),
-        acceptedInstitutionName:String(offer.institutionName||"Kurum"),
-        acceptedOfferCode:String(offer.offerCode||""),
-        acceptedPrice:Number(offer.price),
-        acceptedAt:publicLockedAt,
-        acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    });
-
-    liveLock={
+    const lockData={
       quoteId,
-      institutionId:previewOffer.institutionId||institutionId,
+      institutionId:String(previewOffer.institutionId||institutionId),
       institutionName:previewOffer.institutionName||"Kurum",
       offerCode:previewOffer.offerCode,
       price:Number(previewOffer.price),
@@ -1334,13 +1267,34 @@ async function lockOffer(quoteId,institutionId,button){
       status:"locked",
       registrationStatus:"pending",
       acceptedAt:publicLockedAt,
+      acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
       lockedAt:publicLockedAt,
+      lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
       expiresAt:previewOffer.expiresAt,
       expiresAtTs:previewOffer.expiresAtTs,
       registrationDeadlineAt:previewOffer.expiresAt,
       registrationDeadlineAtTs:previewOffer.expiresAtTs,
       platformPayment:false,
       paymentPolicy:"offline_direct_between_customer_and_institution"
+    };
+
+    const batch=db.batch();
+    batch.set(lockRef,lockData);
+    batch.update(quoteRef,{
+      status:"accepted",
+      acceptedInstitutionId:String(previewOffer.institutionId||institutionId),
+      acceptedInstitutionName:String(previewOffer.institutionName||"Kurum"),
+      acceptedOfferCode:String(previewOffer.offerCode||""),
+      acceptedPrice:Number(previewOffer.price),
+      acceptedAt:publicLockedAt,
+      acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await batch.commit();
+
+    liveLock={
+      ...lockData,
+      acceptedAt:publicLockedAt,
+      lockedAt:publicLockedAt
     };
 
     markQuoteAcceptedLocally(quoteId,liveLock);
@@ -1355,24 +1309,25 @@ async function lockOffer(quoteId,institutionId,button){
   }catch(error){
     console.error(error);
 
-    if(transactionStarted){
-      try{
-        const freshLockSnap=await lockRef.get();
-        if(freshLockSnap.exists){
-          liveLock=freshLockSnap.data();
-          markQuoteAcceptedLocally(quoteId,liveLock);
-          renderLiveTracking();
-          if(currentAccess?.quoteId===quoteId)startAcceptedLockTracking(currentAccess);
-          toast("Bu talep için teklif zaten kabul edildi.");
-          return;
-        }
-      }catch(_){}
-    }
+    try{
+      const freshLockSnap=await lockRef.get();
+      if(freshLockSnap.exists){
+        liveLock=freshLockSnap.data();
+        markQuoteAcceptedLocally(quoteId,liveLock);
+        renderLiveTracking();
+        if(currentAccess?.quoteId===quoteId)startAcceptedLockTracking(currentAccess);
+        toast("Bu talep için teklif zaten kabul edildi.");
+        return;
+      }
+    }catch(_){}
 
     acceptanceControls.forEach(control=>{ control.disabled=false; });
     const code=String(error?.code||"");
+
     if(code.includes("resource-exhausted")){
       toast("Firestore geçici olarak yoğun. Birkaç saniye sonra tekrar deneyin.");
+    }else if(code.includes("permission-denied")){
+      toast("Teklif kabul edilemedi. Teklif güncellenmiş, süresi dolmuş veya talep kapanmış olabilir.");
     }else{
       toast(error.message||"Teklif kabul edilemedi.");
     }
