@@ -8672,3 +8672,61 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
 
   syncDesktopLocation();
 })();
+
+/* =========================================================
+   YÖNETİM PANELİNDEN EKLENEN ÖZEL KATEGORİLER
+   ========================================================= */
+async function syncCustomCategoryTaxonomyFromSettings(){
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    const custom=snap.exists && snap.data()?.customCategoryTaxonomy && typeof snap.data().customCategoryTaxonomy==="object"
+      ? snap.data().customCategoryTaxonomy
+      : {};
+
+    let changed=false;
+
+    Object.entries(custom).forEach(([mainKey,main])=>{
+      const key=String(mainKey||"").trim();
+      const label=String(main?.label||"").trim();
+      if(!key || !label)return;
+
+      if(!categoryTaxonomy[key]){
+        categoryTaxonomy[key]={label,subs:{}};
+        changed=true;
+      }else if(categoryTaxonomy[key].label!==label){
+        categoryTaxonomy[key].label=label;
+        changed=true;
+      }
+
+      const subs=main?.subs && typeof main.subs==="object" ? main.subs : {};
+      Object.entries(subs).forEach(([subKey,subLabel])=>{
+        const childKey=String(subKey||"").trim();
+        const childLabel=String(subLabel||"").trim();
+        if(!childKey || !childLabel)return;
+
+        if(categoryTaxonomy[key].subs?.[childKey]!==childLabel){
+          categoryTaxonomy[key].subs=categoryTaxonomy[key].subs||{};
+          categoryTaxonomy[key].subs[childKey]=childLabel;
+          changed=true;
+        }
+      });
+    });
+
+    if(!changed)return;
+
+    if(typeof populateMainCategorySelect==="function"){
+      populateMainCategorySelect("quoteCategory","Ana kategori seçin");
+      populateMainCategorySelect("institutionCategory","Ana kategori seçin");
+    }
+
+    if(typeof renderSidebarCategories==="function")renderSidebarCategories();
+    if(typeof renderMobileCategories==="function")renderMobileCategories();
+    if(typeof renderList==="function")renderList();
+    if(typeof updateMobileCategoryResult==="function")updateMobileCategoryResult();
+  }catch(error){
+    console.warn("Özel kategori tanımları yüklenemedi:",error);
+  }
+}
+
+syncCustomCategoryTaxonomyFromSettings();
+
