@@ -847,7 +847,7 @@
       try{
         var results = await Promise.all([
           db.collection('institutions').get(),
-          db.collection('bannerAds').get()
+          db.collection('bannerAds').where('active','==',true).get()
         ]);
 
         institutions = results[0].docs.map(function(doc){
