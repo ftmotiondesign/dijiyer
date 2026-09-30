@@ -14,11 +14,11 @@ function makeOfferCode(){
   return out;
 }
 function offerValidityHours(offer){
-  if(!offer?.expiresAt)return 72;
+  if(!offer?.expiresAt)return 48;
   const start=offer.updatedAt || offer.createdAt;
-  if(!start)return 72;
+  if(!start)return 48;
   const diff=new Date(offer.expiresAt).getTime()-new Date(start).getTime();
-  if(!Number.isFinite(diff)||diff<=0)return 72;
+  if(!Number.isFinite(diff)||diff<=0)return 48;
   return Math.max(1,Math.round(diff/3600000));
 }
 function offerValidityLabel(hours){
@@ -27,6 +27,7 @@ function offerValidityLabel(hours){
   if(h===3)return "3 saat";
   if(h===12)return "12 saat";
   if(h===24)return "24 saat";
+  if(h===48)return "2 gün";
   if(h===72)return "3 gün";
   if(h===168)return "7 gün";
   if(h>24 && h%24===0)return (h/24)+" gün";
@@ -72,8 +73,8 @@ function sellerStateMeta(state){
   const map={
     new:["Yeni","status-new"],
     offered:["Teklif Verildi","status-interested"],
-    locked:["Fiyat Kilitlendi","status-interested"],
-    used:["Kullanıldı","status-interested"],
+    locked:["Kayıt Bekliyor","status-interested"],
+    used:["Gerçek Kayıt","status-interested"],
     expired:["Süresi Doldu","status-not_interested"],
     closed:["Başka Teklif Seçildi","status-not_interested"],
     not_interested:["İlgilenmiyorum","status-not_interested"]
@@ -271,18 +272,19 @@ function sellerOfferFormHtml(quote,offer){
         </select>
       </label>
       <label class="full">Teklif Kapsamı
-        <textarea name="scope" required placeholder="Nelerin fiyata dahil olduğunu açıkça yazın.">${offerSafe(scope)}</textarea>
+        <textarea name="scope" required placeholder="Fiyata dahil olan hizmetleri ve özellikleri açıkça yazın.">${offerSafe(scope)}</textarea>
       </label>
-      <label>Fiyatın Geçerlilik Süresi
+      <label>Fiyat ve Şartların Geçerlilik Süresi
         <select name="durationHours">
           ${durationOption(1,"1 saat")}
           ${durationOption(3,"3 saat")}
           ${durationOption(12,"12 saat")}
           ${durationOption(24,"24 saat")}
+          ${durationOption(48,"2 gün")}
           ${durationOption(72,"3 gün")}
           ${durationOption(168,"7 gün")}
         </select>
-        <small class="offer-validity-help">Müşteri bu süre içinde teklifi kabul edip fiyatı kilitlemelidir.</small>
+        <small class="offer-validity-help">Varsayılan 2 gündür. Müşteri teklifi kabul etse bile bu süre içinde kurumla doğrudan görüşüp gerçek kaydını tamamlamalıdır.</small>
       </label>
       <label>Ek Ücret
         <select name="extraFee">
@@ -294,11 +296,12 @@ function sellerOfferFormHtml(quote,offer){
         <input name="conditions" value="${offerSafe(conditions)}" placeholder="Örn. Bu fiyat yalnızca belirtilen ürün/hizmet için geçerlidir.">
       </label>
       <div class="offer-validity-preview full">
-        <strong>⏱ Kabul şartı:</strong>
-        Seçtiğiniz süre dolmadan müşteri fiyatı kilitlemelidir. Süre dolunca teklif otomatik olarak geçersiz olur.
-        ${offer?'<br><strong>🔔 Güncelleme:</strong> Teklifi değiştirdiğinizde müşteriye otomatik bildirim gider ve fiyat değişimi mesaj geçmişinde görünür.':""}
+        <strong>⏱ Geçerlilik ve gerçek kayıt:</strong>
+        Seçtiğiniz süre fiyat ve özelliklerin son geçerlilik süresidir. Müşteri teklifi kabul ettikten sonra bu süre içinde kurumunuza gelerek veya sizinle doğrudan görüşerek gerçek kaydını tamamlamazsa teklif süresi dolar ve güncel koşullar yeniden görüşülür.
+        <br><strong>🛡️ Ödeme politikası:</strong> Dijiyer üzerinden ödeme alınmaz. Ücret, kapora veya kayıt bedeli yalnızca kurum ile müşteri arasında doğrudan yapılır.
+        ${offer?`<br><strong>🔔 Güncelleme:</strong> Teklifi değiştirdiğinizde müşteriye otomatik bildirim gider ve yeni geçerlilik süresi başlar.`:""}
       </div>
-      <button class="send-real-offer-btn full" type="submit">${offer ? "Teklifi Güncelle" : "Garantili Teklif Gönder"}</button>
+      <button class="send-real-offer-btn full" type="submit">${offer ? "Teklifi Güncelle" : "Teklif Gönder"}</button>
     </form>
   `;
 }
@@ -335,9 +338,9 @@ quoteCardHtml = function(quote,compact=false){
           <div>
             <div class="offer-summary-price">${offerMoney(offer.price)}</div>
             <div class="muted">Teklif No: <b>${offerSafe(offer.offerCode)}</b></div>
-            <div class="offer-validity-line">⏱ Bu fiyat <b>${offerSafe(offerValidityLabel(offerValidityHours(offer)))}</b> için geçerlidir · Son kabul: <b>${formatDate(offer.expiresAt)}</b></div>
+            <div class="offer-validity-line">⏱ Fiyat ve şartlar <b>${offerSafe(offerValidityLabel(offerValidityHours(offer)))}</b> geçerlidir · Gerçek kayıt için son tarih: <b>${formatDate(offer.expiresAt)}</b></div>
           </div>
-          <span class="quote-status status-interested">Fiyat Garantili</span>
+          <span class="quote-status status-interested">Teklif Aktif</span>
         </div>
         <div class="quote-note">${offerSafe(offer.scope || "")}</div>
         <details style="margin-top:10px">
@@ -353,16 +356,16 @@ quoteCardHtml = function(quote,compact=false){
             <div class="offer-summary-price">${offerMoney(lock.price)}</div>
             <div class="muted">Teklif No: <b>${offerSafe(lock.offerCode)}</b></div>
           </div>
-          <span class="quote-status status-interested">🔒 Fiyat Kilitlendi</span>
+          <span class="quote-status status-interested">⏳ Kayıt Bekliyor</span>
         </div>
         <div class="quote-note">${offerSafe(lock.scope || "")}</div>
-        <div class="offer-lock-notice">Müşteri bu fiyatı kilitledi. Teklif artık değiştirilemez. Geçerlilik: ${formatDate(lock.expiresAt)}</div>
+        <div class="offer-lock-notice"><strong>Müşteri teklifi kabul etti.</strong> Kabul edilen fiyat ve şartlar artık değiştirilemez. Gerçek kayıt için müşterinin en geç <b>${formatDate(lock.registrationDeadlineAt || lock.expiresAt)}</b> tarihine kadar kurumunuzla doğrudan işlemi tamamlaması gerekir. Dijiyer üzerinden ödeme alınmaz.</div>
       </div>`;
   }else if(state==="used"){
-    actionArea=`<div class="offer-lock-notice">✓ ${offerSafe(lock.offerCode || "")} numaralı teklif kullanıldı.</div>`;
+    actionArea=`<div class="offer-lock-notice"><strong>✓ Gerçek Kayıt Tamamlandı</strong><br>${offerSafe(lock.offerCode || "")} numaralı teklif kurum tarafından gerçek kayda dönüştürüldü. Tamamlanma: ${formatDate(lock.registrationCompletedAt || lock.usedAt)}</div>`;
   }else if(state==="expired"){
     const exp=lock?.expiresAt || offer?.expiresAt;
-    actionArea=`<div class="quote-note" style="border-left-color:#fb7185">Bu teklifin süresi ${formatDate(exp)} tarihinde doldu. Artık geçerli değildir.</div>`;
+    actionArea=`<div class="quote-note" style="border-left-color:#fb7185"><strong>Teklifin süresi doldu.</strong> ${formatDate(exp)} sonrasında fiyat ve şartlar garanti edilmez. Müşteriyle güncel koşulları yeniden görüşerek yeni teklif oluşturabilirsiniz.</div>`;
   }else if(state==="closed"){
     actionArea='<div class="quote-note">Müşteri bu talep için başka bir kurumun teklifini kilitledi.</div>';
   }else{
@@ -441,7 +444,7 @@ async function saveRealOffer(form){
   const price=Number(form.elements.price.value);
   if(!price || price<=0){ alert("Geçerli bir teklif fiyatı girin."); return; }
 
-  const hours=Number(form.elements.durationHours.value || 72);
+  const hours=Number(form.elements.durationHours.value || 48);
   const expiry=new Date(Date.now()+hours*3600000);
   const code=existing?.offerCode || makeOfferCode();
   const submit=form.querySelector('button[type="submit"]');
@@ -460,6 +463,10 @@ async function saveRealOffer(form){
     expiresAt:expiry.toISOString(),
     expiresAtTs:firebase.firestore.Timestamp.fromDate(expiry),
     status:"offered",
+    validityHours:hours,
+    registrationRequired:true,
+    platformPayment:false,
+    paymentPolicy:"offline_direct_between_customer_and_institution",
     createdAt:existing?.createdAt || new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
@@ -599,7 +606,7 @@ async function verifyOfferByCode(rawCode){
 
     result.innerHTML=`
       <div class="verify-result-card ${valid?"valid":"invalid"}">
-        <div class="verify-result-title">${valid?"✅ TEKLİF GEÇERLİ":used?"✓ TEKLİF KULLANILDI":"⛔ TEKLİF SÜRESİ DOLDU"}</div>
+        <div class="verify-result-title">${valid?"⏳ KAYIT BEKLİYOR":used?"✓ GERÇEK KAYIT TAMAMLANDI":"⛔ TEKLİF SÜRESİ DOLDU"}</div>
         <div class="verify-data">
           <div><span>Teklif No</span><strong>${offerSafe(lock.offerCode || code)}</strong></div>
           <div><span>Kurum</span><strong>${offerSafe(lock.institutionName || currentInstitution?.name || "-")}</strong></div>
@@ -608,12 +615,12 @@ async function verifyOfferByCode(rawCode){
           <div class="verify-data-wide"><span>Teklif Kapsamı</span><strong>${offerSafe(lock.scope || "-")}</strong></div>
           <div><span>Tutar</span><strong>${offerMoney(lock.price)}</strong></div>
           <div><span>KDV</span><strong>${offerSafe(lock.vatStatus || "-")}</strong></div>
-          <div><span>Fiyat Kilidi</span><strong class="verify-lock-value">🔒 Kilitli</strong></div>
-          <div><span>Geçerlilik</span><strong>${formatDate(lock.expiresAt)}</strong></div>
+          <div><span>Teklif Kaydı</span><strong class="verify-lock-value">🔒 Kabul Edildi</strong></div>
+          <div><span>Gerçek Kayıt Son Tarihi</span><strong>${formatDate(lock.registrationDeadlineAt || lock.expiresAt)}</strong></div>
           <div><span>Kalan Süre</span><strong>${offerSafe(offerRemainingLabel(lock.expiresAt))}</strong></div>
-          <div><span>Durum</span><strong>${used?"Kullanıldı":expired?"Süresi Doldu":"Geçerli"}</strong></div>
+          <div><span>Durum</span><strong>${used?"Gerçek Kayıt Tamamlandı":expired?"Süresi Doldu":"Kayıt Bekliyor"}</strong></div>
         </div>
-        ${valid ? `<button class="mark-used-btn" data-mark-offer-used data-quote-id="${offerSafe(lookup.quoteId)}">Teklif Kullanıldı Olarak İşaretle</button>` : ""}
+        ${valid ? `<div class="offer-lock-notice">Dijiyer üzerinden ödeme alınmaz. Müşteri ile ödeme ve kayıt işlemleri doğrudan kurumunuzda gerçekleştirilir.</div><button class="mark-used-btn" data-mark-offer-used data-quote-id="${offerSafe(lookup.quoteId)}">Gerçek Kaydı Tamamlandı Olarak İşaretle</button>` : ""}
       </div>
     `;
 
@@ -630,18 +637,36 @@ async function markOfferUsed(quoteId,code){
   try{
     const lockRef=db.collection("quoteRequests").doc(quoteId).collection("locks").doc("main");
     const snap=await lockRef.get();
-    if(!snap.exists) throw new Error("Kilit kaydı bulunamadı.");
+    if(!snap.exists) throw new Error("Kabul edilmiş teklif kaydı bulunamadı.");
     const lock=snap.data();
     if(lock.institutionId!==currentAccount.institutionId) throw new Error("Bu teklif kurumunuza ait değil.");
-    if(lock.expiresAt && new Date(lock.expiresAt).getTime()<=Date.now()) throw new Error("Teklifin süresi dolmuş.");
-    if(lock.status==="used") throw new Error("Teklif daha önce kullanılmış.");
+    if(lock.expiresAt && new Date(lock.expiresAt).getTime()<=Date.now()) throw new Error("Teklifin geçerlilik süresi dolmuş. Güncel koşullar yeniden görüşülmelidir.");
+    if(lock.status==="used") throw new Error("Gerçek kayıt daha önce tamamlanmış.");
 
-    await lockRef.update({status:"used",usedAt:new Date().toISOString(),usedAtTs:firebase.firestore.FieldValue.serverTimestamp()});
-    institutionLockMap.set(quoteId,{...lock,status:"used",usedAt:new Date().toISOString()});
+    const ok=window.confirm("Müşterinin kurumunuzdaki gerçek kayıt işlemini tamamladığını onaylıyor musunuz?\n\nBu işlem Dijiyer üzerinden ödeme alındığı anlamına gelmez.");
+    if(!ok)return;
+
+    const completedAt=new Date().toISOString();
+    await lockRef.update({
+      status:"used",
+      registrationStatus:"completed",
+      registrationCompletedAt:completedAt,
+      registrationCompletedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
+      usedAt:completedAt,
+      usedAtTs:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    institutionLockMap.set(quoteId,{
+      ...lock,
+      status:"used",
+      registrationStatus:"completed",
+      registrationCompletedAt:completedAt,
+      usedAt:completedAt
+    });
     await verifyOfferByCode(code);
-    renderQuotes(); renderSummary();
+    renderQuotes();
+    renderSummary();
   }catch(error){
-    alert(error.message || "Teklif kullanıldı olarak işaretlenemedi.");
+    alert(error.message || "Gerçek kayıt tamamlandı olarak işaretlenemedi.");
   }
 }
 
