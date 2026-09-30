@@ -92,8 +92,8 @@ service cloud.firestore {
         request.resource.data.mainCategory is string
         && request.resource.data.subCategory is string
         && request.resource.data.category is string
-        && request.resource.data.service is string
-        && request.resource.data.service.size() > 0
+        && request.resource.data['service'] is string
+        && request.resource.data['service'].size() > 0
         && request.resource.data.city is string
         && request.resource.data.district is string
         && request.resource.data.name is string
@@ -144,7 +144,7 @@ service cloud.firestore {
         request.resource.data.quoteId is string
         && request.resource.data.trackingCode == trackingCode
         && request.resource.data.phoneHash == phoneHash
-        && request.resource.data.service is string
+        && request.resource.data['service'] is string
         && request.resource.data.mainCategory is string
         && request.resource.data.subCategory is string
         && request.resource.data.mainCategoryLabel is string
