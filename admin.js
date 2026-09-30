@@ -998,7 +998,10 @@ quotesTabBtn.addEventListener("click", async () => {
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   unmatchedSearchesTabBtn?.classList.remove("active");
+  if (!institutionRecords.length) await loadInstitutions();
+  await loadLeadCreditData();
   await loadQuoteRequests();
+  renderQuoteRequests();
 });
 
 quoteRoutingTabBtn?.addEventListener("click", async () => {
@@ -3211,6 +3214,48 @@ function quoteRoutingIsWaiting(request){
   return status==="waiting" || status==="forwarded";
 }
 
+function quoteInstitutionCreditMeta(inst){
+  const account=leadCreditAccountRecords.find(
+    item=>String(item.id)===String(inst?.id||"")
+  ) || {};
+
+  return {
+    balance:Number(account.balance||0),
+    totalLoaded:Number(account.totalLoaded||0),
+    totalUsed:Number(account.totalUsed||0)
+  };
+}
+
+function sortQuoteInstitutionsByCredit(rows){
+  return [...(Array.isArray(rows)?rows:[])].sort((a,b)=>{
+    const aCredit=quoteInstitutionCreditMeta(a);
+    const bCredit=quoteInstitutionCreditMeta(b);
+
+    if(bCredit.totalLoaded!==aCredit.totalLoaded){
+      return bCredit.totalLoaded-aCredit.totalLoaded;
+    }
+    if(bCredit.balance!==aCredit.balance){
+      return bCredit.balance-aCredit.balance;
+    }
+
+    const vipDiff=Number(isInstitutionVipActive(b))-Number(isInstitutionVipActive(a));
+    if(vipDiff)return vipDiff;
+
+    return String(a.name||"").localeCompare(String(b.name||""),"tr");
+  });
+}
+
+function quoteForwardedInstitutionNameList(request){
+  const ids=Array.isArray(request?.forwardInstitutionIds)
+    ? request.forwardInstitutionIds.map(String)
+    : [];
+
+  return ids.map(id=>{
+    const institution=institutionRecords.find(inst=>String(inst.id)===id);
+    return institution?.name || id;
+  });
+}
+
 function quoteRoutingCandidateBundle(request){
   const category=normalizeCategory(request?.subCategory || request?.category || "");
   const city=String(request?.city||"").trim().toLocaleLowerCase("tr-TR");
@@ -3243,15 +3288,11 @@ function quoteRoutingCandidateBundle(request){
     return "standard";
   };
 
-  const all=base.map(inst=>({
+  const all=sortQuoteInstitutionsByCredit(base.map(inst=>({
     ...inst,
     routingTier:tierOf(inst),
     alreadyForwarded:forwarded.has(String(inst.id))
-  })).sort((a,b)=>{
-    const rank={vip:1,ad:2,standard:3};
-    return ((rank[a.routingTier]||9)-(rank[b.routingTier]||9)) ||
-      String(a.name||"").localeCompare(String(b.name||""),"tr");
-  });
+  })));
 
   return {
     scopeLabel,all,
@@ -3263,14 +3304,39 @@ function quoteRoutingCandidateBundle(request){
 
 function quoteRoutingInstitutionChips(rows){
   if(!rows.length)return '<span class="quote-routing-none">Uygun kurum yok</span>';
-  return rows.map(inst=>{
-    const account=leadCreditAccountRecords.find(x=>String(x.id)===String(inst.id));
-    const balance=Number(account?.balance||0);
-    const creditText=inst.alreadyForwarded ? " · iletildi" : " · "+balance+" kredi";
+  return rows.map((inst,index)=>{
+    const credit=quoteInstitutionCreditMeta(inst);
     return '<span class="quote-routing-inst-chip '+inst.routingTier+(inst.alreadyForwarded?' sent':'')+'">'+
-      escapeHtml(inst.name||"Kurum")+creditText+
+      '<b>#'+(index+1)+' '+escapeHtml(inst.name||"Kurum")+'</b>'+
+      (isInstitutionVipActive(inst)?'<em>VIP</em>':'')+
+      '<small>'+credit.totalLoaded+' kredi aldı · '+credit.balance+' bakiye'+
+        (inst.alreadyForwarded?' · ✓ İLETİLDİ':'')+
+      '</small>'+
     '</span>';
   }).join("");
+}
+
+function quoteRoutingRankedListHtml(rows){
+  if(!rows.length){
+    return '<div class="quote-routing-ranked-empty">Bu sektör ve bölgede uygun kurum bulunamadı.</div>';
+  }
+
+  return '<div class="quote-routing-ranked-list">'+rows.map((inst,index)=>{
+    const credit=quoteInstitutionCreditMeta(inst);
+    return '<div class="quote-routing-ranked-row '+(inst.alreadyForwarded?'sent':'')+'">'+
+      '<span class="quote-routing-rank">#'+(index+1)+'</span>'+
+      '<div class="quote-routing-ranked-name">'+
+        '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
+        '<small>'+escapeHtml([inst.city,inst.district].filter(Boolean).join(" / ")||"-")+'</small>'+
+      '</div>'+
+      (isInstitutionVipActive(inst)?'<span class="quote-routing-vip-badge">VIP</span>':'')+
+      '<div class="quote-routing-credit-score"><strong>'+credit.totalLoaded+'</strong><small>toplam kredi</small></div>'+
+      '<div class="quote-routing-credit-balance"><strong>'+credit.balance+'</strong><small>bakiye</small></div>'+
+      '<span class="quote-routing-send-state '+(inst.alreadyForwarded?'sent':'ready')+'">'+
+        (inst.alreadyForwarded?'✓ İletildi':'Gönderilmedi')+
+      '</span>'+
+    '</div>';
+  }).join("")+'</div>';
 }
 
 function quoteRoutingTierCard(tier,label,rows,requestId,canForward){
@@ -3380,6 +3446,11 @@ function renderQuoteRoutingAdmin(){
       responseHtml+
       '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
       consentHtml+
+      '<details class="quote-routing-ranked-panel">'+
+        '<summary><span>Sektöre uygun kurumları kredi sırasıyla gör</span><strong>'+candidates.all.length+' kurum</strong></summary>'+
+        '<div class="quote-routing-ranked-note">Sıralama: en çok toplam kredi alan kurum en üstte. VIP kurumlar ayrıca işaretlenir.</div>'+
+        quoteRoutingRankedListHtml(candidates.all)+
+      '</details>'+
       '<div class="quote-routing-tiers">'+
         quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id,canForward)+
         quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id,canForward)+
@@ -5551,7 +5622,9 @@ function renderQuoteRequests() {
     const requestCity = normalizeText(request.city);
     const requestDistrict = normalizeText(request.district);
 
-    const activeInstitutions = institutionRecords.filter(inst => inst.offer !== false);
+    const activeInstitutions = institutionRecords.filter(inst =>
+      inst.offer !== false && String(inst.status || "active") !== "passive"
+    );
 
     const categoryMatches = activeInstitutions.filter(inst =>
       normalizeCategory(inst.category) === requestCategory
@@ -5572,11 +5645,15 @@ function renderQuoteRequests() {
         )
       : null;
 
-    // Doğrudan profil talebi yalnızca hedef kuruma aittir.
-    // Normal taleplerde mevcut konum + kategori eşleşmesi devam eder.
+    // Talep kartında sektör + konum eşleşen diğer kurumları göster.
+    // Doğrudan talepte hedef kurum zaten ayrıca görünür; listede alternatif kurumlar yer alır.
+    const sectorMatching = sortQuoteInstitutionsByCredit(
+      exactDistrictMatches.length ? exactDistrictMatches : sameCityMatches
+    );
+
     const matching = request.targetInstitutionId
-      ? (directTargetInstitution ? [directTargetInstitution] : [])
-      : (exactDistrictMatches.length ? exactDistrictMatches : sameCityMatches);
+      ? sectorMatching.filter(inst=>String(inst.id)!==String(request.targetInstitutionId))
+      : sectorMatching;
 
     const cityInstitutionCount = activeInstitutions.filter(inst =>
       normalizeText(inst.city) === requestCity
@@ -5679,23 +5756,47 @@ function renderQuoteRequests() {
       (liveIssueCount ? " has-issue" : "");
     card.dataset.quoteId = request.id;
 
+    const forwardedSet = new Set(
+      Array.isArray(request.forwardInstitutionIds)
+        ? request.forwardInstitutionIds.map(String)
+        : []
+    );
+
+    const forwardedNames = quoteForwardedInstitutionNameList(request);
+
     const institutionButtons = matching.length
-      ? matching.map(inst => {
+      ? '<div class="quote-candidate-ranked-list">'+matching.map((inst,index) => {
           const digits = String(inst.phone || "").replace(/\D/g, "");
-          const whatsapp =
-            digits.startsWith("0") ? "90" + digits.slice(1) : digits;
+          const whatsapp = digits.startsWith("0") ? "90" + digits.slice(1) : digits;
+          const credit = quoteInstitutionCreditMeta(inst);
+          const isForwarded = forwardedSet.has(String(inst.id));
 
-          if (!whatsapp) {
-            return `<span class="match-chip">${escapeHtml(inst.name || "Kurum")} · telefon yok</span>`;
-          }
+          return '<div class="quote-candidate-ranked-row '+(isForwarded?'is-forwarded':'')+'">'+
+            '<span class="quote-candidate-rank">#'+(index+1)+'</span>'+
+            '<div class="quote-candidate-name">'+
+              '<strong>'+escapeHtml(inst.name || "Kurum")+'</strong>'+
+              '<small>'+escapeHtml([inst.city,inst.district].filter(Boolean).join(" / ")||"-")+'</small>'+
+            '</div>'+
+            (isInstitutionVipActive(inst)?'<span class="quote-candidate-vip">VIP</span>':'')+
+            '<div class="quote-candidate-credit"><strong>'+credit.totalLoaded+'</strong><small>toplam kredi</small></div>'+
+            '<div class="quote-candidate-balance"><strong>'+credit.balance+'</strong><small>bakiye</small></div>'+
+            '<span class="quote-candidate-forward-state '+(isForwarded?'sent':'ready')+'">'+
+              (isForwarded?'✓ İletildi':'Gönderilmedi')+
+            '</span>'+
+            (whatsapp
+              ? '<button class="matched-institution-btn" data-phone="'+whatsapp+'" data-id="'+escapeHtml(inst.id)+'" data-name="'+escapeHtml(inst.name || "Kurum")+'">'+
+                  (isForwarded?'Tekrar WhatsApp':'WhatsApp ile İlet')+
+                '</button>'
+              : '<span class="quote-candidate-no-phone">Telefon yok</span>')+
+          '</div>';
+        }).join("")+'</div>'
+      : '<span class="no-match">Bu sektör ve konumda alternatif kurum yok.</span>';
 
-          return `<button
-            class="matched-institution-btn"
-            data-phone="${whatsapp}"
-            data-name="${escapeHtml(inst.name || "Kurum")}"
-          >WhatsApp → ${escapeHtml(inst.name || "Kurum")}</button>`;
-        }).join("")
-      : '<span class="no-match">Bu konum ve kategoride eşleşen kurum yok.</span>';
+    const forwardedSummaryHtml = forwardedNames.length
+      ? '<div class="quote-forwarded-summary"><strong>✓ Bu talep '+forwardedNames.length+' kuruma iletildi</strong><span>'+
+          forwardedNames.map(name=>escapeHtml(name)).join(" · ")+
+        '</span></div>'
+      : '<div class="quote-forwarded-summary empty"><strong>Henüz başka kuruma iletilmedi</strong><span>İletim yapıldığında kurum isimleri burada kalıcı olarak görünür.</span></div>';
 
     card.innerHTML = `
       <div class="quote-request-top">
@@ -5750,20 +5851,27 @@ function renderQuoteRequests() {
         ? '<div class="admin-offer-error">Teklif süreç ayrıntıları okunamadı.</div>'
         : adminOfferListHtml(request)}
 
-      <div class="matching-institutions">
-        <strong>Uygun kurumlar (${matching.length})</strong>
+      ${forwardedSummaryHtml}
+
+      <details class="matching-institutions">
+        <summary>
+          <span>
+            <strong>Sektöre uygun kurumları gör</strong>
+            <small>${request.targetInstitutionId ? "Hedef kurum dışındaki alternatifler" : "Talebin sektör ve konum eşleşmesi"}</small>
+          </span>
+          <b>${matching.length} kurum</b>
+        </summary>
         <div class="match-scope">
-          ${request.targetInstitutionId
-            ? 'Doğrudan kurum profilinden gönderildi · sadece hedef kurum görür'
-            : (exactDistrictMatches.length
-                ? 'Aynı ilçe + aynı kategori'
-                : sameCityMatches.length
-                  ? 'Aynı şehir + aynı kategori'
-                  : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu kategoride toplam ${categoryMatches.length} kurum var`)}
+          ${exactDistrictMatches.length
+            ? 'Aynı ilçe + aynı sektör'
+            : sameCityMatches.length
+              ? 'Aynı şehir + aynı sektör'
+              : `Eşleşme bulunamadı · Bu şehirde ${cityInstitutionCount} teklif veren kurum var · Bu sektörde toplam ${categoryMatches.length} kurum var`}
+          · En çok kredi alan kurum en üstte
         </div>
         <div class="matching-buttons">${institutionButtons}</div>
         ${diagnosticHtml}
-      </div>
+      </details>
 
       <div class="quote-activity-launch">
         <button type="button" class="quote-activity-btn">🕒 Teklif Hareketlerini Gör</button>
@@ -5812,15 +5920,24 @@ function renderQuoteRequests() {
     });
 
     card.querySelectorAll(".matched-institution-btn").forEach(button => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
         const institutionName = button.dataset.name;
+        const institutionId = String(button.dataset.id || "");
+
+        if (
+          request.targetInstitutionId &&
+          institutionId !== String(request.targetInstitutionId) &&
+          request.allowAlternativeInstitutions !== true
+        ) {
+          alert("Bu doğrudan talebi başka kuruma iletmek için önce müşterinin paylaşım izni alınmalıdır.");
+          return;
+        }
+
         const message = [
           "Merhaba, Dijiyer üzerinden yeni bir teklif talebi geldi.",
           "",
           "Hizmet: " + (request.service || "-"),
-          request.targetInstitutionId
-            ? "Talep Türü: Doğrudan kurum profilinden"
-            : "Konum: " + [request.city, request.district].filter(Boolean).join(" / "),
+          "Konum: " + ([request.city, request.district].filter(Boolean).join(" / ") || "-"),
           "Müşteri: " + (request.name || "-"),
           "Telefon: " + (request.phone || "-"),
           request.note ? "Not: " + request.note : "",
@@ -5832,6 +5949,14 @@ function renderQuoteRequests() {
           `https://wa.me/${button.dataset.phone}?text=${encodeURIComponent(message)}`,
           "_blank"
         );
+
+        try {
+          await recordQuoteInstitutionForward(request.id, institutionId, institutionName);
+          await loadQuoteRequests();
+        } catch (error) {
+          console.error("Kurum iletimi kaydedilemedi:", error);
+          alert("WhatsApp açıldı ancak kurum iletim kaydı kaydedilemedi.");
+        }
       });
     });
 
@@ -5893,6 +6018,45 @@ function renderQuoteRequests() {
 function normalizeWhatsApp(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
   return digits.startsWith("0") ? "90" + digits.slice(1) : digits;
+}
+
+async function recordQuoteInstitutionForward(requestId,institutionId,institutionName){
+  if(!requestId||!institutionId)return;
+
+  const ref=db.collection("quoteRequests").doc(String(requestId));
+
+  await db.runTransaction(async tx=>{
+    const snap=await tx.get(ref);
+    if(!snap.exists)throw new Error("Talep bulunamadı.");
+
+    const data=snap.data() || {};
+    const ids=Array.isArray(data.forwardInstitutionIds)
+      ? data.forwardInstitutionIds.map(String)
+      : [];
+
+    if(ids.includes(String(institutionId)))return;
+
+    const now=new Date().toISOString();
+    const history=Array.isArray(data.forwardHistory)?data.forwardHistory:[];
+
+    tx.update(ref,{
+      forwardInstitutionIds:[...ids,String(institutionId)],
+      forwardHistory:[
+        ...history,
+        {
+          tier:"manual",
+          tierLabel:"Teklifler ekranından manuel iletim",
+          institutionIds:[String(institutionId)],
+          institutionNames:[String(institutionName||"Kurum")],
+          date:now
+        }
+      ].slice(-50),
+      redistributionStatus:"forwarded",
+      lastForwardedAt:now,
+      lastForwardTier:"manual",
+      updatedAt:now
+    });
+  });
 }
 
 async function updateQuoteStatus(id, status) {
