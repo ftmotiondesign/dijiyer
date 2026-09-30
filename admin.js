@@ -57,11 +57,14 @@ const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
 const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
 const institutionCityFilter = document.getElementById("institutionCityFilter");
+const institutionStatusFilter = document.getElementById("institutionStatusFilter");
 const institutionFeatureFilter = document.getElementById("institutionFeatureFilter");
 const institutionSort = document.getElementById("institutionSort");
 const clearInstitutionFilters = document.getElementById("clearInstitutionFilters");
 const institutionFilterResult = document.getElementById("institutionFilterResult");
 const institutionStatTotal = document.getElementById("institutionStatTotal");
+const institutionStatActive = document.getElementById("institutionStatActive");
+const institutionStatPassive = document.getElementById("institutionStatPassive");
 const institutionStatOffer = document.getElementById("institutionStatOffer");
 const institutionStatVip = document.getElementById("institutionStatVip");
 const institutionStatVideo = document.getElementById("institutionStatVideo");
@@ -908,7 +911,12 @@ async function loadInstitutions() {
       ...doc.data()
     }));
 
-    institutionCount.textContent = `${institutionRecords.length} yayındaki kurum`;
+    const activeInstitutionCount = institutionRecords.filter(
+      item => String(item.status || "active") !== "passive"
+    ).length;
+    const passiveInstitutionCount = institutionRecords.length - activeInstitutionCount;
+    institutionCount.textContent =
+      `${activeInstitutionCount} aktif · ${passiveInstitutionCount} pasif · ${institutionRecords.length} toplam`;
     populateInstitutionCityFilter();
     renderManagedInstitutions();
     refreshAdminOverview();
@@ -948,6 +956,7 @@ function getFilteredManagedInstitutions() {
   const query = institutionSearch.value.trim().toLocaleLowerCase("tr-TR");
   const category = institutionCategoryFilter.value;
   const city = institutionCityFilter.value;
+  const status = institutionStatusFilter?.value || "";
   const feature = institutionFeatureFilter.value;
   const sort = institutionSort.value;
 
@@ -964,6 +973,11 @@ function getFilteredManagedInstitutions() {
     const matchesQuery = !query || haystack.includes(query);
     const matchesCategory = !category || item.category === category;
     const matchesCity = !city || item.city === city;
+    const isActive = String(item.status || "active") !== "passive";
+    const matchesStatus =
+      !status ||
+      (status === "active" && isActive) ||
+      (status === "passive" && !isActive);
 
     let matchesFeature = true;
     if (feature === "vip") matchesFeature = Boolean(item.vip);
@@ -982,7 +996,7 @@ function getFilteredManagedInstitutions() {
     }
     if (feature === "ad_paused") matchesFeature = getInstitutionAdState(item).status==="paused";
 
-    return matchesQuery && matchesCategory && matchesCity && matchesFeature;
+    return matchesQuery && matchesCategory && matchesCity && matchesStatus && matchesFeature;
   });
 
   if (sort === "name") {
@@ -1170,6 +1184,10 @@ function refreshInstitutionMiniStats() {
   const adStates=institutionRecords.map(item=>({item,state:getInstitutionAdState(item)}));
 
   if (institutionStatTotal) institutionStatTotal.textContent = institutionRecords.length;
+  if (institutionStatActive) institutionStatActive.textContent =
+    institutionRecords.filter(item => String(item.status || "active") !== "passive").length;
+  if (institutionStatPassive) institutionStatPassive.textContent =
+    institutionRecords.filter(item => String(item.status || "active") === "passive").length;
   if (institutionStatOffer) institutionStatOffer.textContent =
     institutionRecords.filter(item => item.offer !== false).length;
   if (institutionStatVip) institutionStatVip.textContent =
@@ -1244,6 +1262,7 @@ function renderManagedInstitutions() {
     const phoneDigits = String(data.phone || "").replace(/\D/g, "");
     const whatsappDigits =
       phoneDigits.startsWith("0") ? "90" + phoneDigits.slice(1) : phoneDigits;
+    const isInstitutionActive = String(data.status || "active") !== "passive";
     const adState = getInstitutionAdState(data);
     const currentAdPackage = getInstitutionAdPackage(data);
     const adRecommendation = getRecommendedAdPackage(data);
@@ -1265,6 +1284,7 @@ function renderManagedInstitutions() {
           </div>
           <div class="manage-badges">
             <span>${escapeHtml(categoryLabels[data.category] || data.category || "Diğer")}</span>
+            ${isInstitutionActive ? '<span class="badge-offer">Kurum Aktif</span>' : '<span class="badge-offer-off">Kurum Pasif</span>'}
             ${data.offer !== false ? '<span class="badge-offer">Teklif Açık</span>' : '<span class="badge-offer-off">Teklif Kapalı</span>'}
             ${data.vip ? '<span class="badge-vip">VIP</span>' : ''}
             ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
@@ -1284,6 +1304,9 @@ function renderManagedInstitutions() {
       </div>
 
       <div class="institution-primary-actions">
+        <button class="quick-toggle ${isInstitutionActive ? "on" : ""}" data-field="status">
+          ● ${isInstitutionActive ? "Aktif" : "Pasif"}
+        </button>
         <button class="quick-toggle ${data.offer !== false ? "on" : ""}" data-field="offer">
           ₺ ${data.offer !== false ? "Teklif Açık" : "Teklif Kapalı"}
         </button>
@@ -1470,6 +1493,20 @@ function renderManagedInstitutions() {
     card.querySelectorAll(".quick-toggle").forEach((button) => {
       button.addEventListener("click", async () => {
         const field = button.dataset.field;
+
+        if (field === "status") {
+          const currentlyActive = String(data.status || "active") !== "passive";
+          if (currentlyActive) {
+            const ok = confirm(
+              (data.name || "Bu kurum") +
+              " pasif yapılacak. Kullanıcı tarafında kurum listelerinde ve kurum profilinde görünmeyecek. Devam edilsin mi?"
+            );
+            if (!ok) return;
+          }
+          await updateInstitutionStatus(data.id, !currentlyActive);
+          return;
+        }
+
         const currentValue =
           field === "offer" ? data.offer !== false : Boolean(data[field]);
 
@@ -1604,6 +1641,35 @@ function renderManagedInstitutions() {
   });
 }
 
+async function updateInstitutionStatus(id, active) {
+  const nextStatus = active ? "active" : "passive";
+
+  try {
+    await db.collection("institutions").doc(id).update({
+      status: nextStatus,
+      updatedAt: new Date().toISOString()
+    });
+
+    const record = institutionRecords.find(item => item.id === id);
+    if (record) record.status = nextStatus;
+
+    const activeInstitutionCount = institutionRecords.filter(
+      item => String(item.status || "active") !== "passive"
+    ).length;
+    const passiveInstitutionCount = institutionRecords.length - activeInstitutionCount;
+    if (institutionCount) {
+      institutionCount.textContent =
+        `${activeInstitutionCount} aktif · ${passiveInstitutionCount} pasif · ${institutionRecords.length} toplam`;
+    }
+
+    renderManagedInstitutions();
+    refreshAdminOverview();
+  } catch (error) {
+    console.error("Kurum aktif/pasif durumu değiştirilemedi:", error);
+    alert("Kurum durumu değiştirilemedi.");
+  }
+}
+
 async function quickUpdateInstitution(id, field, value) {
   try {
     await db.collection("institutions").doc(id).update({
@@ -1621,7 +1687,7 @@ async function quickUpdateInstitution(id, field, value) {
   }
 }
 
-[institutionSearch, institutionCategoryFilter, institutionCityFilter, institutionFeatureFilter, institutionSort]
+[institutionSearch, institutionCategoryFilter, institutionCityFilter, institutionStatusFilter, institutionFeatureFilter, institutionSort]
   .forEach((element) => {
     element.addEventListener(
       element.tagName === "INPUT" ? "input" : "change",
@@ -1636,10 +1702,20 @@ document.querySelectorAll("[data-institution-stat-filter]").forEach(button => {
   });
 });
 
+document.querySelectorAll("[data-institution-status-filter]").forEach(button => {
+  button.addEventListener("click", () => {
+    if (institutionStatusFilter) {
+      institutionStatusFilter.value = button.dataset.institutionStatusFilter || "";
+    }
+    renderManagedInstitutions();
+  });
+});
+
 clearInstitutionFilters.addEventListener("click", () => {
   institutionSearch.value = "";
   institutionCategoryFilter.value = "";
   institutionCityFilter.value = "";
+  if (institutionStatusFilter) institutionStatusFilter.value = "";
   institutionFeatureFilter.value = "";
   institutionSort.value = "name";
   renderManagedInstitutions();
@@ -4054,7 +4130,10 @@ function refreshAdminOverview() {
     !["resolved","archived"].includes(String(issue.status || "new"))
   );
 
-  setOverviewText(overviewInstitutionCount, institutionRecords.length);
+  setOverviewText(
+    overviewInstitutionCount,
+    institutionRecords.filter(item => String(item.status || "active") !== "passive").length
+  );
   setOverviewText(overviewPendingApplications, getOverviewPendingApplications());
   setOverviewText(overviewQuoteCount, quoteRequestRecords.length);
   setOverviewText(overviewNoOfferCount, noOfferRequests.length);
