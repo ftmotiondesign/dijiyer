@@ -1440,8 +1440,14 @@ form.addEventListener("submit",async e=>{
       throw error;
     }
 
+    const normalizedTrackingPhone=normalizePhone(phone);
     sessionStorage.setItem("dijiyerTrackingCode",code);
-    sessionStorage.setItem("dijiyerTrackingPhone",normalizePhone(phone));
+    sessionStorage.setItem("dijiyerTrackingPhone",normalizedTrackingPhone);
+    try{
+      const phoneMap=JSON.parse(localStorage.getItem("dijiyerTrackingPhoneByCode")||"{}");
+      phoneMap[code]=normalizedTrackingPhone;
+      localStorage.setItem("dijiyerTrackingPhoneByCode",JSON.stringify(phoneMap));
+    }catch(_){}
     rememberVerifiedQuoteOnDevice(currentAccess);
 
     let initialBundle;
@@ -1476,9 +1482,34 @@ form.addEventListener("submit",async e=>{
 
 const urlCode=normalizeCode(new URLSearchParams(location.search).get("kod")||"");
 const rememberedCode=normalizeCode(sessionStorage.getItem("dijiyerTrackingCode")||localStorage.getItem("dijiyerLastTrackingCode")||"");
-if(urlCode||rememberedCode)codeInput.value=urlCode||rememberedCode;
-const rememberedPhone=sessionStorage.getItem("dijiyerTrackingPhone");
-if(rememberedPhone)phoneInput.value=rememberedPhone;
+const activePrefillCode=urlCode||rememberedCode;
+
+if(activePrefillCode)codeInput.value=activePrefillCode;
+
+let rememberedPhone=String(sessionStorage.getItem("dijiyerTrackingPhone")||"").trim();
+
+if(!rememberedPhone && activePrefillCode){
+  try{
+    const phoneMap=JSON.parse(localStorage.getItem("dijiyerTrackingPhoneByCode")||"{}");
+    rememberedPhone=String(phoneMap[activePrefillCode]||"").trim();
+  }catch(_){}
+}
+
+if(!rememberedPhone && activePrefillCode){
+  try{
+    const savedQuotes=JSON.parse(localStorage.getItem("dijiyerCustomerQuoteData")||"{}");
+    const matching=Object.values(savedQuotes).find(row=>
+      normalizeCode(row?.trackingCode||"")===activePrefillCode
+    );
+    rememberedPhone=normalizePhone(matching?.phone||"");
+  }catch(_){}
+}
+
+if(rememberedPhone){
+  phoneInput.value=rememberedPhone.length===10 ? "0"+rememberedPhone : rememberedPhone;
+}
+
+ensureTrackingInputsInteractive();
 setInterval(updateCountdowns,60000);
 
 // Canlı onSnapshot dinleyicileri güncellemeleri zaten anında getirir.
