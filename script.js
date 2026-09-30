@@ -315,6 +315,21 @@ function clearAllCategorySelections() {
     .forEach(input => { input.checked = false; });
 }
 
+function clearDiscoveryKeywordForCategorySelection() {
+  const mobileInput = document.getElementById('mobileDiscoverySearchInput');
+  const desktopInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('mobileDiscoverySearchClear');
+  const instantRoot = document.getElementById('mobileInstantResults');
+  const fallback = document.getElementById('quoteSearchFallback');
+
+  if (mobileInput) mobileInput.value = '';
+  if (desktopInput) desktopInput.value = '';
+  clearButton?.classList.add('hidden');
+  instantRoot?.classList.add('hidden');
+  fallback?.classList.add('hidden');
+  document.getElementById('mobileCategoryResultBtn')?.setAttribute('aria-expanded','false');
+}
+
 function syncExploreQuickFilterState() {
   const videoOnly = document.getElementById('videoOnly');
   const offerOnly = document.getElementById('offerOnly');
@@ -758,6 +773,7 @@ function renderMobileSubcategories(mainKey) {
 
   root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
     button.addEventListener('click', () => {
+      clearDiscoveryKeywordForCategorySelection();
       const selectedMain = button.dataset.mobileMain;
       const selectedSub = button.dataset.mobileSubcategory;
       const target = document.querySelector(
@@ -877,6 +893,7 @@ function renderMobileCategories() {
       const key = button.dataset.mobileCategory;
       const currentlyActive = getSelectedMainCategory() === key;
 
+      clearDiscoveryKeywordForCategorySelection();
       clearAllCategorySelections();
 
       if (!currentlyActive) {
@@ -892,6 +909,7 @@ function renderMobileCategories() {
 
   root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
     button.addEventListener('click', () => {
+      clearDiscoveryKeywordForCategorySelection();
       const selectedMain = button.dataset.mobileMain;
       const selectedSub = button.dataset.mobileSubcategory;
       const target = document.querySelector(
@@ -932,6 +950,7 @@ function renderMobileCategories() {
 }
 
 document.getElementById('mobileClearCategoriesBtn')?.addEventListener('click', () => {
+  clearDiscoveryKeywordForCategorySelection();
   clearAllCategorySelections();
   renderMobileCategories();
   renderList();
