@@ -4775,10 +4775,16 @@
     const mediaUrl=String(inst?.opportunitySponsorMediaUrl||"").trim();
     if(!mediaUrl)return null;
 
+    const today=opportunityTodayKey();
+    let archivedEndAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10);
+    if(reason==="deleted" && (!archivedEndAt || archivedEndAt>today)){
+      archivedEndAt=today;
+    }
+
     return {
       campaignId:String(inst?.opportunitySponsorCampaignId||uid("FSP")),
       startAt:String(inst?.opportunitySponsorStartAt||"").slice(0,10),
-      endAt:String(inst?.opportunitySponsorEndAt||"").slice(0,10),
+      endAt:archivedEndAt,
       mediaUrl:mediaUrl,
       mediaType:String(inst?.opportunitySponsorMediaType||"image")==="video"?"video":"image",
       priority:Math.max(1,Math.min(99,Number(inst?.opportunitySponsorPriority||10)||10)),
@@ -5652,16 +5658,21 @@
       const previousCampaignId=String(existingInst?.opportunitySponsorCampaignId||"").trim();
       const previousStartAt=String(existingInst?.opportunitySponsorStartAt||"").slice(0,10);
       const previousEndAt=String(existingInst?.opportunitySponsorEndAt||"").slice(0,10);
-      const campaignChanged=
-        !previousCampaignId ||
+      const dateChanged=
         previousStartAt!==startAt ||
         previousEndAt!==endAt;
+      const previousExpired=
+        Boolean(previousEndAt) &&
+        previousEndAt<opportunityTodayKey();
+      const newCampaign=
+        !previousCampaignId ||
+        (previousExpired && dateChanged);
       const campaignId=(url && (active||existingInst?.opportunitySponsorActive||existingInst?.opportunitySponsorMediaUrl))
-        ? (campaignChanged ? uid("FSP") : previousCampaignId)
+        ? (newCampaign ? uid("FSP") : previousCampaignId)
         : previousCampaignId;
 
       const nextHistory=
-        campaignChanged && existingInst?.opportunitySponsorMediaUrl
+        previousExpired && dateChanged && existingInst?.opportunitySponsorMediaUrl
           ? opportunityHistoryWithArchive(existingInst,"renewed")
           : opportunitySponsorHistory(existingInst);
 
