@@ -108,6 +108,15 @@ const quoteRoutingSearch = document.getElementById("quoteRoutingSearch");
 const quoteRoutingRefreshBtn = document.getElementById("quoteRoutingRefreshBtn");
 const quoteRoutingList = document.getElementById("quoteRoutingList");
 const quoteRoutingListCount = document.getElementById("quoteRoutingListCount");
+const quoteRoutingFreshCount = document.getElementById("quoteRoutingFreshCount");
+const quoteRoutingViewTitle = document.getElementById("quoteRoutingViewTitle");
+const quoteRoutingViewHint = document.getElementById("quoteRoutingViewHint");
+const quoteRoutingActionTitle = document.getElementById("quoteRoutingActionTitle");
+const quoteRoutingActionHint = document.getElementById("quoteRoutingActionHint");
+const quoteRoutingSettingsBtn = document.getElementById("quoteRoutingSettingsBtn");
+const quoteRoutingSettingsCloseBtn = document.getElementById("quoteRoutingSettingsCloseBtn");
+const quoteRoutingSettingsPanel = document.getElementById("quoteRoutingSettingsPanel");
+let quoteRoutingActiveView = "fresh";
 const leadPackageSaveBtn = document.getElementById("leadPackageSaveBtn");
 const leadPriceSingle = document.getElementById("leadPriceSingle");
 const leadPrice10 = document.getElementById("leadPrice10");
@@ -3726,11 +3735,61 @@ function renderQuoteRoutingAdmin(){
   if(!quoteRoutingList)return;
 
   const search=String(quoteRoutingSearch?.value||"").trim().toLocaleLowerCase("tr-TR");
-  const statusFilter=String(quoteRoutingStatusFilter?.value||"all");
   const directRows=quoteRequestRecords.filter(quoteRoutingDirectRequest);
+
+  const counts={
+    fresh:directRows.filter(request=>quoteRoutingFlowStatus(request)==="fresh").length,
+    waiting:directRows.filter(request=>quoteRoutingFlowStatus(request)==="waiting").length,
+    forwarded:directRows.filter(request=>quoteRoutingFlowStatus(request)==="forwarded").length,
+    responded:directRows.filter(request=>["responded","completed"].includes(quoteRoutingFlowStatus(request))).length
+  };
+
+  if(quoteRoutingFreshCount)quoteRoutingFreshCount.textContent=String(counts.fresh);
+  if(quoteRoutingWaitingCount)quoteRoutingWaitingCount.textContent=String(counts.waiting);
+  if(quoteRoutingForwardedCount)quoteRoutingForwardedCount.textContent=String(counts.forwarded);
+  if(quoteRoutingRespondedCount)quoteRoutingRespondedCount.textContent=String(counts.responded);
+
+  const viewMeta={
+    fresh:{
+      title:"Bekleyen Talepler",
+      hint:"İlk hedef kurumun yanıt süresi devam eden özel talepler.",
+      actionTitle:"İlk kurumun yanıtı bekleniyor",
+      actionHint:"Belirlenen süre dolduğunda talep Dağıtım Merkezi aşamasına geçer."
+    },
+    waiting:{
+      title:"Dağıtım Merkezi",
+      hint:"Yanıt süresi dolmuş ve başka uygun kurumlara yönlendirilmeye hazır talepler.",
+      actionTitle:"Şimdi uygun kurumlara yönlendirin",
+      actionHint:"Öncelik sırası VIP → Reklam Veren → Diğer Kurumlar. Müşteri izni olmadan dağıtım yapılamaz."
+    },
+    forwarded:{
+      title:"Yanıt Bekleyen",
+      hint:"Başka kurumlara iletilmiş ve teklif dönüşü beklenen talepler.",
+      actionTitle:"Kurum yanıtları bekleniyor",
+      actionHint:"Gerekirse sıradaki öncelik grubuna da yönlendirme yapabilirsiniz. Kredi yalnızca kurum teklif verdiğinde kullanılır."
+    },
+    responded:{
+      title:"Teklif Geldi",
+      hint:"Yönlendirme sonrası teklif gelen veya kayıt sürecine geçen talepler.",
+      actionTitle:"Teklif dönüşü tamamlandı",
+      actionHint:"Gelen teklifleri, kullanılan krediyi ve müşterinin seçim/kayıt durumunu buradan takip edin."
+    }
+  };
+
+  const activeMeta=viewMeta[quoteRoutingActiveView]||viewMeta.fresh;
+  if(quoteRoutingViewTitle)quoteRoutingViewTitle.textContent=activeMeta.title;
+  if(quoteRoutingViewHint)quoteRoutingViewHint.textContent=activeMeta.hint;
+  if(quoteRoutingActionTitle)quoteRoutingActionTitle.textContent=activeMeta.actionTitle;
+  if(quoteRoutingActionHint)quoteRoutingActionHint.textContent=activeMeta.actionHint;
+
+  document.querySelectorAll("[data-routing-view]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.routingView===quoteRoutingActiveView);
+  });
+
   let rows=directRows.filter(request=>{
-    const status=quoteRoutingFlowStatus(request);
-    return statusFilter==="all" || status===statusFilter;
+    const flow=quoteRoutingFlowStatus(request);
+    if(quoteRoutingActiveView==="responded")return flow==="responded"||flow==="completed";
+    return flow===quoteRoutingActiveView;
   });
 
   if(search){
@@ -3741,32 +3800,31 @@ function renderQuoteRoutingAdmin(){
     });
   }
 
-  const waitingRows=directRows.filter(request=>quoteRoutingIsWaiting(request));
-  const bundles=waitingRows.map(request=>({request,candidates:quoteRoutingCandidateBundle(request)}));
+  const actionableRows=directRows.filter(request=>["waiting","forwarded"].includes(quoteRoutingFlowStatus(request)));
+  const bundles=actionableRows.map(request=>({request,candidates:quoteRoutingCandidateBundle(request)}));
   const vipCount=bundles.reduce((sum,row)=>sum+row.candidates.vip.filter(x=>!x.alreadyForwarded).length,0);
-  const forwardedCount=directRows.filter(request=>Array.isArray(request.forwardInstitutionIds)&&request.forwardInstitutionIds.length).length;
-  const respondedCount=directRows.filter(request=>quoteRoutingFlowStatus(request)==="responded").length;
-
-  if(quoteRoutingWaitingCount)quoteRoutingWaitingCount.textContent=String(waitingRows.length);
   if(quoteRoutingVipCount)quoteRoutingVipCount.textContent=String(vipCount);
-  if(quoteRoutingForwardedCount)quoteRoutingForwardedCount.textContent=String(forwardedCount);
-  if(quoteRoutingRespondedCount)quoteRoutingRespondedCount.textContent=String(respondedCount);
   if(quoteRoutingListCount)quoteRoutingListCount.textContent=rows.length+" kayıt";
-  const quoteRoutingHubWaiting=document.getElementById("quoteRoutingHubWaiting");
-  if(quoteRoutingHubWaiting)quoteRoutingHubWaiting.textContent=String(waitingRows.length);
   updateQuoteRoutingBadge();
 
   if(!rows.length){
-    quoteRoutingList.innerHTML='<div class="quote-routing-empty"><strong>Bu filtrede özel teklif bulunmuyor.</strong><span>Filtreyi “Tüm özel talepler” yaparak bütün akışı görüntüleyebilirsiniz.</span></div>';
+    const emptyMessages={
+      fresh:["Bekleyen talep yok","İlk kurumun yanıt süresinde olan özel teklif bulunmuyor."],
+      waiting:["Dağıtıma hazır talep yok","Yanıt süresi dolup dağıtım bekleyen özel teklif bulunmuyor."],
+      forwarded:["Yanıt bekleyen talep yok","Şu anda başka kurumlara iletilmiş ve teklif bekleyen talep bulunmuyor."],
+      responded:["Teklif dönen talep yok","Yönlendirme sonrası henüz teklif gelen bir talep bulunmuyor."]
+    };
+    const empty=emptyMessages[quoteRoutingActiveView]||emptyMessages.fresh;
+    quoteRoutingList.innerHTML='<div class="quote-routing-empty"><strong>'+empty[0]+'</strong><span>'+empty[1]+'</span></div>';
     return;
   }
 
   const statusMeta={
-    fresh:["Yeni","fresh"],
-    waiting:["Dağıtım bekliyor","waiting"],
-    forwarded:["Yönlendirildi · yanıt bekliyor","forwarded"],
-    responded:["Yönlendirmeden teklif geldi","responded"],
-    completed:["Kayıt sürecine geçti","completed"]
+    fresh:["İlk kurum bekleniyor","fresh"],
+    waiting:["Dağıtıma hazır","waiting"],
+    forwarded:["İletildi · yanıt bekliyor","forwarded"],
+    responded:["Teklif geldi","responded"],
+    completed:["Sonuçlandı","completed"]
   };
 
   quoteRoutingList.innerHTML=rows.map(request=>{
@@ -3781,6 +3839,8 @@ function renderQuoteRoutingAdmin(){
     const forwardedSet=new Set((request.forwardInstitutionIds||[]).map(String));
     const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
     const canForward=request.allowAlternativeInstitutions===true && !request.liveLock && offers.length===0 && ["waiting","forwarded"].includes(flow);
+    const showDistributionTools=["waiting","forwarded"].includes(flow) && !request.liveLock && offers.length===0;
+
     const consentHtml=request.allowAlternativeInstitutions===true
       ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Uygun kurumlara yönlendirilebilir.</span></div>'
       : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Başka kuruma iletmeden önce açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">✓ İzin Aldım</button></div>';
@@ -3810,16 +3870,30 @@ function renderQuoteRoutingAdmin(){
           '<div class="quote-routing-accepted-icon">✓</div>'+
           '<div class="quote-routing-accepted-copy">'+
             '<span>'+(acceptedCompleted?'KAYIT TAMAMLANDI':'TEKLİF KABUL EDİLDİ')+'</span>'+
-            '<strong>'+escapeHtml(acceptedInstitution)+
-              (acceptedPrice>0?' · '+quoteMoney(acceptedPrice):'')+
-            '</strong>'+
-            '<small>'+
-              (acceptedLock.acceptedAt||acceptedLock.lockedAt
-                ? 'Kabul: '+escapeHtml(formatDate(acceptedLock.acceptedAt||acceptedLock.lockedAt))
-                : 'Müşteri bu teklifi kabul etti')+
-            '</small>'+
+            '<strong>'+escapeHtml(acceptedInstitution)+(acceptedPrice>0?' · '+quoteMoney(acceptedPrice):'')+'</strong>'+
+            '<small>'+(acceptedLock.acceptedAt||acceptedLock.lockedAt
+              ? 'Kabul: '+escapeHtml(formatDate(acceptedLock.acceptedAt||acceptedLock.lockedAt))
+              : 'Müşteri bu teklifi kabul etti')+'</small>'+
           '</div>'+
           '<em>'+(acceptedCompleted?'Tamamlandı':'Kabul Edildi')+'</em>'+
+        '</div>'
+      : '';
+
+    const freshInfo=flow==="fresh"
+      ? '<div class="quote-routing-waiting-info"><span>⏳</span><div><strong>İlk kurum için bekleme süresi devam ediyor.</strong><small>Dağıtım zamanı geldiğinde bu talep otomatik olarak 2. aşamaya geçer.</small></div></div>'
+      : '';
+
+    const distributionHtml=showDistributionTools
+      ? consentHtml+
+        '<details class="quote-routing-ranked-panel">'+
+          '<summary><span>Sektöre uygun kurumları kredi sırasıyla gör</span><strong>'+candidates.all.length+' kurum</strong></summary>'+
+          '<div class="quote-routing-ranked-note">Sıralama: en çok toplam kredi alan kurum en üstte. VIP kurumlar ayrıca işaretlenir.</div>'+
+          quoteRoutingRankedListHtml(candidates.all)+
+        '</details>'+
+        '<div class="quote-routing-tiers">'+
+          quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id,canForward)+
+          quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id,canForward)+
+          quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id,canForward)+
         '</div>'
       : '';
 
@@ -3840,21 +3914,12 @@ function renderQuoteRoutingAdmin(){
       '</div>'+
       acceptedHtml+
       responseHtml+
+      freshInfo+
       '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
-      consentHtml+
-      '<details class="quote-routing-ranked-panel">'+
-        '<summary><span>Sektöre uygun kurumları kredi sırasıyla gör</span><strong>'+candidates.all.length+' kurum</strong></summary>'+
-        '<div class="quote-routing-ranked-note">Sıralama: en çok toplam kredi alan kurum en üstte. VIP kurumlar ayrıca işaretlenir.</div>'+
-        quoteRoutingRankedListHtml(candidates.all)+
-      '</details>'+
-      '<div class="quote-routing-tiers">'+
-        quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id,canForward)+
-        quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id,canForward)+
-        quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id,canForward)+
-      '</div>'+
+      distributionHtml+
       '<div class="quote-routing-card-actions">'+
         '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talep Detayı</button>'+
-        (totalForwarded>0 && !request.liveLock
+        (totalForwarded>0 && !request.liveLock && flow==="forwarded"
           ? '<button type="button" class="quote-routing-test-offer-btn" data-routing-test-offer="'+escapeHtml(request.id)+'">🧪 Test Teklifi Gönder</button>'
           : '')+
         '<a href="https://wa.me/'+normalizeWhatsApp(request.phone)+'" target="_blank" rel="noopener">Müşteriye WhatsApp</a>'+
@@ -3875,7 +3940,7 @@ function renderQuoteRoutingAdmin(){
 }
 
 
-function makeAdminTestOfferCode(){
+function makeAdminTestOfferCode(){function makeAdminTestOfferCode(){
   const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes=new Uint8Array(8);
   crypto.getRandomValues(bytes);
@@ -4780,8 +4845,29 @@ async function saveLeadCreditAdjustment(){
 
 quoteRoutingWaitMinutes?.addEventListener("change",renderQuoteRoutingAdmin);
 quoteRoutingAreaMode?.addEventListener("change",renderQuoteRoutingAdmin);
-quoteRoutingStatusFilter?.addEventListener("change",renderQuoteRoutingAdmin);
 quoteRoutingSearch?.addEventListener("input",renderQuoteRoutingAdmin);
+
+document.querySelectorAll("[data-routing-view]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    quoteRoutingActiveView=String(button.dataset.routingView||"fresh");
+    renderQuoteRoutingAdmin();
+    document.getElementById("quoteRoutingFlowBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+
+quoteRoutingSettingsBtn?.addEventListener("click",()=>{
+  if(!quoteRoutingSettingsPanel)return;
+  quoteRoutingSettingsPanel.hidden=!quoteRoutingSettingsPanel.hidden;
+  quoteRoutingSettingsBtn.classList.toggle("active",!quoteRoutingSettingsPanel.hidden);
+  if(!quoteRoutingSettingsPanel.hidden){
+    quoteRoutingSettingsPanel.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
+quoteRoutingSettingsCloseBtn?.addEventListener("click",()=>{
+  if(quoteRoutingSettingsPanel)quoteRoutingSettingsPanel.hidden=true;
+  quoteRoutingSettingsBtn?.classList.remove("active");
+});
+
 quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
   if(!institutionRecords.length)await loadInstitutions();
   await loadQuoteRequests();
@@ -4794,22 +4880,6 @@ leadPackageSaveBtn?.addEventListener("click",saveLeadRoutingSettings);
 leadCreditSearch?.addEventListener("input",renderLeadCreditAdmin);
 leadCreditStatusFilter?.addEventListener("change",renderLeadCreditAdmin);
 
-document.querySelectorAll("[data-routing-jump]").forEach(button=>{
-  button.addEventListener("click",()=>{
-    const targetId=String(button.dataset.routingJump||"");
-    const target=document.getElementById(targetId);
-    if(!target)return;
-
-    document.querySelectorAll(".quote-routing-hub-card").forEach(item=>{
-      item.classList.toggle("active",item===button);
-    });
-
-    target.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-  });
-});
 leadCreditRefreshBtn?.addEventListener("click",async()=>{
   await reconcileLeadCreditUsage();
   await loadLeadCreditData();
