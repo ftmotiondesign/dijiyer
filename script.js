@@ -522,6 +522,7 @@ function updateMobileCategoryResult() {
 
   if (!activeMain && !keyword) {
     root.classList.add('hidden');
+    document.getElementById('quoteSearchFallback')?.classList.add('hidden');
     return;
   }
 
@@ -532,6 +533,7 @@ function updateMobileCategoryResult() {
   // kullanıcı alt kategori seçtikten sonra göster.
   if (activeMain && hasSubcategories && !selectedSub && !keyword) {
     root.classList.add('hidden');
+    document.getElementById('quoteSearchFallback')?.classList.add('hidden');
     return;
   }
 
@@ -749,7 +751,10 @@ function renderMobileSubcategories(mainKey) {
         data-mobile-main="${mainKey}"
       >${label}</button>
     `;
-  }).join('');
+  }).join('') +
+    '<button type="button" class="mobile-subcategory-btn mobile-subcategory-missing" data-mobile-subcategory-missing="' +
+    mainKey +
+    '">＋ Aradığım hizmet listede yok</button>';
 
   root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
     button.addEventListener('click', () => {
@@ -847,6 +852,11 @@ function renderMobileCategories() {
                   >${label}</button>
                 `;
               }).join('')}
+              <button
+                type="button"
+                class="mobile-subcategory-btn mobile-subcategory-missing"
+                data-mobile-subcategory-missing="${activeMain}"
+              >＋ Aradığım hizmet listede yok</button>
             </div>
           </div>
         `);
@@ -5605,6 +5615,44 @@ function updateQuoteSearchFallback(options = {}) {
 }
 
 document.addEventListener('click', event => {
+  const missingSubcategory = event.target.closest('[data-mobile-subcategory-missing]');
+
+  if (missingSubcategory) {
+    event.preventDefault();
+
+    const mainCategory = String(missingSubcategory.dataset.mobileSubcategoryMissing || '').trim() || 'diger';
+    const categorySelect = document.getElementById('quoteCategory');
+    const subSelect = document.getElementById('quoteService');
+    const searchInput = document.getElementById('quoteSearch');
+
+    if (categorySelect) {
+      categorySelect.value = categoryTaxonomy[mainCategory] ? mainCategory : 'diger';
+      fillQuoteServices(categorySelect.value);
+    }
+
+    if (subSelect) {
+      if (![...subSelect.options].some(option => option.value === 'diger')) {
+        const option = document.createElement('option');
+        option.value = 'diger';
+        option.textContent = 'Özel Talep / Diğer';
+        subSelect.appendChild(option);
+      }
+      subSelect.value = 'diger';
+    }
+
+    if (searchInput) searchInput.value = '';
+
+    if (typeof openModal === 'function') {
+      openModal('quoteModal');
+    } else {
+      document.getElementById('quoteModal')?.classList.remove('hidden');
+    }
+
+    showToast('Aradığınız hizmeti yazın; özel talep olarak uygun işletmelere iletelim.');
+    setTimeout(() => searchInput?.focus(), 120);
+    return;
+  }
+
   const suggestion = event.target.closest('[data-quote-fallback-sub]');
 
   if (suggestion) {
