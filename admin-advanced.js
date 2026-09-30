@@ -4859,7 +4859,7 @@
     opportunitySponsorProgress(null,"");
   }
 
-  async function uploadOpportunitySponsorMedia(file,type){
+  async function uploadOpportunitySponsorMedia(file,type,quick=false){
     const message=$("opportunitySponsorUploadMessage");
     const inst=(institutionRecords||[]).find(
       item=>String(item.id)===String(selectedOpportunityInstitutionId)
@@ -4944,13 +4944,34 @@
 
       $("opportunitySponsorMediaUrl").value=url;
       $("opportunitySponsorMediaType").value=isVideo?"video":"image";
-      $("opportunitySponsorActive").checked=true;
-      opportunitySponsorPreview(url,isVideo?"video":"image");
-      opportunitySponsorProgress(100,"Yükleme tamamlandı");
-      if(message){
-        message.textContent=
-          (isVideo?"Video":"Görsel")+
-          " yüklendi. “Kaydet ve Yayınla” ile Fırsat sayfasında yayınlayın.";
+
+      if(quick){
+        const updates={
+          opportunitySponsorMediaUrl:url,
+          opportunitySponsorMediaType:isVideo?"video":"image",
+          opportunitySponsorUpdatedAt:new Date().toISOString(),
+          updatedAt:new Date().toISOString()
+        };
+        await db.collection("institutions").doc(String(inst.id)).update(updates);
+        Object.assign(inst,updates);
+        opportunitySponsorProgress(100,"Medya değiştirildi");
+        if(message)message.textContent=(isVideo?"Video":"Görsel")+" değiştirildi ve kaydedildi.";
+        addAudit(
+          "Fırsat sponsor medyası değiştirildi",
+          (inst.name||inst.id)+" · "+(isVideo?"Video":"Görsel")
+        );
+        renderOpportunitySponsorsAdmin();
+        if($("mediaArchiveSection")&&!$("mediaArchiveSection").hidden)renderMediaArchive();
+        setTimeout(()=>opportunitySponsorProgress(null,""),700);
+      }else{
+        $("opportunitySponsorActive").checked=true;
+        opportunitySponsorPreview(url,isVideo?"video":"image");
+        opportunitySponsorProgress(100,"Yükleme tamamlandı");
+        if(message){
+          message.textContent=
+            (isVideo?"Video":"Görsel")+
+            " yüklendi. “Kaydet ve Yayınla” ile Fırsat sayfasında yayınlayın.";
+        }
       }
     }catch(error){
       console.error("Fırsat sponsor medyası yüklenemedi:",error);
@@ -4959,6 +4980,7 @@
     }finally{
       if($("opportunitySponsorImageFile"))$("opportunitySponsorImageFile").value="";
       if($("opportunitySponsorVideoFile"))$("opportunitySponsorVideoFile").value="";
+      if($("opportunityQuickMediaFile"))$("opportunityQuickMediaFile").value="";
     }
   }
 
