@@ -79,6 +79,17 @@ const quoteRequestsList = document.getElementById("quoteRequestsList");
 const quoteRequestCount = document.getElementById("quoteRequestCount");
 const quoteRequestSearch = document.getElementById("quoteRequestSearch");
 const quoteStatusFilter = document.getElementById("quoteStatusFilter");
+const quotePeriodFilter = document.getElementById("quotePeriodFilter");
+const quoteSort = document.getElementById("quoteSort");
+const quoteClearFilters = document.getElementById("quoteClearFilters");
+const quoteRefreshBtn = document.getElementById("quoteRefreshBtn");
+const quoteFilterResult = document.getElementById("quoteFilterResult");
+const quoteKpiTotal = document.getElementById("quoteKpiTotal");
+const quoteKpiWaiting = document.getElementById("quoteKpiWaiting");
+const quoteKpiOffered = document.getElementById("quoteKpiOffered");
+const quoteKpiLocked = document.getElementById("quoteKpiLocked");
+const quoteKpiDone = document.getElementById("quoteKpiDone");
+const quoteKpiIssue = document.getElementById("quoteKpiIssue");
 
 const offerReportCount = document.getElementById("offerReportCount");
 const offerReportInstitutionCount = document.getElementById("offerReportInstitutionCount");
@@ -2491,8 +2502,7 @@ async function loadQuoteRequests() {
       })
     );
 
-    quoteRequestCount.textContent =
-      `${quoteRequestRecords.length} teklif talebi · güncel süreç bilgileriyle`;
+    updateQuoteDashboardStats();
     renderQuoteRequests();
     buildInstitutionOfferReport();
     renderInstitutionOfferReport();
@@ -3646,12 +3656,85 @@ document.addEventListener("keydown",event => {
     quoteActivityModal.classList.add("hidden");
   }
 });
+function quoteRequestDateValue(request) {
+  const value = request?.date || request?.createdAt || request?.updatedAt || "";
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function quoteMatchesPeriod(request, period) {
+  if (!period) return true;
+
+  const time = quoteRequestDateValue(request);
+  if (!time) return false;
+
+  const now = new Date();
+
+  if (period === "today") {
+    const date = new Date(time);
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  }
+
+  const days = Number(period || 0);
+  if (!days) return true;
+
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  return time >= start.getTime();
+}
+
+function updateQuoteDashboardStats() {
+  const states = quoteRequestRecords.map(request =>
+    request.currentState || getAdminQuoteLiveState(request)
+  );
+
+  const waiting = states.filter(state => ["new", "sent"].includes(state)).length;
+  const offered = states.filter(state => state === "offered").length;
+  const locked = states.filter(state => state === "locked").length;
+  const completed = states.filter(state => ["done", "used"].includes(state)).length;
+  const issues = quoteRequestRecords.filter(request => Number(request.issueCount || 0) > 0).length;
+  const totalOffers = quoteRequestRecords.reduce(
+    (sum, request) => sum + (Array.isArray(request.liveOffers) ? request.liveOffers.length : 0),
+    0
+  );
+
+  if (quoteKpiTotal) quoteKpiTotal.textContent = String(quoteRequestRecords.length);
+  if (quoteKpiWaiting) quoteKpiWaiting.textContent = String(waiting);
+  if (quoteKpiOffered) quoteKpiOffered.textContent = String(offered);
+  if (quoteKpiLocked) quoteKpiLocked.textContent = String(locked);
+  if (quoteKpiDone) quoteKpiDone.textContent = String(completed);
+  if (quoteKpiIssue) quoteKpiIssue.textContent = String(issues);
+
+  if (quoteRequestCount) {
+    quoteRequestCount.textContent =
+      quoteRequestRecords.length + " talep · " +
+      waiting + " işlem bekliyor · " +
+      totalOffers + " kurum teklifi";
+  }
+
+  document.querySelectorAll("[data-quote-kpi]").forEach(button => {
+    button.classList.toggle(
+      "active",
+      String(button.dataset.quoteKpi || "") === String(quoteStatusFilter?.value || "")
+    );
+  });
+}
+
 function renderQuoteRequests() {
   const query = quoteRequestSearch.value.trim().toLocaleLowerCase("tr-TR");
   const status = quoteStatusFilter.value;
+  const period = quotePeriodFilter?.value || "";
+  const sort = quoteSort?.value || "newest";
 
-  const data = quoteRequestRecords.filter(item => {
+  let data = quoteRequestRecords.filter(item => {
     const haystack = [
+      item.id,
       item.name,
       item.phone,
       item.city,
@@ -3662,20 +3745,73 @@ function renderQuoteRequests() {
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
     const currentState = item.currentState || getAdminQuoteLiveState(item);
-    const statusMatches = !status ||
-      (status === "issue" ? Number(item.issueCount || 0) > 0 : currentState === status);
+    const statusMatches =
+      !status ||
+      (status === "issue"
+        ? Number(item.issueCount || 0) > 0
+        : status === "waiting"
+          ? ["new", "sent"].includes(currentState)
+          : status === "completed"
+            ? ["done", "used"].includes(currentState)
+            : currentState === status);
+
     const offerSearch = (Array.isArray(item.liveOffers) ? item.liveOffers : [])
       .map(offer => [offer.institutionName, offer.offerCode, offer.price].filter(Boolean).join(" "))
       .join(" ")
       .toLocaleLowerCase("tr-TR");
 
-    return (!query || haystack.includes(query) || offerSearch.includes(query)) &&
-      statusMatches;
+    return (
+      (!query || haystack.includes(query) || offerSearch.includes(query)) &&
+      statusMatches &&
+      quoteMatchesPeriod(item, period)
+    );
   });
+
+  data.sort((a, b) => {
+    if (sort === "oldest") {
+      return quoteRequestDateValue(a) - quoteRequestDateValue(b);
+    }
+
+    if (sort === "offers_desc") {
+      const offerDiff =
+        (Array.isArray(b.liveOffers) ? b.liveOffers.length : 0) -
+        (Array.isArray(a.liveOffers) ? a.liveOffers.length : 0);
+      return offerDiff || quoteRequestDateValue(b) - quoteRequestDateValue(a);
+    }
+
+    if (sort === "attention") {
+      const attentionScore = item => {
+        const state = item.currentState || getAdminQuoteLiveState(item);
+        if (Number(item.issueCount || 0) > 0) return 4;
+        if (state === "new") return 3;
+        if (state === "sent") return 2;
+        if (state === "expired") return 1;
+        return 0;
+      };
+
+      const diff = attentionScore(b) - attentionScore(a);
+      return diff || quoteRequestDateValue(b) - quoteRequestDateValue(a);
+    }
+
+    return quoteRequestDateValue(b) - quoteRequestDateValue(a);
+  });
+
+  updateQuoteDashboardStats();
+
+  if (quoteFilterResult) {
+    const parts = [];
+    if (status) parts.push(quoteStatusFilter.options[quoteStatusFilter.selectedIndex]?.text || "Durum filtresi");
+    if (period) parts.push(quotePeriodFilter.options[quotePeriodFilter.selectedIndex]?.text || "Tarih filtresi");
+    if (query) parts.push('Arama: "' + quoteRequestSearch.value.trim() + '"');
+
+    quoteFilterResult.textContent =
+      data.length + " / " + quoteRequestRecords.length + " talep gösteriliyor" +
+      (parts.length ? " · " + parts.join(" · ") : "");
+  }
 
   if (!data.length) {
     quoteRequestsList.innerHTML =
-      '<div class="empty-state">Filtreye uygun teklif talebi bulunamadı.</div>';
+      '<div class="empty-state quote-empty-state"><strong>Uygun kayıt bulunamadı.</strong><span>Filtreleri temizleyerek tüm teklif taleplerini yeniden görüntüleyebilirsiniz.</span></div>';
     return;
   }
 
@@ -3848,9 +3984,13 @@ function renderQuoteRequests() {
 
     const liveState = request.currentState || getAdminQuoteLiveState(request);
     const [liveStateLabel, liveStateClass] = getAdminQuoteStateMeta(liveState);
+    const liveOfferCount = Array.isArray(request.liveOffers) ? request.liveOffers.length : 0;
+    const liveIssueCount = Number(request.issueCount || 0);
+    const requestCode = String(request.id || "").slice(0, 9).toUpperCase();
 
     const card = document.createElement("div");
-    card.className = "quote-request-card";
+    card.className = "quote-request-card quote-state-" + liveState +
+      (liveIssueCount ? " has-issue" : "");
     card.dataset.quoteId = request.id;
 
     const institutionButtons = matching.length
@@ -3873,28 +4013,51 @@ function renderQuoteRequests() {
 
     card.innerHTML = `
       <div class="quote-request-top">
-        <div>
+        <div class="quote-request-identity">
+          <div class="quote-request-kicker">
+            <span class="quote-request-code">#${escapeHtml(requestCode)}</span>
+            ${request.targetInstitutionId ? '<span class="quote-source-chip">Doğrudan talep</span>' : '<span class="quote-source-chip">Toplu teklif</span>'}
+          </div>
+
           <h3>${escapeHtml(request.name || "-")}</h3>
+
           <div class="quote-badges">
-            <span>${escapeHtml(request.service || "-")}</span>
-            ${request.targetInstitutionId ? '<span class="direct-request-admin-badge">🎯 Doğrudan Kurum Talebi</span>' : ""}
+            <span class="quote-service-badge">${escapeHtml(request.service || "-")}</span>
+            ${request.targetInstitutionId ? '<span class="direct-request-admin-badge">🎯 Hedef kurum</span>' : ""}
             <span class="quote-status ${liveStateClass}">
               ${liveStateLabel}
             </span>
           </div>
         </div>
 
-        <div class="quote-date">${formatDate(request.date)}</div>
+        <div class="quote-request-side">
+          <div class="quote-date">${formatDate(request.date)}</div>
+          <div class="quote-mini-stats">
+            <span><b>${liveOfferCount}</b> teklif</span>
+            <span><b>${matching.length}</b> uygun kurum</span>
+            ${request.liveLock ? '<span class="is-selected"><b>✓</b> seçim var</span>' : ""}
+            ${liveIssueCount ? '<span class="is-warning"><b>' + liveIssueCount + '</b> sorun</span>' : ""}
+          </div>
+        </div>
       </div>
 
       <div class="quote-info-grid">
-        <div><small>Telefon</small><strong>${escapeHtml(request.phone || "-")}</strong></div>
-        <div><small>${request.targetInstitutionId ? "Hedef Kurum" : "Konum"}</small><strong>${escapeHtml(
-          request.targetInstitutionId
-            ? (request.targetInstitutionName || directTargetInstitution?.name || "-")
-            : ([request.city, request.district].filter(Boolean).join(" / ") || "-")
-        )}</strong></div>
-        <div class="wide"><small>Not</small><strong>${escapeHtml(request.note || "Not yok")}</strong></div>
+        <div class="quote-info-cell">
+          <small>Müşteri telefonu</small>
+          <strong>${escapeHtml(request.phone || "-")}</strong>
+        </div>
+        <div class="quote-info-cell">
+          <small>${request.targetInstitutionId ? "Hedef kurum" : "Talep konumu"}</small>
+          <strong>${escapeHtml(
+            request.targetInstitutionId
+              ? (request.targetInstitutionName || directTargetInstitution?.name || "-")
+              : ([request.city, request.district].filter(Boolean).join(" / ") || "-")
+          )}</strong>
+        </div>
+        <div class="wide quote-info-cell quote-note-cell">
+          <small>Müşteri notu</small>
+          <strong>${escapeHtml(request.note || "Not eklenmemiş")}</strong>
+        </div>
       </div>
 
       ${request.liveDetailError
@@ -4051,6 +4214,38 @@ async function updateQuoteStatus(id, status) {
 
 quoteRequestSearch.addEventListener("input", renderQuoteRequests);
 quoteStatusFilter.addEventListener("change", renderQuoteRequests);
+quotePeriodFilter?.addEventListener("change", renderQuoteRequests);
+quoteSort?.addEventListener("change", renderQuoteRequests);
+
+quoteClearFilters?.addEventListener("click", () => {
+  quoteRequestSearch.value = "";
+  quoteStatusFilter.value = "";
+  if (quotePeriodFilter) quotePeriodFilter.value = "";
+  if (quoteSort) quoteSort.value = "newest";
+  renderQuoteRequests();
+  quoteRequestSearch.focus();
+});
+
+quoteRefreshBtn?.addEventListener("click", async () => {
+  const oldText = quoteRefreshBtn.innerHTML;
+  quoteRefreshBtn.disabled = true;
+  quoteRefreshBtn.innerHTML = "<span>↻</span> Yenileniyor...";
+  try {
+    await loadQuoteRequests();
+  } finally {
+    quoteRefreshBtn.disabled = false;
+    quoteRefreshBtn.innerHTML = oldText;
+  }
+});
+
+document.querySelectorAll("[data-quote-kpi]").forEach(button => {
+  button.addEventListener("click", () => {
+    const target = String(button.dataset.quoteKpi || "");
+    quoteStatusFilter.value =
+      quoteStatusFilter.value === target && target ? "" : target;
+    renderQuoteRequests();
+  });
+});
 
 
 accountsTabBtn.addEventListener("click", async () => {
