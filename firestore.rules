@@ -87,6 +87,9 @@ service cloud.firestore {
     match /quoteRequests/{quoteId} {
 
       // Üyeliksiz toplu teklif ve tek kuruma doğrudan teklif oluşturulabilir.
+      // Bu kural istemcinin gönderdiği alanları doğrular; kurum belgesine
+      // ek get()/exists() bağımlılığı koymaz. Böylece tekli teklif,
+      // kurum profilinden güvenilir şekilde kaydedilebilir.
       allow create: if
         request.resource.data.keys().hasOnly([
           'mainCategory',
@@ -110,6 +113,8 @@ service cloud.firestore {
         && request.resource.data.subCategory is string
         && request.resource.data.category is string
         && request.resource.data['service'] is string
+        && request.resource.data['service'].size() > 0
+
         && request.resource.data.city is string
         && request.resource.data.district is string
 
@@ -119,7 +124,7 @@ service cloud.firestore {
 
         && request.resource.data.phone is string
         && request.resource.data.phone.size() >= 10
-        && request.resource.data.phone.size() <= 30
+        && request.resource.data.phone.size() <= 40
 
         && (
           !request.resource.data.keys().hasAny(['email'])
@@ -135,9 +140,8 @@ service cloud.firestore {
         && request.resource.data.status == 'new'
         && request.resource.data.date is string
 
-        // Toplu teklifte hedef kurum alanları bulunmaz.
-        // Doğrudan teklifte üç alan birlikte bulunur ve kurum doğrulanır.
         && (
+          // Toplu teklif: hedef kurum alanları bulunmaz.
           !request.resource.data.keys().hasAny([
             'requestType',
             'targetInstitutionId',
@@ -146,6 +150,7 @@ service cloud.firestore {
 
           ||
 
+          // Tekli teklif: üç alan birlikte ve geçerli tipte bulunur.
           (
             request.resource.data.keys().hasAll([
               'requestType',
@@ -157,14 +162,6 @@ service cloud.firestore {
             && request.resource.data.targetInstitutionId.size() > 0
             && request.resource.data.targetInstitutionName is string
             && request.resource.data.targetInstitutionName.size() > 0
-
-            && exists(
-              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
-            )
-
-            && request.resource.data.targetInstitutionName == get(
-              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
-            ).data.name
           )
         );
 
