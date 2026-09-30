@@ -125,6 +125,12 @@ const quoteActivityCsvBtn = document.getElementById("quoteActivityCsvBtn");
 const quoteActivityRefreshBtn = document.getElementById("quoteActivityRefreshBtn");
 const quoteActivityCompleteness = document.getElementById("quoteActivityCompleteness");
 const quoteActivityTimeline = document.getElementById("quoteActivityTimeline");
+const quoteCompareModal = document.getElementById("quoteCompareModal");
+const closeQuoteCompareModal = document.getElementById("closeQuoteCompareModal");
+const quoteCompareTitle = document.getElementById("quoteCompareTitle");
+const quoteCompareMeta = document.getElementById("quoteCompareMeta");
+const quoteCompareHighlights = document.getElementById("quoteCompareHighlights");
+const quoteCompareTableBody = document.getElementById("quoteCompareTableBody");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
@@ -3509,6 +3515,115 @@ function quoteActivitySummaryHtml(request,bundle) {
   ].join("");
 }
 
+function getAdminOfferCompareState(offer, request) {
+  const lock = request.liveLock || null;
+  const now = Date.now();
+  const isSelected = lock &&
+    String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
+
+  if (isSelected) {
+    if (lock.status === "used") return { label:"Kullanıldı", cls:"used" };
+    if (lock.expiresAt && new Date(lock.expiresAt).getTime() <= now) {
+      return { label:"Seçildi · Süresi Doldu", cls:"expired" };
+    }
+    return { label:"Seçildi / Kilitli", cls:"locked" };
+  }
+
+  if (offer.expiresAt && new Date(offer.expiresAt).getTime() <= now) {
+    return { label:"Süresi Doldu", cls:"expired" };
+  }
+
+  return { label:"Aktif Teklif", cls:"active" };
+}
+
+function openQuoteCompareModal(requestId) {
+  const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
+  if (!request) return;
+
+  const offers = Array.isArray(request.liveOffers)
+    ? [...request.liveOffers].sort((a,b) => Number(a.price || 0) - Number(b.price || 0))
+    : [];
+
+  quoteCompareModal?.classList.remove("hidden");
+  if (quoteCompareTitle) quoteCompareTitle.textContent = request.service || "Teklifleri Karşılaştır";
+  if (quoteCompareMeta) {
+    quoteCompareMeta.textContent = [
+      request.name || "Müşteri",
+      [request.city, request.district].filter(Boolean).join(" / "),
+      offers.length + " kurum teklifi"
+    ].filter(Boolean).join(" · ");
+  }
+
+  if (!offers.length) {
+    if (quoteCompareHighlights) {
+      quoteCompareHighlights.innerHTML =
+        '<div class="quote-compare-empty">Henüz karşılaştırılacak kurum teklifi yok.</div>';
+    }
+    if (quoteCompareTableBody) quoteCompareTableBody.innerHTML = "";
+    return;
+  }
+
+  const validPrices = offers
+    .map(offer => Number(offer.price || 0))
+    .filter(price => Number.isFinite(price) && price > 0);
+
+  const minPrice = validPrices.length ? Math.min(...validPrices) : 0;
+  const maxPrice = validPrices.length ? Math.max(...validPrices) : 0;
+  const selected = request.liveLock || null;
+
+  if (quoteCompareHighlights) {
+    quoteCompareHighlights.innerHTML = [
+      '<article><span>Teklif Sayısı</span><strong>' + offers.length + '</strong></article>',
+      '<article><span>En Düşük Fiyat</span><strong>' + (minPrice ? quoteMoney(minPrice) : "-") + '</strong></article>',
+      '<article><span>Fiyat Aralığı</span><strong>' +
+        (minPrice && maxPrice ? quoteMoney(minPrice) + " – " + quoteMoney(maxPrice) : "-") +
+      '</strong></article>',
+      '<article class="' + (selected ? "selected" : "") + '"><span>Seçilen Teklif</span><strong>' +
+        (selected ? escapeHtml(selected.institutionName || selected.offerCode || "Seçim yapıldı") : "Henüz seçilmedi") +
+      '</strong></article>'
+    ].join("");
+  }
+
+  if (quoteCompareTableBody) {
+    quoteCompareTableBody.innerHTML = offers.map(offer => {
+      const state = getAdminOfferCompareState(offer, request);
+      const price = Number(offer.price || 0);
+      const isLowest = minPrice > 0 && price === minPrice;
+      const lock = request.liveLock || null;
+      const isSelected = lock &&
+        String(lock.institutionId || "") === String(offer.institutionId || offer.id || "");
+
+      return '<tr class="' +
+        (isSelected ? ' is-selected' : '') +
+        (isLowest ? ' is-lowest' : '') +
+        '">' +
+        '<td><div class="quote-compare-institution"><strong>' +
+          escapeHtml(offer.institutionName || "Kurum") +
+          '</strong><small>' +
+          (isLowest ? '<span class="lowest-chip">En düşük fiyat</span>' : '') +
+          (isSelected ? '<span class="selected-chip">Seçilen</span>' : '') +
+          '</small></div></td>' +
+        '<td class="quote-compare-price">' + quoteMoney(offer.price) + '</td>' +
+        '<td>' + escapeHtml(offer.vatStatus || "-") + '</td>' +
+        '<td>' + (offer.expiresAt ? formatDate(offer.expiresAt) : "-") + '</td>' +
+        '<td><code>' + escapeHtml(offer.offerCode || "-") + '</code></td>' +
+        '<td><span class="compare-state ' + state.cls + '">' + escapeHtml(state.label) + '</span></td>' +
+      '</tr>';
+    }).join("");
+  }
+}
+
+closeQuoteCompareModal?.addEventListener("click",() => quoteCompareModal?.classList.add("hidden"));
+quoteCompareModal?.addEventListener("click",event => {
+  if (event.target === quoteCompareModal) quoteCompareModal.classList.add("hidden");
+});
+
+document.addEventListener("keydown",event => {
+  if (event.key === "Escape" && quoteCompareModal && !quoteCompareModal.classList.contains("hidden")) {
+    quoteCompareModal.classList.add("hidden");
+  }
+});
+
 function renderQuoteActivityTimeline(request,bundle) {
   const filter = quoteActivityFilter ? quoteActivityFilter.value : "all";
   const events = (bundle.events || []).filter(event => filter === "all" || event.category === filter);
@@ -4085,6 +4200,14 @@ function renderQuoteRequests() {
       </div>
 
       <div class="quote-actions">
+        <button
+          type="button"
+          class="quote-compare-btn"
+          ${liveOfferCount ? "" : "disabled"}
+        >
+          ⇄ Teklifleri Karşılaştır${liveOfferCount ? " (" + liveOfferCount + ")" : ""}
+        </button>
+
         <a class="customer-whatsapp" target="_blank"
           href="https://wa.me/${normalizeWhatsApp(request.phone)}">
           Müşteriye WhatsApp
@@ -4143,6 +4266,11 @@ function renderQuoteRequests() {
       button.addEventListener("click", async () => {
         await updateQuoteStatus(request.id, button.dataset.status);
       });
+    });
+
+    card.querySelector(".quote-compare-btn")?.addEventListener("click", () => {
+      if (!liveOfferCount) return;
+      openQuoteCompareModal(request.id);
     });
 
     card.querySelector(".quote-activity-btn")?.addEventListener("click", async () => {
