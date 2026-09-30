@@ -11,7 +11,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=44">
-  <link rel="stylesheet" href="admin-advanced.css?v=34">
+  <link rel="stylesheet" href="admin-advanced.css?v=35">
 </head>
 
 <body>
@@ -890,7 +890,7 @@
         <div class="media-archive-bulk-panel" id="mediaArchiveBulkPanel">
           <div class="media-archive-bulk-head">
             <div>
-              <span>SİLME / PASİF YÖNETİMİ</span>
+              <span>AKTİF / PASİF / SİLME YÖNETİMİ</span>
               <strong>Birden fazla medyayı tek seferde yönetin</strong>
             </div>
             <label class="media-archive-select-all">
@@ -904,6 +904,7 @@
               <strong id="mediaArchiveSelectedCount">0</strong>
               <span>medya seçildi</span>
             </div>
+            <button type="button" id="mediaArchiveBulkActive" class="active" disabled>▶ Seçilenleri Aktif Yap</button>
             <button type="button" id="mediaArchiveBulkPassive" class="passive" disabled>⏸ Seçilenleri Pasif Yap</button>
             <button type="button" id="mediaArchiveBulkDelete" class="danger" disabled>🗑 Seçilenleri Arşivden Sil</button>
             <button type="button" id="mediaArchiveBulkClear" class="ghost" disabled>Seçimi Temizle</button>
@@ -913,7 +914,7 @@
         <div class="media-archive-help">
           <strong>Nasıl temizlenir?</strong>
           <span>
-            “Pasif Yap” medyayı yayından kaldırır ancak bağlantısını korur. “Arşivden Sil” ise medyayı Dijiyer arşivinden ve bağlı yayın alanlarından kaldırır.
+            “Pasif Yap” medyayı yayından kaldırır ama bağlantısını korur. “Aktif Yap” ile tekrar yayına alabilirsiniz. “Arşivden Sil” medyayı Dijiyer arşivinden ve bağlı yayın alanlarından kaldırır.
             Cloudinary dosyasını fiziksel olarak kalıcı silmek isterseniz aynı <b>Public ID</b> ile Cloudinary panelini kullanın.
           </span>
         </div>
@@ -2724,7 +2725,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=44"></script>
-  <script src="admin-advanced.js?v=50"></script>
+  <script src="admin-advanced.js?v=51"></script>
 
 </body>
 </html>
