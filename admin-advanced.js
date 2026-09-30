@@ -601,11 +601,210 @@
     const wantedCategory=selectedInstitution?.subCategory || selectedInstitution?.category || categorySelect.dataset.current || "";
     categorySelect.innerHTML='<option value="">Tüm Sektörler</option>'+categories.map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(bannerCategoryLabel(value))+'</option>').join("");
     categorySelect.value=wantedCategory;
+
+    populateBannerInstitutionFinderFilters();
   }
 
   function selectedBannerInstitution(){
     const id=String($("bannerAdInstitution")?.value||"");
     return institutionRecords.find(item=>String(item.id)===id)||null;
+  }
+
+  function bannerInstitutionIsActive(item){
+    return String(item?.status || "active") !== "passive";
+  }
+
+  function bannerInstitutionHasAd(item){
+    if(typeof getInstitutionAdState==="function"){
+      try{return Boolean(getInstitutionAdState(item)?.advertiser)}catch(_){}
+    }
+    const raw=String(item?.adStatus||"none");
+    const endValue=item?.adEndAt||"";
+    const end=endValue ? new Date(String(endValue).length<=10 ? endValue+"T23:59:59" : endValue) : null;
+    const expired=Boolean(end && !Number.isNaN(end.getTime()) && end.getTime()<Date.now());
+    return ["active","paused"].includes(raw) && !expired;
+  }
+
+  function bannerInstitutionCategory(item){
+    return String(item?.subCategory || item?.category || item?.mainCategory || "").trim();
+  }
+
+  function bannerInstitutionSearchHaystack(item){
+    return normalize([
+      item?.name,
+      item?.city,
+      item?.district,
+      item?.subCategory,
+      item?.category,
+      item?.mainCategory,
+      item?.phone,
+      item?.address,
+      item?.email
+    ].filter(Boolean).join(" "));
+  }
+
+  function populateBannerInstitutionFinderFilters(){
+    const citySelect=$("bannerInstitutionFinderCity");
+    const categorySelect=$("bannerInstitutionFinderCategory");
+    if(!citySelect||!categorySelect)return;
+
+    const oldCity=citySelect.value;
+    const oldCategory=categorySelect.value;
+
+    const cities=[...new Set(
+      (institutionRecords||[]).map(item=>String(item.city||"").trim()).filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
+
+    const categories=[...new Set(
+      (institutionRecords||[]).map(bannerInstitutionCategory).filter(Boolean)
+    )].sort((a,b)=>bannerCategoryLabel(a).localeCompare(bannerCategoryLabel(b),"tr"));
+
+    citySelect.innerHTML='<option value="">Tüm Şehirler</option>'+
+      cities.map(city=>'<option value="'+escapeHtml(city)+'">'+escapeHtml(city)+'</option>').join("");
+    categorySelect.innerHTML='<option value="">Tüm Sektörler</option>'+
+      categories.map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(bannerCategoryLabel(value))+'</option>').join("");
+
+    citySelect.value=cities.includes(oldCity)?oldCity:"";
+    categorySelect.value=categories.includes(oldCategory)?oldCategory:"";
+  }
+
+  function bannerInstitutionResultHtml(item){
+    const active=bannerInstitutionIsActive(item);
+    const advertiser=bannerInstitutionHasAd(item);
+    const logo=String(item.logoUrl||item.coverUrl||"").trim();
+    const location=[item.city,item.district].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
+    const category=bannerCategoryLabel(bannerInstitutionCategory(item)) || "Sektör belirtilmemiş";
+    const phone=String(item.phone||"").trim();
+    const selected=String($("bannerAdInstitution")?.value||"")===String(item.id);
+
+    return '<button type="button" class="banner-institution-result'+(selected?' is-selected':'')+'" data-banner-institution-pick="'+escapeHtml(String(item.id))+'">'+
+      '<span class="banner-institution-result-logo">'+
+        (logo
+          ? '<img src="'+escapeHtml(logo)+'" alt="">'
+          : '<b>🏢</b>')+
+      '</span>'+
+      '<span class="banner-institution-result-main">'+
+        '<strong>'+escapeHtml(item.name||"Kurum")+'</strong>'+
+        '<small>📍 '+escapeHtml(location)+'</small>'+
+        '<em>'+escapeHtml(category)+(phone?' · '+escapeHtml(phone):'')+'</em>'+
+      '</span>'+
+      '<span class="banner-institution-result-badges">'+
+        '<i class="'+(active?'active':'passive')+'">'+(active?'Aktif':'Pasif')+'</i>'+
+        '<i class="'+(advertiser?'advertiser':'none')+'">'+(advertiser?'Reklam Veriyor':'Reklam Yok')+'</i>'+
+        (selected?'<i class="selected">Seçildi</i>':'')+
+      '</span>'+
+    '</button>';
+  }
+
+  function renderBannerInstitutionSelected(){
+    const root=$("bannerInstitutionSelected");
+    if(!root)return;
+    const inst=selectedBannerInstitution();
+
+    if(!inst){
+      root.classList.add("hidden");
+      root.innerHTML="";
+      return;
+    }
+
+    const logo=String(inst.logoUrl||inst.coverUrl||"").trim();
+    const location=[inst.city,inst.district].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
+    root.classList.remove("hidden");
+    root.innerHTML=
+      '<div class="banner-institution-selected-logo">'+
+        (logo?'<img src="'+escapeHtml(logo)+'" alt="">':'<span>🏢</span>')+
+      '</div>'+
+      '<div class="banner-institution-selected-copy">'+
+        '<span>SEÇİLİ REKLAM VEREN</span>'+
+        '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
+        '<small>'+escapeHtml(location)+' · '+escapeHtml(bannerCategoryLabel(bannerInstitutionCategory(inst))||"Sektör belirtilmemiş")+'</small>'+
+      '</div>'+
+      '<button type="button" data-banner-institution-change>Değiştir</button>';
+
+    root.querySelector("[data-banner-institution-change]")?.addEventListener("click",()=>{
+      $("bannerAdInstitution").value="";
+      renderBannerInstitutionSelected();
+      renderBannerInstitutionFinder();
+      $("bannerInstitutionFinderSearch")?.focus();
+    });
+  }
+
+  function renderBannerInstitutionFinder(){
+    const root=$("bannerInstitutionFinderResults");
+    const count=$("bannerInstitutionFinderCount");
+    if(!root||!count)return;
+
+    populateBannerInstitutionFinderFilters();
+
+    const query=normalize($("bannerInstitutionFinderSearch")?.value||"");
+    const city=String($("bannerInstitutionFinderCity")?.value||"");
+    const category=String($("bannerInstitutionFinderCategory")?.value||"");
+    const status=String($("bannerInstitutionFinderStatus")?.value||"");
+
+    let rows=[...(institutionRecords||[])].filter(item=>{
+      if(query && !bannerInstitutionSearchHaystack(item).includes(query))return false;
+      if(city && String(item.city||"")!==city)return false;
+      if(category && bannerInstitutionCategory(item)!==category)return false;
+
+      const active=bannerInstitutionIsActive(item);
+      const advertiser=bannerInstitutionHasAd(item);
+
+      if(status==="active" && !active)return false;
+      if(status==="passive" && active)return false;
+      if(status==="ad_active" && !advertiser)return false;
+      if(status==="ad_none" && advertiser)return false;
+      return true;
+    });
+
+    rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
+
+    const total=rows.length;
+    const shown=rows.slice(0,12);
+    count.textContent=total
+      ? total+" kurum bulundu"+(total>12?" · İlk 12 gösteriliyor":"")
+      : "Eşleşen kurum bulunamadı";
+
+    root.innerHTML=shown.length
+      ? shown.map(bannerInstitutionResultHtml).join("")
+      : '<div class="advanced-empty">Arama veya filtrelere uygun kurum bulunamadı.</div>';
+
+    root.querySelectorAll("[data-banner-institution-pick]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const id=String(button.dataset.bannerInstitutionPick||"");
+        const inst=(institutionRecords||[]).find(item=>String(item.id)===id);
+        if(inst)selectBannerInstitutionForAd(inst);
+      });
+    });
+
+    renderBannerInstitutionSelected();
+  }
+
+  function selectBannerInstitutionForAd(inst){
+    if(!inst)return;
+
+    fillBannerAdTargetOptions(inst);
+    $("bannerAdInstitution").value=String(inst.id);
+    $("bannerAdHeadline").value=inst.name||"";
+    $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
+    $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
+
+    if(!$("bannerAdVideoUrl")?.value){
+      $("bannerAdMediaType").value="image";
+    }
+
+    renderBannerInstitutionSelected();
+    renderBannerInstitutionFinder();
+    renderBannerAdminPreview();
+
+    $("bannerInstitutionFinderSearch")?.blur();
+  }
+
+  function resetBannerInstitutionFinderFilters(){
+    if($("bannerInstitutionFinderSearch"))$("bannerInstitutionFinderSearch").value="";
+    if($("bannerInstitutionFinderCity"))$("bannerInstitutionFinderCity").value="";
+    if($("bannerInstitutionFinderCategory"))$("bannerInstitutionFinderCategory").value="";
+    if($("bannerInstitutionFinderStatus"))$("bannerInstitutionFinderStatus").value="";
+    renderBannerInstitutionFinder();
   }
 
   function setBannerUploadProgress(percent,text){
@@ -1365,6 +1564,8 @@
     ["bannerAdCity","bannerAdDistrict","bannerAdCategory"].forEach(id=>{if($(id))delete $(id).dataset.current;});
     fillBannerAdTargetOptions();
     if($("bannerAdMessage"))$("bannerAdMessage").textContent="";
+    if($("bannerAdInstitution"))$("bannerAdInstitution").value="";
+    resetBannerInstitutionFinderFilters();
     syncBannerMediaBadge();
     renderBannerAdminPreview();
   }
@@ -1388,6 +1589,7 @@
     $("bannerAdFormTitle").textContent="Banner Reklamını Düzenle";
     fillBannerAdTargetOptions(inst);
     $("bannerAdInstitution").value=item.institutionId||"";
+    renderBannerInstitutionFinder();
     $("bannerAdHeadline").value=item.headline||"";
     $("bannerAdText").value=item.text||"";
     $("bannerAdImageUrl").value=item.imageUrl||"";
@@ -1694,12 +1896,7 @@
     const inst=institutionRecords.find(item=>String(item.id)===String(institutionId));
     resetBannerAdForm();
     if(inst){
-      fillBannerAdTargetOptions(inst);
-      $("bannerAdInstitution").value=String(inst.id);
-      $("bannerAdHeadline").value=inst.name||"";
-      $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
-      $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
-      renderBannerAdminPreview();
+      selectBannerInstitutionForAd(inst);
     }
     await renderBannerAdsAdmin(false);
   };
@@ -1794,7 +1991,7 @@
     }
 
     window.setTimeout(()=>{
-      $("bannerAdInstitution")?.focus();
+      $("bannerInstitutionFinderSearch")?.focus();
     },380);
   }
 
@@ -1802,17 +1999,14 @@
   $("bannerAdNewBtn")?.addEventListener("click",openNewBannerAdEditor);
   $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
   $("bannerAdSearch")?.addEventListener("input",()=>renderBannerAdsAdmin(false));
+  $("bannerInstitutionFinderSearch")?.addEventListener("input",renderBannerInstitutionFinder);
+  ["bannerInstitutionFinderCity","bannerInstitutionFinderCategory","bannerInstitutionFinderStatus"].forEach(id=>{
+    $(id)?.addEventListener("change",renderBannerInstitutionFinder);
+  });
+  $("bannerInstitutionFinderClear")?.addEventListener("click",resetBannerInstitutionFinderFilters);
+
   $("bannerAdInstitution")?.addEventListener("change",()=>{
-    const inst=selectedBannerInstitution();
-    if(inst){
-      $("bannerAdHeadline").value=inst.name||"";
-      $("bannerAdText").value=[inst.city,inst.district].filter(Boolean).join(" / ");
-      $("bannerAdImageUrl").value=inst.coverUrl||inst.logoUrl||"";
-      if(!$("bannerAdVideoUrl")?.value){
-        $("bannerAdMediaType").value="image";
-      }
-      fillBannerAdTargetOptions(inst);
-    }
+    renderBannerInstitutionFinder();
     renderBannerAdminPreview();
   });
   $("bannerAdCity")?.addEventListener("change",()=>{
@@ -1826,6 +2020,7 @@
     renderBannerAdminPreview();
   }));
   renderBannerPlacementGuide();
+  renderBannerInstitutionFinder();
 
 
   const EXTERNAL_AD_PLACEMENT_OPTIONS = [
