@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=26">
+  <link rel="stylesheet" href="admin-advanced.css?v=27">
 </head>
 
 <body>
@@ -812,9 +812,56 @@
               </label>
             </div>
 
-            <label>Reklam Veren Kurum
-              <select id="bannerAdInstitution" required><option value="">Kurum seçin</option></select>
-            </label>
+            <div class="banner-institution-finder">
+              <select id="bannerAdInstitution" hidden aria-hidden="true"><option value="">Kurum seçin</option></select>
+
+              <div class="banner-institution-finder-head">
+                <div>
+                  <span>KURUM BULUCU</span>
+                  <strong>Reklam verecek kurumu bul</strong>
+                  <small>Kurum adı, şehir, ilçe, sektör, telefon veya adres ile arayın.</small>
+                </div>
+                <button type="button" id="bannerInstitutionFinderClear">Filtreleri Temizle</button>
+              </div>
+
+              <div class="banner-institution-finder-search">
+                <span>⌕</span>
+                <input
+                  type="search"
+                  id="bannerInstitutionFinderSearch"
+                  autocomplete="off"
+                  placeholder="Örn. Kale Truva, Çanakkale, sürücü kursu, telefon..."
+                >
+                <kbd>ARA</kbd>
+              </div>
+
+              <div class="banner-institution-finder-filters">
+                <select id="bannerInstitutionFinderCity">
+                  <option value="">Tüm Şehirler</option>
+                </select>
+                <select id="bannerInstitutionFinderCategory">
+                  <option value="">Tüm Sektörler</option>
+                </select>
+                <select id="bannerInstitutionFinderStatus">
+                  <option value="">Tüm Kurumlar</option>
+                  <option value="active">Sadece Aktif</option>
+                  <option value="passive">Sadece Pasif</option>
+                  <option value="ad_active">Reklam Verenler</option>
+                  <option value="ad_none">Reklam Vermeyenler</option>
+                </select>
+              </div>
+
+              <div class="banner-institution-selected hidden" id="bannerInstitutionSelected"></div>
+
+              <div class="banner-institution-results-head">
+                <strong id="bannerInstitutionFinderCount">Kurumlar yükleniyor...</strong>
+                <small>Kuruma tıklayın; reklam formuna otomatik bağlansın.</small>
+              </div>
+
+              <div class="banner-institution-results" id="bannerInstitutionFinderResults">
+                <div class="advanced-empty">Kurumlar yükleniyor...</div>
+              </div>
+            </div>
 
             <div class="banner-form-grid">
               <label>Başlık
@@ -2173,7 +2220,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=48"></script>
-  <script src="admin-advanced.js?v=41"></script>
+  <script src="admin-advanced.js?v=42"></script>
 
 </body>
 </html>
