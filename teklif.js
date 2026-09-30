@@ -294,6 +294,40 @@ async function verifyAccess(code,phone){
   return {phoneHash,...data};
 }
 
+function rememberVerifiedQuoteOnDevice(access){
+  if(!access?.quoteId)return;
+
+  try{
+    const idsKey="dijiyerCustomerQuoteIds";
+    const dataKey="dijiyerCustomerQuoteData";
+    const ids=JSON.parse(localStorage.getItem(idsKey)||"[]");
+
+    if(!ids.includes(access.quoteId))ids.unshift(access.quoteId);
+    localStorage.setItem(idsKey,JSON.stringify(ids.slice(0,30)));
+
+    const map=JSON.parse(localStorage.getItem(dataKey)||"{}");
+    const existing=map[access.quoteId]||{};
+
+    map[access.quoteId]={
+      ...existing,
+      service:access.service||existing.service||"Teklif Talebi",
+      mainCategory:access.mainCategory||existing.mainCategory||"",
+      subCategory:access.subCategory||existing.subCategory||"",
+      city:access.city||existing.city||"",
+      district:access.district||existing.district||"",
+      note:access.note||existing.note||"",
+      date:access.date||existing.date||"",
+      trackingCode:access.trackingCode||existing.trackingCode||"",
+      trackingUrl:currentTrackingUrl(access)
+    };
+
+    localStorage.setItem(dataKey,JSON.stringify(map));
+    localStorage.setItem("dijiyerLastTrackingCode",String(access.trackingCode||""));
+  }catch(error){
+    console.warn("Teklif bu cihaza kaydedilemedi:",error);
+  }
+}
+
 async function loadBundle(access){
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
 
@@ -898,6 +932,7 @@ form.addEventListener("submit",async e=>{
 
     sessionStorage.setItem("dijiyerTrackingCode",code);
     sessionStorage.setItem("dijiyerTrackingPhone",normalizePhone(phone));
+    rememberVerifiedQuoteOnDevice(currentAccess);
 
     let initialBundle;
     try{
