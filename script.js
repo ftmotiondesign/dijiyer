@@ -4246,12 +4246,12 @@ function startRegionalBannerAds(){
     }
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
-    if(document.getElementById("pageTopMiniBanner"))renderPageTopMiniBanner(true);
+    if(!window.DIJIYER_UNIFIED_PAGE_BANNER && document.getElementById("pageTopMiniBanner"))renderPageTopMiniBanner(true);
   },error=>{
     console.warn("Banner reklamları yüklenemedi:",error);
     regionalBannerAds=[];
     document.getElementById("regionalBannerZone")?.classList.add("hidden");
-    document.getElementById("pageTopMiniBanner")?.classList.add("hidden");
+    if(!window.DIJIYER_UNIFIED_PAGE_BANNER)document.getElementById("pageTopMiniBanner")?.classList.add("hidden");
   });
 }
 
