@@ -4,8 +4,8 @@
    ========================================================= */
 .unified-page-banner-shell,
 .standalone-page-back.unified-page-banner-shell{
-  width:min(1180px,calc(100% - 24px));
-  margin:14px auto 0;
+  width:min(1300px,calc(100% - 36px));
+  margin:12px auto 12px;
   display:grid;
   grid-template-columns:auto minmax(0,1fr);
   align-items:center;
@@ -50,7 +50,7 @@
 .page-top-mini-banner-card{
   position:relative;
   min-width:0;
-  min-height:68px;
+  min-height:72px;
   display:grid;
   grid-template-columns:66px minmax(0,1fr);
   grid-template-rows:minmax(58px,1fr) auto;
