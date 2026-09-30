@@ -5952,6 +5952,9 @@ button{
 .quote-routing-section{
   display:block;
 }
+.quote-routing-section[hidden]{
+  display:none !important;
+}
 .quote-routing-head{
   display:flex;
   justify-content:space-between;
