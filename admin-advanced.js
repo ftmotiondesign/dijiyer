@@ -5110,7 +5110,24 @@
   });
 
   $("opportunitySponsorSearch")?.addEventListener("input",renderOpportunitySponsorsAdmin);
-  $("opportunitySponsorFilter")?.addEventListener("change",renderOpportunitySponsorsAdmin);
+  $("opportunitySponsorFilter")?.addEventListener("change",()=>{
+    const value=String($("opportunitySponsorFilter")?.value||"all");
+    document.querySelectorAll("[data-opportunity-kpi]").forEach(button=>{
+      button.classList.toggle("active",String(button.dataset.opportunityKpi||"")===value);
+    });
+    renderOpportunitySponsorsAdmin();
+  });
+
+  document.querySelectorAll("[data-opportunity-kpi]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const value=String(button.dataset.opportunityKpi||"all");
+      if($("opportunitySponsorFilter"))$("opportunitySponsorFilter").value=value;
+      document.querySelectorAll("[data-opportunity-kpi]").forEach(item=>{
+        item.classList.toggle("active",item===button);
+      });
+      renderOpportunitySponsorsAdmin();
+    });
+  });
   $("opportunitySponsorModalClose")?.addEventListener("click",closeOpportunitySponsorModal);
   $("opportunitySponsorCancelBtn")?.addEventListener("click",closeOpportunitySponsorModal);
   $("opportunitySponsorModal")?.addEventListener("click",event=>{
@@ -5123,6 +5140,12 @@
   });
   $("opportunitySponsorVideoFile")?.addEventListener("change",event=>{
     uploadOpportunitySponsorMedia(event.target.files?.[0],"video");
+  });
+  $("opportunityQuickMediaFile")?.addEventListener("change",event=>{
+    const file=event.target.files?.[0];
+    if(!file)return;
+    const type=String(file.type||"").startsWith("video/")?"video":"image";
+    uploadOpportunitySponsorMedia(file,type,true);
   });
   $("opportunitySponsorMediaClearBtn")?.addEventListener("click",()=>{
     $("opportunitySponsorMediaUrl").value="";
