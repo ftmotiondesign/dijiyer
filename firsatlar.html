@@ -207,6 +207,9 @@
       border-color:#f4d38c;
       box-shadow:0 10px 28px rgba(183,118,13,.11);
     }
+    .card.sponsored .media{
+      aspect-ratio:4/5;
+    }
     .media{
       position:relative;
       width:100%;
@@ -644,43 +647,31 @@
     }
 
     function buildRows(){
-      var rows = institutions
-        .filter(function(inst){ return String(inst.status || 'active') !== 'inactive'; })
+      return institutions
+        .filter(function(inst){
+          return String(inst.status || 'active') !== 'passive';
+        })
         .map(function(inst){
-          var ad = sponsorAdFor(inst);
-          var sponsored = Boolean(ad) || institutionAdActive(inst);
-          return {kind:'institution',id:String(inst.id || ''),inst:inst,ad:ad,sponsored:sponsored};
-        });
+          var sponsored =
+            inst.opportunitySponsorActive === true &&
+            Boolean(String(inst.opportunitySponsorMediaUrl || '').trim());
 
-      var known = new Set(rows.map(function(row){ return String(row.id); }));
-      activeAds().forEach(function(ad){
-        var id = String(ad.institutionId || '');
-        if(id && known.has(id)) return;
-        rows.push({
-          kind:'ad',
-          id:id || String(ad.id || ''),
-          sponsored:true,
-          ad:ad,
-          inst:{
-            id:id,
-            name:ad.institutionName || ad.headline || 'Sponsorlu İşletme',
-            city:ad.city || '',
-            district:ad.district || '',
-            category:ad.category || '',
-            mainCategory:legacyMain[String(ad.category || '')] || '',
-            logoUrl:ad.logoUrl || '',
-            coverUrl:ad.imageUrl || '',
-            description:ad.text || '',
-            status:'active'
-          }
+          return {
+            kind:'institution',
+            id:String(inst.id || ''),
+            inst:inst,
+            ad:null,
+            sponsored:sponsored
+          };
+        })
+        .sort(function(a,b){
+          if(a.sponsored !== b.sponsored) return a.sponsored ? -1 : 1;
+          return String(a.inst.name || '').localeCompare(
+            String(b.inst.name || ''),
+            'tr',
+            {sensitivity:'base'}
+          );
         });
-      });
-
-      rows.sort(function(a,b){
-        if(a.sponsored !== b.sponsored) return a.sponsored ? -1 : 1;
-        return String(a.inst.name || '').localeCompare(String(b.inst.name || ''),'tr',{sensitivity:'base'});
-      });
-      return rows;
     }
 
     var TURKEY_PROVINCES = [
@@ -826,32 +817,48 @@
 
     function mediaInfo(row){
       var inst = row.inst || {};
-      var ad = row.ad || {};
-      var video = row.sponsored && String(ad.mediaType || '') === 'video' ? safeUrl(ad.videoUrl) : '';
+      var sponsorUrl = safeUrl(inst.opportunitySponsorMediaUrl || '');
+      var sponsorType = String(inst.opportunitySponsorMediaType || 'image');
+      var video = '';
       var image = '';
-      var logo = safeUrl(inst.logoUrl || ad.logoUrl || '');
+      var logo = safeUrl(inst.logoUrl || '');
 
-      if(row.sponsored){
-        image = safeUrl(ad.imageUrl || inst.adBannerUrl || inst.coverUrl || inst.logoUrl || '');
+      if(row.sponsored && sponsorUrl){
+        if(sponsorType === 'video'){
+          video = sponsorUrl;
+          image = safeUrl(inst.coverUrl || inst.logoUrl || '');
+        }else{
+          image = sponsorUrl;
+        }
       }else{
         image = safeUrl(inst.coverUrl || inst.logoUrl || '');
       }
 
-      return {video:video,image:image,logo:logo,logoOnly:Boolean(image && !inst.coverUrl && image === safeUrl(inst.logoUrl || ''))};
+      return {
+        video:video,
+        image:image,
+        logo:logo,
+        logoOnly:Boolean(
+          image &&
+          !row.sponsored &&
+          !inst.coverUrl &&
+          image === safeUrl(inst.logoUrl || '')
+        )
+      };
     }
 
     function cardHtml(row){
       var inst = row.inst || {};
-      var ad = row.ad || {};
       var media = mediaInfo(row);
-      var title = row.sponsored
-        ? String(ad.headline || inst.adHeadline || inst.name || 'Sponsorlu İşletme')
-        : String(inst.name || 'Kurum');
-      var campaign = row.sponsored
-        ? String(ad.text || inst.adText || inst.description || 'Bu işletmenin fırsat ve hizmetlerini inceleyin.')
-        : String(inst.description || 'Kurum detaylarını ve hizmetlerini inceleyin.');
-      var city = String(inst.city || ad.city || '');
-      var district = String(inst.district || ad.district || '');
+      var title = String(inst.name || 'Kurum');
+      var campaign = String(
+        inst.description ||
+        (row.sponsored
+          ? 'Bu kurumun sponsorlu fırsatlarını ve hizmetlerini inceleyin.'
+          : 'Kurum detaylarını ve hizmetlerini inceleyin.')
+      );
+      var city = String(inst.city || '');
+      var district = String(inst.district || '');
       var location = [city,district].filter(Boolean).join(' / ');
       var detailHref = inst.id ? 'kurum.html?id=' + encodeURIComponent(inst.id) : '#';
       var logo = media.logo;
@@ -927,18 +934,9 @@
 
     async function load(){
       try{
-        var results = await Promise.all([
-          db.collection('institutions').get(),
-          db.collection('bannerAds').where('active','==',true).get()
-        ]);
+        var snapshot = await db.collection('institutions').get();
 
-        institutions = results[0].docs.map(function(doc){
-          var data = doc.data() || {};
-          data.id = doc.id;
-          return data;
-        });
-
-        bannerAds = results[1].docs.map(function(doc){
+        institutions = snapshot.docs.map(function(doc){
           var data = doc.data() || {};
           data.id = doc.id;
           return data;
