@@ -4742,6 +4742,14 @@ function showQuoteTrackingSuccess(tracking, matchedCount, quoteId, requestData =
   if (serviceEl) serviceEl.textContent = serviceText;
   if (locationEl) locationEl.textContent = locationText;
 
+  const emailStatusEl = document.getElementById('quoteSuccessEmailStatus');
+  if (emailStatusEl) {
+    const email = String(requestData.email || '').trim();
+    emailStatusEl.textContent = email
+      ? '✉ Takip linkiniz ' + email + ' adresine de gönderilecek.'
+      : '✉ Takip linkini kopyalayarak güvenli bir yerde saklayabilirsiniz.';
+  }
+
   const areaText = tracking.requestDistrict
     ? tracking.requestDistrict + ' ilçesindeki'
     : (tracking.requestCity ? tracking.requestCity + ' genelindeki' : 'bölgedeki');
@@ -4902,6 +4910,12 @@ async function loadTodayPublicStats(){
   }
 }
 
+const rememberedQuoteEmail = localStorage.getItem('dijiyerCustomerEmail') || '';
+const quoteEmailInput = document.getElementById('quoteEmail');
+if (quoteEmailInput && !quoteEmailInput.value && rememberedQuoteEmail) {
+  quoteEmailInput.value = rememberedQuoteEmail;
+}
+
 document.getElementById('quoteForm').addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -4911,6 +4925,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   const normalizedPhone = normalizeQuoteTrackingPhone(
     document.getElementById('quotePhone').value
   );
+  const quoteEmail = String(document.getElementById('quoteEmail')?.value || '').trim().toLowerCase();
 
   if (!searchText && !(selectedCategory && selectedSubCategory)) {
     showToast('Ne aradığınızı yazın veya ana kategori ve alt kategori seçin.');
@@ -4921,6 +4936,14 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     showToast('Tekliflerinizi takip edebilmek için geçerli bir telefon numarası girin.');
     return;
   }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quoteEmail)) {
+    showToast('Takip linkini gönderebilmemiz için geçerli bir e-posta adresi girin.');
+    document.getElementById('quoteEmail')?.focus();
+    return;
+  }
+
+  localStorage.setItem('dijiyerCustomerEmail', quoteEmail);
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
   const oldText = submitBtn.textContent;
@@ -4940,6 +4963,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     district: document.getElementById('quoteDistrict').value,
     name: document.getElementById('quoteName').value.trim(),
     phone: document.getElementById('quotePhone').value.trim(),
+    email: quoteEmail,
     note: document.getElementById('quoteNote').value.trim(),
     status: 'new',
     date: new Date().toISOString()
