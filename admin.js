@@ -254,6 +254,7 @@ const ADMIN_TAB_ROUTES = {
   applicationsTabBtn:"basvurular",
   accountsTabBtn:"hesaplar",
   unmatchedSearchesTabBtn:"bulunamayan-aramalar",
+  categoriesTabBtn:"kategoriler",
   businessOpportunitiesTabBtn:"is-ticaret",
   bannerAdsTabBtn:"reklam-merkezi",
   opportunitySponsorsTabBtn:"kesfet-firsat",
@@ -321,6 +322,7 @@ const ADMIN_TAB_META = {
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
   unmatchedSearchesTabBtn:["institutions","Bulunamayan Aramalar","Kullanıcıların bulamadığı hizmetleri inceleyin; yeni alt kategori ve kurum ihtiyacını gerçek aramalardan görün."],
+  categoriesTabBtn:["categories","Kategoriler","Sektörleri ve alt kategorileri aktif / pasif olarak yönetin."],
   businessOpportunitiesTabBtn:["business","İş & Ticaret Fırsatları","İhaleleri, tedarik taleplerini, toplu alımları, bayilikleri ve diğer ticari fırsatları yönetin."],
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
   opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
@@ -396,6 +398,7 @@ function initSimpleAdminNavigation(){
         quotes:"quotesTabBtn",
         unanswered:"quoteRoutingTabBtn",
         institutions:"institutionsTabBtn",
+        categories:"categoriesTabBtn",
         business:"businessOpportunitiesTabBtn",
         ads:"bannerAdsTabBtn",
         support:"supportTabBtn",
@@ -772,6 +775,183 @@ document.querySelectorAll("[data-top-menu-toggle]").forEach(toggle=>{
     );
   });
 });
+
+
+
+const CATEGORY_VISIBILITY_DEFAULTS={};
+Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
+  CATEGORY_VISIBILITY_DEFAULTS["main:"+mainKey]=true;
+  Object.keys(main.subs||{}).forEach(subKey=>{
+    CATEGORY_VISIBILITY_DEFAULTS["sub:"+mainKey+":"+subKey]=true;
+  });
+});
+
+let categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+
+function categoryVisibilityValue(key){
+  return categoryVisibilitySettings[key]!==false;
+}
+
+function categoryAdminPaintState(el,active){
+  if(!el)return;
+  el.textContent=active ? "Aktif" : "Pasif";
+  el.classList.toggle("active",active);
+  el.classList.toggle("passive",!active);
+}
+
+function renderCategoryAdmin(){
+  const root=document.getElementById("categoryAdminList");
+  if(!root)return;
+
+  const query=String(document.getElementById("categoryAdminSearch")?.value||"")
+    .trim().toLocaleLowerCase("tr-TR");
+  const filter=String(document.getElementById("categoryAdminFilter")?.value||"all");
+
+  let mainTotal=0,mainActive=0,subTotal=0,subActive=0;
+  const cards=[];
+
+  Object.entries(ADMIN_CATEGORY_TAXONOMY).forEach(([mainKey,main])=>{
+    const mainState=categoryVisibilityValue("main:"+mainKey);
+    const subs=Object.entries(main.subs||{});
+    mainTotal++;
+    if(mainState)mainActive++;
+    subTotal+=subs.length;
+    subActive+=subs.filter(([subKey])=>categoryVisibilityValue("sub:"+mainKey+":"+subKey)).length;
+
+    const haystack=[main.label,...subs.map(([,label])=>label)]
+      .join(" ").toLocaleLowerCase("tr-TR");
+    if(query && !haystack.includes(query))return;
+    if(filter==="active" && !mainState)return;
+    if(filter==="passive" && mainState)return;
+
+    const subHtml=subs.map(([subKey,label])=>{
+      const key="sub:"+mainKey+":"+subKey;
+      const active=categoryVisibilityValue(key);
+      return '<div class="category-sub-row '+(active?'':'is-passive')+'">'+
+        '<div><strong>'+escapeHtml(label)+'</strong><small>'+escapeHtml(subKey)+'</small></div>'+
+        '<span class="category-admin-state '+(active?'active':'passive')+'">'+(active?'Aktif':'Pasif')+'</span>'+
+        '<label class="overview-visibility-switch">'+
+          '<input type="checkbox" data-category-visibility="'+escapeHtml(key)+'" '+(active?'checked':'')+'>'+
+          '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
+        '</label>'+
+      '</div>';
+    }).join("");
+
+    cards.push(
+      '<article class="category-main-card '+(mainState?'':'is-passive')+'" data-category-main="'+escapeHtml(mainKey)+'">'+
+        '<div class="category-main-head">'+
+          '<div><span>ANA KATEGORİ</span><h4>'+escapeHtml(main.label)+'</h4><small>'+subs.length+' alt kategori</small></div>'+
+          '<div class="category-main-actions">'+
+            '<span class="category-admin-state '+(mainState?'active':'passive')+'">'+(mainState?'Aktif':'Pasif')+'</span>'+
+            '<label class="overview-visibility-switch">'+
+              '<input type="checkbox" data-category-visibility="main:'+escapeHtml(mainKey)+'" '+(mainState?'checked':'')+'>'+
+              '<span aria-hidden="true"></span><b>Aktif / Pasif</b>'+
+            '</label>'+
+          '</div>'+
+        '</div>'+
+        '<div class="category-sub-list">'+subHtml+'</div>'+
+      '</article>'
+    );
+  });
+
+  document.getElementById("categoryMainTotal").textContent=String(mainTotal);
+  document.getElementById("categoryMainActive").textContent=String(mainActive);
+  document.getElementById("categorySubTotal").textContent=String(subTotal);
+  document.getElementById("categorySubActive").textContent=String(subActive);
+
+  root.innerHTML=cards.length
+    ? cards.join("")
+    : '<div class="empty-state">Bu filtrede kategori bulunamadı.</div>';
+
+  root.querySelectorAll("[data-category-visibility]").forEach(toggle=>{
+    toggle.addEventListener("change",()=>saveCategoryVisibilitySetting(
+      String(toggle.dataset.categoryVisibility||""),
+      toggle.checked,
+      toggle
+    ));
+  });
+}
+
+async function loadCategoryVisibilitySettings(){
+  const message=document.getElementById("categoryAdminMessage");
+  if(message)message.textContent="Kategoriler yükleniyor...";
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    const saved=snap.exists && snap.data()?.categoryVisibility && typeof snap.data().categoryVisibility==="object"
+      ? snap.data().categoryVisibility
+      : {};
+    categoryVisibilitySettings={
+      ...CATEGORY_VISIBILITY_DEFAULTS,
+      ...saved
+    };
+    if(message)message.textContent="";
+  }catch(error){
+    console.error("Kategori görünürlük ayarları okunamadı:",error);
+    categoryVisibilitySettings={...CATEGORY_VISIBILITY_DEFAULTS};
+    if(message)message.textContent="Kategori ayarları okunamadı.";
+  }
+  renderCategoryAdmin();
+}
+
+async function saveCategoryVisibilitySetting(key,visible,toggle){
+  if(!Object.prototype.hasOwnProperty.call(CATEGORY_VISIBILITY_DEFAULTS,key))return;
+  if(toggle)toggle.disabled=true;
+  const previous={...categoryVisibilitySettings};
+  categoryVisibilitySettings={...categoryVisibilitySettings,[key]:Boolean(visible)};
+  renderCategoryAdmin();
+
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      categoryVisibility:{...categoryVisibilitySettings},
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+    const message=document.getElementById("categoryAdminMessage");
+    if(message){
+      message.textContent="✓ Kategori durumu kaydedildi.";
+      window.setTimeout(()=>{ if(message.textContent.startsWith("✓"))message.textContent=""; },1200);
+    }
+  }catch(error){
+    console.error("Kategori görünürlük ayarı kaydedilemedi:",error);
+    categoryVisibilitySettings=previous;
+    renderCategoryAdmin();
+    alert("Kategori durumu kaydedilemedi.");
+  }finally{
+    const current=document.querySelector('[data-category-visibility="'+CSS.escape(key)+'"]');
+    if(current)current.disabled=false;
+  }
+}
+
+const categoriesTabBtn=document.getElementById("categoriesTabBtn");
+const categoriesSection=document.getElementById("categoriesSection");
+
+document.querySelectorAll("#adminSubtabs .admin-tab").forEach(button=>{
+  if(button.id==="categoriesTabBtn")return;
+  button.addEventListener("click",()=>{
+    if(categoriesSection)categoriesSection.hidden=true;
+  },true);
+});
+
+categoriesTabBtn?.addEventListener("click",async()=>{
+  [
+    "overviewSection","applicationsSection","institutionsSection","quotesSection",
+    "quoteRoutingSection","offerReportSection","issuesSection","accountsSection",
+    "unmatchedSearchesSection"
+  ].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.hidden=true;
+  });
+
+  if(categoriesSection)categoriesSection.hidden=false;
+  document.querySelectorAll("#adminSubtabs .admin-tab").forEach(button=>{
+    if(button!==categoriesTabBtn)button.classList.remove("active");
+  });
+  categoriesTabBtn.classList.add("active");
+  await loadCategoryVisibilitySettings();
+});
+
+document.getElementById("categoryAdminSearch")?.addEventListener("input",renderCategoryAdmin);
+document.getElementById("categoryAdminFilter")?.addEventListener("change",renderCategoryAdmin);
+document.getElementById("categoriesRefreshBtn")?.addEventListener("click",loadCategoryVisibilitySettings);
 
 
 const HOME_SECTION_EDITOR_CONFIG = {
