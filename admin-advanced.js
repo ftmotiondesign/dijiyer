@@ -4594,6 +4594,7 @@
     const missing=enabled&&!mediaUrl;
     const scheduled=enabled&&Boolean(mediaUrl)&&Boolean(startAt)&&startAt>today;
     const expired=enabled&&Boolean(mediaUrl)&&Boolean(endAt)&&endAt<today;
+    const reportReady=Boolean(mediaUrl)&&Boolean(endAt)&&endAt<today;
     const active=enabled&&Boolean(mediaUrl)&&!scheduled&&!expired;
     const paused=!enabled&&Boolean(mediaUrl);
     const normal=!enabled&&!mediaUrl;
@@ -4608,7 +4609,7 @@
     }
 
     return {
-      mediaUrl,enabled,startAt,endAt,missing,scheduled,expired,active,paused,normal,
+      mediaUrl,enabled,startAt,endAt,missing,scheduled,expired,reportReady,active,paused,normal,
       expiring,daysLeft,
       priority:Math.max(1,Math.min(99,Number(inst?.opportunitySponsorPriority||10)||10))
     };
@@ -4638,6 +4639,200 @@
     if(state.missing)return '<span class="opportunity-sponsor-badge missing">⚠ Medya Eksik</span>';
     if(state.paused)return '<span class="opportunity-sponsor-badge passive">Sponsor Pasif</span>';
     return '<span class="opportunity-sponsor-badge">Normal</span>';
+  }
+
+
+  function opportunityCampaignIdForAdmin(inst){
+    const explicit=String(inst?.opportunitySponsorCampaignId||"").trim();
+    if(explicit)return explicit;
+    return [
+      "opportunity",
+      String(inst?.id||""),
+      String(inst?.opportunitySponsorStartAt||"").slice(0,10)||"start",
+      String(inst?.opportunitySponsorEndAt||"").slice(0,10)||"open"
+    ].join("_");
+  }
+
+  function opportunitySponsorStats(inst){
+    const campaignId=opportunityCampaignIdForAdmin(inst);
+    const institutionId=String(inst?.id||"");
+    const events=(adAnalyticsRecords||[]).filter(item=>{
+      if(String(item.institutionId||"")!==institutionId)return false;
+      if(!String(item.type||"").startsWith("opportunity_"))return false;
+      const itemCampaign=String(item.campaignId||"").trim();
+      if(itemCampaign)return itemCampaign===campaignId;
+
+      const day=String(item.day||item.date||"").slice(0,10);
+      const startAt=String(inst?.opportunitySponsorStartAt||"").slice(0,10);
+      const endAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10);
+      if(startAt&&day&&day<startAt)return false;
+      if(endAt&&day&&day>endAt)return false;
+      return true;
+    });
+
+    let impressions=0;
+    let details=0;
+    let whatsapp=0;
+    let directions=0;
+    let otherClicks=0;
+
+    events.forEach(item=>{
+      const type=String(item.type||"");
+      const action=String(item.action||"");
+      if(type==="opportunity_ad_impression"){
+        impressions++;
+        return;
+      }
+      if(type==="opportunity_ad_click"){
+        if(action==="detail")details++;
+        else if(action==="whatsapp")whatsapp++;
+        else if(action==="directions")directions++;
+        else otherClicks++;
+      }
+    });
+
+    const clicks=details+whatsapp+directions+otherClicks;
+    return {
+      impressions,details,whatsapp,directions,otherClicks,clicks,
+      ctr:impressions?clicks/impressions*100:0
+    };
+  }
+
+  function opportunityReportEmail(inst){
+    const direct=String(inst?.email||"").trim();
+    if(direct)return direct;
+    const account=(institutionAccountRecords||[]).find(
+      item=>String(item.institutionId||"")===String(inst?.id||"")
+    );
+    return String(account?.email||"").trim();
+  }
+
+  function opportunityReportPhone(inst){
+    let phone=String(inst?.whatsapp||inst?.phone||"").replace(/\D/g,"");
+    if(phone.startsWith("0")&&phone.length===11)phone="90"+phone.slice(1);
+    if(phone.length===10&&phone.startsWith("5"))phone="90"+phone;
+    return phone;
+  }
+
+  function opportunityReportText(inst,stats){
+    const startAt=String(inst?.opportunitySponsorStartAt||"").slice(0,10)||"Başlangıç belirtilmedi";
+    const endAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10)||"Bitiş belirtilmedi";
+    return [
+      "Dijiyer Fırsat Sponsor Performans Raporu",
+      "",
+      String(inst?.name||"Kurum"),
+      "Yayın dönemi: "+startAt+" - "+endAt,
+      "",
+      "Gösterim: "+stats.impressions,
+      "Kurum detayına tıklama: "+stats.details,
+      "WhatsApp tıklaması: "+stats.whatsapp,
+      "Yol tarifi tıklaması: "+stats.directions,
+      "Toplam tıklama: "+stats.clicks,
+      "Tıklanma oranı (CTR): %"+stats.ctr.toFixed(1),
+      "",
+      "Dijiyer üzerinden sponsorlu yayınınız tamamlandı.",
+      "Yeni dönem sponsorluğu için bizimle iletişime geçebilirsiniz."
+    ].join("\n");
+  }
+
+  function renderOpportunityExpiredReports(states){
+    const root=$("opportunityReportList");
+    if(!root)return;
+
+    const rows=(states||[])
+      .filter(row=>row.state.reportReady)
+      .sort((a,b)=>String(b.state.endAt||"").localeCompare(String(a.state.endAt||"")));
+
+    if($("opportunityReportReadyCount")){
+      $("opportunityReportReadyCount").textContent=rows.length+" rapor hazır";
+    }
+
+    if(!rows.length){
+      root.innerHTML='<div class="advanced-empty success">Biten sponsor kampanyası bulunmuyor.</div>';
+      return;
+    }
+
+    root.innerHTML=rows.map(({inst,state})=>{
+      const stats=opportunitySponsorStats(inst);
+      const phone=opportunityReportPhone(inst);
+      const email=opportunityReportEmail(inst);
+
+      return '<article class="opportunity-report-card">'+
+        '<div class="opportunity-report-head">'+
+          '<div>'+
+            '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
+            '<small>'+escapeHtml((state.startAt||"Başlangıç yok")+" → "+(state.endAt||"Bitiş yok"))+'</small>'+
+          '</div>'+
+          '<span>Rapor Hazır</span>'+
+        '</div>'+
+        '<div class="opportunity-report-stats">'+
+          '<div><span>Gösterim</span><b>'+stats.impressions+'</b></div>'+
+          '<div><span>Detay</span><b>'+stats.details+'</b></div>'+
+          '<div><span>WhatsApp</span><b>'+stats.whatsapp+'</b></div>'+
+          '<div><span>Yol Tarifi</span><b>'+stats.directions+'</b></div>'+
+          '<div><span>CTR</span><b>%'+stats.ctr.toFixed(1)+'</b></div>'+
+        '</div>'+
+        '<div class="opportunity-report-actions">'+
+          '<button type="button" '+(phone?'':'disabled')+' data-opportunity-report-wa="'+escapeHtml(inst.id)+'">WhatsApp Raporu</button>'+
+          '<button type="button" '+(email?'':'disabled')+' data-opportunity-report-email="'+escapeHtml(inst.id)+'">E-posta Raporu</button>'+
+          '<button type="button" data-opportunity-report-copy="'+escapeHtml(inst.id)+'">Metni Kopyala</button>'+
+        '</div>'+
+        ((!phone||!email)
+          ? '<small class="opportunity-report-missing">'+
+              (!phone?'WhatsApp/telefon bilgisi yok. ':'')+
+              (!email?'E-posta bilgisi yok.':'')+
+            '</small>'
+          : '')+
+      '</article>';
+    }).join("");
+
+    root.querySelectorAll("[data-opportunity-report-wa]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const inst=(institutionRecords||[]).find(
+          item=>String(item.id)===String(button.dataset.opportunityReportWa)
+        );
+        if(!inst)return;
+        const phone=opportunityReportPhone(inst);
+        if(!phone)return;
+        const message=opportunityReportText(inst,opportunitySponsorStats(inst));
+        window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(message),"_blank");
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-report-email]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const inst=(institutionRecords||[]).find(
+          item=>String(item.id)===String(button.dataset.opportunityReportEmail)
+        );
+        if(!inst)return;
+        const email=opportunityReportEmail(inst);
+        if(!email)return;
+        const stats=opportunitySponsorStats(inst);
+        const subject="Dijiyer Fırsat Sponsor Performans Raporu · "+String(inst.name||"Kurum");
+        const body=opportunityReportText(inst,stats);
+        window.location.href="mailto:"+encodeURIComponent(email)+
+          "?subject="+encodeURIComponent(subject)+
+          "&body="+encodeURIComponent(body);
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-report-copy]").forEach(button=>{
+      button.addEventListener("click",async()=>{
+        const inst=(institutionRecords||[]).find(
+          item=>String(item.id)===String(button.dataset.opportunityReportCopy)
+        );
+        if(!inst)return;
+        const textValue=opportunityReportText(inst,opportunitySponsorStats(inst));
+        try{
+          await navigator.clipboard.writeText(textValue);
+          const old=button.textContent;
+          button.textContent="Kopyalandı";
+          setTimeout(()=>button.textContent=old,1200);
+        }catch(_){
+          alert(textValue);
+        }
+      });
+    });
   }
 
   function renderOpportunitySponsorsAdmin(){
