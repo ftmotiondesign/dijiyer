@@ -4292,6 +4292,7 @@ async function forwardQuoteRoutingTier(requestId,tier,button){
   try{
     const ref=db.collection("quoteRequests").doc(requestId);
     const lockRef=ref.collection("locks").doc("main");
+    const publicStatusRef=ref.collection("publicStatus").doc("main");
     await db.runTransaction(async tx=>{
       const [snap,lockSnap]=await Promise.all([
         tx.get(ref),
@@ -4340,6 +4341,20 @@ async function forwardQuoteRoutingTier(requestId,tier,button){
         lastForwardTier:tier,
         updatedAt:now
       });
+
+      tx.set(publicStatusRef,{
+        status:"forwarded",
+        redistributionStatus:"forwarded",
+        targetInstitutionId:String(data.targetInstitutionId||""),
+        forwardedInstitutionCount:set.size,
+        newInstitutionCount:newIds.length,
+        lastForwardedTier:tier,
+        lastForwardedAt:now,
+        message:data.targetInstitutionId
+          ? "Seçtiğiniz kurumun yanıt süresi sonrasında talebiniz uygun diğer kurumlara iletildi."
+          : "Talebiniz uygun diğer kurumlara iletildi.",
+        updatedAt:now
+      },{merge:true});
     });
 
     alert(rows.length+" kuruma teklif fırsatı iletildi.");
@@ -7346,6 +7361,7 @@ async function recordQuoteInstitutionForward(requestId,institutionId,institution
   if(!requestId||!institutionId)return;
 
   const ref=db.collection("quoteRequests").doc(String(requestId));
+  const publicStatusRef=ref.collection("publicStatus").doc("main");
 
   await db.runTransaction(async tx=>{
     const snap=await tx.get(ref);
@@ -7378,6 +7394,20 @@ async function recordQuoteInstitutionForward(requestId,institutionId,institution
       lastForwardTier:"manual",
       updatedAt:now
     });
+
+    tx.set(publicStatusRef,{
+      status:"forwarded",
+      redistributionStatus:"forwarded",
+      targetInstitutionId:String(data.targetInstitutionId||""),
+      forwardedInstitutionCount:ids.length+1,
+      newInstitutionCount:1,
+      lastForwardedTier:"manual",
+      lastForwardedAt:now,
+      message:data.targetInstitutionId
+        ? "Seçtiğiniz kurumun yanıt süresi sonrasında talebiniz uygun diğer kurumlara iletildi."
+        : "Talebiniz uygun diğer kurumlara iletildi.",
+      updatedAt:now
+    },{merge:true});
   });
 }
 
