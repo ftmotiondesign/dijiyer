@@ -11,7 +11,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=60">
-  <link rel="stylesheet" href="admin-advanced.css?v=42">
+  <link rel="stylesheet" href="admin-advanced.css?v=43">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
 
@@ -2426,7 +2426,14 @@
           </div>
         </div>
 
-        <nav class="quote-routing-stage-nav" aria-label="Yanıtsız teklif aşamaları">
+        <nav id="quoteFlowDrawer" class="quote-routing-stage-nav quote-flow-drawer" aria-label="Yanıtsız teklif aşamaları">
+          <div class="quote-flow-drawer-head">
+            <div>
+              <span>TEKLİF AKIŞI</span>
+              <strong>4 Aşamalı Takip</strong>
+            </div>
+            <button type="button" id="quoteFlowDrawerClose" aria-label="Akış menüsünü kapat">×</button>
+          </div>
           <button type="button" class="quote-routing-stage active" data-routing-view="fresh">
             <span class="stage-no">01</span>
             <span class="stage-copy">
@@ -3322,6 +3329,11 @@
     <span>↑</span>
   </button>
 
+  <button type="button" id="quoteFlowDrawerToggle" class="quote-flow-drawer-toggle" aria-controls="quoteFlowDrawer" aria-expanded="false" hidden>
+    <span>☰</span>
+    <strong>Akış</strong>
+  </button>
+
   <!-- FIREBASE -->
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3330,7 +3342,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=62"></script>
+<script src="admin.js?v=63"></script>
   <script src="admin-advanced.js?v=56"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
