@@ -452,6 +452,60 @@
       return;
     }
 
+    if (action === "status_delete") {
+      const ids = [...selectedInstitutionIds];
+      if (!ids.length) {
+        alert("Önce silinecek kurumları seçin.");
+        return;
+      }
+
+      const selectedNames = institutionRecords
+        .filter(item => selectedInstitutionIds.has(String(item.id)))
+        .map(item => item.name || "Kurum");
+
+      const preview = selectedNames.slice(0, 5).join(", ");
+      const extra = selectedNames.length > 5
+        ? " ve " + (selectedNames.length - 5) + " kurum daha"
+        : "";
+
+      const ok = confirm(
+        ids.length + " kurum kalıcı olarak silinecek.\n\n" +
+        preview + extra +
+        "\n\nBu işlem geri alınamaz. Devam edilsin mi?"
+      );
+      if (!ok) return;
+
+      const applyBtn = $("bulkInstitutionApply");
+      const oldText = applyBtn?.textContent || "Uygula";
+      if (applyBtn) {
+        applyBtn.disabled = true;
+        applyBtn.textContent = "Siliniyor...";
+      }
+
+      try {
+        await Promise.all(
+          ids.map(id => db.collection("institutions").doc(id).delete())
+        );
+
+        addAudit("Toplu kurum silme", ids.length + " kurum silindi");
+        selectedInstitutionIds.clear();
+        $("bulkInstitutionAction").value = "";
+        if ($("bulkSelectVisible")) $("bulkSelectVisible").checked = false;
+        await loadInstitutions();
+        updateBulkSelectionUi();
+      } catch (error) {
+        console.error("Toplu kurum silme hatası:", error);
+        alert("Seçilen kurumlardan bazıları silinemedi. Liste yeniden yüklenecek.");
+        await loadInstitutions();
+      } finally {
+        if (applyBtn) {
+          applyBtn.disabled = false;
+          applyBtn.textContent = oldText;
+        }
+      }
+      return;
+    }
+
     const actions = {
       offer_on:["offer",true,"Teklif alımı açıldı"],
       offer_off:["offer",false,"Teklif alımı kapatıldı"],
