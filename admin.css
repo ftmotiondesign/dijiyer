@@ -8569,3 +8569,64 @@ details.matching-institutions .matching-buttons{
     scroll-snap-align:start;
   }
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · SAĞ PANEL OKUNAKLI DİKEY KARTLAR
+   ========================================================= */
+@media(min-width:1151px){
+  #quoteRoutingSection.quote-routing-v2{
+    grid-template-columns:minmax(0,1fr) 270px;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav{
+    padding:11px;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage{
+    display:block;
+    position:relative;
+    min-height:112px;
+    padding:12px 13px 13px;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage .stage-no{
+    display:grid;
+    width:30px;
+    height:30px;
+    margin-bottom:8px;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage .stage-copy{
+    display:block;
+    padding-right:38px;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage .stage-copy em{
+    display:block;
+    margin-bottom:3px;
+    font-size:7.5px;
+    line-height:1.2;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage .stage-copy strong{
+    display:block;
+    margin-bottom:4px;
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage .stage-copy small{
+    display:block;
+    font-size:9px;
+    line-height:1.45;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage>b{
+    position:absolute;
+    top:12px;
+    right:12px;
+    min-width:28px;
+    height:28px;
+  }
+}
