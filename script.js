@@ -617,6 +617,13 @@ function updateMobileCategoryResult() {
 
   offerBtn?.classList.toggle('active', Boolean(document.getElementById('offerOnly')?.checked));
   videoBtn?.classList.toggle('active', Boolean(document.getElementById('videoOnly')?.checked));
+
+  updateQuoteSearchFallback({
+    keyword,
+    count,
+    activeMain,
+    inferred: keyword ? inferQuoteCategory(keyword) : null
+  });
 }
 
 function setMobileDiscoverySearch(value, options = {}) {
@@ -5472,6 +5479,233 @@ function inferQuoteCategory(value) {
   }
   return null;
 }
+
+function getQuoteFallbackSuggestions(mainCategory, keyword) {
+  const rows = Object.entries(categoryTaxonomy[mainCategory]?.subs || {});
+  if (!rows.length) return [];
+
+  const q = normalizeQuoteSearch(keyword);
+  const qTokens = q.split(/\s+/).filter(Boolean);
+
+  return rows
+    .map(([subCategory,label],index) => {
+      const normalizedLabel = normalizeQuoteSearch(label);
+      let score = 0;
+
+      qTokens.forEach(token => {
+        if (normalizedLabel.includes(token)) score += 5;
+        else if (
+          token.length >= 4 &&
+          normalizedLabel.split(/\s+/).some(word =>
+            word.startsWith(token.slice(0, Math.min(4, token.length)))
+          )
+        ) score += 2;
+      });
+
+      if (normalizedLabel.includes(q)) score += 8;
+      return {mainCategory,subCategory,label,score,index};
+    })
+    .sort((a,b) => b.score - a.score || a.index - b.index)
+    .slice(0,3);
+}
+
+async function logUnmatchedQuoteSearch(payload) {
+  const query = String(payload?.query || '').trim();
+  if (query.length < 2 || typeof db === 'undefined') return;
+
+  const mainCategory = String(payload?.mainCategory || '');
+  const reason = String(payload?.reason || 'category_not_found');
+  const dedupeKey = normalizeQuoteSearch(query) + '|' + mainCategory + '|' + reason;
+
+  try {
+    const cacheKey = 'dijiyerUnmatchedSearches';
+    const cache = JSON.parse(sessionStorage.getItem(cacheKey) || '{}');
+    if (cache[dedupeKey]) return;
+    cache[dedupeKey] = Date.now();
+    sessionStorage.setItem(cacheKey, JSON.stringify(cache));
+  } catch (_) {}
+
+  try {
+    await db.collection('unmatchedSearches').add({
+      query,
+      normalizedQuery: normalizeQuoteSearch(query),
+      mainCategory,
+      mainCategoryLabel: categoryTaxonomy[mainCategory]?.label || '',
+      city: typeof activeLocationCity !== 'undefined' ? String(activeLocationCity || '') : '',
+      district: typeof activeLocationDistrict !== 'undefined' ? String(activeLocationDistrict || '') : '',
+      resultCount: Number(payload?.resultCount || 0),
+      reason,
+      suggestionLabels: Array.isArray(payload?.suggestions)
+        ? payload.suggestions.map(item => item.label).slice(0,3)
+        : [],
+      status: 'new',
+      source: 'teklif-al',
+      createdAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn('Bulunamayan arama kaydı Firestore’a yazılamadı:', error);
+  }
+}
+
+function updateQuoteSearchFallback(options = {}) {
+  const root = document.getElementById('quoteSearchFallback');
+  const queryEl = document.getElementById('quoteSearchFallbackQuery');
+  const suggestionsRoot = document.getElementById('quoteSearchFallbackSuggestions');
+  const resultPanel = document.getElementById('mobileCategoryResult');
+  const instantResults = document.getElementById('mobileInstantResults');
+
+  if (!root) return;
+
+  const query = String(options.keyword || '').trim();
+  const count = Number(options.count || 0);
+  const activeMain = String(options.activeMain || '');
+  const shouldShow = query.length >= 2 && count < 1;
+
+  if (!shouldShow) {
+    root.classList.add('hidden');
+    return;
+  }
+
+  const inferredCategory = options.inferred || inferQuoteCategory(query);
+  const suggestionMain = activeMain || inferredCategory?.mainCategory || '';
+  const suggestions = getQuoteFallbackSuggestions(suggestionMain, query);
+
+  if (queryEl) queryEl.textContent = '“' + query + '”';
+
+  if (suggestionsRoot) {
+    suggestionsRoot.innerHTML = suggestions.map(item =>
+      '<button type="button" data-quote-fallback-main="' +
+      escapeHtml(item.mainCategory) +
+      '" data-quote-fallback-sub="' +
+      escapeHtml(item.subCategory) +
+      '">' +
+      escapeHtml(item.label) +
+      '</button>'
+    ).join('');
+    suggestionsRoot.classList.toggle('hidden', !suggestions.length);
+  }
+
+  if (instantResults && !instantResults.classList.contains('hidden')) {
+    instantResults.insertAdjacentElement('afterend', root);
+  } else if (resultPanel) {
+    resultPanel.insertAdjacentElement('afterend', root);
+  }
+
+  root.classList.remove('hidden');
+  root.dataset.query = query;
+  root.dataset.mainCategory = suggestionMain;
+
+  logUnmatchedQuoteSearch({
+    query,
+    mainCategory:suggestionMain,
+    resultCount:count,
+    suggestions,
+    reason: inferredCategory ? 'no_institution_result' : 'category_not_found'
+  });
+}
+
+document.addEventListener('click', event => {
+  const suggestion = event.target.closest('[data-quote-fallback-sub]');
+
+  if (suggestion) {
+    event.preventDefault();
+
+    const mainCategory = suggestion.dataset.quoteFallbackMain || '';
+    const subCategory = suggestion.dataset.quoteFallbackSub || '';
+
+    if (typeof clearAllCategorySelections === 'function') {
+      clearAllCategorySelections();
+    } else {
+      document.querySelectorAll('.categoryFilter,.subCategoryFilter').forEach(input => {
+        input.checked = false;
+      });
+    }
+
+    const mainInput = [...document.querySelectorAll('.categoryFilter')]
+      .find(input => input.value === mainCategory);
+    const subInput = [...document.querySelectorAll('.subCategoryFilter')]
+      .find(input =>
+        input.dataset.mainCategory === mainCategory &&
+        input.value === subCategory
+      );
+
+    if (mainInput) mainInput.checked = true;
+    if (subInput) subInput.checked = true;
+
+    if (typeof renderMobileCategories === 'function') renderMobileCategories();
+    if (typeof renderMobileSubcategories === 'function') renderMobileSubcategories(mainCategory);
+    if (typeof renderList === 'function') renderList();
+    if (typeof updateMobileCategoryResult === 'function') updateMobileCategoryResult();
+
+    setTimeout(() => {
+      if (typeof showMobileInstitutionResults === 'function') {
+        showMobileInstitutionResults(true);
+      }
+    }, 80);
+
+    return;
+  }
+
+  if (event.target.closest('#quoteSearchFallbackAllBtn')) {
+    event.preventDefault();
+
+    if (typeof clearAllCategorySelections === 'function') {
+      clearAllCategorySelections();
+    } else {
+      document.querySelectorAll('.categoryFilter,.subCategoryFilter').forEach(input => {
+        input.checked = false;
+      });
+    }
+
+    if (typeof renderMobileCategories === 'function') renderMobileCategories();
+    if (typeof renderList === 'function') renderList();
+    if (typeof updateMobileCategoryResult === 'function') updateMobileCategoryResult();
+
+    setTimeout(() => {
+      if (typeof showMobileInstitutionResults === 'function') {
+        showMobileInstitutionResults(true);
+      }
+    }, 80);
+
+    return;
+  }
+
+  if (event.target.closest('#quoteSearchFallbackQuoteBtn')) {
+    event.preventDefault();
+
+    const fallback = document.getElementById('quoteSearchFallback');
+    const query = String(fallback?.dataset.query || '').trim();
+    const mainCategory = String(fallback?.dataset.mainCategory || '').trim() || 'diger';
+    const searchInput = document.getElementById('quoteSearch');
+    const categorySelect = document.getElementById('quoteCategory');
+    const subSelect = document.getElementById('quoteService');
+
+    if (searchInput) searchInput.value = query;
+
+    if (categorySelect) {
+      categorySelect.value = categoryTaxonomy[mainCategory] ? mainCategory : 'diger';
+      fillQuoteServices(categorySelect.value);
+    }
+
+    if (subSelect) {
+      if (![...subSelect.options].some(option => option.value === 'diger')) {
+        const option = document.createElement('option');
+        option.value = 'diger';
+        option.textContent = 'Özel Talep / Diğer';
+        subSelect.appendChild(option);
+      }
+      subSelect.value = 'diger';
+    }
+
+    if (typeof openModal === 'function') {
+      openModal('quoteModal');
+    } else {
+      document.getElementById('quoteModal')?.classList.remove('hidden');
+    }
+
+    setTimeout(() => document.getElementById('quoteSearch')?.focus(), 120);
+  }
+});
 
 document.getElementById('quoteCategory').addEventListener('change', function () {
   fillQuoteServices(this.value);
