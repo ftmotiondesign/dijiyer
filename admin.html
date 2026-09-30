@@ -7,7 +7,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=37">
+  <link rel="stylesheet" href="admin.css?v=38">
   <link rel="stylesheet" href="admin-advanced.css?v=33">
 </head>
 
@@ -1939,21 +1939,89 @@
         </section>
       </section>
 
-      <section id="quotesSection" hidden>
-        <div class="section-title">
-          <h3>Teklif Talepleri</h3>
-          <p id="quoteRequestCount">Talepler yükleniyor...</p>
+      <section id="quotesSection" class="quote-management-section" hidden>
+        <div class="quote-management-head">
+          <div class="quote-management-title">
+            <span class="quote-management-eyebrow">TEKLİF YÖNETİMİ</span>
+            <h3>Teklif Talepleri</h3>
+            <p id="quoteRequestCount">Talepler yükleniyor...</p>
+          </div>
+
+          <button type="button" id="quoteRefreshBtn" class="quote-refresh-btn">
+            <span>↻</span>
+            Listeyi Yenile
+          </button>
         </div>
 
-        <div class="quote-toolbar">
-          <input
-            type="search"
-            id="quoteRequestSearch"
-            placeholder="Müşteri, telefon, şehir, ilçe veya hizmet ara..."
-          >
+        <div class="quote-kpi-grid" aria-label="Teklif özetleri">
+          <button type="button" class="quote-kpi-card is-total" data-quote-kpi="">
+            <span class="quote-kpi-icon">▦</span>
+            <span class="quote-kpi-copy">
+              <small>Toplam Talep</small>
+              <strong id="quoteKpiTotal">0</strong>
+              <em>Tüm kayıtlar</em>
+            </span>
+          </button>
 
-          <select id="quoteStatusFilter">
+          <button type="button" class="quote-kpi-card is-waiting" data-quote-kpi="waiting">
+            <span class="quote-kpi-icon">◷</span>
+            <span class="quote-kpi-copy">
+              <small>İşlem Bekleyen</small>
+              <strong id="quoteKpiWaiting">0</strong>
+              <em>Yeni veya iletildi</em>
+            </span>
+          </button>
+
+          <button type="button" class="quote-kpi-card is-offered" data-quote-kpi="offered">
+            <span class="quote-kpi-icon">₺</span>
+            <span class="quote-kpi-copy">
+              <small>Teklif Geldi</small>
+              <strong id="quoteKpiOffered">0</strong>
+              <em>Karar bekleyenler</em>
+            </span>
+          </button>
+
+          <button type="button" class="quote-kpi-card is-locked" data-quote-kpi="locked">
+            <span class="quote-kpi-icon">✓</span>
+            <span class="quote-kpi-copy">
+              <small>Seçilen / Kilitli</small>
+              <strong id="quoteKpiLocked">0</strong>
+              <em>Müşteri seçim yaptı</em>
+            </span>
+          </button>
+
+          <button type="button" class="quote-kpi-card is-done" data-quote-kpi="completed">
+            <span class="quote-kpi-icon">●</span>
+            <span class="quote-kpi-copy">
+              <small>Tamamlanan</small>
+              <strong id="quoteKpiDone">0</strong>
+              <em>Sonuçlandı / kullanıldı</em>
+            </span>
+          </button>
+
+          <button type="button" class="quote-kpi-card is-issue" data-quote-kpi="issue">
+            <span class="quote-kpi-icon">!</span>
+            <span class="quote-kpi-copy">
+              <small>Sorun Bildirimi</small>
+              <strong id="quoteKpiIssue">0</strong>
+              <em>Kontrol gerekenler</em>
+            </span>
+          </button>
+        </div>
+
+        <div class="quote-command-bar">
+          <label class="quote-search-box">
+            <span>⌕</span>
+            <input
+              type="search"
+              id="quoteRequestSearch"
+              placeholder="Müşteri, telefon, şehir, ilçe, hizmet veya kurum ara..."
+            >
+          </label>
+
+          <select id="quoteStatusFilter" aria-label="Teklif durumu">
             <option value="">Tüm durumlar</option>
+            <option value="waiting">İşlem bekleyenler</option>
             <option value="new">Yeni / Teklif Yok</option>
             <option value="offered">Teklif Geldi</option>
             <option value="locked">Fiyat Kilitlendi</option>
@@ -1961,9 +2029,34 @@
             <option value="expired">Süresi Doldu</option>
             <option value="sent">İletildi</option>
             <option value="done">Sonuçlandı</option>
+            <option value="completed">Tamamlananlar</option>
             <option value="issue">Sorun bildirimi olanlar</option>
             <option value="archived">Arşivlenenler</option>
           </select>
+
+          <select id="quotePeriodFilter" aria-label="Tarih aralığı">
+            <option value="">Tüm zamanlar</option>
+            <option value="today">Bugün</option>
+            <option value="7">Son 7 gün</option>
+            <option value="30">Son 30 gün</option>
+            <option value="90">Son 90 gün</option>
+          </select>
+
+          <select id="quoteSort" aria-label="Sıralama">
+            <option value="newest">En yeni talep</option>
+            <option value="oldest">En eski talep</option>
+            <option value="offers_desc">En çok teklif alan</option>
+            <option value="attention">Önce kontrol gereken</option>
+          </select>
+
+          <button type="button" id="quoteClearFilters" class="quote-clear-btn">
+            Temizle
+          </button>
+        </div>
+
+        <div class="quote-filter-summary">
+          <span id="quoteFilterResult">Kayıtlar hazırlanıyor...</span>
+          <small>Kartlara tıklayarak hızlı filtreleme yapabilirsiniz.</small>
         </div>
 
         <div id="quoteRequestsList"></div>
@@ -2464,7 +2557,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=37"></script>
+<script src="admin.js?v=38"></script>
   <script src="admin-advanced.js?v=48"></script>
 
 </body>
