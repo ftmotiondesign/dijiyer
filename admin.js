@@ -27,6 +27,7 @@ const overviewSection = document.getElementById("overviewSection");
 const applicationsSection = document.getElementById("applicationsSection");
 const institutionsSection = document.getElementById("institutionsSection");
 const quotesSection = document.getElementById("quotesSection");
+const quoteRoutingSection = document.getElementById("quoteRoutingSection");
 const offerReportSection = document.getElementById("offerReportSection");
 const issuesSection = document.getElementById("issuesSection");
 const accountsSection = document.getElementById("accountsSection");
@@ -51,6 +52,7 @@ const homeSectionEditMessage = document.getElementById("homeSectionEditMessage")
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
+const quoteRoutingTabBtn = document.getElementById("quoteRoutingTabBtn");
 const offerReportTabBtn = document.getElementById("offerReportTabBtn");
 const issuesTabBtn = document.getElementById("issuesTabBtn");
 const accountsTabBtn = document.getElementById("accountsTabBtn");
@@ -90,6 +92,22 @@ const quoteKpiOffered = document.getElementById("quoteKpiOffered");
 const quoteKpiLocked = document.getElementById("quoteKpiLocked");
 const quoteKpiDone = document.getElementById("quoteKpiDone");
 const quoteKpiIssue = document.getElementById("quoteKpiIssue");
+const quoteRoutingTabCount = document.getElementById("quoteRoutingTabCount");
+const quoteRoutingWaitingCount = document.getElementById("quoteRoutingWaitingCount");
+const quoteRoutingVipCount = document.getElementById("quoteRoutingVipCount");
+const quoteRoutingAdCount = document.getElementById("quoteRoutingAdCount");
+const quoteRoutingForwardedCount = document.getElementById("quoteRoutingForwardedCount");
+const quoteRoutingWaitMinutes = document.getElementById("quoteRoutingWaitMinutes");
+const quoteRoutingAreaMode = document.getElementById("quoteRoutingAreaMode");
+const quoteRoutingSearch = document.getElementById("quoteRoutingSearch");
+const quoteRoutingRefreshBtn = document.getElementById("quoteRoutingRefreshBtn");
+const quoteRoutingList = document.getElementById("quoteRoutingList");
+const leadPackageSaveBtn = document.getElementById("leadPackageSaveBtn");
+const leadPriceSingle = document.getElementById("leadPriceSingle");
+const leadPrice10 = document.getElementById("leadPrice10");
+const leadPrice25 = document.getElementById("leadPrice25");
+const leadPrice50 = document.getElementById("leadPrice50");
+const leadPackageMessage = document.getElementById("leadPackageMessage");
 
 const offerReportCount = document.getElementById("offerReportCount");
 const offerReportInstitutionCount = document.getElementById("offerReportInstitutionCount");
@@ -192,6 +210,7 @@ const quickSupportCount = document.getElementById("quickSupportCount");
 const ADMIN_TAB_META = {
   overviewTabBtn:["overview","Genel Bakış","Bugün ilgilenmeniz gereken konuları ve temel rakamları görün."],
   quotesTabBtn:["quotes","Teklif Talepleri","Müşteri taleplerini, gelen teklifleri ve tüm teklif hareketlerini yönetin."],
+  quoteRoutingTabBtn:["quotes","Teklif Dağıtım","Yanıtsız özel teklifleri VIP, reklam veren ve diğer kurumlara öncelik sırasıyla yönlendirin."],
   issuesTabBtn:["quotes","Sorun Çözüm Merkezi","Müşteri ve firma beyanlarını kilitli teklif kayıtlarıyla birlikte tarafsız inceleyin."],
   offerReportTabBtn:["quotes","Teklif Raporu","Kurumların teklif performansını ve teklif sonuçlarını inceleyin."],
   institutionsTabBtn:["institutions","Kurumlar","Yayındaki kurumları arayın, düzenleyin ve teklif durumlarını yönetin."],
