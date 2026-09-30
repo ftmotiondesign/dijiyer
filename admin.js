@@ -2011,6 +2011,9 @@ async function loadInstitutions() {
       ...doc.data()
     }));
 
+    // Kurumlar ekranındaki kredi rozetleri aynı gerçek kredi hesabını kullansın.
+    await loadLeadCreditData();
+
     const activeInstitutionCount = institutionRecords.filter(
       item => String(item.status || "active") !== "passive"
     ).length;
@@ -2708,6 +2711,7 @@ function refreshInstitutionMiniStats() {
 function renderManagedInstitutions() {
   refreshInstitutionMiniStats();
   const data = getFilteredManagedInstitutions();
+  const institutionCreditMap = leadCreditAccountMap();
 
   institutionFilterResult.textContent =
     `${data.length} kurum gösteriliyor · Toplam ${institutionRecords.length}`;
@@ -2739,6 +2743,11 @@ function renderManagedInstitutions() {
     const adRecommendation = getRecommendedAdPackage(data);
     const adStartValue = adminDateInputValue(data.adStartAt) || adminDateInputValue(new Date());
     const adEndValue = adminDateInputValue(data.adEndAt) || adminAddDays(new Date(),30);
+    const creditAccount = institutionCreditMap.get(String(data.id)) || {};
+    const creditBalance = Number(creditAccount.balance || 0);
+    const creditLoaded = Number(creditAccount.totalLoaded || 0);
+    const creditUsed = Number(creditAccount.totalUsed || 0);
+    const creditClass = creditBalance > 0 ? "positive" : (creditBalance < 0 ? "negative" : "zero");
 
     card.innerHTML = `
       <div class="manage-main institution-compact-head">
@@ -2761,6 +2770,9 @@ function renderManagedInstitutions() {
             ${data.video ? '<span class="badge-video">Videolu</span>' : ''}
             ${data.locationVideoUrl ? '<span class="badge-video">Konum Videosu</span>' : ''}
             ${data.virtualTourUrl ? '<span class="badge-tour">360° Tur</span>' : ''}
+            <button type="button" class="institution-credit-badge ${creditClass}" title="Yüklenen: ${creditLoaded} · Kullanılan: ${creditUsed}">
+              💳 Kredi: <strong>${creditBalance}</strong>
+            </button>
             <span class="badge-ad badge-ad-${adState.className}">
               ${escapeHtml(adState.label)}
               ${currentAdPackage ? " · "+escapeHtml(currentAdPackage.name) : ""}
@@ -2771,6 +2783,7 @@ function renderManagedInstitutions() {
         <div class="manage-actions compact institution-top-status-actions">
           <button class="quick-photo-institution-btn" type="button">📷 Fotoğraf</button>
           <button class="quick-edit-institution-btn" type="button">⚡ Hızlı Düzenle</button>
+          <button class="institution-credit-manage-btn" type="button">💳 Kredi Yönet</button>
           <button class="banner-ad-institution-btn" type="button">🖼️ Banner Reklama Ekle</button>
           <button class="edit-institution-btn" type="button">⚙ Detaylı Düzenle</button>
         </div>
@@ -3211,6 +3224,9 @@ function renderManagedInstitutions() {
         button.textContent=oldText;
       }
     });
+
+    card.querySelector(".institution-credit-badge")?.addEventListener("click",()=>openLeadCreditModal(data.id));
+    card.querySelector(".institution-credit-manage-btn")?.addEventListener("click",()=>openLeadCreditModal(data.id));
 
     if (typeof window.decorateAdminInstitutionCard === "function") {
       window.decorateAdminInstitutionCard(card, data);
@@ -5736,6 +5752,7 @@ async function saveLeadCreditAdjustment(){
 
     await loadLeadCreditData();
     renderLeadCreditAdmin();
+    renderManagedInstitutions();
     setTimeout(closeLeadCreditModal,delta>0&&vipResult?1400:650);
   }catch(error){
     console.error("Kredi işlemi kaydedilemedi:",error);
