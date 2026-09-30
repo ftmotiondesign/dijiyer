@@ -3690,3 +3690,28 @@ button{
     width:100%;
   }
 }
+
+
+/* Kurum kartı üst durum işlemleri */
+.institution-top-status-actions{
+  align-items:center;
+}
+.institution-top-status-actions .institution-top-active-btn{
+  background:#ecfdf5!important;
+  color:#15803d!important;
+  border-color:#bbf7d0!important;
+}
+.institution-top-status-actions .institution-top-passive-btn{
+  background:#fffbeb!important;
+  color:#a16207!important;
+  border-color:#fde68a!important;
+}
+.institution-top-status-actions .institution-top-delete-btn{
+  background:#fff7f7!important;
+  color:#b91c1c!important;
+  border-color:#fecaca!important;
+}
+.institution-top-status-actions button:disabled{
+  opacity:.42!important;
+  cursor:not-allowed!important;
+}
