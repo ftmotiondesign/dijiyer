@@ -4532,6 +4532,7 @@ async function loadInstitutionReviews(inst) {
   try {
     const snapshot = await db.collection('institutionReviews')
       .where('institutionId', '==', String(inst.id))
+      .where('status', '==', 'published')
       .get();
 
     const reviews = snapshot.docs
@@ -6310,7 +6311,9 @@ document.getElementById('institutionAddress').addEventListener('blur', () => {
 
 async function loadInstitutionReviewStats(){
   try{
-    const snap=await db.collection('institutionReviews').get();
+    const snap=await db.collection('institutionReviews')
+      .where('status','==','published')
+      .get();
     const stats=new Map();
 
     snap.forEach(doc=>{
