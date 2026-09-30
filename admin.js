@@ -223,6 +223,7 @@ const ADMIN_TAB_META = {
   externalAdsTabBtn:["ads","Site / Affiliate Reklamları","Harici marka ve affiliate reklamlarını seçtiğiniz Dijiyer sayfalarında yayınlayın."],
   promotionOrdersTabBtn:["ads","Siparişler","Kurumların tanıtım ve reklam siparişlerini fiyatlandırın, ödeme ve yayın sürecini yönetin."],
   promotionPackagesTabBtn:["ads","Paketler","Kurumlara sunulan reklam ve tanıtım paketlerini oluşturun ve fiyatlandırın."],
+  vipInstitutionsTabBtn:["ads","VIP Kurumlar","VIP, VIP Plus ve VIP Premium üyeliklerini; fiyat, süre ve kurum atamalarıyla yönetin."],
   adCalendarTabBtn:["ads","Reklam Takvimi","Yayın tarihlerini, dolulukları ve yaklaşan reklam bitişlerini görün."],
   adRevenueTabBtn:["ads","Gelir Raporu","Reklam gelirini, tahsilatı, performansı ve yenileme fırsatlarını izleyin."],
   supportTabBtn:["support","Destek Merkezi","Kurumların destek taleplerini takip edin ve yanıtlayın."],
