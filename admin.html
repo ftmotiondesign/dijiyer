@@ -2475,6 +2475,24 @@
           </div>
           <div id="adminAuditList"></div>
         </section>
+
+        <section class="advanced-card client-error-card">
+          <div class="advanced-card-head">
+            <div>
+              <h4>Hata Kayıtları</h4>
+              <p id="clientErrorCount">Yönetici ve kurum paneli hataları</p>
+            </div>
+            <div class="client-error-actions">
+              <select id="clientErrorFilter">
+                <option value="new">Açık hatalar</option>
+                <option value="resolved">Çözülenler</option>
+                <option value="">Tümü</option>
+              </select>
+              <button type="button" id="clientErrorRefresh">↻ Yenile</button>
+            </div>
+          </div>
+          <div id="clientErrorList"></div>
+        </section>
       </section>
 
       <section id="quotesSection" class="quote-management-section" hidden>
