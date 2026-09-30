@@ -1345,11 +1345,10 @@ function renderManagedInstitutions() {
         </div>
 
         <div class="manage-actions compact institution-top-status-actions">
-          <button class="institution-top-active-btn" type="button" ${isInstitutionActive ? "disabled" : ""}>✓ Aktif</button>
-          <button class="institution-top-passive-btn" type="button" ${!isInstitutionActive ? "disabled" : ""}>⏸ Pasif</button>
-          <button class="institution-top-delete-btn" type="button">🗑 Sil</button>
-          <button class="banner-ad-institution-btn">🖼️ Banner Reklama Ekle</button>
-          <button class="edit-institution-btn">✏ Düzenle</button>
+          <button class="quick-photo-institution-btn" type="button">📷 Fotoğraf</button>
+          <button class="quick-edit-institution-btn" type="button">⚡ Hızlı Düzenle</button>
+          <button class="banner-ad-institution-btn" type="button">🖼️ Banner Reklama Ekle</button>
+          <button class="edit-institution-btn" type="button">⚙ Detaylı Düzenle</button>
         </div>
       </div>
 
@@ -1530,6 +1529,14 @@ function renderManagedInstitutions() {
       } else {
         document.getElementById("bannerAdsTabBtn")?.click();
       }
+    });
+
+    card.querySelector(".quick-photo-institution-btn")?.addEventListener("click", () => {
+      openInstitutionQuickEdit(data.id, data, true);
+    });
+
+    card.querySelector(".quick-edit-institution-btn")?.addEventListener("click", () => {
+      openInstitutionQuickEdit(data.id, data, false);
     });
 
     card.querySelector(".edit-institution-btn").addEventListener("click", () => {
@@ -2024,6 +2031,275 @@ async function removeInstitutionLocationVideo() {
     setInstitutionVideoStatus("Konum videosu kaldırılamadı.", "error");
   }
 }
+
+
+/* ===== KURUM HIZLI DÜZENLE ===== */
+function getInstitutionQuickElement(id) {
+  return document.getElementById(id);
+}
+
+function setInstitutionQuickStatus(message, state) {
+  const el = getInstitutionQuickElement("institutionQuickEditStatus");
+  if (!el) return;
+  el.textContent = message || "";
+  el.dataset.state = state || "";
+}
+
+function paintInstitutionQuickMedia(data) {
+  const cover = String(data?.coverUrl || "").trim();
+  const logo = String(data?.logoUrl || "").trim();
+  const coverPreview = getInstitutionQuickElement("quickEditCoverPreview");
+  const logoPreview = getInstitutionQuickElement("quickEditLogoPreview");
+
+  if (coverPreview) {
+    coverPreview.innerHTML = cover
+      ? '<img src="' + escapeHtml(cover) + '" alt="Kapak fotoğrafı">'
+      : '<div class="institution-quick-media-empty"><span>🖼️</span><small>Kapak fotoğrafı yok</small></div>';
+  }
+
+  if (logoPreview) {
+    logoPreview.innerHTML = logo
+      ? '<img src="' + escapeHtml(logo) + '" alt="Kurum logosu">'
+      : '<div class="institution-quick-logo-empty">🏢</div>';
+  }
+}
+
+function openInstitutionQuickEdit(id, data, focusMedia) {
+  const modal = getInstitutionQuickElement("institutionQuickEditModal");
+  if (!modal) return;
+
+  getInstitutionQuickElement("quickEditInstitutionId").value = id;
+  getInstitutionQuickElement("quickEditTitle").textContent = data.name || "Kurum";
+  getInstitutionQuickElement("quickEditPhone").value = data.phone || "";
+  getInstitutionQuickElement("quickEditLocationVideoUrl").value =
+    data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
+  getInstitutionQuickElement("quickEditVirtualTourUrl").value =
+    data.virtualTourUrl || data.tour360Url || data.tourUrl || "";
+  getInstitutionQuickElement("quickEditActive").checked =
+    String(data.status || "active") !== "passive";
+  getInstitutionQuickElement("quickEditOffer").checked = data.offer !== false;
+  getInstitutionQuickElement("quickEditVip").checked = Boolean(data.vip);
+  getInstitutionQuickElement("quickEditCoverStoragePath").value =
+    data.coverStoragePath || "";
+  getInstitutionQuickElement("quickEditLogoStoragePath").value =
+    data.logoStoragePath || "";
+
+  paintInstitutionQuickMedia(data);
+  setInstitutionQuickStatus("", "");
+  modal.classList.remove("hidden");
+
+  if (focusMedia) {
+    requestAnimationFrame(() => {
+      getInstitutionQuickElement("quickEditCoverUploadBtn")?.focus();
+    });
+  }
+}
+
+function closeInstitutionQuickEdit() {
+  getInstitutionQuickElement("institutionQuickEditModal")?.classList.add("hidden");
+  const coverFile = getInstitutionQuickElement("quickEditCoverFile");
+  const logoFile = getInstitutionQuickElement("quickEditLogoFile");
+  if (coverFile) coverFile.value = "";
+  if (logoFile) logoFile.value = "";
+  setInstitutionQuickStatus("", "");
+}
+
+async function uploadInstitutionQuickImage(kind, file) {
+  const institutionId = String(
+    getInstitutionQuickElement("quickEditInstitutionId")?.value || ""
+  ).trim();
+  const userId = String(auth.currentUser?.uid || "").trim();
+
+  if (!institutionId || !userId || !file) {
+    setInstitutionQuickStatus("Kurum veya yönetici oturumu bulunamadı.", "error");
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (file.type && !allowedTypes.includes(file.type)) {
+    setInstitutionQuickStatus("Yalnızca JPG, PNG veya WebP görsel yükleyebilirsiniz.", "error");
+    return;
+  }
+
+  const maxBytes = 8 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    setInstitutionQuickStatus("Görsel 8 MB'dan büyük olamaz.", "error");
+    return;
+  }
+
+  const field = kind === "logo" ? "logoUrl" : "coverUrl";
+  const pathField = kind === "logo" ? "logoStoragePath" : "coverStoragePath";
+  const pathInputId = kind === "logo" ? "quickEditLogoStoragePath" : "quickEditCoverStoragePath";
+  const oldPath = String(getInstitutionQuickElement(pathInputId)?.value || "").trim();
+  const safeName = String(file.name || (kind + ".jpg"))
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-");
+  const storagePath =
+    "institution-media/" + userId + "/" + institutionId + "/" + kind + "/" +
+    Date.now() + "-" + safeName;
+
+  const coverBtn = getInstitutionQuickElement("quickEditCoverUploadBtn");
+  const logoBtn = getInstitutionQuickElement("quickEditLogoUploadBtn");
+  if (coverBtn) coverBtn.disabled = true;
+  if (logoBtn) logoBtn.disabled = true;
+
+  setInstitutionQuickStatus(
+    (kind === "logo" ? "Logo" : "Kapak fotoğrafı") + " yükleniyor... %0",
+    "uploading"
+  );
+
+  try {
+    const ref = storage.ref().child(storagePath);
+    const task = ref.put(file, {
+      contentType: file.type || "image/jpeg",
+      customMetadata: {
+        institutionId,
+        mediaType: kind
+      }
+    });
+
+    const snapshot = await new Promise((resolve, reject) => {
+      task.on(
+        "state_changed",
+        snap => {
+          const total = Number(snap.totalBytes || 0);
+          const sent = Number(snap.bytesTransferred || 0);
+          const percent = total ? Math.round((sent / total) * 100) : 0;
+          setInstitutionQuickStatus(
+            (kind === "logo" ? "Logo" : "Kapak fotoğrafı") +
+            " yükleniyor... %" + percent,
+            "uploading"
+          );
+        },
+        reject,
+        () => resolve(task.snapshot)
+      );
+    });
+
+    const downloadURL = await snapshot.ref.getDownloadURL();
+    const updates = {
+      [field]: downloadURL,
+      [pathField]: storagePath,
+      updatedAt: new Date().toISOString()
+    };
+
+    await db.collection("institutions").doc(institutionId).update(updates);
+
+    const record = institutionRecords.find(
+      item => String(item.id) === String(institutionId)
+    );
+    if (record) Object.assign(record, updates);
+
+    const pathInput = getInstitutionQuickElement(pathInputId);
+    if (pathInput) pathInput.value = storagePath;
+
+    paintInstitutionQuickMedia(record || updates);
+    renderManagedInstitutions();
+
+    setInstitutionQuickStatus(
+      "✓ " + (kind === "logo" ? "Logo" : "Kapak fotoğrafı") +
+      " yüklendi ve kurum sayfasına bağlandı.",
+      "success"
+    );
+
+    if (oldPath && oldPath !== storagePath) {
+      storage.ref().child(oldPath).delete().catch(error => {
+        if (String(error?.code || "").includes("object-not-found")) return;
+        console.warn("Eski kurum görseli silinemedi:", error);
+      });
+    }
+  } catch (error) {
+    console.error("Kurum görseli yüklenemedi:", error);
+    const code = String(error?.code || "");
+    let message = "Görsel yüklenemedi.";
+    if (code.includes("storage/unauthorized")) {
+      message = "Firebase Storage yükleme yetkisi reddedildi. Storage Rules ayarını kontrol edin.";
+    } else if (code.includes("storage/retry-limit-exceeded")) {
+      message = "Görsel yükleme zaman aşımına uğradı. Tekrar deneyin.";
+    }
+    setInstitutionQuickStatus(message, "error");
+  } finally {
+    if (coverBtn) coverBtn.disabled = false;
+    if (logoBtn) logoBtn.disabled = false;
+  }
+}
+
+getInstitutionQuickElement("closeInstitutionQuickEditModal")?.addEventListener("click", closeInstitutionQuickEdit);
+getInstitutionQuickElement("institutionQuickEditCancelBtn")?.addEventListener("click", closeInstitutionQuickEdit);
+getInstitutionQuickElement("institutionQuickEditModal")?.addEventListener("click", event => {
+  if (event.target?.id === "institutionQuickEditModal") closeInstitutionQuickEdit();
+});
+
+getInstitutionQuickElement("quickEditCoverUploadBtn")?.addEventListener("click", () => {
+  getInstitutionQuickElement("quickEditCoverFile")?.click();
+});
+getInstitutionQuickElement("quickEditLogoUploadBtn")?.addEventListener("click", () => {
+  getInstitutionQuickElement("quickEditLogoFile")?.click();
+});
+
+getInstitutionQuickElement("quickEditCoverFile")?.addEventListener("change", event => {
+  uploadInstitutionQuickImage("cover", event.target.files?.[0]);
+});
+getInstitutionQuickElement("quickEditLogoFile")?.addEventListener("change", event => {
+  uploadInstitutionQuickImage("logo", event.target.files?.[0]);
+});
+
+getInstitutionQuickElement("institutionQuickEditForm")?.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const institutionId = String(
+    getInstitutionQuickElement("quickEditInstitutionId")?.value || ""
+  ).trim();
+  if (!institutionId) return;
+
+  const phone = String(getInstitutionQuickElement("quickEditPhone")?.value || "").trim();
+  const locationVideoUrl = String(
+    getInstitutionQuickElement("quickEditLocationVideoUrl")?.value || ""
+  ).trim();
+  const virtualTourUrl = String(
+    getInstitutionQuickElement("quickEditVirtualTourUrl")?.value || ""
+  ).trim();
+  const active = Boolean(getInstitutionQuickElement("quickEditActive")?.checked);
+  const offer = Boolean(getInstitutionQuickElement("quickEditOffer")?.checked);
+  const vip = Boolean(getInstitutionQuickElement("quickEditVip")?.checked);
+  const saveBtn = getInstitutionQuickElement("institutionQuickEditSaveBtn");
+
+  if (saveBtn) saveBtn.disabled = true;
+  setInstitutionQuickStatus("Değişiklikler kaydediliyor...", "uploading");
+
+  try {
+    const updates = {
+      phone,
+      status: active ? "active" : "passive",
+      offer,
+      vip,
+      locationVideoUrl,
+      virtualTourUrl,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (locationVideoUrl) updates.video = true;
+
+    await db.collection("institutions").doc(institutionId).update(updates);
+
+    const record = institutionRecords.find(
+      item => String(item.id) === String(institutionId)
+    );
+    if (record) Object.assign(record, updates);
+
+    renderManagedInstitutions();
+    setInstitutionQuickStatus("✓ Hızlı değişiklikler kaydedildi.", "success");
+
+    setTimeout(() => {
+      closeInstitutionQuickEdit();
+    }, 550);
+  } catch (error) {
+    console.error("Kurum hızlı düzenleme kaydedilemedi:", error);
+    setInstitutionQuickStatus("Değişiklikler kaydedilemedi.", "error");
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+});
 
 function openInstitutionEdit(id, data) {
   const form=document.getElementById("institutionEditForm");
