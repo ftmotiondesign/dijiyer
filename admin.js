@@ -3181,13 +3181,19 @@ function quoteRoutingInstitutionChips(rows){
   }).join("");
 }
 
-function quoteRoutingTierCard(tier,label,rows,requestId){
+function quoteRoutingTierCard(tier,label,rows,requestId,canForward){
   const available=rows.filter(inst=>!inst.alreadyForwarded);
   const tierText=tier==="vip" ? "VIP" : tier==="ad" ? "Reklam Veren" : "Diğer";
+  const disabled=!canForward || !available.length;
+  const buttonText=!canForward
+    ? "Müşteri izni gerekli"
+    : available.length
+      ? available.length+" kuruma ilet"
+      : "İletilecek kurum yok";
   return '<div class="quote-routing-tier tier-'+tier+'">'+
     '<div class="quote-routing-tier-head"><div><span>'+tierText.toUpperCase()+'</span><strong>'+escapeHtml(label)+'</strong></div>'+
-    '<button type="button" data-routing-forward="'+escapeHtml(requestId)+'" data-routing-tier="'+tier+'" '+(available.length?'':'disabled')+'>'+
-    (available.length ? available.length+" kuruma ilet" : "İletilecek kurum yok")+
+    '<button type="button" data-routing-forward="'+escapeHtml(requestId)+'" data-routing-tier="'+tier+'" '+(disabled?'disabled':'')+'>'+
+    buttonText+
     '</button></div>'+
     '<div class="quote-routing-inst-list">'+quoteRoutingInstitutionChips(rows)+'</div>'+
   '</div>';
@@ -3246,6 +3252,10 @@ function renderQuoteRoutingAdmin(){
     const history=Array.isArray(request.forwardHistory)?request.forwardHistory:[];
     const last=history.length?history[history.length-1]:null;
     const totalForwarded=Array.isArray(request.forwardInstitutionIds)?request.forwardInstitutionIds.length:0;
+    const canForward=request.allowAlternativeInstitutions===true;
+    const consentHtml=canForward
+      ? '<div class="quote-routing-consent ok"><strong>✓ Müşteri paylaşım izni var</strong><span>Talep, yönetim tarafından seçilen uygun kurumlara yönlendirilebilir.</span></div>'
+      : '<div class="quote-routing-consent blocked"><strong>⚠ Müşteri paylaşım izni yok</strong><span>Bu talep başka kurumlara iletilmeden önce müşteriden açık izin alınmalıdır.</span><button type="button" data-routing-consent="'+escapeHtml(request.id)+'">Müşteriden İzin Alındı</button></div>';
 
     return '<article class="quote-routing-card" data-routing-quote="'+escapeHtml(request.id)+'">'+
       '<div class="quote-routing-card-head">'+
@@ -3261,10 +3271,11 @@ function renderQuoteRoutingAdmin(){
         '<div><span>Son dağıtım</span><strong>'+(last?formatDate(last.date):"-")+'</strong></div>'+
       '</div>'+
       '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
+      consentHtml+
       '<div class="quote-routing-tiers">'+
-        quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id)+
-        quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id)+
-        quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id)+
+        quoteRoutingTierCard("vip","Önce VIP kurumlara",candidates.vip,request.id,canForward)+
+        quoteRoutingTierCard("ad","Sonra reklam veren kurumlara",candidates.ad,request.id,canForward)+
+        quoteRoutingTierCard("standard","Son olarak diğer kurumlara",candidates.standard,request.id,canForward)+
       '</div>'+
       '<div class="quote-routing-card-actions">'+
         '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talebi Aç</button>'+
@@ -3286,11 +3297,59 @@ function renderQuoteRoutingAdmin(){
   quoteRoutingList.querySelectorAll("[data-routing-open]").forEach(button=>{
     button.addEventListener("click",()=>openQuoteDetailModal(button.dataset.routingOpen));
   });
+
+  quoteRoutingList.querySelectorAll("[data-routing-consent]").forEach(button=>{
+    button.addEventListener("click",async()=>{
+      await markQuoteRoutingConsent(button.dataset.routingConsent,button);
+    });
+  });
+}
+
+async function markQuoteRoutingConsent(requestId,button){
+  const request=quoteRequestRecords.find(item=>String(item.id)===String(requestId));
+  if(!request)return;
+
+  const ok=confirm(
+    "Müşteriden bu talebin diğer uygun kurumlarla paylaşılmasına açık izin aldığınızı onaylıyor musunuz?\n\n"+
+    "Bu kayıt yönetim işlem geçmişinde saklanır."
+  );
+  if(!ok)return;
+
+  const oldText=button?.textContent||"İzin Alındı";
+  if(button){
+    button.disabled=true;
+    button.textContent="Kaydediliyor...";
+  }
+
+  try{
+    const now=new Date().toISOString();
+    await db.collection("quoteRequests").doc(requestId).update({
+      allowAlternativeInstitutions:true,
+      alternativeConsentSource:"admin_customer_confirmation",
+      alternativeConsentAt:now,
+      alternativeConsentRecordedBy:"admin",
+      updatedAt:now
+    });
+    await loadQuoteRequests();
+    renderQuoteRoutingAdmin();
+  }catch(error){
+    console.error("Müşteri paylaşım izni kaydedilemedi:",error);
+    alert("Müşteri paylaşım izni kaydedilemedi.");
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=oldText;
+    }
+  }
 }
 
 async function forwardQuoteRoutingTier(requestId,tier,button){
   const request=quoteRequestRecords.find(item=>String(item.id)===String(requestId));
   if(!request)return;
+  if(request.allowAlternativeInstitutions!==true){
+    alert("Müşteri bu talebin başka kurumlarla paylaşılmasına henüz izin vermedi.");
+    return;
+  }
 
   const candidates=quoteRoutingCandidateBundle(request);
   const rows=(candidates[tier]||[]).filter(inst=>!inst.alreadyForwarded);
@@ -3324,6 +3383,9 @@ async function forwardQuoteRoutingTier(requestId,tier,button){
       if(lockSnap.exists)throw new Error("Bu talepte müşteri zaten bir teklifi kabul etmiş.");
 
       const data=snap.data();
+      if(data.allowAlternativeInstitutions!==true){
+        throw new Error("Müşteri paylaşım izni bulunmuyor.");
+      }
       const existingIds=Array.isArray(data.forwardInstitutionIds)
         ? data.forwardInstitutionIds.map(String)
         : [];
