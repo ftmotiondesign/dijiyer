@@ -5244,3 +5244,212 @@
   color:#fff!important;
   box-shadow:0 7px 16px rgba(22,119,255,.20);
 }
+
+
+/* =========================================================
+   MEDYA ARŞİVİ · TOPLU PASİF / SİLME YÖNETİMİ
+   ========================================================= */
+.media-archive-kpis{
+  grid-template-columns:repeat(5,minmax(0,1fr))
+}
+.media-archive-kpis article.passive{
+  border-color:#c7d2fe;
+  background:#eef2ff
+}
+.media-archive-kpis article.passive strong{
+  color:#4f46e5
+}
+
+.media-archive-bulk-panel{
+  margin:0 0 11px;
+  padding:12px;
+  border:1px solid #dfe6ef;
+  border-radius:12px;
+  background:linear-gradient(135deg,#fbfdff,#f8fafc)
+}
+.media-archive-bulk-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px
+}
+.media-archive-bulk-head>div{
+  display:grid;
+  gap:2px
+}
+.media-archive-bulk-head>div>span{
+  color:#64748b;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.08em
+}
+.media-archive-bulk-head>div>strong{
+  color:#243247;
+  font-size:11px
+}
+.media-archive-select-all{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #dbe3ed;
+  border-radius:9px;
+  background:#fff;
+  color:#526176;
+  font-size:9px;
+  font-weight:850;
+  cursor:pointer
+}
+.media-archive-select-all input{
+  width:15px;
+  height:15px;
+  accent-color:#1677ff
+}
+.media-archive-bulk-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap
+}
+.media-archive-selected-count{
+  display:flex;
+  align-items:baseline;
+  gap:5px;
+  margin-right:auto;
+  min-width:120px
+}
+.media-archive-selected-count strong{
+  color:#1677ff;
+  font-size:20px;
+  line-height:1
+}
+.media-archive-selected-count span{
+  color:#64748b;
+  font-size:9px;
+  font-weight:800
+}
+.media-archive-bulk-actions button{
+  min-height:35px;
+  padding:0 11px;
+  border:1px solid #d9e2ed;
+  border-radius:8px;
+  background:#fff;
+  color:#475569;
+  font-size:8.5px;
+  font-weight:900;
+  cursor:pointer
+}
+.media-archive-bulk-actions button.passive{
+  border-color:#c7d2fe;
+  background:#eef2ff;
+  color:#4338ca
+}
+.media-archive-bulk-actions button.danger{
+  border-color:#fecaca;
+  background:#fff7f7;
+  color:#b91c1c
+}
+.media-archive-bulk-actions button.ghost{
+  background:#fff;
+  color:#64748b
+}
+.media-archive-bulk-actions button:disabled{
+  opacity:.42;
+  cursor:not-allowed
+}
+
+.media-archive-card{
+  position:relative;
+  grid-template-columns:126px minmax(0,1fr);
+  padding-left:42px
+}
+.media-archive-card.status-active{
+  border-color:#bbf7d0
+}
+.media-archive-card.status-passive{
+  border-color:#c7d2fe;
+  background:linear-gradient(90deg,#f8faff,#fff)
+}
+.media-archive-card.status-unused{
+  border-color:#f0d9a2;
+  background:linear-gradient(90deg,#fffdf8,#fff)
+}
+.media-archive-card.is-selected{
+  box-shadow:0 0 0 2px rgba(22,119,255,.16);
+  border-color:#93c5fd
+}
+.media-archive-card-select{
+  position:absolute;
+  left:12px;
+  top:14px;
+  width:19px;
+  height:19px;
+  cursor:pointer
+}
+.media-archive-card-select input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none
+}
+.media-archive-card-select span{
+  display:block;
+  width:19px;
+  height:19px;
+  border:1.5px solid #cbd5e1;
+  border-radius:6px;
+  background:#fff
+}
+.media-archive-card-select input:checked+span{
+  border-color:#1677ff;
+  background:#1677ff;
+  box-shadow:inset 0 0 0 4px #fff
+}
+.media-archive-title-row>b.active{
+  background:#ecfdf5;
+  color:#15803d
+}
+.media-archive-title-row>b.passive{
+  background:#eef2ff;
+  color:#4338ca
+}
+.media-archive-title-row>b.unused{
+  background:#fff7ed;
+  color:#c2410c
+}
+.media-archive-actions button.passive{
+  border-color:#c7d2fe;
+  background:#eef2ff;
+  color:#4338ca
+}
+
+@media(max-width:850px){
+  .media-archive-kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .media-archive-bulk-head{
+    align-items:flex-start;
+    flex-direction:column
+  }
+}
+@media(max-width:620px){
+  .media-archive-card{
+    grid-template-columns:84px minmax(0,1fr);
+    padding-left:38px
+  }
+  .media-archive-card-select{
+    left:10px
+  }
+  .media-archive-bulk-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    width:100%
+  }
+  .media-archive-selected-count{
+    grid-column:1/-1
+  }
+  .media-archive-bulk-actions button{
+    width:100%
+  }
+}
