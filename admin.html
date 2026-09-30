@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=1006">
+  <link rel="stylesheet" href="admin.css?v=56">
   <link rel="stylesheet" href="admin-advanced.css?v=40">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -2413,76 +2413,112 @@
         <div id="quoteRequestsList"></div>
       </section>
 
-      <section id="quoteRoutingSection" class="quote-routing-section" hidden>
+      <section id="quoteRoutingSection" class="quote-routing-section quote-routing-v2" hidden>
         <div class="quote-routing-head quote-routing-head-pro">
           <div>
             <span class="quote-management-eyebrow">GELİR MERKEZİ · YANITSIZ TEKLİFLER</span>
-            <h3>Teklif Dağıtım Merkezi</h3>
-            <p>Yanıtsız kalan özel talepleri, kurum yönlendirmelerini ve teklif kredilerini tek ekrandan yönetin.</p>
+            <h3>Yanıtsız Teklif Merkezi</h3>
+            <p>Talebi bekleme aşamasından teklif dönüşüne kadar dört net adımda yönetin.</p>
           </div>
-          <button type="button" id="quoteRoutingRefreshBtn" class="quote-refresh-btn"><span>↻</span> Yenile</button>
+          <div class="quote-routing-head-actions">
+            <button type="button" id="quoteRoutingSettingsBtn" class="quote-routing-settings-btn">⚙ Ayarlar & Kredi</button>
+            <button type="button" id="quoteRoutingRefreshBtn" class="quote-refresh-btn"><span>↻</span> Yenile</button>
+          </div>
         </div>
 
-        <div class="quote-routing-hub">
-          <button type="button" class="quote-routing-hub-card active" data-routing-jump="quoteRoutingFlowBlock">
-            <span class="quote-routing-hub-icon">⚡</span>
-            <span class="quote-routing-hub-copy">
-              <strong>Teklif Akışı</strong>
-              <small>Bekleyen talepler ve kurum yönlendirmeleri</small>
+        <nav class="quote-routing-stage-nav" aria-label="Yanıtsız teklif aşamaları">
+          <button type="button" class="quote-routing-stage active" data-routing-view="fresh">
+            <span class="stage-no">1</span>
+            <span class="stage-copy">
+              <strong>Bekleyen Talepler</strong>
+              <small>İlk kurumun yanıt süresi devam ediyor</small>
             </span>
-            <b id="quoteRoutingHubWaiting">0</b>
+            <b id="quoteRoutingFreshCount">0</b>
           </button>
 
-          <button type="button" class="quote-routing-hub-card" data-routing-jump="leadCreditPanelBlock">
-            <span class="quote-routing-hub-icon">◎</span>
-            <span class="quote-routing-hub-copy">
-              <strong>Kredi Yönetimi</strong>
-              <small>Kurum bakiyeleri ve kredi hareketleri</small>
+          <button type="button" class="quote-routing-stage" data-routing-view="waiting">
+            <span class="stage-no">2</span>
+            <span class="stage-copy">
+              <strong>Dağıtım Merkezi</strong>
+              <small>Süresi doldu, uygun kurumlara yönlendir</small>
             </span>
-            <b id="quoteRoutingHubCredit">0</b>
+            <b id="quoteRoutingWaitingCount">0</b>
           </button>
 
-          <button type="button" class="quote-routing-hub-card" data-routing-jump="quoteRoutingRevenueBlock">
-            <span class="quote-routing-hub-icon">₺</span>
-            <span class="quote-routing-hub-copy">
-              <strong>Gelir Ayarları</strong>
-              <small>Paket fiyatları ve dağıtım önceliği</small>
+          <button type="button" class="quote-routing-stage" data-routing-view="forwarded">
+            <span class="stage-no">3</span>
+            <span class="stage-copy">
+              <strong>Yanıt Bekleyen</strong>
+              <small>İletildi, kurumlardan teklif bekleniyor</small>
             </span>
-            <i>→</i>
+            <b id="quoteRoutingForwardedCount">0</b>
           </button>
-        </div>
 
-        <div class="quote-routing-kpis quote-routing-kpis-expanded quote-routing-kpis-pro">
-          <article class="attention"><span>Dağıtım Bekleyen</span><strong id="quoteRoutingWaitingCount">0</strong><small>Önce ilgilenmeniz gereken talepler</small></article>
-          <article><span>Yönlendirilmiş</span><strong id="quoteRoutingForwardedCount">0</strong><small>Başka kurumlara açılan talepler</small></article>
-          <article class="success"><span>Teklif Dönen</span><strong id="quoteRoutingRespondedCount">0</strong><small>Yönlendirme sonrası teklif gelen</small></article>
-          <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong><small>Dağıtıma uygun VIP kurumlar</small></article>
-          <article class="credit-kpi"><span>Toplam Kredi</span><strong id="leadCreditBalanceTotal">0</strong><small>Kurumların kullanılabilir bakiyesi</small></article>
-          <article class="credit-kpi"><span>Kullanılan Kredi</span><strong id="leadCreditUsedTotal">0</strong><small>Teklif gönderimlerinde kullanılan</small></article>
+          <button type="button" class="quote-routing-stage" data-routing-view="responded">
+            <span class="stage-no">4</span>
+            <span class="stage-copy">
+              <strong>Teklif Geldi</strong>
+              <small>Teklif dönen ve sonuçlanan talepler</small>
+            </span>
+            <b id="quoteRoutingRespondedCount">0</b>
+          </button>
+        </nav>
+
+        <div class="quote-routing-stage-strip">
+          <span>1. İlk kurum beklenir</span>
+          <i>→</i>
+          <span>2. VIP → Reklam Veren → Diğer</span>
+          <i>→</i>
+          <span>3. Kurum yanıtı beklenir</span>
+          <i>→</i>
+          <span>4. Teklif müşteriye ulaşır</span>
         </div>
 
         <div id="quoteRoutingFlowBlock" class="quote-routing-primary-workspace">
-          <div class="quote-routing-workspace-head">
+          <div class="quote-routing-workspace-head quote-routing-workspace-head-v2">
             <div>
-              <span class="quote-management-eyebrow">ÖNCELİKLİ ÇALIŞMA ALANI</span>
-              <h4>Teklif Akışı</h4>
-              <p>Yanıtsız talepleri burada gör, uygun kuruma yönlendir ve teklif dönüşünü takip et.</p>
+              <span class="quote-management-eyebrow">AKTİF AŞAMA</span>
+              <h4 id="quoteRoutingViewTitle">Bekleyen Talepler</h4>
+              <p id="quoteRoutingViewHint">İlk hedef kurumun yanıt süresi devam eden özel talepler.</p>
             </div>
             <small id="quoteRoutingListCount">0 kayıt</small>
           </div>
 
-          <div class="quote-routing-toolbar quote-routing-toolbar-expanded">
-            <label>
-              <span>Akış durumu</span>
-              <select id="quoteRoutingStatusFilter">
-                <option value="all" selected>Tüm özel talepler</option>
-                <option value="waiting">Dağıtım bekleyen</option>
-                <option value="forwarded">Yönlendirilmiş / yanıt bekleyen</option>
-                <option value="responded">Teklif gelen</option>
-                <option value="completed">Kayıt sürecine geçen</option>
-              </select>
+          <div class="quote-routing-toolbar quote-routing-toolbar-v2">
+            <label class="quote-routing-search">
+              <span>Ara</span>
+              <input type="search" id="quoteRoutingSearch" placeholder="Müşteri, kurum, şehir veya hizmet...">
             </label>
+          </div>
 
+          <div class="quote-routing-action-note quote-routing-action-note-v2">
+            <span>ℹ</span>
+            <div>
+              <strong id="quoteRoutingActionTitle">İlk kurumun yanıtı bekleniyor</strong>
+              <small id="quoteRoutingActionHint">Süre dolduğunda talep otomatik olarak Dağıtım Merkezi aşamasına geçer.</small>
+            </div>
+          </div>
+
+          <select id="quoteRoutingStatusFilter" hidden aria-hidden="true">
+            <option value="all">Tümü</option>
+          </select>
+
+          <div id="quoteRoutingList" class="quote-routing-list">
+            <div class="empty-state">Özel teklif akışı yükleniyor...</div>
+          </div>
+        </div>
+
+        <div id="quoteRoutingSettingsPanel" class="quote-routing-settings-panel" hidden>
+          <div class="quote-routing-settings-panel-head">
+            <div>
+              <span class="quote-management-eyebrow">AYARLAR & KREDİ</span>
+              <h4>Dağıtım Kuralları ve Kredi Yönetimi</h4>
+              <p>Günlük akıştan ayrı tutulan sistem ayarları ve kurum kredi hesapları.</p>
+            </div>
+            <button type="button" id="quoteRoutingSettingsCloseBtn">×</button>
+          </div>
+
+          <div class="quote-routing-settings-controls">
             <label>
               <span>Yanıt bekleme süresi</span>
               <select id="quoteRoutingWaitMinutes">
@@ -2495,7 +2531,6 @@
                 <option value="1440">24 saat</option>
               </select>
             </label>
-
             <label>
               <span>Bölge kapsamı</span>
               <select id="quoteRoutingAreaMode">
@@ -2503,27 +2538,19 @@
                 <option value="city">Aynı şehir</option>
               </select>
             </label>
-
-            <label class="quote-routing-search">
-              <span>Ara</span>
-              <input type="search" id="quoteRoutingSearch" placeholder="Müşteri, kurum, şehir veya hizmet...">
-            </label>
-          </div>
-
-          <div class="quote-routing-action-note">
-            <span>⚡</span>
-            <div>
-              <strong>Önce bu alanı kontrol edin</strong>
-              <small>Dağıtım bekleyen talep → müşteri izni → uygun kurum → teklif dönüşü. Kredi yalnızca kurum teklif gönderdiğinde kullanılır.</small>
+            <div class="quote-routing-settings-summary">
+              <span>Dağıtım önceliği</span>
+              <strong>VIP → Reklam Veren → Diğer Kurumlar</strong>
             </div>
           </div>
 
-          <div id="quoteRoutingList" class="quote-routing-list">
-            <div class="empty-state">Özel teklif akışı yükleniyor...</div>
+          <div class="quote-routing-settings-kpis">
+            <article><span>VIP Aday</span><strong id="quoteRoutingVipCount">0</strong></article>
+            <article><span>Toplam Kredi</span><strong id="leadCreditBalanceTotal">0</strong></article>
+            <article><span>Kullanılan Kredi</span><strong id="leadCreditUsedTotal">0</strong></article>
           </div>
-        </div>
 
-        <div id="quoteRoutingRevenueBlock" class="quote-routing-secondary-block">
+          <div id="quoteRoutingRevenueBlock" class="quote-routing-secondary-block">
           <div class="quote-routing-secondary-title">
             <div>
               <span class="quote-management-eyebrow">GELİR AYARLARI</span>
@@ -2636,6 +2663,8 @@
             </div>
           </div>
         </section>
+
+        </div>
 
         <div class="quote-routing-note quote-routing-note-bottom">
           <strong>Tek sayfa akışı</strong>
@@ -3297,7 +3326,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=1007"></script>
+<script src="admin.js?v=61"></script>
   <script src="admin-advanced.js?v=56"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
