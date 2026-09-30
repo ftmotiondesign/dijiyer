@@ -3991,7 +3991,8 @@ async function sendAdminTestRoutedOffer(requestId,button){
     const choices=availableInstitutions
       .map((inst,index)=>{
         const credit=quoteInstitutionCreditMeta(inst);
-        return (index+1)+". "+String(inst.name||"Kurum")+" · bakiye: "+credit.balance;
+        return (index+1)+". "+String(inst.name||"Kurum")+" · bakiye: "+credit.balance+
+          (credit.balance<=0 ? " · KREDİ YOK" : "");
       })
       .join("\n");
 
@@ -4014,6 +4015,16 @@ async function sendAdminTestRoutedOffer(requestId,button){
 
   const institutionId=String(institution.id||"");
   const creditBefore=quoteInstitutionCreditMeta(institution).balance;
+
+  if(creditBefore<=0){
+    alert(
+      String(institution.name||"Kurum")+
+      " için test teklifi oluşturulamadı.\n\n"+
+      "Mevcut teklif kredisi: 0\n"+
+      "Önce kuruma kredi yükleyin."
+    );
+    return;
+  }
 
   const rawPrice=prompt(
     String(institution.name||"Kurum")+" için test teklif fiyatını yazın (TL):",
