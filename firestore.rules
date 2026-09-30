@@ -86,46 +86,28 @@ service cloud.firestore {
     // =====================================================
     match /quoteRequests/{quoteId} {
 
-      // Üyeliksiz toplu teklif ve tek kuruma doğrudan teklif oluşturulabilir.
-      // Bu kural istemcinin gönderdiği alanları doğrular; kurum belgesine
-      // ek get()/exists() bağımlılığı koymaz. Böylece tekli teklif,
-      // kurum profilinden güvenilir şekilde kaydedilebilir.
+      // Üyeliksiz toplu veya doğrudan teklif talebi oluşturulabilir.
+      // Alanlar temel tip ve uzunluk kontrollerinden geçer.
       allow create: if
-        request.resource.data.keys().hasOnly([
-          'mainCategory',
-          'subCategory',
-          'category',
-          'service',
-          'city',
-          'district',
-          'name',
-          'phone',
-          'email',
-          'note',
-          'status',
-          'date',
-          'requestType',
-          'targetInstitutionId',
-          'targetInstitutionName'
-        ])
-
-        && request.resource.data.mainCategory is string
+        request.resource.data.mainCategory is string
         && request.resource.data.subCategory is string
         && request.resource.data.category is string
-        && request.resource.data['service'] is string
-        && request.resource.data['service'].size() > 0
-
+        && request.resource.data.service is string
+        && request.resource.data.service.size() > 0
         && request.resource.data.city is string
         && request.resource.data.district is string
-
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 120
-
         && request.resource.data.phone is string
         && request.resource.data.phone.size() >= 10
         && request.resource.data.phone.size() <= 40
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 1500
+        && request.resource.data.status == 'new'
+        && request.resource.data.date is string
 
+        // E-posta varsa geçerli tipte ve makul uzunlukta olmalı.
         && (
           !request.resource.data.keys().hasAny(['email'])
           || (
@@ -134,30 +116,11 @@ service cloud.firestore {
           )
         )
 
-        && request.resource.data.note is string
-        && request.resource.data.note.size() <= 1500
-
-        && request.resource.data.status == 'new'
-        && request.resource.data.date is string
-
+        // Doğrudan teklifte hedef kurum kimliği birlikte gelmeli.
         && (
-          // Toplu teklif: hedef kurum alanları bulunmaz.
-          !request.resource.data.keys().hasAny([
-            'requestType',
-            'targetInstitutionId',
-            'targetInstitutionName'
-          ])
-
-          ||
-
-          // Tekli teklif: üç alan birlikte ve geçerli tipte bulunur.
-          (
-            request.resource.data.keys().hasAll([
-              'requestType',
-              'targetInstitutionId',
-              'targetInstitutionName'
-            ])
-            && request.resource.data.requestType == 'direct'
+          !request.resource.data.keys().hasAny(['requestType'])
+          || (
+            request.resource.data.requestType == 'direct'
             && request.resource.data.targetInstitutionId is string
             && request.resource.data.targetInstitutionId.size() > 0
             && request.resource.data.targetInstitutionName is string
@@ -165,7 +128,7 @@ service cloud.firestore {
           )
         );
 
-      // Ana talep içerisindeki müşteri bilgileri halka açık değildir.
+      // Müşteri bilgileri yalnızca yönetici tarafından okunur.
       allow get, list: if adminMi();
 
       allow update, delete: if adminMi();
@@ -177,99 +140,29 @@ service cloud.firestore {
     // =====================================================
     match /quoteAccess/{phoneHash}/codes/{trackingCode} {
 
-      // Yeni talep oluşturulduğunda takip kodu kaydedilir.
-      // Doğrudan tekliflerde hedef kurum bilgisi de burada tutulur.
       allow create: if
-        request.resource.data.keys().hasOnly([
-          'quoteId',
-          'trackingCode',
-          'phoneHash',
-          'service',
-          'mainCategory',
-          'subCategory',
-          'mainCategoryLabel',
-          'subCategoryLabel',
-          'city',
-          'district',
-          'email',
-          'note',
-          'date',
-          'status',
-          'createdAt',
-          'requestType',
-          'targetInstitutionId',
-          'targetInstitutionName'
-        ])
-
-        && request.resource.data.quoteId is string
+        request.resource.data.quoteId is string
         && request.resource.data.trackingCode == trackingCode
         && request.resource.data.phoneHash == phoneHash
-
-        && request.resource.data['service'] is string
+        && request.resource.data.service is string
         && request.resource.data.mainCategory is string
         && request.resource.data.subCategory is string
         && request.resource.data.mainCategoryLabel is string
         && request.resource.data.subCategoryLabel is string
         && request.resource.data.city is string
         && request.resource.data.district is string
-
-        && (
-          !request.resource.data.keys().hasAny(['email'])
-          || (
-            request.resource.data.email is string
-            && request.resource.data.email.size() <= 160
-          )
-        )
-
         && request.resource.data.note is string
         && request.resource.data.date is string
-
         && request.resource.data.status == 'active'
         && request.resource.data.createdAt is string
-
         && exists(
           /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
-        )
-
-        // Toplu takip kaydında hedef kurum alanları bulunmaz.
-        // Doğrudan takip kaydında hedef kurum, ana talep ile aynı olmalıdır.
-        && (
-          !request.resource.data.keys().hasAny([
-            'requestType',
-            'targetInstitutionId',
-            'targetInstitutionName'
-          ])
-
-          ||
-
-          (
-            request.resource.data.keys().hasAll([
-              'requestType',
-              'targetInstitutionId',
-              'targetInstitutionName'
-            ])
-            && request.resource.data.requestType == 'direct'
-            && request.resource.data.targetInstitutionId is string
-            && request.resource.data.targetInstitutionName is string
-
-            && get(
-              /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
-            ).data.targetInstitutionId
-              == request.resource.data.targetInstitutionId
-
-            && get(
-              /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
-            ).data.targetInstitutionName
-              == request.resource.data.targetInstitutionName
-          )
         );
 
-      // Telefon hash + takip kodu doğruysa açılır.
       allow get: if
         resource.data.phoneHash == phoneHash
         && resource.data.trackingCode == trackingCode;
 
-      // Takip kodları topluca listelenemez.
       allow list: if false;
 
       allow update, delete: if adminMi();
