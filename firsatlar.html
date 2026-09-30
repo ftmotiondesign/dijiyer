@@ -699,7 +699,18 @@
         return String(item.id || '') === id;
       });
       if(inst){
-        trackOpportunityEvent(inst,String(actionEl.dataset.opportunityAction || 'click'));
+        var action = String(actionEl.dataset.opportunityAction || 'click');
+        var href = String(actionEl.getAttribute('href') || '');
+
+        if(action === 'detail' && href){
+          event.preventDefault();
+          Promise.resolve(trackOpportunityEvent(inst,action))
+            .finally(function(){
+              window.location.href = href;
+            });
+        }else{
+          trackOpportunityEvent(inst,action);
+        }
       }
     });
 
