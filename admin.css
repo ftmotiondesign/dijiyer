@@ -7381,3 +7381,20 @@ details.matching-institutions .matching-buttons{
   .institution-category-editor-head{flex-direction:column}
   .institution-category-current{width:100%;border-radius:9px}
 }
+
+
+/* Yönetim test teklifi */
+.quote-routing-card-actions .quote-routing-test-offer-btn{
+  border-color:#c4b5fd;
+  background:linear-gradient(180deg,#f5f3ff,#ede9fe);
+  color:#6d28d9;
+  box-shadow:0 3px 10px rgba(109,40,217,.08);
+}
+.quote-routing-card-actions .quote-routing-test-offer-btn:hover{
+  border-color:#8b5cf6;
+  background:#ede9fe;
+}
+.quote-routing-card-actions .quote-routing-test-offer-btn:disabled{
+  opacity:.6;
+  cursor:wait;
+}
