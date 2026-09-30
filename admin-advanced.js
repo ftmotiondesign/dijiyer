@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
     "offerReportSection","issuesSection","accountsSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
@@ -141,6 +141,14 @@
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
     await renderBannerAdsAdmin(true);
+  });
+
+  $("mediaArchiveTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("mediaArchiveSection","mediaArchiveTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("mediaArchiveTabBtn");
+    if (typeof loadInstitutions === "function") await loadInstitutions();
+    await loadBannerAdsAdmin();
+    renderMediaArchive();
   });
 
   $("externalAdsTabBtn")?.addEventListener("click", async () => {
