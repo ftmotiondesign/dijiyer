@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=38">
+  <link rel="stylesheet" href="admin.css?v=39">
   <link rel="stylesheet" href="admin-advanced.css?v=33">
 </head>
 
@@ -2199,6 +2199,42 @@
   </div>
 
 
+    <div class="admin-modal hidden" id="quoteCompareModal">
+    <div class="admin-modal-card quote-compare-modal-card">
+      <button class="modal-close" id="closeQuoteCompareModal">×</button>
+
+      <div class="quote-compare-header">
+        <div>
+          <span class="offer-detail-eyebrow">TEKLİF KARŞILAŞTIRMA</span>
+          <h2 id="quoteCompareTitle">Teklifleri Karşılaştır</h2>
+          <p id="quoteCompareMeta">Teklifler hazırlanıyor...</p>
+        </div>
+      </div>
+
+      <div id="quoteCompareHighlights" class="quote-compare-highlights"></div>
+
+      <div class="quote-compare-table-wrap">
+        <table class="quote-compare-table">
+          <thead>
+            <tr>
+              <th>Kurum</th>
+              <th>Fiyat</th>
+              <th>KDV</th>
+              <th>Geçerlilik</th>
+              <th>Teklif No</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="quoteCompareTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="quote-compare-footnote">
+        Fiyat karşılaştırması yalnızca kurumların gönderdiği teklif bilgilerine göre gösterilir.
+      </div>
+    </div>
+  </div>
+
     <div class="admin-modal hidden" id="quoteActivityModal">
     <div class="admin-modal-card quote-activity-modal-card">
       <button class="modal-close" id="closeQuoteActivityModal">×</button>
@@ -2560,7 +2596,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=38"></script>
+<script src="admin.js?v=39"></script>
   <script src="admin-advanced.js?v=48"></script>
 
 </body>
