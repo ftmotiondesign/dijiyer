@@ -839,22 +839,68 @@ homeSectionEditForm?.addEventListener('submit',async event=>{
   }
 });
 
+async function runAdminDataHealthCheck(){
+  const box=document.getElementById("adminDataHealth");
+  if(!box)return;
+
+  const parts=[];
+  const readCount=async(label,query)=>{
+    try{
+      const snap=await query.get();
+      parts.push(label+": "+snap.size);
+      return {ok:true,size:snap.size};
+    }catch(error){
+      parts.push(label+" HATA: "+String(error?.code||error?.message||error));
+      return {ok:false,error};
+    }
+  };
+
+  box.textContent="Firebase bağlantısı kontrol ediliyor...";
+
+  const institutionResult=await readCount("Kurum",db.collection("institutions"));
+  const quoteResult=await readCount("Teklif",db.collection("quoteRequests"));
+  const applicationResult=await readCount("Başvuru",db.collection("institutionApplications"));
+
+  const uid=auth.currentUser?.uid||"oturum yok";
+  box.textContent="Firebase · "+parts.join(" · ")+" · UID: "+uid;
+  box.style.borderColor=
+    institutionResult.ok && quoteResult.ok && applicationResult.ok
+      ? "#86efac"
+      : "#fca5a5";
+  box.style.background=
+    institutionResult.ok && quoteResult.ok && applicationResult.ok
+      ? "#f0fdf4"
+      : "#fff7f7";
+}
+
 auth.onAuthStateChanged(async (user) => {
   if (user && user.uid === ADMIN_UID) {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
 
-    await loadAdminAdRateSettings();
-    await loadApplications();
-    await loadInstitutions();
-    await loadQuoteRequests();
-    await loadInstitutionAccounts();
-    await loadUnmatchedSearches(true);
-    await loadDailyStatsVisibilitySetting();
-    await loadHomeBottomVisibilitySettings();
-    refreshAdminOverview();
-    renderIssueCenter();
-    setTimeout(restoreSimpleAdminNavigation, 120);
+    // Önce bağımsız veri testini çalıştır. Bu test normal render akışından etkilenmez.
+    await runAdminDataHealthCheck();
+
+    const safe = async (label, fn) => {
+      try {
+        await fn();
+      } catch (error) {
+        console.error(label+" yüklenemedi:",error);
+      }
+    };
+
+    await safe("Reklam fiyat ayarları",loadAdminAdRateSettings);
+    await safe("Başvurular",loadApplications);
+    await safe("Kurumlar",loadInstitutions);
+    await safe("Teklifler",loadQuoteRequests);
+    await safe("Kurum hesapları",loadInstitutionAccounts);
+    await safe("Bulunamayan aramalar",()=>loadUnmatchedSearches(true));
+    await safe("Günlük istatistik",loadDailyStatsVisibilitySetting);
+    await safe("Ana sayfa ayarları",loadHomeBottomVisibilitySettings);
+
+    try{refreshAdminOverview();}catch(error){console.error(error);}
+    try{renderIssueCenter();}catch(error){console.error(error);}
+    setTimeout(restoreSimpleAdminNavigation,120);
   } else {
     if (user && user.uid !== ADMIN_UID) {
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
