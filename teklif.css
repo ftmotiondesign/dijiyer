@@ -1123,3 +1123,33 @@ button,input{font:inherit}.hidden{display:none!important}
   margin-top:14px;
 }
 .locked-main-actions a{text-decoration:none}
+
+/* TEKLI TEKLIF · YANIT SURESI */
+.direct-response-timer{
+  margin-top:9px;
+  padding:9px 10px;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:3px 10px;
+  align-items:center;
+  border:1px solid #d9e6f3;
+  border-radius:9px;
+  background:#fff;
+}
+.direct-response-timer>span{
+  color:#64748b;
+  font-size:8.5px;
+  font-weight:800;
+}
+.direct-response-timer>strong{
+  margin:0!important;
+  color:#1d4ed8!important;
+  font-size:12px!important;
+  text-align:right;
+}
+.direct-response-timer>small{
+  grid-column:1/-1;
+  color:#7b8796;
+  font-size:8.5px;
+  line-height:1.45;
+}
