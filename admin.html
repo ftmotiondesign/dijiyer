@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=56">
+  <link rel="stylesheet" href="admin.css?v=57">
   <link rel="stylesheet" href="admin-advanced.css?v=40">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -2522,9 +2522,9 @@
             <label>
               <span>Yanıt bekleme süresi</span>
               <select id="quoteRoutingWaitMinutes">
-                <option value="0" selected>Hemen / Test</option>
+                <option value="0">Hemen / Test</option>
                 <option value="15">15 dakika</option>
-                <option value="30">30 dakika</option>
+                <option value="30" selected>30 dakika</option>
                 <option value="60">1 saat</option>
                 <option value="180">3 saat</option>
                 <option value="360">6 saat</option>
@@ -2667,8 +2667,8 @@
         </div>
 
         <div class="quote-routing-note quote-routing-note-bottom">
-          <strong>Tek sayfa akışı</strong>
-          <span>Talep, hedef kurum, yönlendirme, teklif dönüşü ve kullanılan kredi aynı ekranda takip edilir. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
+          <strong>Dört aşamalı kontrollü akış</strong>
+          <span>Talep önce beklenir, sonra uygun kurumlara dağıtılır, yanıt takip edilir ve teklif dönüşü ayrı aşamada sonuçlandırılır. Müşteri paylaşım izni olmadan başka kuruma yönlendirme yapılmaz.</span>
         </div>
 
         <div class="lead-credit-modal" id="leadCreditModal" hidden>
