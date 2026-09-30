@@ -873,18 +873,32 @@ function getInstitutionQuoteQueries() {
   const collection = db.collection("quoteRequests");
   const queries = [];
 
-  if (currentInstitution.category && currentInstitution.city) {
+  if (currentInstitution.city) {
     const district = String(currentInstitution.district || "").trim();
     const districts = district ? ["", district] : [""];
 
+    const matchFields=[
+      ["category", String(currentInstitution.category||"").trim()],
+      ["subCategory", String(currentInstitution.subCategory||"").trim()],
+      ["mainCategory", String(currentInstitution.mainCategory||"").trim()]
+    ].filter(([,value])=>value);
+
+    const seenMatchQueries=new Set();
+
     districts.forEach(value => {
-      queries.push(
-        collection
-          .where("requestType", "==", "bulk")
-          .where("category", "==", currentInstitution.category)
-          .where("city", "==", currentInstitution.city)
-          .where("district", "==", value)
-      );
+      matchFields.forEach(([field,matchValue])=>{
+        const key=[field,matchValue,currentInstitution.city,value].join("|");
+        if(seenMatchQueries.has(key))return;
+        seenMatchQueries.add(key);
+
+        queries.push(
+          collection
+            .where("requestType", "==", "bulk")
+            .where(field, "==", matchValue)
+            .where("city", "==", currentInstitution.city)
+            .where("district", "==", value)
+        );
+      });
     });
   }
 
