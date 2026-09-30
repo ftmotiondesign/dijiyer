@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#18304f">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Dijiyer Fırsatlar</title>
+  <meta name="description" content="Bölgenizdeki sponsorlu fırsatları, kampanyaları ve Dijiyer kurumlarını keşfedin.">
+  <style>
+    :root{
+      --navy:#18304f;
+      --navy-2:#24486f;
+      --blue:#2563eb;
+      --blue-soft:#eff6ff;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#17223b;
+      --muted:#6b7280;
+      --line:#e4eaf2;
+      --gold:#f59e0b;
+      --gold-soft:#fff7e6;
+      --success:#0f9f6e;
+      --shadow:0 12px 34px rgba(23,34,59,.08);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit}
+    button,select{font:inherit}
+    .page{
+      width:min(1040px,100%);
+      margin:0 auto;
+      padding:0 14px 44px;
+    }
+    .hero{
+      margin:0 -14px;
+      padding:22px 18px 58px;
+      background:
+        radial-gradient(circle at 92% 12%,rgba(255,255,255,.18),transparent 31%),
+        linear-gradient(135deg,var(--navy),var(--navy-2));
+      color:#fff;
+    }
+    .hero-inner{
+      width:min(1012px,100%);
+      margin:0 auto;
+    }
+    .hero-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+    .brand-mark{
+      width:34px;
+      height:34px;
+      border-radius:11px;
+      display:grid;
+      place-items:center;
+      background:#fff;
+      color:var(--navy);
+      font-size:17px;
+      box-shadow:0 7px 20px rgba(0,0,0,.15);
+    }
+    .home-link{
+      color:#fff;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      padding:8px 11px;
+      border:1px solid rgba(255,255,255,.26);
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+    }
+    .hero h1{
+      margin:25px 0 7px;
+      font-size:clamp(28px,7vw,42px);
+      line-height:1.05;
+      letter-spacing:-.045em;
+    }
+    .hero p{
+      margin:0;
+      max-width:620px;
+      color:rgba(255,255,255,.82);
+      line-height:1.55;
+      font-size:14px;
+    }
+    .filters{
+      position:relative;
+      z-index:3;
+      margin:-36px 0 18px;
+      padding:14px;
+      background:#fff;
+      border:1px solid rgba(228,234,242,.9);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+    }
+    .filters-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .filters-title strong{
+      display:block;
+      font-size:16px;
+    }
+    .filters-title small{
+      display:block;
+      color:var(--muted);
+      margin-top:3px;
+      line-height:1.35;
+    }
+    .clear-btn{
+      border:0;
+      background:var(--blue-soft);
+      color:var(--blue);
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .filter-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+    .field label{
+      display:block;
+      margin:0 0 6px 2px;
+      font-size:11px;
+      font-weight:800;
+      color:#526176;
+      text-transform:uppercase;
+      letter-spacing:.035em;
+    }
+    .field select{
+      width:100%;
+      height:46px;
+      padding:0 36px 0 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      color:var(--text);
+      outline:0;
+      appearance:none;
+      background-image:
+        linear-gradient(45deg,transparent 50%,#667085 50%),
+        linear-gradient(135deg,#667085 50%,transparent 50%);
+      background-position:
+        calc(100% - 17px) 20px,
+        calc(100% - 12px) 20px;
+      background-size:5px 5px,5px 5px;
+      background-repeat:no-repeat;
+    }
+    .field select:focus{
+      border-color:#9bb8ef;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+    .summary{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin:7px 2px 14px;
+    }
+    .summary strong{
+      font-size:15px;
+    }
+    .summary span{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .list{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+    .card{
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--card);
+      box-shadow:0 8px 24px rgba(23,34,59,.055);
+      min-width:0;
+    }
+    .card.sponsored{
+      border-color:#f4d38c;
+      box-shadow:0 10px 28px rgba(183,118,13,.11);
+    }
+    .media{
+      position:relative;
+      width:100%;
+      aspect-ratio:16/9;
+      overflow:hidden;
+      background:linear-gradient(135deg,#e7eef8,#f8fafc);
+    }
+    .media img,.media video{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+    }
+    .media.logo-only img{
+      object-fit:contain;
+      padding:26px;
+      background:#fff;
+    }
+    .media-fallback{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      font-size:48px;
+      color:#7c8ba1;
+    }
+    .badge{
+      position:absolute;
+      top:11px;
+      left:11px;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:6px 9px;
+      border-radius:999px;
+      color:#6e4700;
+      background:rgba(255,247,230,.96);
+      border:1px solid rgba(245,158,11,.33);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.045em;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+    }
+    .video-badge{
+      position:absolute;
+      right:11px;
+      top:11px;
+      padding:6px 9px;
+      border-radius:999px;
+      color:#fff;
+      background:rgba(23,34,59,.78);
+      font-size:10px;
+      font-weight:800;
+    }
+    .card-body{
+      padding:14px 14px 15px;
+    }
+    .card-title-row{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .mini-logo{
+      width:38px;
+      height:38px;
+      flex:0 0 38px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      background:#fff;
+      color:#708096;
+      font-size:18px;
+    }
+    .mini-logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      padding:4px;
+    }
+    .title-wrap{min-width:0;flex:1}
+    .title-wrap h2{
+      margin:0;
+      font-size:16px;
+      line-height:1.27;
+      letter-spacing:-.02em;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .title-wrap small{
+      display:block;
+      color:var(--muted);
+      margin-top:4px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .campaign{
+      margin:10px 0 0;
+      color:#4b586b;
+      font-size:13px;
+      line-height:1.46;
+      min-height:38px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:11px;
+    }
+    .pill{
+      padding:5px 7px;
+      border-radius:8px;
+      background:#f5f7fa;
+      color:#5f6d80;
+      font-size:10px;
+      font-weight:700;
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      margin-top:13px;
+    }
+    .primary,.secondary{
+      min-height:40px;
+      flex:1;
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      text-decoration:none;
+      border-radius:11px;
+      font-size:12px;
+      font-weight:900;
+    }
+    .primary{
+      color:#fff;
+      background:var(--navy);
+    }
+    .secondary{
+      color:var(--navy);
+      background:#eef3f8;
+    }
+    .load-wrap{
+      display:flex;
+      justify-content:center;
+      padding:19px 0 2px;
+    }
+    .load-more{
+      min-width:170px;
+      height:44px;
+      border:1px solid #d6dfeb;
+      border-radius:12px;
+      background:#fff;
+      color:var(--navy);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .state{
+      grid-column:1/-1;
+      padding:30px 18px;
+      text-align:center;
+      background:#fff;
+      border:1px dashed #cfd8e6;
+      border-radius:18px;
+      color:var(--muted);
+    }
+    .state strong{
+      display:block;
+      color:var(--text);
+      margin-bottom:5px;
+    }
+    .loading-card{
+      height:320px;
+      border-radius:18px;
+      background:
+        linear-gradient(90deg,#eef2f7 25%,#f7f9fc 37%,#eef2f7 63%);
+      background-size:400% 100%;
+      animation:shimmer 1.25s infinite linear;
+    }
+    @keyframes shimmer{
+      0%{background-position:100% 0}
+      100%{background-position:0 0}
+    }
+    .error-note{
+      margin:14px 0;
+      padding:12px 13px;
+      background:#fff1f2;
+      color:#a3142b;
+      border:1px solid #fecdd3;
+      border-radius:12px;
+      font-size:12px;
+      line-height:1.45;
+    }
+    .footer-note{
+      text-align:center;
+      color:#8a96a8;
+      font-size:11px;
+      padding:27px 10px 0;
+    }
+    @media(max-width:720px){
+      .page{padding-left:11px;padding-right:11px}
+      .hero{margin-left:-11px;margin-right:-11px;padding-left:14px;padding-right:14px}
+      .filter-grid{grid-template-columns:1fr}
+      .list{grid-template-columns:1fr}
+      .hero h1{margin-top:22px}
+      .filters{border-radius:17px}
+      .card{border-radius:16px}
+    }
+    @media(min-width:721px){
+      .card.sponsored{grid-column:auto}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-top">
+          <div class="brand"><span class="brand-mark">D</span><span>Dijiyer</span></div>
+          <a class="home-link" href="index.html">Ana Sayfa</a>
+        </div>
+        <h1>Fırsatlar</h1>
+        <p>Bölgenizdeki sponsorlu kampanyaları ve Dijiyer'deki işletmeleri tek ekranda keşfedin.</p>
+      </div>
+    </section>
+
+    <section class="filters" aria-label="Fırsat filtreleri">
+      <div class="filters-title">
+        <div>
+          <strong>Size uygun fırsatları bulun</strong>
+          <small>Bölge ve sektör seçerek sonuçları daraltabilirsiniz.</small>
+        </div>
+        <button class="clear-btn" id="clearFilters" type="button">Temizle</button>
+      </div>
+
+      <div class="filter-grid">
+        <div class="field">
+          <label for="cityFilter">İl</label>
+          <select id="cityFilter">
+            <option value="">Tüm İller</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="districtFilter">İlçe</label>
+          <select id="districtFilter" disabled>
+            <option value="">Tüm İlçeler</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sectorFilter">Sektör</label>
+          <select id="sectorFilter">
+            <option value="">Tüm Sektörler</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div id="errorBox" class="error-note" hidden></div>
+
+    <div class="summary">
+      <strong id="resultTitle">Fırsatlar yükleniyor</strong>
+      <span id="resultCount"></span>
+    </div>
+
+    <section class="list" id="opportunityList" aria-live="polite">
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+      <div class="loading-card"></div>
+    </section>
+
+    <div class="load-wrap">
+      <button class="load-more" id="loadMoreBtn" type="button" hidden>Daha Fazla Göster</button>
+    </div>
+
+    <div class="footer-note">Sponsorlu içerikler “Sponsorlu” etiketiyle açıkça belirtilir.</div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+  (function(){
+    'use strict';
+
+    var firebaseConfig = {
+      apiKey: 'AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E',
+      authDomain: 'dijiyer.firebaseapp.com',
+      projectId: 'dijiyer',
+      storageBucket: 'dijiyer.firebasestorage.app',
+      messagingSenderId: '847787778815',
+      appId: '1:847787778815:web:57058aa8dcc4143ec5a2ca'
+    };
+
+    if(!firebase.apps.length){
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    var db = firebase.firestore();
+    var institutions = [];
+    var bannerAds = [];
+    var filteredRows = [];
+    var visibleCount = 12;
+    var PAGE_SIZE = 12;
+
+    var cityFilter = document.getElementById('cityFilter');
+    var districtFilter = document.getElementById('districtFilter');
+    var sectorFilter = document.getElementById('sectorFilter');
+    var clearFilters = document.getElementById('clearFilters');
+    var list = document.getElementById('opportunityList');
+    var loadMoreBtn = document.getElementById('loadMoreBtn');
+    var resultTitle = document.getElementById('resultTitle');
+    var resultCount = document.getElementById('resultCount');
+    var errorBox = document.getElementById('errorBox');
+
+    var taxonomy = {
+      egitim:{label:'Eğitim',subs:{kres:'Kreş & Anaokulu',dershane:'Dershane / Kurs Merkezi',surucu:'Sürücü Kursu',ozel_ders:'Özel Ders',dil_kursu:'Dil Kursu',etut:'Etüt Merkezi',ozel_okul:'Özel Okul',yurt:'Öğrenci Yurdu'}},
+      otomotiv:{label:'Otomotiv',subs:{oto_servis:'Oto Servis / Tamir',kaporta_boya:'Kaporta / Boya',oto_elektrik:'Oto Elektrik',lastik_jant:'Lastik / Jant',oto_yikama:'Oto Yıkama / Kuaför',ekspertiz:'Oto Ekspertiz',galeri:'Oto Galeri',rentacar:'Rent a Car',yedek_parca:'Yedek Parça',motosiklet:'Motosiklet Servisi'}},
+      yemeicme:{label:'Yeme & İçme',subs:{restoran:'Restoran',kafe:'Kafe',fastfood:'Fast Food',pastane:'Pastane',pizza:'Pizza',doner:'Döner',pide_lahmacun:'Pide / Lahmacun',catering:'Catering',ev_yemekleri:'Ev Yemekleri'}},
+      saglikguzellik:{label:'Sağlık & Güzellik',subs:{dis_klinigi:'Diş Kliniği',klinik:'Sağlık Kliniği',psikolog:'Psikolog',diyetisyen:'Diyetisyen',fizyoterapi:'Fizyoterapi',guzellik:'Güzellik Merkezi',kuafor:'Kuaför',berber:'Berber',spor:'Pilates / Fitness'}},
+      evyapi:{label:'Ev & Yapı',subs:{mobilya:'Mobilya',dekorasyon:'Dekorasyon',insaat:'İnşaat / Tadilat',elektrikci:'Elektrikçi',tesisatci:'Tesisatçı',teknik_servis:'Beyaz Eşya / Teknik Servis',klima:'Klima Servisi',cam_balkon:'Cam Balkon / PVC',temizlik:'Temizlik Hizmetleri'}},
+      emlak:{label:'Emlak',subs:{emlak_ofisi:'Emlak Ofisi',konut:'Konut',arsa:'Arsa / Tarla',ticari:'Ticari Gayrimenkul',gunluk_kiralik:'Günlük Kiralık'}},
+      turizm:{label:'Turizm & Konaklama',subs:{otel:'Otel',pansiyon:'Pansiyon',apart:'Apart',bungalov:'Bungalov',seyahat:'Seyahat Acentesi / Tur',kamp:'Kamp / Karavan'}},
+      organizasyonmedya:{label:'Organizasyon & Medya',subs:{dugun_salonu:'Düğün Salonu',organizasyon:'Organizasyon Firması',fotograf:'Fotoğrafçı',video:'Video Çekimi',drone:'Drone Çekimi',gelinlik:'Gelinlik',cicekci:'Çiçekçi',reklam:'Reklam / Tasarım / Matbaa'}},
+      tasimacilik:{label:'Taşımacılık & Teslimat',subs:{nakliyat:'Evden Eve Nakliyat',kurye:'Kurye',sehirici:'Şehir İçi Taşımacılık',depolama:'Depolama'}},
+      profesyonel:{label:'Profesyonel Hizmetler',subs:{hukuk:'Avukat / Hukuk',muhasebe:'Muhasebe / Mali Müşavir',web:'Web Tasarım',sosyal_medya:'Sosyal Medya / Ajans',bilgisayar:'Bilgisayar / Teknoloji',danismanlik:'Danışmanlık',veteriner:'Veteriner / Pet Hizmetleri',tarim:'Tarım / Hayvancılık'}},
+      alisveris:{label:'Alışveriş & Yerel Esnaf',subs:{giyim:'Giyim',ayakkabi:'Ayakkabı',market:'Market',elektronik:'Elektronik / Telefon',kirtasiye:'Kırtasiye',petshop:'Pet Shop',zuccaciye:'Züccaciye',esnaf:'Diğer Yerel Esnaf'}},
+      diger:{label:'Diğer',subs:{diger:'Diğer Hizmet'}}
+    };
+
+    var legacyMain = {
+      kres:'egitim',dershane:'egitim',surucu:'egitim',ozel_ders:'egitim',dil_kursu:'egitim',etut:'egitim',ozel_okul:'egitim',yurt:'egitim',egitim:'egitim',
+      oto:'otomotiv',oto_servis:'otomotiv',kaporta_boya:'otomotiv',oto_elektrik:'otomotiv',lastik_jant:'otomotiv',oto_yikama:'otomotiv',ekspertiz:'otomotiv',galeri:'otomotiv',rentacar:'otomotiv',yedek_parca:'otomotiv',motosiklet:'otomotiv',
+      restoran:'yemeicme',kafe:'yemeicme',fastfood:'yemeicme',pastane:'yemeicme',pizza:'yemeicme',doner:'yemeicme',pide_lahmacun:'yemeicme',catering:'yemeicme',ev_yemekleri:'yemeicme',
+      saglik:'saglikguzellik',dis_klinigi:'saglikguzellik',klinik:'saglikguzellik',psikolog:'saglikguzellik',diyetisyen:'saglikguzellik',fizyoterapi:'saglikguzellik',guzellik:'saglikguzellik',kuafor:'saglikguzellik',berber:'saglikguzellik',spor:'saglikguzellik',
+      mobilya:'evyapi',dekorasyon:'evyapi',insaat:'evyapi',elektrikci:'evyapi',tesisatci:'evyapi',teknik_servis:'evyapi',klima:'evyapi',cam_balkon:'evyapi',temizlik:'evyapi',
+      emlak:'emlak',emlak_ofisi:'emlak',konut:'emlak',arsa:'emlak',ticari:'emlak',gunluk_kiralik:'emlak',
+      otel:'turizm',pansiyon:'turizm',apart:'turizm',bungalov:'turizm',seyahat:'turizm',kamp:'turizm',
+      dugun:'organizasyonmedya',dugun_salonu:'organizasyonmedya',organizasyon:'organizasyonmedya',fotograf:'organizasyonmedya',video:'organizasyonmedya',drone:'organizasyonmedya',gelinlik:'organizasyonmedya',cicekci:'organizasyonmedya',reklam:'organizasyonmedya',
+      nakliyat:'tasimacilik',kurye:'tasimacilik',sehirici:'tasimacilik',depolama:'tasimacilik',
+      hukuk:'profesyonel',muhasebe:'profesyonel',web:'profesyonel',sosyal_medya:'profesyonel',bilgisayar:'profesyonel',danismanlik:'profesyonel',veteriner:'profesyonel',tarim:'profesyonel',
+      giyim:'alisveris',ayakkabi:'alisveris',market:'alisveris',elektronik:'alisveris',kirtasiye:'alisveris',petshop:'alisveris',zuccaciye:'alisveris',esnaf:'alisveris'
+    };
+
+    function norm(value){
+      return String(value || '').trim().toLocaleLowerCase('tr-TR');
+    }
+
+    function esc(value){
+      return String(value == null ? '' : value)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+
+    function safeUrl(value){
+      var raw = String(value || '').trim();
+      if(!raw) return '';
+      try{
+        var u = new URL(raw, window.location.href);
+        if(u.protocol === 'https:' || u.protocol === 'http:') return u.href;
+      }catch(_){}
+      return '';
+    }
+
+    function localDay(){
+      var d = new Date();
+      var y = d.getFullYear();
+      var m = String(d.getMonth()+1).padStart(2,'0');
+      var day = String(d.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function dateActive(start,end){
+      var today = localDay();
+      var s = String(start || '').slice(0,10);
+      var e = String(end || '').slice(0,10);
+      if(s && s > today) return false;
+      if(e && e < today) return false;
+      return true;
+    }
+
+    function mainSector(record){
+      var direct = String(record.mainCategory || '').trim();
+      if(direct && taxonomy[direct]) return direct;
+      var key = String(record.subCategory || record.category || '').trim();
+      if(legacyMain[key]) return legacyMain[key];
+      var found = Object.keys(taxonomy).find(function(main){
+        return taxonomy[main].subs && Object.prototype.hasOwnProperty.call(taxonomy[main].subs,key);
+      });
+      return found || 'diger';
+    }
+
+    function sectorLabel(record){
+      var main = mainSector(record);
+      return taxonomy[main] ? taxonomy[main].label : 'Diğer';
+    }
+
+    function subLabel(record){
+      var main = mainSector(record);
+      var key = String(record.subCategory || record.category || '').trim();
+      if(taxonomy[main] && taxonomy[main].subs && taxonomy[main].subs[key]){
+        return taxonomy[main].subs[key];
+      }
+      return sectorLabel(record);
+    }
+
+    function activeAds(){
+      return bannerAds.filter(function(ad){
+        return ad.active !== false && dateActive(ad.startAt,ad.endAt);
+      });
+    }
+
+    function sponsorAdFor(inst){
+      var rows = activeAds().filter(function(ad){
+        return String(ad.institutionId || '') === String(inst.id || '');
+      });
+      if(!rows.length) return null;
+      var priority = {detail_banner:1,search:2,premium_home:3,home_sponsor:4,page_top_mini:5,mobile_sponsor:6,sidebar_sponsor:7};
+      rows.sort(function(a,b){
+        return (priority[String(a.placement || '')] || 99) - (priority[String(b.placement || '')] || 99);
+      });
+      return rows[0];
+    }
+
+    function institutionAdActive(inst){
+      return String(inst.adStatus || '') === 'active' && dateActive(inst.adStartAt,inst.adEndAt);
+    }
+
+    function buildRows(){
+      var rows = institutions
+        .filter(function(inst){ return String(inst.status || 'active') !== 'inactive'; })
+        .map(function(inst){
+          var ad = sponsorAdFor(inst);
+          var sponsored = Boolean(ad) || institutionAdActive(inst);
+          return {kind:'institution',id:String(inst.id || ''),inst:inst,ad:ad,sponsored:sponsored};
+        });
+
+      var known = new Set(rows.map(function(row){ return String(row.id); }));
+      activeAds().forEach(function(ad){
+        var id = String(ad.institutionId || '');
+        if(id && known.has(id)) return;
+        rows.push({
+          kind:'ad',
+          id:id || String(ad.id || ''),
+          sponsored:true,
+          ad:ad,
+          inst:{
+            id:id,
+            name:ad.institutionName || ad.headline || 'Sponsorlu İşletme',
+            city:ad.city || '',
+            district:ad.district || '',
+            category:ad.category || '',
+            mainCategory:legacyMain[String(ad.category || '')] || '',
+            logoUrl:ad.logoUrl || '',
+            coverUrl:ad.imageUrl || '',
+            description:ad.text || '',
+            status:'active'
+          }
+        });
+      });
+
+      rows.sort(function(a,b){
+        if(a.sponsored !== b.sponsored) return a.sponsored ? -1 : 1;
+        return String(a.inst.name || '').localeCompare(String(b.inst.name || ''),'tr',{sensitivity:'base'});
+      });
+      return rows;
+    }
+
+    function populateFilters(){
+      var rows = buildRows();
+      var cities = Array.from(new Set(rows.map(function(r){return String(r.inst.city || r.ad && r.ad.city || '').trim();}).filter(Boolean)))
+        .sort(function(a,b){return a.localeCompare(b,'tr');});
+
+      cityFilter.innerHTML = '<option value="">Tüm İller</option>' +
+        cities.map(function(city){ return '<option value="' + esc(city) + '">' + esc(city) + '</option>'; }).join('');
+
+      var sectors = {};
+      rows.forEach(function(row){
+        var key = mainSector(row.inst);
+        if(!sectors[key]) sectors[key] = sectorLabel(row.inst);
+      });
+
+      sectorFilter.innerHTML = '<option value="">Tüm Sektörler</option>' +
+        Object.keys(sectors)
+          .sort(function(a,b){ return sectors[a].localeCompare(sectors[b],'tr'); })
+          .map(function(key){ return '<option value="' + esc(key) + '">' + esc(sectors[key]) + '</option>'; })
+          .join('');
+
+      populateDistricts();
+    }
+
+    function populateDistricts(){
+      var city = cityFilter.value;
+      if(!city){
+        districtFilter.innerHTML = '<option value="">Tüm İlçeler</option>';
+        districtFilter.disabled = true;
+        districtFilter.value = '';
+        return;
+      }
+      var districts = Array.from(new Set(buildRows()
+        .filter(function(row){ return norm(row.inst.city || row.ad && row.ad.city) === norm(city); })
+        .map(function(row){ return String(row.inst.district || row.ad && row.ad.district || '').trim(); })
+        .filter(Boolean)))
+        .sort(function(a,b){ return a.localeCompare(b,'tr'); });
+
+      districtFilter.disabled = false;
+      districtFilter.innerHTML = '<option value="">Tüm İlçeler</option>' +
+        districts.map(function(district){ return '<option value="' + esc(district) + '">' + esc(district) + '</option>'; }).join('');
+    }
+
+    function applyFilters(){
+      var city = norm(cityFilter.value);
+      var district = norm(districtFilter.value);
+      var sector = String(sectorFilter.value || '');
+
+      filteredRows = buildRows().filter(function(row){
+        var inst = row.inst || {};
+        if(city && norm(inst.city || row.ad && row.ad.city) !== city) return false;
+        if(district && norm(inst.district || row.ad && row.ad.district) !== district) return false;
+        if(sector && mainSector(inst) !== sector) return false;
+        return true;
+      });
+
+      visibleCount = PAGE_SIZE;
+      render();
+    }
+
+    function mediaInfo(row){
+      var inst = row.inst || {};
+      var ad = row.ad || {};
+      var video = row.sponsored && String(ad.mediaType || '') === 'video' ? safeUrl(ad.videoUrl) : '';
+      var image = '';
+      var logo = safeUrl(inst.logoUrl || ad.logoUrl || '');
+
+      if(row.sponsored){
+        image = safeUrl(ad.imageUrl || inst.adBannerUrl || inst.coverUrl || inst.logoUrl || '');
+      }else{
+        image = safeUrl(inst.coverUrl || inst.logoUrl || '');
+      }
+
+      return {video:video,image:image,logo:logo,logoOnly:Boolean(image && !inst.coverUrl && image === safeUrl(inst.logoUrl || ''))};
+    }
+
+    function cardHtml(row){
+      var inst = row.inst || {};
+      var ad = row.ad || {};
+      var media = mediaInfo(row);
+      var title = row.sponsored
+        ? String(ad.headline || inst.adHeadline || inst.name || 'Sponsorlu İşletme')
+        : String(inst.name || 'Kurum');
+      var campaign = row.sponsored
+        ? String(ad.text || inst.adText || inst.description || 'Bu işletmenin fırsat ve hizmetlerini inceleyin.')
+        : String(inst.description || 'Kurum detaylarını ve hizmetlerini inceleyin.');
+      var city = String(inst.city || ad.city || '');
+      var district = String(inst.district || ad.district || '');
+      var location = [city,district].filter(Boolean).join(' / ');
+      var detailHref = inst.id ? 'kurum.html?id=' + encodeURIComponent(inst.id) : '#';
+      var logo = media.logo;
+      var mediaHtml = '';
+
+      if(media.video){
+        mediaHtml = '<video src="' + esc(media.video) + '" autoplay muted loop playsinline poster="' + esc(media.image) + '"></video>';
+      }else if(media.image){
+        mediaHtml = '<img src="' + esc(media.image) + '" alt="' + esc(inst.name || title) + '" loading="lazy">';
+      }else{
+        mediaHtml = '<div class="media-fallback">🏢</div>';
+      }
+
+      var secondAction = '';
+      var phone = String(inst.whatsapp || inst.phone || '').replace(/\D/g,'');
+      if(phone){
+        if(phone.charAt(0)==='0' && phone.length===11) phone='90'+phone.slice(1);
+        if(phone.length===10 && phone.charAt(0)==='5') phone='90'+phone;
+        secondAction = '<a class="secondary" href="https://wa.me/' + esc(phone) + '" target="_blank" rel="noopener">WhatsApp</a>';
+      }else if(location){
+        secondAction = '<a class="secondary" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([inst.name,city,district].filter(Boolean).join(' ')) + '" target="_blank" rel="noopener">Yol Tarifi</a>';
+      }
+
+      return '<article class="card' + (row.sponsored ? ' sponsored' : '') + '">' +
+        '<div class="media' + (media.logoOnly ? ' logo-only' : '') + '">' +
+          mediaHtml +
+          (row.sponsored ? '<span class="badge">★ SPONSORLU</span>' : '') +
+          (media.video ? '<span class="video-badge">▶ Video</span>' : '') +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-title-row">' +
+            '<div class="mini-logo">' + (logo ? '<img src="' + esc(logo) + '" alt="">' : '🏢') + '</div>' +
+            '<div class="title-wrap">' +
+              '<h2>' + esc(inst.name || title) + '</h2>' +
+              '<small>' + esc([subLabel(inst),location].filter(Boolean).join(' · ')) + '</small>' +
+            '</div>' +
+          '</div>' +
+          '<p class="campaign">' + esc(campaign) + '</p>' +
+          '<div class="meta">' +
+            (row.sponsored ? '<span class="pill">Öne Çıkan</span>' : '<span class="pill">Dijiyer Kurumu</span>') +
+            (location ? '<span class="pill">📍 ' + esc(location) + '</span>' : '') +
+          '</div>' +
+          '<div class="actions">' +
+            (inst.id ? '<a class="primary" href="' + esc(detailHref) + '">İncele</a>' : '<span class="primary">Sponsorlu</span>') +
+            secondAction +
+          '</div>' +
+        '</div>' +
+      '</article>';
+    }
+
+    function render(){
+      var rows = filteredRows.slice(0,visibleCount);
+      var sponsoredCount = filteredRows.filter(function(row){return row.sponsored;}).length;
+
+      resultTitle.textContent = filteredRows.length ? 'Bölgenizdeki Fırsatlar' : 'Sonuç bulunamadı';
+      resultCount.textContent = filteredRows.length
+        ? filteredRows.length + ' sonuç · ' + sponsoredCount + ' sponsorlu'
+        : '';
+
+      if(!filteredRows.length){
+        list.innerHTML = '<div class="state"><strong>Bu seçim için sonuç bulunamadı.</strong>Bölge veya sektör filtresini değiştirerek tekrar deneyin.</div>';
+      }else{
+        list.innerHTML = rows.map(cardHtml).join('');
+      }
+
+      loadMoreBtn.hidden = visibleCount >= filteredRows.length;
+    }
+
+    function showError(message){
+      errorBox.hidden = false;
+      errorBox.textContent = message;
+    }
+
+    async function load(){
+      try{
+        var results = await Promise.all([
+          db.collection('institutions').get(),
+          db.collection('bannerAds').get()
+        ]);
+
+        institutions = results[0].docs.map(function(doc){
+          var data = doc.data() || {};
+          data.id = doc.id;
+          return data;
+        });
+
+        bannerAds = results[1].docs.map(function(doc){
+          var data = doc.data() || {};
+          data.id = doc.id;
+          return data;
+        });
+
+        populateFilters();
+        applyFilters();
+      }catch(error){
+        console.error('Fırsat sayfası yükleme hatası:',error);
+        showError('Fırsatlar şu anda yüklenemedi. Firestore okuma izinlerini kontrol edin.');
+        list.innerHTML = '<div class="state"><strong>Veriler yüklenemedi.</strong>Sayfayı yenileyerek tekrar deneyebilirsiniz.</div>';
+        resultTitle.textContent = 'Fırsatlar';
+        resultCount.textContent = '';
+      }
+    }
+
+    cityFilter.addEventListener('change',function(){
+      populateDistricts();
+      districtFilter.value = '';
+      applyFilters();
+    });
+    districtFilter.addEventListener('change',applyFilters);
+    sectorFilter.addEventListener('change',applyFilters);
+
+    clearFilters.addEventListener('click',function(){
+      cityFilter.value = '';
+      sectorFilter.value = '';
+      populateDistricts();
+      districtFilter.value = '';
+      applyFilters();
+    });
+
+    loadMoreBtn.addEventListener('click',function(){
+      visibleCount += PAGE_SIZE;
+      render();
+    });
+
+    load();
+  })();
+  </script>
+</body>
+</html>
