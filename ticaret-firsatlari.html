@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dijiyer | İş & Ticaret Fırsatları</title>
+  <meta name="description" content="İhaleleri, teklif çağrılarını, tedarik taleplerini, toplu alımları, bayilik fırsatlarını ve diğer ticari fırsatları tek yerde takip edin.">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/diji-favicon.png">
+  <link rel="stylesheet" href="ticaret-firsatlari.css?v=1">
+</head>
+<body>
+  <header class="trade-topbar">
+    <a href="index.html" class="trade-brand">
+      <span class="trade-brand-mark">D</span>
+      <span><strong>Dijiyer</strong><small>İş &amp; Ticaret Fırsatları</small></span>
+    </a>
+    <nav>
+      <a href="index.html">Kurumlar</a>
+      <a href="teklif-al.html">Teklif Al</a>
+      <a href="is-firsatlari.html">İş Fırsatları</a>
+      <a class="active" href="ticaret-firsatlari.html">İş &amp; Ticaret</a>
+      <a href="bayi-servis.html">Bayi &amp; Servis</a>
+      <a href="firsatlar.html">Keşfet / Fırsat</a>
+    </nav>
+  </header>
+
+  <main class="trade-shell">
+    <section class="trade-hero">
+      <div>
+        <span class="trade-kicker">DİJİYER · İŞ &amp; TİCARET</span>
+        <h1>Yeni iş fırsatlarını tek yerde takip et.</h1>
+        <p>İhalelerden tedarik taleplerine, toplu alımlardan bayilik fırsatlarına kadar işletmeleri ilgilendiren ticari duyuruları filtreleyerek inceleyin.</p>
+      </div>
+      <div class="trade-hero-stats">
+        <article><span>Yayındaki fırsat</span><strong id="tradeOpportunityCount">0</strong></article>
+        <article><span>Yaklaşan son tarih</span><strong id="tradeDeadlineSoonCount">0</strong></article>
+        <article><span>Fırsat türü</span><strong>12</strong></article>
+      </div>
+    </section>
+
+    <section class="trade-types" id="tradeTypeChips" aria-label="Fırsat türleri"></section>
+
+    <section class="trade-filter-card">
+      <div class="trade-filter-title">
+        <div><span>FİLTRELE</span><strong>Size uygun fırsatları bulun</strong></div>
+        <button type="button" id="tradeClearFilters">Filtreleri Temizle</button>
+      </div>
+      <div class="trade-filters">
+        <label><span>Arama</span><input type="search" id="tradeSearch" placeholder="İhale, ürün, hizmet, firma..."></label>
+        <label><span>İl</span><select id="tradeCity"><option value="">Tüm iller</option></select></label>
+        <label><span>Sektör</span><select id="tradeCategory"><option value="">Tüm sektörler</option></select></label>
+        <label><span>Durum</span>
+          <select id="tradeDeadlineFilter">
+            <option value="">Tüm tarihler</option>
+            <option value="today">Bugün son</option>
+            <option value="week">7 gün içinde</option>
+            <option value="month">30 gün içinde</option>
+            <option value="open">Süresi devam edenler</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="trade-results-head">
+      <div>
+        <span>FIRSATLAR</span>
+        <h2 id="tradeResultsTitle">Yayındaki fırsatlar</h2>
+        <p id="tradeResultsSummary">Veriler yükleniyor...</p>
+      </div>
+      <select id="tradeSort">
+        <option value="deadline">Son tarihi yaklaşan</option>
+        <option value="newest">En yeni</option>
+        <option value="featured">Öne çıkanlar</option>
+      </select>
+    </section>
+
+    <section id="tradeOpportunityList" class="trade-list">
+      <div class="trade-empty">Fırsatlar yükleniyor...</div>
+    </section>
+
+    <section class="trade-info">
+      <strong>Kaynak şeffaflığı</strong>
+      <p>Her fırsatta kaynağın neresi olduğu ayrıca gösterilir. Dijiyer tarafından manuel girilen ilanlar “Dijiyer Manuel” etiketiyle belirtilir. Otomatik kaynak entegrasyonları eklendiğinde ilgili resmî veya harici kaynak adı ayrıca yer alacaktır.</p>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="ticaret-firsatlari.js?v=1"></script>
+</body>
+</html>
