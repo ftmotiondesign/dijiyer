@@ -254,7 +254,7 @@ const ADMIN_TAB_ROUTES = {
   applicationsTabBtn:"basvurular",
   accountsTabBtn:"hesaplar",
   unmatchedSearchesTabBtn:"bulunamayan-aramalar",
-  categoriesTabBtn:"kategoriler",
+  categoriesTabBtn:"ust-menu",
   businessOpportunitiesTabBtn:"is-ticaret",
   bannerAdsTabBtn:"reklam-merkezi",
   opportunitySponsorsTabBtn:"kesfet-firsat",
@@ -322,7 +322,7 @@ const ADMIN_TAB_META = {
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
   unmatchedSearchesTabBtn:["institutions","Bulunamayan Aramalar","Kullanıcıların bulamadığı hizmetleri inceleyin; yeni alt kategori ve kurum ihtiyacını gerçek aramalardan görün."],
-  categoriesTabBtn:["categories","Kategoriler","Sektörleri ve alt kategorileri aktif / pasif olarak yönetin."],
+  categoriesTabBtn:["categories","ÜST MENÜ","Ana sayfanın üst menü sayfalarını ve sektör kategorilerini tek yerden yönetin."],
   businessOpportunitiesTabBtn:["business","İş & Ticaret Fırsatları","İhaleleri, tedarik taleplerini, toplu alımları, bayilikleri ve diğer ticari fırsatları yönetin."],
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
   opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
@@ -1249,7 +1249,7 @@ categoriesTabBtn?.addEventListener("click",async()=>{
     if(button!==categoriesTabBtn)button.classList.remove("active");
   });
   categoriesTabBtn.classList.add("active");
-  await loadCategoryVisibilitySettings();
+  await Promise.all([loadTopMenuVisibilitySettings(),loadCategoryVisibilitySettings()]);
 });
 
 document.getElementById("categoryAdminSearch")?.addEventListener("input",renderCategoryAdmin);
