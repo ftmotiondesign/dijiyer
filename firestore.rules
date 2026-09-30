@@ -145,6 +145,51 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - REKLAM / TANITIM
+    // =====================================================
+
+    // Kullanıcı tarafında yayındaki banner reklamları okunur.
+    // Oluşturma, düzenleme ve silme yalnızca yöneticiye açıktır.
+    match /bannerAds/{adId} {
+      allow read: if true;
+      allow create, update, delete: if adminMi();
+    }
+
+    // Harici / affiliate reklamlar kullanıcı arayüzünde okunabilir.
+    // Yönetim işlemleri yalnızca admin tarafından yapılır.
+    match /externalAds/{adId} {
+      allow read: if true;
+      allow create, update, delete: if adminMi();
+    }
+
+    // Reklam ve tanıtım paketleri kurum panelinde görüntülenebilir.
+    // Paket tanımlama ve fiyatlandırma yalnızca admin tarafından yapılır.
+    match /promotionPackages/{packageId} {
+      allow read: if true;
+      allow create, update, delete: if adminMi();
+    }
+
+    // Kurum tanıtım siparişleri.
+    match /promotionOrders/{orderId} {
+      allow read: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow create: if
+        onayliKurumKullanicisi()
+        && request.resource.data.institutionId == bagliKurumId()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - KURUM BAŞVURULARI
     // =====================================================
     match /institutionApplications/{applicationId} {
