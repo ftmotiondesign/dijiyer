@@ -711,37 +711,57 @@ document.querySelectorAll("#recommendPicker [data-recommend]").forEach(button=>b
 
 document.getElementById("reviewForm").addEventListener("submit",async event=>{
   event.preventDefault();
-  const msg=document.getElementById("reviewMessage"),text=document.getElementById("reviewText").value.trim();
+  const msg=document.getElementById("reviewMessage");
+  const text=document.getElementById("reviewText").value.trim();
+  const button=document.getElementById("reviewSubmitBtn")||event.target.querySelector('button[type="submit"]');
+
+  msg.textContent="";
+
+  if(!institution){msg.textContent="Kurum bilgisi henüz hazır değil. Sayfayı yenileyip tekrar deneyin.";return}
   if(institution.isDemo){msg.textContent="Demo kurum için yorum kaydı oluşturulamaz.";return}
   if(!currentRating){msg.textContent="Lütfen 1-5 yıldız seçin.";return}
-  if(typeof currentRecommendation!=="boolean"){msg.textContent="Bu kurumu tavsiye edip etmediğinizi seçin.";return}
   if(!text){msg.textContent="Lütfen yorumunuzu yazın.";return}
-  const button=event.target.querySelector('button[type="submit"]'),old=button.textContent;
-  button.disabled=true;button.textContent="Gönderiliyor...";
+
+  const old=button?.textContent||"Yorumu Gönder";
+  if(button){button.disabled=true;button.textContent="Gönderiliyor...";}
+  msg.textContent="Yorumunuz gönderiliyor...";
+
+  const reviewData={
+    institutionId:String(institution.id),
+    rating:currentRating,
+    text,
+    status:"published",
+    date:new Date().toISOString()
+  };
+
+  if(typeof currentRecommendation==="boolean"){
+    reviewData.recommend=currentRecommendation;
+  }
+
   try{
-    await db.collection("institutionReviews").add({
-      institutionId:String(institution.id),
-      rating:currentRating,
-      recommend:currentRecommendation,
-      text,
-      status:"published",
-      date:new Date().toISOString()
-    });
+    await db.collection("institutionReviews").add(reviewData);
+
     event.target.reset();
     currentRating=0;
     currentRecommendation=null;
     document.querySelectorAll("#ratingPicker button").forEach(x=>x.classList.remove("active"));
     document.querySelectorAll("#recommendPicker button").forEach(x=>x.classList.remove("active"));
-    msg.textContent="Yorumunuz ve tavsiye oyunuz yayınlandı.";
+
+    msg.textContent=typeof reviewData.recommend==="boolean"
+      ?"✓ Yorumunuz ve tavsiye oyunuz yayınlandı."
+      :"✓ Yorumunuz yayınlandı.";
+
     await loadReviews();
-    setTimeout(closeReviewModal,650);
+    setTimeout(closeReviewModal,850);
   }catch(error){
-    console.error(error);
-    msg.textContent=String(error?.code||"").includes("permission-denied")
-      ?"Yorum gönderilemedi. Firestore yorum kuralını yayınlayın."
-      :"Yorum gönderilemedi.";
+    console.error("Yorum gönderilemedi:",error);
+    const code=String(error?.code||"");
+    msg.textContent=code.includes("permission-denied")
+      ?"Yorum gönderilemedi (permission-denied). Firestore yorum iznini kontrol edin."
+      :"Yorum gönderilemedi"+(code?" · "+code:"")+".";
+  }finally{
+    if(button){button.disabled=false;button.textContent=old;}
   }
-  finally{button.disabled=false;button.textContent=old}
 });
 
 async function track(type,dedupe=false){
