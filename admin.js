@@ -844,17 +844,45 @@ auth.onAuthStateChanged(async (user) => {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
 
-    await loadAdminAdRateSettings();
-    await loadApplications();
-    await loadInstitutions();
-    await loadQuoteRequests();
-    await loadInstitutionAccounts();
-    await loadUnmatchedSearches(true);
-    await loadDailyStatsVisibilitySetting();
-    await loadHomeBottomVisibilitySettings();
-    refreshAdminOverview();
-    renderIssueCenter();
-    setTimeout(restoreSimpleAdminNavigation, 120);
+    // URL'deki / son açık yönetim bölümünü veri yüklemelerini beklemeden aç.
+    // Böylece herhangi bir Firebase isteği hata verse bile kullanıcı bulunduğu
+    // sayfada kalır ve panelin geri kalanı çalışmaya devam eder.
+    restoreSimpleAdminNavigation();
+
+    const safeLoad = async (label, task) => {
+      try {
+        await task();
+      } catch (error) {
+        console.error(label + " yüklenemedi:", error);
+      }
+    };
+
+    await safeLoad("Reklam fiyat ayarları", loadAdminAdRateSettings);
+    await safeLoad("Başvurular", loadApplications);
+    await safeLoad("Kurumlar", loadInstitutions);
+    await safeLoad("Teklif talepleri", loadQuoteRequests);
+    await safeLoad("Kurum hesapları", loadInstitutionAccounts);
+    await safeLoad("Bulunamayan aramalar", () => loadUnmatchedSearches(true));
+    await safeLoad("Günlük istatistik ayarı", loadDailyStatsVisibilitySetting);
+    await safeLoad("Ana sayfa görünürlük ayarları", loadHomeBottomVisibilitySettings);
+
+    try { refreshAdminOverview(); } catch (error) { console.error("Genel bakış yenilenemedi:", error); }
+    try { renderIssueCenter(); } catch (error) { console.error("Sorun merkezi çizilemedi:", error); }
+
+    // Veriler geldikten sonra açık sekmeyi yeniden çiz.
+    setTimeout(() => {
+      const activeTab =
+        adminTabFromLocation() ||
+        localStorage.getItem("dijiyerAdminLastTab") ||
+        "overviewTabBtn";
+
+      if (activeTab === "quoteRoutingTabBtn") {
+        try { renderQuoteRoutingAdmin(); } catch (error) { console.error("Yanıtsız teklifler çizilemedi:", error); }
+        try { renderLeadCreditAdmin(); } catch (error) { console.error("Kredi takibi çizilemedi:", error); }
+      } else if (activeTab === "quotesTabBtn") {
+        try { renderQuoteRequests(); } catch (error) { console.error("Teklifler çizilemedi:", error); }
+      }
+    }, 80);
   } else {
     if (user && user.uid !== ADMIN_UID) {
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
@@ -1173,13 +1201,30 @@ quoteRoutingTabBtn?.addEventListener("click", async () => {
     .forEach(button => button?.classList.remove("active"));
   quoteRoutingTabBtn.classList.add("active");
 
-  if (!institutionRecords.length) await loadInstitutions();
-  await loadQuoteRequests();
-  await loadLeadRoutingSettings();
-  await reconcileLeadCreditUsage();
-  await loadLeadCreditData();
-  renderQuoteRoutingAdmin();
-  renderLeadCreditAdmin();
+  // Bölüm hemen görünür; verilerden biri hata verse bile sayfa kapanmaz.
+  try {
+    if (!institutionRecords.length) await loadInstitutions();
+  } catch (error) {
+    console.error("Yanıtsız teklifler kurumları yüklenemedi:", error);
+  }
+
+  try { await loadQuoteRequests(); }
+  catch (error) { console.error("Yanıtsız teklifler talepleri yüklenemedi:", error); }
+
+  try { await loadLeadRoutingSettings(); }
+  catch (error) { console.error("Teklif kredi ayarları yüklenemedi:", error); }
+
+  try { await reconcileLeadCreditUsage(); }
+  catch (error) { console.error("Kredi kullanımı mutabakatı yapılamadı:", error); }
+
+  try { await loadLeadCreditData(); }
+  catch (error) { console.error("Kredi kayıtları yüklenemedi:", error); }
+
+  try { renderQuoteRoutingAdmin(); }
+  catch (error) { console.error("Yanıtsız teklifler çizilemedi:", error); }
+
+  try { renderLeadCreditAdmin(); }
+  catch (error) { console.error("Kredi tablosu çizilemedi:", error); }
 });
 
 offerReportTabBtn.addEventListener("click", async () => {
