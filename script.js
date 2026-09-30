@@ -367,15 +367,17 @@ function getSelectedMainCategory() {
 }
 
 function mobileInstantInstitutionCardHtml(inst) {
+  const cover = inst.coverUrl ? safePublicProfileUrl(inst.coverUrl) : '';
   const logo = inst.logoUrl ? safePublicProfileUrl(inst.logoUrl) : '';
+  const visual = cover || logo;
   const location = [inst.district, inst.city].filter(Boolean).join(' / ') || inst.location || '';
   const rating = Number(inst.rating || 0).toFixed(1);
 
   return `
     <article class="mobile-instant-result-card" data-mobile-instant-id="${escapeHtml(String(inst.id))}">
-      <div class="mobile-instant-result-logo ${logo ? 'has-logo' : ''}">
-        ${logo
-          ? '<img src="' + logo + '" alt="' + escapeHtml(inst.name || 'Kurum') + ' logosu">'
+      <div class="mobile-instant-result-logo ${visual ? 'has-logo' : ''} ${cover ? 'has-cover' : ''}">
+        ${visual
+          ? '<img src="' + visual + '" alt="' + escapeHtml(inst.name || 'Kurum') + (cover ? ' kapak görseli' : ' logosu') + '">'
           : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>'}
       </div>
 
