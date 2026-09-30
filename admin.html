@@ -11,7 +11,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=57">
-  <link rel="stylesheet" href="admin-advanced.css?v=39">
+  <link rel="stylesheet" href="admin-advanced.css?v=40">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
 
@@ -1844,6 +1844,76 @@
     </section>
   </div>
 
+  <section class="credit-vip-auto-panel">
+    <div class="credit-vip-auto-head">
+      <div>
+        <span>KREDİ → OTOMATİK VIP</span>
+        <strong>Kredi yüklenince VIP otomatik verilsin</strong>
+        <small>Tek işlemde yüklenen kredi miktarına göre en yüksek uygun VIP seviyesi atanır. Mevcut daha yüksek VIP seviyesi düşürülmez.</small>
+      </div>
+      <label class="credit-vip-master-toggle">
+        <input type="checkbox" id="creditVipEnabled" checked>
+        <span>Otomatik VIP Aktif</span>
+      </label>
+    </div>
+
+    <div class="credit-vip-rule-grid">
+      <article>
+        <div><span>VIP</span><strong>Başlangıç seviyesi</strong></div>
+        <label>Minimum kredi
+          <input type="number" id="creditVipMinVip" min="1" step="1" value="10">
+        </label>
+        <label>VIP süresi
+          <div class="credit-vip-input-suffix">
+            <input type="number" id="creditVipDaysVip" min="1" step="1" value="30">
+            <span>gün</span>
+          </div>
+        </label>
+      </article>
+
+      <article>
+        <div><span>VIP PLUS</span><strong>Orta seviye</strong></div>
+        <label>Minimum kredi
+          <input type="number" id="creditVipMinPlus" min="1" step="1" value="25">
+        </label>
+        <label>VIP süresi
+          <div class="credit-vip-input-suffix">
+            <input type="number" id="creditVipDaysPlus" min="1" step="1" value="30">
+            <span>gün</span>
+          </div>
+        </label>
+      </article>
+
+      <article>
+        <div><span>VIP PREMIUM</span><strong>En yüksek seviye</strong></div>
+        <label>Minimum kredi
+          <input type="number" id="creditVipMinPremium" min="1" step="1" value="50">
+        </label>
+        <label>VIP süresi
+          <div class="credit-vip-input-suffix">
+            <input type="number" id="creditVipDaysPremium" min="1" step="1" value="30">
+            <span>gün</span>
+          </div>
+        </label>
+      </article>
+    </div>
+
+    <div class="credit-vip-auto-footer">
+      <label class="credit-vip-extend-option">
+        <input type="checkbox" id="creditVipExtendExisting" checked>
+        <span>
+          <strong>Mevcut VIP süresine ekle</strong>
+          <small>Kurum zaten aktif VIP ise yeni hak mevcut bitiş tarihinin üzerine eklenir.</small>
+        </span>
+      </label>
+      <div>
+        <small>Örnek: 10 kredi → VIP · 25 kredi → VIP Plus · 50 kredi → VIP Premium. Kredi çıkarma işlemi VIP'i geri almaz.</small>
+        <button type="button" class="advanced-primary-btn" id="creditVipRulesSaveBtn">Otomatik VIP Kurallarını Kaydet</button>
+      </div>
+    </div>
+    <p id="creditVipRulesMessage" class="advanced-message"></p>
+  </section>
+
   <section class="vip-list-panel">
     <div class="vip-list-head">
       <div>
@@ -3180,8 +3250,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=63"></script>
-  <script src="admin-advanced.js?v=55"></script>
+<script src="admin.js?v=64"></script>
+  <script src="admin-advanced.js?v=56"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
 </body>
