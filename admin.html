@@ -1581,6 +1581,47 @@
           </div>
         </div>
 
+        <section class="promotion-package-selection-board" id="promotionPackageSelectionBoard">
+          <div class="promotion-package-selection-head">
+            <div>
+              <span>HIZLI PAKET SEÇİMİ</span>
+              <strong>Paketi seç, kuruma bağla</strong>
+              <small>Bir veya birden fazla paketi seçip aynı kuruma kaydedebilirsiniz.</small>
+            </div>
+            <button type="button" id="promotionPackageClearSelectionBtn">Seçimi Temizle</button>
+          </div>
+
+          <div class="promotion-package-selection-grid">
+            <label>
+              <span>Kurum</span>
+              <select id="promotionPackageInstitutionSelect">
+                <option value="">Kurum seçin...</option>
+              </select>
+            </label>
+
+            <div class="promotion-package-selection-stat">
+              <span>Seçilen Paket</span>
+              <strong id="promotionPackageSelectedCount">0</strong>
+              <small>Çoklu seçim yapılabilir</small>
+            </div>
+
+            <div class="promotion-package-selection-stat">
+              <span>Toplam Tutar</span>
+              <strong id="promotionPackageSelectedTotal">0 TL</strong>
+              <small id="promotionPackageSelectedPriceNote">Kayıtlı paket fiyatlarının toplamı</small>
+            </div>
+
+            <button type="button" class="advanced-primary-btn promotion-package-assign-btn" id="promotionPackageAssignBtn" disabled>
+              Seçimi Kuruma Kaydet
+            </button>
+          </div>
+
+          <div class="promotion-package-selected-list" id="promotionPackageSelectedList">
+            <span>Henüz paket seçilmedi.</span>
+          </div>
+          <p id="promotionPackageSelectionMessage" class="advanced-message"></p>
+        </section>
+
         <div class="promotion-package-admin-layout">
           <form id="promotionPackageForm" class="promotion-package-editor">
             <input type="hidden" id="promotionPackageEditId">
