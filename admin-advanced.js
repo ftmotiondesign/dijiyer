@@ -5210,6 +5210,7 @@
     const sponsored=states.filter(row=>row.state.active).length;
     const missing=states.filter(row=>row.state.missing).length;
     const expiring=states.filter(row=>row.state.expiring).length;
+    const unlimited=states.filter(row=>row.state.unlimited).length;
 
     if($("opportunitySponsorCount")){
       $("opportunitySponsorCount").textContent=
@@ -5222,8 +5223,10 @@
     if($("opportunityKpiSponsored"))$("opportunityKpiSponsored").textContent=String(sponsored);
     if($("opportunityKpiMissing"))$("opportunityKpiMissing").textContent=String(missing);
     if($("opportunityKpiExpiring"))$("opportunityKpiExpiring").textContent=String(expiring);
+    if($("opportunityKpiUnlimited"))$("opportunityKpiUnlimited").textContent=String(unlimited);
 
     renderOpportunityExpiredReports(states);
+    renderOpportunityHistoryReports();
 
     const rows=states
       .filter(({inst,state})=>{
@@ -5232,6 +5235,7 @@
         if(filter==="scheduled"&&!state.scheduled)return false;
         if(filter==="expiring"&&!state.expiring)return false;
         if(filter==="expired"&&!state.expired)return false;
+        if(filter==="unlimited"&&!state.unlimited)return false;
         if(filter==="missing"&&!state.missing)return false;
         if(filter==="normal"&&!state.normal)return false;
         if(!query)return true;
@@ -5299,6 +5303,7 @@
           '<div class="opportunity-sponsor-badges">'+
             '<span class="opportunity-sponsor-badge '+(institutionActive?"":"passive")+'">'+(institutionActive?"Kurum Aktif":"Kurum Pasif")+'</span>'+
             opportunityStateBadge(state)+
+            (state.unlimited?'<span class="opportunity-sponsor-badge warning">∞ Süresiz</span>':"")+
             '<span class="opportunity-sponsor-badge">'+escapeHtml(mediaLabel)+'</span>'+
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">Öncelik '+state.priority+'</span>':"")+
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">'+escapeHtml(scheduleLabel)+'</span>':"")+
@@ -5655,6 +5660,11 @@
         ? (campaignChanged ? uid("FSP") : previousCampaignId)
         : previousCampaignId;
 
+      const nextHistory=
+        campaignChanged && existingInst?.opportunitySponsorMediaUrl
+          ? opportunityHistoryWithArchive(existingInst,"renewed")
+          : opportunitySponsorHistory(existingInst);
+
       const updates={
         opportunitySponsorActive:active&&Boolean(url),
         opportunitySponsorMediaUrl:url,
@@ -5663,6 +5673,7 @@
         opportunitySponsorEndAt:endAt,
         opportunitySponsorPriority:priority,
         opportunitySponsorCampaignId:campaignId,
+        opportunitySponsorHistory:nextHistory,
         opportunitySponsorUpdatedAt:new Date().toISOString(),
         updatedAt:new Date().toISOString()
       };
@@ -5714,6 +5725,7 @@
         opportunitySponsorEndAt:"",
         opportunitySponsorPriority:10,
         opportunitySponsorCampaignId:"",
+        opportunitySponsorHistory:opportunityHistoryWithArchive(inst,"deleted"),
         opportunitySponsorUpdatedAt:now,
         updatedAt:now
       };
@@ -5843,6 +5855,8 @@
       button.textContent=old;
     }
   });
+
+  $("opportunityCsvExportBtn")?.addEventListener("click",exportOpportunitySponsorCsv);
 
   $("opportunitySponsorSearch")?.addEventListener("input",renderOpportunitySponsorsAdmin);
   $("opportunitySponsorFilter")?.addEventListener("change",()=>{
