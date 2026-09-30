@@ -4961,6 +4961,242 @@
     });
   }
 
+
+  function findOpportunityHistoryRecord(key){
+    const raw=String(key||"");
+    const split=raw.indexOf("::");
+    if(split<0)return null;
+    const institutionId=raw.slice(0,split);
+    const campaignId=raw.slice(split+2);
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===institutionId
+    );
+    if(!inst)return null;
+    const item=opportunitySponsorHistory(inst).find(
+      row=>String(row.campaignId||"")===campaignId
+    );
+    return item ? {inst,item} : null;
+  }
+
+  function renderOpportunityHistoryReports(){
+    const root=$("opportunityHistoryList");
+    if(!root)return;
+
+    const rows=[];
+    (institutionRecords||[]).forEach(inst=>{
+      opportunitySponsorHistory(inst).forEach(item=>{
+        rows.push({
+          inst,
+          item,
+          stats:opportunityStatsForPeriod(inst,item.startAt,item.endAt)
+        });
+      });
+    });
+
+    rows.sort((a,b)=>
+      String(b.item.archivedAt||b.item.endAt||"")
+        .localeCompare(String(a.item.archivedAt||a.item.endAt||""))
+    );
+
+    if($("opportunityHistoryCount")){
+      $("opportunityHistoryCount").textContent=rows.length+" geçmiş kampanya";
+    }
+
+    if(!rows.length){
+      root.innerHTML='<div class="advanced-empty">Henüz geçmiş sponsor kampanyası yok.</div>';
+      return;
+    }
+
+    root.innerHTML=rows.map(({inst,item,stats})=>{
+      const key=String(inst.id)+"::"+String(item.campaignId||"");
+      const phone=opportunityReportPhone(inst);
+      const email=opportunityReportEmail(inst);
+      const reasonLabel=item.reason==="deleted"
+        ? "Kapatıldı"
+        : item.reason==="renewed"
+          ? "Yenilendi"
+          : "Tamamlandı";
+
+      return '<article class="opportunity-report-card archived">'+
+        '<div class="opportunity-report-head">'+
+          '<div>'+
+            '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
+            '<small>'+escapeHtml((item.startAt||"Başlangıç yok")+" → "+(item.endAt||"Bitiş yok"))+'</small>'+
+          '</div>'+
+          '<span>'+escapeHtml(reasonLabel)+'</span>'+
+        '</div>'+
+        '<div class="opportunity-report-stats">'+
+          '<div><span>Gösterim</span><b>'+stats.impressions+'</b></div>'+
+          '<div><span>Detay</span><b>'+stats.details+'</b></div>'+
+          '<div><span>WhatsApp</span><b>'+stats.whatsapp+'</b></div>'+
+          '<div><span>Yol Tarifi</span><b>'+stats.directions+'</b></div>'+
+          '<div><span>CTR</span><b>%'+stats.ctr.toFixed(1)+'</b></div>'+
+        '</div>'+
+        '<div class="opportunity-report-actions">'+
+          '<button type="button" '+(phone?'':'disabled')+' data-opportunity-history-wa="'+escapeHtml(key)+'">WhatsApp</button>'+
+          '<button type="button" '+(email?'':'disabled')+' data-opportunity-history-email="'+escapeHtml(key)+'">E-posta</button>'+
+          '<button type="button" data-opportunity-history-copy="'+escapeHtml(key)+'">Metni Kopyala</button>'+
+        '</div>'+
+      '</article>';
+    }).join("");
+
+    root.querySelectorAll("[data-opportunity-history-wa]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const record=findOpportunityHistoryRecord(button.dataset.opportunityHistoryWa);
+        if(!record)return;
+        const phone=opportunityReportPhone(record.inst);
+        if(!phone)return;
+        const stats=opportunityStatsForPeriod(record.inst,record.item.startAt,record.item.endAt);
+        const message=opportunityReportTextForPeriod(
+          record.inst,stats,record.item.startAt,record.item.endAt
+        );
+        window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(message),"_blank");
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-history-email]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const record=findOpportunityHistoryRecord(button.dataset.opportunityHistoryEmail);
+        if(!record)return;
+        const email=opportunityReportEmail(record.inst);
+        if(!email)return;
+        const stats=opportunityStatsForPeriod(record.inst,record.item.startAt,record.item.endAt);
+        const subject="Dijiyer Fırsat Sponsor Performans Raporu · "+String(record.inst.name||"Kurum");
+        const body=opportunityReportTextForPeriod(
+          record.inst,stats,record.item.startAt,record.item.endAt
+        );
+        window.location.href="mailto:"+encodeURIComponent(email)+
+          "?subject="+encodeURIComponent(subject)+
+          "&body="+encodeURIComponent(body);
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-history-copy]").forEach(button=>{
+      button.addEventListener("click",async()=>{
+        const record=findOpportunityHistoryRecord(button.dataset.opportunityHistoryCopy);
+        if(!record)return;
+        const stats=opportunityStatsForPeriod(record.inst,record.item.startAt,record.item.endAt);
+        const value=opportunityReportTextForPeriod(
+          record.inst,stats,record.item.startAt,record.item.endAt
+        );
+        try{
+          await navigator.clipboard.writeText(value);
+          const old=button.textContent;
+          button.textContent="Kopyalandı";
+          setTimeout(()=>button.textContent=old,1200);
+        }catch(_){
+          alert(value);
+        }
+      });
+    });
+  }
+
+  function opportunityAddDays(startValue,days){
+    const start=startValue
+      ? new Date(String(startValue).slice(0,10)+"T12:00:00")
+      : new Date();
+    start.setDate(start.getDate()+Math.max(0,Number(days||0)));
+    const y=start.getFullYear();
+    const m=String(start.getMonth()+1).padStart(2,"0");
+    const d=String(start.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+d;
+  }
+
+  async function renewOpportunitySponsor(institutionId,days){
+    const inst=(institutionRecords||[]).find(
+      item=>String(item.id)===String(institutionId)
+    );
+    if(!inst)return;
+
+    const duration=Math.max(1,Number(days||15));
+    const startAt=opportunityTodayKey();
+    const endAt=opportunityAddDays(startAt,duration-1);
+    const history=opportunityHistoryWithArchive(inst,"renewed");
+    const now=new Date().toISOString();
+
+    const approved=confirm(
+      (inst.name||"Kurum")+
+      " sponsorluğu "+duration+" gün yenilensin mi?\n\n"+
+      startAt+" → "+endAt
+    );
+    if(!approved)return;
+
+    try{
+      const updates={
+        opportunitySponsorActive:true,
+        opportunitySponsorStartAt:startAt,
+        opportunitySponsorEndAt:endAt,
+        opportunitySponsorCampaignId:uid("FSP"),
+        opportunitySponsorHistory:history,
+        opportunitySponsorUpdatedAt:now,
+        updatedAt:now
+      };
+
+      await db.collection("institutions").doc(String(inst.id)).update(updates);
+      Object.assign(inst,updates);
+
+      addAudit(
+        "Fırsat sponsorluğu yenilendi",
+        (inst.name||inst.id)+" · "+duration+" gün · "+startAt+" → "+endAt
+      );
+
+      await loadAdAnalyticsRecords();
+      renderOpportunitySponsorsAdmin();
+      renderOpportunityHistoryReports();
+    }catch(error){
+      console.error("Fırsat sponsorluğu yenilenemedi:",error);
+      alert("Sponsor yenilenemedi. Firestore izinlerini kontrol edin.");
+    }
+  }
+
+  function exportOpportunitySponsorCsv(){
+    const rows=[[
+      "Kurum","Durum","Başlangıç","Bitiş","Öncelik","Gösterim",
+      "Tıklama","WhatsApp","Yol Tarifi","CTR","Telefon","E-posta"
+    ]];
+
+    (institutionRecords||[]).forEach(inst=>{
+      const state=opportunitySponsorState(inst);
+      if(!state.mediaUrl)return;
+      const stats=opportunitySponsorStats(inst);
+      const status=state.active?"Yayında":
+        state.scheduled?"Planlandı":
+        state.expired?"Süresi Doldu":
+        state.paused?"Pasif":
+        state.missing?"Medya Eksik":"Diğer";
+
+      rows.push([
+        String(inst.name||"Kurum"),
+        status,
+        state.startAt||"",
+        state.endAt||"Süresiz",
+        state.priority,
+        stats.impressions,
+        stats.clicks,
+        stats.whatsapp,
+        stats.directions,
+        stats.ctr.toFixed(1)+"%",
+        String(inst.whatsapp||inst.phone||""),
+        opportunityReportEmail(inst)
+      ]);
+    });
+
+    const csvCell=value=>{
+      const textValue=String(value==null?"":value).replace(/"/g,'""');
+      return '"'+textValue+'"';
+    };
+    const csv="\uFEFF"+rows.map(row=>row.map(csvCell).join(";")).join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="dijiyer-firsat-sponsor-performans-"+opportunityTodayKey()+".csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),500);
+  }
+
   function renderOpportunitySponsorsAdmin(){
     const root=$("opportunitySponsorList");
     if(!root)return;
