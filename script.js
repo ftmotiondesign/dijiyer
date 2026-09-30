@@ -8,7 +8,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.firestore();
 
 let regionalBannerAds = [];
@@ -32,7 +31,7 @@ const institutionSessionApp =
 const institutionAuth = firebase.auth(institutionSessionApp);
 
 // ==========================================
-// YARDIMCI KİLİT KONTROL FONKSİYONU
+// MERKEZİ KİLİT KONTROLÜ (TÜM DEĞİŞKENLERİ KAPSAR)
 // ==========================================
 function checkOfferLocked(offer) {
   if (!offer) return false;
@@ -45,32 +44,37 @@ function checkOfferLocked(offer) {
 }
 
 // ==========================================
-// MÜŞTERİ TARAFINDAN TEKLİF ONAYLAMA
+// MÜŞTERİ TEKLİF ONAYLAMA (GÜVENLİ & ANLIK)
 // ==========================================
 async function respondOfferAction(demandId, offerId, action) {
-  if (!demandId || !offerId || !action) return;
+  if (!demandId || !offerId) {
+    alert("Hata: Talep veya Teklif kimliği bulunamadı.");
+    return;
+  }
 
-  const isAccept = action === 'accept';
-  const confirmText = isAccept
-    ? 'Bu teklifi kabul etmek istiyor musunuz? Seçiminizle birlikte fiyat kilitlenecektir.'
+  const isAccept = action === 'accept' || action === 'kabul';
+  const confirmMessage = isAccept
+    ? 'Bu teklifi kabul etmek istiyor musunuz? Seçiminiz sonrasında fiyat ve şartlar kilitlenecektir.'
     : 'Bu teklifi reddetmek istiyor musunuz?';
 
-  if (!confirm(confirmText)) return;
+  if (!confirm(confirmMessage)) return;
 
   try {
     const demandRef = db.collection('demands').doc(demandId);
     const snap = await demandRef.get();
 
     if (!snap.exists) {
-      alert('Talep kaydı bulunamadı.');
+      alert('Talep kaydı veritabanında bulunamadı.');
       return;
     }
 
     const data = snap.data() || {};
-    const offers = Array.isArray(data.teklifler) ? data.teklifler : [];
+    // Farklı alan adlarını destekle (teklifler veya offers)
+    const rawOffers = data.teklifler || data.offers || [];
+    const offers = Array.isArray(rawOffers) ? rawOffers : [];
     
-    // İşlem yapılmak istenen teklifi bul
     const targetOffer = offers.find(o => String(o.id) === String(offerId));
+    
     if (targetOffer && checkOfferLocked(targetOffer) && isAccept) {
       alert('Bu teklif zaten kabul edilmiş ve fiyatı kilitlenmiştir.');
       return;
@@ -102,20 +106,23 @@ async function respondOfferAction(demandId, offerId, action) {
 
     const updatePayload = {
       teklifler: updatedOffers,
+      offers: updatedOffers,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     if (isAccept) {
       updatePayload.durum = 'kabulEdildi';
+      updatePayload.status = 'ACCEPTED';
       updatePayload.kabulEdilenTeklifId = offerId;
       updatePayload.kilitli = true;
+      updatePayload.isLocked = true;
     }
 
     await demandRef.update(updatePayload);
 
-    alert(isAccept ? 'Teklif kabul edildi ve fiyat kilitlendi!' : 'Teklif reddedildi.');
+    alert(isAccept ? 'Teklif başarıyla kabul edildi ve fiyat kilitlendi!' : 'Teklif reddedildi.');
     
-    // Müşteri ekranını anında güncelle
+    // Ekranı anında yenile
     if (typeof loadCustomerOffers === 'function') {
       loadCustomerOffers();
     } else {
@@ -123,13 +130,17 @@ async function respondOfferAction(demandId, offerId, action) {
     }
 
   } catch (error) {
-    console.error('Teklif yanıtlanırken hata oluştu:', error);
-    alert('İşlem tamamlanamadı: ' + error.message);
+    console.error('Teklif kilitleme hatası:', error);
+    alert('İşlem başarısız: ' + error.message);
   }
 }
 
+// Eski/Alternatif fonksiyon isimlerini ana fonksiyona yönlendir (Geriye Uyumluluk)
+function acceptOffer(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
+function kabulEt(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
+
 // ==========================================
-// MÜŞTERİ TEKLİF LİSTESİ RENDER
+// MÜŞTERİ TEKLİF KARTLARI ARAYÜZÜ
 // ==========================================
 function renderOffersList(offers, demandId) {
   if (!offers || offers.length === 0) {
@@ -138,31 +149,31 @@ function renderOffersList(offers, demandId) {
 
   return offers.map(offer => {
     const isLocked = checkOfferLocked(offer);
-    const isRejected = (offer.durum || '').toLowerCase() === 'reddedildi';
+    const isRejected = (offer.durum || offer.status || '').toLowerCase() === 'reddedildi' || (offer.durum || offer.status || '').toLowerCase() === 'rejected';
 
     return `
-      <div class="offer-card-item ${isLocked ? 'offer-locked-card' : ''}" style="border:1px solid ${isLocked ? '#28a745' : '#ccc'}; padding:12px; margin-bottom:10px; border-radius:8px; background:${isLocked ? '#f4fbf7' : '#fff'};">
-        <div style="display:flex; justify-between; align-items:center;">
-          <strong>${offer.kurumAdi || 'İşletme'}</strong>
-          <span style="font-size:18px; font-weight:bold; color:#2c3e50;">${offer.fiyat || offer.price || 0} TL</span>
+      <div class="offer-card-item ${isLocked ? 'offer-locked-card' : ''}" style="border:2px solid ${isLocked ? '#28a745' : '#e2e8f0'}; padding:15px; margin-bottom:12px; border-radius:10px; background:${isLocked ? '#f0fff4' : '#ffffff'}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:16px; color:#2d3748;">${offer.kurumAdi || offer.companyName || 'İşletme'}</strong>
+          <span style="font-size:20px; font-weight:bold; color:#2b6cb0;">${offer.fiyat || offer.price || 0} TL</span>
         </div>
-        <p style="margin:8px 0; color:#555;">${offer.aciklama || offer.description || 'Açıklama belirtilmedi.'}</p>
+        <p style="margin:10px 0; color:#4a5568; font-size:14px;">${offer.aciklama || offer.description || 'Açıklama belirtilmedi.'}</p>
         
         ${isLocked ? `
-          <div style="background:#d4edda; color:#155724; padding:8px 12px; border-radius:6px; font-weight:bold; text-align:center; margin-top:10px; border:1px solid #c3e6cb;">
-            🔒 TEKLİF KABUL EDİLDİ VE FİYAT KİLİTLENDİ
-            ${offer.kabulTarihi ? `<small style="display:block; font-weight:normal; font-size:11px; margin-top:2px;">Onay Zamanı: ${new Date(offer.kabulTarihi).toLocaleString('tr-TR')}</small>` : ''}
+          <div style="background:#c6f6d5; color:#22543d; padding:10px; border-radius:8px; font-weight:bold; text-align:center; margin-top:10px; border:1px solid #9ae6b4;">
+            🔒 TEKLİF KABUL EDİLDİ (FİYAT KİLİTLENDİ)
+            ${offer.kabulTarihi ? `<small style="display:block; font-weight:normal; font-size:11px; margin-top:3px; color:#276749;">Onay Zamanı: ${new Date(offer.kabulTarihi).toLocaleString('tr-TR')}</small>` : ''}
           </div>
         ` : isRejected ? `
-          <div style="background:#f8d7da; color:#721c24; padding:6px; border-radius:6px; text-align:center; font-size:13px;">
+          <div style="background:#fed7d7; color:#9b2c2c; padding:8px; border-radius:6px; text-align:center; font-size:13px;">
             ❌ Bu teklif reddedildi.
           </div>
         ` : `
-          <div style="display:flex; gap:10px; margin-top:10px;">
-            <button onclick="respondOfferAction('${demandId}', '${offer.id}', 'accept')" style="flex:1; background:#28a745; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button onclick="respondOfferAction('${demandId}', '${offer.id}', 'accept')" style="flex:1; background:#38a169; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:14px;">
               Teklifi Kabul Et
             </button>
-            <button onclick="respondOfferAction('${demandId}', '${offer.id}', 'reject')" style="background:#dc3545; color:#fff; border:none; padding:8px; border-radius:4px; cursor:pointer;">
+            <button onclick="respondOfferAction('${demandId}', '${offer.id}', 'reject')" style="background:#e53e3e; color:#fff; border:none; padding:10px 15px; border-radius:6px; cursor:pointer; font-size:14px;">
               Reddet
             </button>
           </div>
@@ -184,7 +195,8 @@ async function renderInstitutionModal(demandId) {
     const user = institutionAuth.currentUser;
     if (!user) return;
 
-    const offers = Array.isArray(demand.teklifler) ? demand.teklifler : [];
+    const rawOffers = demand.teklifler || demand.offers || [];
+    const offers = Array.isArray(rawOffers) ? rawOffers : [];
     const myOffer = offers.find(o => o.kurumId === user.uid || o.institutionId === user.uid);
     const isLocked = myOffer && checkOfferLocked(myOffer);
 
@@ -193,34 +205,34 @@ async function renderInstitutionModal(demandId) {
 
     let html = `
       <h3>${demand.baslik || 'Teklif Talebi'}</h3>
-      <p><strong>Müşteri Detayı:</strong> ${demand.aciklama || ''}</p>
-      <hr>
+      <p><strong>Müşteri Talebi:</strong> ${demand.aciklama || ''}</p>
+      <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
     `;
 
     if (isLocked) {
-      // TEKLİF KABUL EDİLDİYSE FORM GİZLENİR VE BİLGİLENDİRME GÖSTERİLİR
+      // KİLİTLİ: DÜZENLEME FORMUNU KAPAT VE YEŞİL UYARI KOY
       html += `
-        <div style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:15px; border-radius:8px; margin-bottom:15px;">
-          <h4 style="margin:0 0 5px 0;">✓ TEKLİF MÜŞTERİ TARAFINDAN KABUL EDİLDİ</h4>
-          <p style="margin:0; font-size:13px;">
-            Müşteri bu teklifinizi onaylamıştır. Şartlar ve fiyat kilitlendiği için üzerinde değişiklik yapamazsınız.
+        <div style="background:#f0fff4; border:2px solid #38a169; color:#276749; padding:15px; border-radius:8px; margin-bottom:15px;">
+          <h4 style="margin:0 0 5px 0; color:#22543d;">✓ TEKLİF MÜŞTERİ TARAFINDAN KABUL EDİLDİ</h4>
+          <p style="margin:0; font-size:13px; color:#2f855a;">
+            Bu teklif müşteri tarafından onaylandığı için şartlar kilitlenmiştir. Fiyat veya açıklama değiştirilemez.
           </p>
-          <hr style="border:0; border-top:1px solid #c3e6cb; margin:10px 0;">
+          <hr style="border:0; border-top:1px solid #c6f6d5; margin:10px 0;">
           <div><strong>Kilitlenen Fiyat:</strong> ${myOffer.fiyat || myOffer.price} TL</div>
           <div><strong>Teklif Notunuz:</strong> ${myOffer.aciklama || myOffer.description || '-'}</div>
         </div>
       `;
     } else {
-      // HENÜZ KABUL EDİLMEDİYSE TEKLİF VERME / GÜNCELLEME FORMU AÇIK KALIR
+      // AÇIK: KURUM TEKLİF GİREBİLİR / REVİZE EDEBİLİR
       html += `
         <form id="institutionOfferForm" onsubmit="submitInstitutionOffer(event, '${demandId}')">
           <label style="display:block; margin-bottom:5px; font-weight:bold;">Verilen Fiyat (TL):</label>
-          <input type="number" id="offerPriceInput" value="${myOffer ? (myOffer.fiyat || myOffer.price) : ''}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+          <input type="number" id="offerPriceInput" value="${myOffer ? (myOffer.fiyat || myOffer.price) : ''}" required style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #cbd5e0; border-radius:6px;">
           
           <label style="display:block; margin-bottom:5px; font-weight:bold;">Teklif Notu / Şartlar:</label>
-          <textarea id="offerDescInput" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;" rows="3">${myOffer ? (myOffer.aciklama || myOffer.description) : ''}</textarea>
+          <textarea id="offerDescInput" style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #cbd5e0; border-radius:6px;" rows="3">${myOffer ? (myOffer.aciklama || myOffer.description) : ''}</textarea>
           
-          <button type="submit" style="width:100%; background:#007bff; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold; cursor:pointer;">
+          <button type="submit" style="width:100%; background:#3182ce; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">
             ${myOffer ? 'Teklifi Güncelle' : 'Teklif Gönder'}
           </button>
         </form>
@@ -230,12 +242,12 @@ async function renderInstitutionModal(demandId) {
     modalBody.innerHTML = html;
 
   } catch (error) {
-    console.error('Kurum modalı yüklenirken hata:', error);
+    console.error('Kurum modal hatası:', error);
   }
 }
 
 // ==========================================
-// KURUM TEKLİF GÖNDERME / GÜNCELLEME (GÜVENLİK KONTROLÜ)
+// KURUM VERİTABANI DÜZENLEME ENGELİ
 // ==========================================
 async function submitInstitutionOffer(event, demandId) {
   event.preventDefault();
@@ -259,16 +271,15 @@ async function submitInstitutionOffer(event, demandId) {
     }
 
     const demand = snap.data();
-    const offers = Array.isArray(demand.teklifler) ? demand.teklifler : [];
+    const rawOffers = demand.teklifler || demand.offers || [];
+    const offers = Array.isArray(rawOffers) ? rawOffers : [];
     
-    // Kurumun varolan teklifini bul
     const existingOfferIndex = offers.findIndex(o => o.kurumId === user.uid || o.institutionId === user.uid);
     
     if (existingOfferIndex > -1) {
       const existingOffer = offers[existingOfferIndex];
-      // Güvenlik Engeli: Eğer teklif kilitliyse güncellemeye izin verme
       if (checkOfferLocked(existingOffer)) {
-        alert('Bu teklif müşteri tarafından kabul edildiği için değiştiremezsiniz!');
+        alert('Engellendi: Bu teklif müşteri tarafından kabul edildiği için değiştiremezsiniz!');
         return;
       }
 
@@ -281,7 +292,6 @@ async function submitInstitutionOffer(event, demandId) {
         updatedAt: new Date().toISOString()
       };
     } else {
-      // Yeni Teklif Ekle
       offers.push({
         id: 'off_' + Date.now(),
         kurumId: user.uid,
@@ -300,14 +310,15 @@ async function submitInstitutionOffer(event, demandId) {
 
     await demandRef.update({
       teklifler: offers,
+      offers: offers,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    alert('Teklifiniz başarıyla iletildi.');
+    alert('Teklifiniz kaydedildi.');
     renderInstitutionModal(demandId);
 
   } catch (error) {
-    console.error('Teklif gönderilirken hata:', error);
-    alert('Teklif iletilemedi: ' + error.message);
+    console.error('Teklif güncelleme hatası:', error);
+    alert('Hata: ' + error.message);
   }
 }
