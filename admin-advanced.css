@@ -4723,3 +4723,114 @@
     height:26px;
   }
 }
+
+
+/* =========================================================
+   REKLAM MERKEZİ · BÜYÜK ANA GİRİŞ
+   ========================================================= */
+.admin-ad-main-entry{
+  margin:0 0 8px;
+}
+.admin-ad-main-entry-btn{
+  width:100%;
+  min-height:72px;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) 34px;
+  gap:12px;
+  align-items:center;
+  padding:11px 14px;
+  border:1px solid #b8d7fb;
+  border-radius:14px;
+  background:linear-gradient(135deg,#eef6ff 0%,#f8fbff 58%,#edf7ff 100%);
+  color:#183b66;
+  text-align:left;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(22,119,255,.07);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.admin-ad-main-entry-btn:hover{
+  transform:translateY(-1px);
+  border-color:#7fb7f7;
+  box-shadow:0 8px 22px rgba(22,119,255,.11);
+}
+.admin-ad-main-entry-btn.active{
+  border-color:#1677ff;
+  background:linear-gradient(135deg,#1677ff 0%,#1268da 100%);
+  color:#fff;
+  box-shadow:0 9px 24px rgba(22,119,255,.18);
+}
+.admin-ad-main-entry-icon{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#fff;
+  font-size:23px;
+  box-shadow:0 3px 10px rgba(22,119,255,.09);
+}
+.admin-ad-main-entry-copy{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.admin-ad-main-entry-copy b{
+  color:#1677ff;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.12em;
+}
+.admin-ad-main-entry-copy strong{
+  font-size:15px;
+  line-height:1.1;
+}
+.admin-ad-main-entry-copy small{
+  color:#6d7f94;
+  font-size:8px;
+  line-height:1.35;
+}
+.admin-ad-main-entry-btn.active .admin-ad-main-entry-copy b,
+.admin-ad-main-entry-btn.active .admin-ad-main-entry-copy small{
+  color:rgba(255,255,255,.82);
+}
+.admin-ad-main-entry-arrow{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:rgba(22,119,255,.08);
+  color:#1677ff;
+  font-size:16px;
+  font-weight:900;
+}
+.admin-ad-main-entry-btn.active .admin-ad-main-entry-arrow{
+  background:rgba(255,255,255,.16);
+  color:#fff;
+}
+
+/* Reklam ayrı giriş olduğu için ana menü artık 5 öğe. */
+.admin-main-nav{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+@media(max-width:780px){
+  .admin-main-nav{
+    grid-template-columns:repeat(5,max-content)!important;
+  }
+  .admin-ad-main-entry-btn{
+    min-height:64px;
+    grid-template-columns:42px minmax(0,1fr) 28px;
+    padding:9px 11px;
+  }
+  .admin-ad-main-entry-icon{
+    width:42px;
+    height:42px;
+    font-size:20px;
+  }
+  .admin-ad-main-entry-copy strong{
+    font-size:13px;
+  }
+  .admin-ad-main-entry-copy small{
+    font-size:7px;
+  }
+}
