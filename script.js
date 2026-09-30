@@ -3253,7 +3253,7 @@ function renderList() {
         ${inst.vip ? '<div class="vip">VIP</div>' : ''}
         <div class="card-body">
           <h3>${escapeHtml(inst.name)}</h3>
-          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span></div>
+          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 %'+Math.round(Number(inst.recommendationRate))+' tavsiye</em>' : ''}</div>
           <div class="meta">📍 ${escapeHtml(inst.location || '')}<br>${escapeHtml(inst.address || '')}</div>
           <div class="card-actions">
             ${inst.offer ? '<span class="chip positive">Teklif veriyor</span>' : ''}
@@ -6252,6 +6252,58 @@ document.getElementById('institutionAddress').addEventListener('blur', () => {
   centerInstitutionMapFromAddress();
 });
 
+async function loadInstitutionReviewStats(){
+  try{
+    const snap=await db.collection('institutionReviews').get();
+    const stats=new Map();
+
+    snap.forEach(doc=>{
+      const row=doc.data()||{};
+      if(row.status && row.status!=='published')return;
+
+      const institutionId=String(row.institutionId||'').trim();
+      if(!institutionId)return;
+
+      const current=stats.get(institutionId)||{
+        ratingTotal:0,
+        ratingCount:0,
+        recommendYes:0,
+        recommendCount:0
+      };
+
+      const rating=Number(row.rating||0);
+      if(rating>=1 && rating<=5){
+        current.ratingTotal+=rating;
+        current.ratingCount+=1;
+      }
+
+      if(typeof row.recommend==='boolean'){
+        current.recommendCount+=1;
+        if(row.recommend)current.recommendYes+=1;
+      }
+
+      stats.set(institutionId,current);
+    });
+
+    institutions.forEach(inst=>{
+      const stat=stats.get(String(inst.id));
+      if(!stat)return;
+
+      if(stat.ratingCount>0){
+        inst.rating=Number((stat.ratingTotal/stat.ratingCount).toFixed(1));
+        inst.reviewCount=stat.ratingCount;
+      }
+
+      inst.recommendationCount=stat.recommendCount;
+      inst.recommendationRate=stat.recommendCount>0
+        ? Math.round((stat.recommendYes/stat.recommendCount)*100)
+        : null;
+    });
+  }catch(error){
+    console.warn('Kurum yorum / tavsiye puanları yüklenemedi:',error);
+  }
+}
+
 async function loadApprovedInstitutions() {
   try {
     const snapshot = await db.collection('institutions').get();
@@ -6274,6 +6326,8 @@ async function loadApprovedInstitutions() {
         subCategory: data.subCategory || resolveTaxonomy(data)[1],
         rating: Number(data.rating || 0),
         reviewCount: Number(data.reviewCount || 0),
+        recommendationRate: Number.isFinite(Number(data.recommendationRate)) ? Number(data.recommendationRate) : null,
+        recommendationCount: Number(data.recommendationCount || 0),
         location: data.location || [data.city, data.district].filter(Boolean).join(', '),
         city: data.city || '',
         district: data.district || '',
@@ -6314,6 +6368,8 @@ async function loadApprovedInstitutions() {
         emoji: data.emoji || '🏢'
       });
     });
+
+    await loadInstitutionReviewStats();
 
     addMarkers();
     if(!applyRequestedInstitutionPreview()){
@@ -8268,7 +8324,14 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           const logo = safePublicProfileUrl(inst.logoUrl || inst.coverUrl || '');
           const location = [inst.district,inst.city].filter(Boolean).join(' / ') || String(inst.location || '');
           const rating = Number(inst.rating || 0);
+          const reviewCount = Number(inst.reviewCount || 0);
+          const recommendationCount = Number(inst.recommendationCount || 0);
+          const recommendationRate = Number(inst.recommendationRate);
           const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
+          const ratingText = reviewCount > 0 ? '<span class="desktop-inline-rating">⭐ ' + rating.toFixed(1) + '</span>' : '';
+          const recommendText = recommendationCount > 0 && Number.isFinite(recommendationRate)
+            ? '<span class="desktop-inline-recommend">👍 %' + Math.round(recommendationRate) + ' tavsiye</span>'
+            : '';
 
           return '<a class="desktop-inline-institution-card" style="--result-index:' + index + '" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
             '<div class="desktop-inline-institution-logo">' +
@@ -8277,7 +8340,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
             '<div class="desktop-inline-institution-copy">' +
               '<strong>' + escapeHtml(inst.name || 'Kurum') + '</strong>' +
               '<small>📍 ' + escapeHtml(location || 'Konum bilgisi yok') + '</small>' +
-              '<div>' + (rating > 0 ? '<span>⭐ ' + rating.toFixed(1) + '</span>' : '') + offerText + '</div>' +
+              '<div>' + ratingText + recommendText + offerText + '</div>' +
             '</div>' +
             '<b class="desktop-inline-card-arrow">→</b>' +
           '</a>';
