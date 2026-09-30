@@ -19323,3 +19323,186 @@ to{opacity:1;transform:none}
     font-size:6px;
   }
 }
+
+/* =========================================================
+   TEKLIFLERIM CANLI TAKIP V1
+   Yeni teklif rozeti, bildirim tercihi ve takip kısa yolları
+   ========================================================= */
+.my-offers-count{
+  min-width:18px;
+  height:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:5px;
+  padding:0 5px;
+  border-radius:999px;
+  background:#e9eef5;
+  color:#5d6e83;
+  font-size:9px;
+  font-weight:950;
+  line-height:1;
+  transition:background .18s ease,color .18s ease,transform .18s ease;
+}
+
+.my-offers-count.unread{
+  background:#e5484d;
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(229,72,77,.12);
+  animation:dijiyer-unread-pulse 1.8s ease-in-out infinite;
+}
+
+.my-offers-btn.has-unread{
+  border-color:#f2b7b9 !important;
+  background:#fff7f7 !important;
+  color:#a92e34 !important;
+}
+
+@keyframes dijiyer-unread-pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+}
+
+.my-offers-notify-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:14px 0;
+  padding:12px 13px;
+  border:1px solid #d8e6f7;
+  border-radius:12px;
+  background:linear-gradient(135deg,#f8fbff,#eef6ff);
+}
+
+.my-offers-notify-bar>div{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+
+.my-offers-notify-bar strong{
+  color:#24415f;
+  font-size:12px;
+}
+
+.my-offers-notify-bar small{
+  color:#718198;
+  font-size:9px;
+  line-height:1.4;
+}
+
+.my-offers-notify-bar button{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid #bcd7fa;
+  border-radius:9px;
+  background:#fff;
+  color:#1269d8;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.my-offers-notify-bar button:hover{
+  background:#1677ff;
+  border-color:#1677ff;
+  color:#fff;
+}
+
+.my-offers-notify-bar button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.my-offer-activity-strip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:10px 0;
+}
+
+.my-offer-activity-strip span{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#f1f5f9;
+  color:#56677c;
+  font-size:9px;
+  font-weight:850;
+}
+
+.my-offer-activity-strip span.positive{
+  background:#ecfdf3;
+  color:#15804a;
+}
+
+.my-offer-activity-strip span.muted{
+  background:#f8fafc;
+  color:#8794a5;
+}
+
+.my-offer-tracking-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:10px 0 12px;
+}
+
+.my-offer-tracking-actions button{
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #cfe0f6;
+  border-radius:9px;
+  background:#fff;
+  color:#1769c9;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.my-offer-tracking-actions button:first-child{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+
+.my-offer-tracking-actions button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(22,119,255,.12);
+}
+
+.quote-success-email-status{
+  margin-top:9px;
+  padding:10px 11px;
+  border:1px solid #cfe8d9;
+  border-radius:10px;
+  background:#f3fbf6;
+  color:#24724a;
+  font-size:8.5px;
+  font-weight:800;
+  line-height:1.45;
+}
+
+@media(max-width:640px){
+  .my-offers-notify-bar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .my-offers-notify-bar button{
+    width:100%;
+  }
+
+  .my-offer-tracking-actions{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .my-offer-tracking-actions button{
+    width:100%;
+  }
+}
