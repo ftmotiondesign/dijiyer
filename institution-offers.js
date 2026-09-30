@@ -369,7 +369,7 @@ quoteCardHtml = function(quote,compact=false){
     const exp=lock?.expiresAt || offer?.expiresAt;
     actionArea=`<div class="quote-note" style="border-left-color:#fb7185"><strong>Teklifin süresi doldu.</strong> ${formatDate(exp)} sonrasında fiyat ve şartlar garanti edilmez. Müşteriyle güncel koşulları yeniden görüşerek yeni teklif oluşturabilirsiniz.</div>`;
   }else if(state==="closed"){
-    actionArea='<div class="quote-note">Müşteri bu talep için başka bir kurumun teklifini kilitledi.</div>';
+    actionArea='<div class="quote-note">Müşteri bu talep için başka bir kurumun teklifini kabul etti.</div>';
   }else{
     actionArea='<div class="quote-note">Bu talep için “İlgilenmiyorum” seçildi.</div>';
   }
@@ -431,7 +431,7 @@ async function saveRealOffer(form){
 
   if(lock){
     alert(lock.institutionId===currentAccount.institutionId
-      ? "Müşteri bu fiyatı kilitledi. Teklif artık değiştirilemez."
+      ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
       : "Müşteri başka bir teklifi seçti.");
     return;
   }
@@ -597,7 +597,7 @@ async function verifyOfferByCode(rawCode){
     ]);
     const quote=quoteSnap.exists ? quoteSnap.data() : {};
     if(!lockSnap.exists || lockSnap.data().institutionId!==currentAccount.institutionId){
-      result.innerHTML='<div class="verify-result-card invalid"><div class="verify-result-title">⏳ Fiyat henüz kilitlenmedi</div><div class="muted" style="text-align:center">Müşteri bu teklifi henüz seçmemiş.</div></div>';
+      result.innerHTML='<div class="verify-result-card invalid"><div class="verify-result-title">⏳ Teklif henüz kabul edilmedi</div><div class="muted" style="text-align:center">Müşteri bu teklifi henüz kabul etmemiş.</div></div>';
       return;
     }
 
