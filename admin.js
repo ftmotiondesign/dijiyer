@@ -862,7 +862,7 @@ function escapeHtml(text) {
 }
 
 
-[applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
+[applicationsTabBtn, institutionsTabBtn, quotesTabBtn, quoteRoutingTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
   .forEach(button => button?.addEventListener("click", () => {
     overviewSection.hidden = true;
     issuesSection.hidden = true;
@@ -875,12 +875,13 @@ overviewTabBtn?.addEventListener("click", () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = true;
   issuesSection.hidden = true;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
 
-  [applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
+  [applicationsTabBtn, institutionsTabBtn, quotesTabBtn, quoteRoutingTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
     .forEach(button => button?.classList.remove("active"));
   overviewTabBtn.classList.add("active");
   refreshAdminOverview();
@@ -891,12 +892,13 @@ issuesTabBtn?.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = true;
   issuesSection.hidden = false;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
 
-  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
+  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, quoteRoutingTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
     .forEach(button => button?.classList.remove("active"));
   issuesTabBtn.classList.add("active");
 
@@ -910,12 +912,14 @@ applicationsTabBtn.addEventListener("click", () => {
   applicationsSection.hidden = false;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.add("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
+  quoteRoutingTabBtn?.classList.remove("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   unmatchedSearchesTabBtn?.classList.remove("active");
@@ -925,12 +929,14 @@ institutionsTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = false;
   quotesSection.hidden = true;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
   quotesTabBtn.classList.remove("active");
+  quoteRoutingTabBtn?.classList.remove("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   unmatchedSearchesTabBtn?.classList.remove("active");
@@ -941,22 +947,46 @@ quotesTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = false;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.add("active");
+  quoteRoutingTabBtn?.classList.remove("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
   unmatchedSearchesTabBtn?.classList.remove("active");
   await loadQuoteRequests();
 });
 
+quoteRoutingTabBtn?.addEventListener("click", async () => {
+  overviewSection.hidden = true;
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  quoteRoutingSection.hidden = false;
+  offerReportSection.hidden = true;
+  issuesSection.hidden = true;
+  accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
+
+  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
+    .forEach(button => button?.classList.remove("active"));
+  quoteRoutingTabBtn.classList.add("active");
+
+  if (!institutionRecords.length) await loadInstitutions();
+  await loadQuoteRequests();
+  await loadLeadRoutingSettings();
+  renderQuoteRoutingAdmin();
+});
+
 offerReportTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
+  quoteRoutingSection.hidden = true;
   offerReportSection.hidden = false;
   accountsSection.hidden = true;
   unmatchedSearchesSection.hidden = true;
@@ -964,6 +994,7 @@ offerReportTabBtn.addEventListener("click", async () => {
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
+  quoteRoutingTabBtn?.classList.remove("active");
   offerReportTabBtn.classList.add("active");
   accountsTabBtn.classList.remove("active");
   unmatchedSearchesTabBtn?.classList.remove("active");
