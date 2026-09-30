@@ -4249,8 +4249,27 @@ function safeExternalAdUrl(value){
   }
 }
 
+function currentExternalAdPlacement(){
+  if(document.body.classList.contains("standalone-quote-page"))return "quote";
+  if(document.body.classList.contains("standalone-jobs-page"))return "jobs";
+  if(document.body.classList.contains("standalone-brands-page"))return "brands";
+  return "home";
+}
+
+function externalAdPlacements(item){
+  const valid=new Set(["home","quote","jobs","brands","opportunities"]);
+  const raw=Array.isArray(item?.placements) ? item.placements : [];
+  const values=[...new Set(raw.map(x=>String(x||"").trim()).filter(x=>valid.has(x)))];
+  return values.length ? values : ["home"];
+}
+
+function externalAdMatchesCurrentPage(item){
+  return externalAdPlacements(item).includes(currentExternalAdPlacement());
+}
+
 function externalAdIsLive(item){
   if(!item || item.active===false || item.rightsConfirmed===false)return false;
+  if(!externalAdMatchesCurrentPage(item))return false;
 
   const now=Date.now();
   const start=item.startAt ? new Date(item.startAt).getTime() : 0;
@@ -4283,14 +4302,15 @@ function externalAdCardHtml(item){
         ${isVideo
           ? '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline poster="'+escapeHtml(image)+'"></video>'
           : '<img src="'+escapeHtml(image || video)+'" alt="'+escapeHtml(brand)+' reklamı">'}
+        <span class="external-ad-media-label">REKLAM</span>
       </div>
       <div class="external-ad-public-info">
-        <div>
-          <span>REKLAM</span>
+        <div class="external-ad-public-copy">
+          <span>İŞ ORTAKLIĞI · SPONSORLU BAĞLANTI</span>
           <strong>${escapeHtml(brand)}</strong>
           ${headline?'<small>'+escapeHtml(headline)+'</small>':""}
         </div>
-        <b>Siteye Git →</b>
+        <b>Markayı İncele <i>→</i></b>
       </div>
     </a>
   `;
