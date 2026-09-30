@@ -5040,119 +5040,51 @@ function moderateReviewText(raw){
     .replace(/\s+/g," ")
     .trim();
 
+  const tokens=normalized.split(" ").filter(Boolean);
   const compact=normalized.replace(/\s+/g,"");
 
-  const profanityPatterns=[
-    /\b(amk|siktir|sikeyim|sikerim|sikik|orospu|yarrak|yarak|piç|pic|pezevenk|kahpe|şerefsiz|serefsiz|gerizekalı|gerizekali)\b/u,
-    /\borospu\s+çocuğu\b/u,
-    /\bananı\s+sikeyim\b/u,
-    /\banneni\s+sikeyim\b/u
+  const profanityTokens=new Set([
+    "amk","siktir","sikeyim","sikerim","sikik","orospu","yarrak","yarak",
+    "piç","pic","pezevenk","kahpe","şerefsiz","serefsiz","gerizekalı","gerizekali"
+  ]);
+
+  const profanityCompact=[
+    "orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
+    "annenisikeyim","şerefsiz","serefsiz"
   ];
 
-  const dangerousPatterns=[
-    /\b(öldüreceğim|öldürecem|oldurecegim|gebertirim|vuracağım|vurucam|vuracagim|bıçaklayacağım|bicaklayacagim|yakacağım|yakacagim)\b/u,
-    /\b(seni|sizi|onu|onları)\b.{0,28}\b(öldür|oldur|gebert|vur|bıçakla|bicakla|yak)\b/u,
-    /\b(bomba|patlayıcı|patlayici)\b.{0,24}\b(koy|yerleştir|yerlestir|patlat)\b/u,
-    /\b(kendini\s+öldür|kendini\s+oldur|intihar\s+et)\b/u,
-    /\b(tecavüz|tecavuz)\b/u
+  const threatCompact=[
+    "öldüreceğim","oldurecegim","öldürecem","oldurecem","gebertirim",
+    "vuracağım","vuracagim","vurucam","bıçaklayacağım","bicaklayacagim",
+    "yakacağım","yakacagim","kendiniöldür","kendinioldur","intiharet",
+    "bombakoy","bombayerleştir","bombayerlestir","bombapatlat",
+    "patlayıcıkoy","patlayicikoy","tecavüz","tecavuz"
   ];
 
-  const compactBlocked=[
-    "siktir","orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
-    "annenisikeyim","öldüreceğim","oldurecegim","gebertirim","vuracağım",
-    "vuracagim","bıçaklayacağım","bicaklayacagim","kendiniöldür","kendinioldur"
-  ];
+  const hasProfanityToken=tokens.some(token=>profanityTokens.has(token));
+  const hasProfanityCompact=profanityCompact.some(term=>compact.includes(term));
 
-  if(profanityPatterns.some(pattern=>pattern.test(normalized)) || compactBlocked.some(term=>compact.includes(term))){
+  if(hasProfanityToken || hasProfanityCompact){
     return {ok:false,message:"Yorum gönderilemedi: küfür veya hakaret içeren ifadeler kullanılamaz."};
   }
 
-  if(dangerousPatterns.some(pattern=>pattern.test(normalized))){
+  if(threatCompact.some(term=>compact.includes(term))){
+    return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
+  }
+
+  const threatSubject=tokens.some(token=>["seni","sizi","onu","onları","onlari"].includes(token));
+  const threatVerb=tokens.some(token=>[
+    "öldür","oldur","öldüreceğim","oldurecegim","gebert","gebertirim",
+    "vur","vuracağım","vuracagim","bıçakla","bicakla","yak","yakacağım","yakacagim"
+  ].includes(token));
+
+  if(threatSubject && threatVerb){
     return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
   }
 
   return {ok:true};
 }
 
-document.getElementById('reviewForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const rating = Number(document.getElementById('ratingValue').value);
-  const text = e.target.querySelector('textarea').value.trim();
-  const inst = institutions.find(i => String(i.id) === String(selectedId));
-
-  if (!rating) {
-    showToast('Lütfen 1-5 yıldız arası puan verin.');
-    return;
-  }
-
-  if (!text) {
-    showToast('Lütfen yorumunuzu yazın.');
-    return;
-  }
-
-  const moderation = moderateReviewText(text);
-  if (!moderation.ok) {
-    showToast(moderation.message);
-    return;
-  }
-
-  try {
-    if (inst && inst.source === 'firestore') {
-      const reviewData = {
-        institutionId: String(inst.id),
-        rating,
-        text,
-        status: 'published',
-        date: new Date().toISOString()
-      };
-      if (typeof currentReviewRecommendation === 'boolean') {
-        reviewData.recommend = currentReviewRecommendation;
-      }
-      await db.collection('institutionReviews').add(reviewData);
-      await loadInstitutionReviewStats();
-    } else {
-      const key = `reviews_${selectedId}`;
-      const reviews = JSON.parse(localStorage.getItem(key) || '[]');
-      reviews.push({
-        rating,
-        ...(typeof currentReviewRecommendation === 'boolean' ? {recommend:currentReviewRecommendation} : {}),
-        text,
-        date: new Date().toISOString()
-      });
-      localStorage.setItem(key, JSON.stringify(reviews));
-    }
-
-    closeModal('reviewModal');
-    showToast('Yorumunuz ve puanınız kaydedildi.');
-    e.target.reset();
-    currentReviewRecommendation = null;
-    document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(btn => btn.classList.remove('active'));
-    setStars(0);
-    renderList();
-    renderDetail();
-  } catch (error) {
-    console.error('Yorum kaydedilemedi:', error);
-    showToast(
-      String(error?.code||'').includes('permission-denied')
-        ? 'Yorum kaydedilemedi. Firestore yorum kuralını yayınlayın.'
-        : 'Yorum kaydedilemedi. Lütfen tekrar deneyin.'
-    );
-  }
-});
-
-document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentReviewRecommendation = btn.dataset.reviewRecommend === 'true';
-    document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(item => {
-      item.classList.toggle('active', item === btn);
-    });
-  });
-});
-
-document.querySelectorAll('#starsInput [data-star]').forEach(btn => {
-  btn.addEventListener('click', () => setStars(Number(btn.dataset.star)));
-});
 function setStars(n) {
   currentRating = n;
   document.getElementById('ratingValue').value = n;
