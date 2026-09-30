@@ -713,6 +713,11 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
       sessionStorage.setItem("dijiyerTrackingCode",tracking.trackingCode);
       sessionStorage.setItem("dijiyerTrackingPhone",tracking.normalizedPhone);
       localStorage.setItem("dijiyerLastTrackingCode",tracking.trackingCode);
+      try{
+        const phoneMap=JSON.parse(localStorage.getItem("dijiyerTrackingPhoneByCode")||"{}");
+        phoneMap[tracking.trackingCode]=tracking.normalizedPhone;
+        localStorage.setItem("dijiyerTrackingPhoneByCode",JSON.stringify(phoneMap));
+      }catch(_){}
     }else{
       codeEl.textContent="Talep kaydedildi";
       linkEl.classList.add("hidden");
