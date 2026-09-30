@@ -11,7 +11,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=45">
-  <link rel="stylesheet" href="admin-advanced.css?v=36">
+  <link rel="stylesheet" href="admin-advanced.css?v=37">
 </head>
 
 <body>
@@ -145,6 +145,7 @@
             <button type="button" id="adSideCalendarBtn">🗓️ <strong>Reklam Takvimi</strong></button>
             <button type="button" id="adSideRevenueBtn">₺ <strong>Gelir Raporu</strong></button>
             <button type="button" id="adSidePackagesBtn">📦 <strong>Paketler</strong></button>
+            <button type="button" id="adSideVipBtn">👑 <strong>VIP Kurumlar</strong></button>
             <button type="button" id="adSideMediaBtn">🗂️ <strong>Medya Arşivi</strong></button>
           </div>
         </aside>
@@ -188,6 +189,7 @@
                 <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads" hidden>🌐 Site / Affiliate Reklamları <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
 <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
+        <button class="admin-tab" id="vipInstitutionsTabBtn" data-admin-group="ads">👑 VIP Kurumlar</button>
         <button class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</button>
 
@@ -1772,7 +1774,88 @@
         </div>
       </section>
 
-      <section id="promotionOrdersSection" hidden>
+      
+<section id="vipInstitutionsSection" hidden>
+  <div class="section-title vip-admin-title">
+    <div>
+      <span class="vip-eyebrow">VIP ÜYELİK YÖNETİMİ</span>
+      <h3>👑 VIP Kurumlar</h3>
+      <p>VIP, VIP Plus ve VIP Premium paketlerini yönetin; seçtiğiniz kuruma süreli VIP üyelik atayın.</p>
+    </div>
+    <div class="vip-admin-title-stats">
+      <span><b id="vipActiveCount">0</b> aktif VIP</span>
+      <span><b id="vipExpiredCount">0</b> süresi dolan</span>
+    </div>
+  </div>
+
+  <div class="vip-admin-layout">
+    <section class="vip-plan-editor">
+      <div class="vip-panel-head">
+        <div>
+          <span>PAKET AYARLARI</span>
+          <strong>VIP seviyelerini belirleyin</strong>
+          <small>Fiyat, süre ve ayrıcalıkları istediğiniz zaman değiştirebilirsiniz.</small>
+        </div>
+        <button type="button" class="advanced-primary-btn" id="vipPlanSaveBtn">Paketleri Kaydet</button>
+      </div>
+
+      <div id="vipPlanAdminGrid" class="vip-plan-grid"></div>
+      <p id="vipPlanMessage" class="advanced-message"></p>
+    </section>
+
+    <section class="vip-assign-editor">
+      <div class="vip-panel-head">
+        <div>
+          <span>KURUMA VIP ATA</span>
+          <strong>Üyeliği başlat / güncelle</strong>
+          <small>Seçilen paketin fiyatı ve süresi otomatik kullanılır.</small>
+        </div>
+      </div>
+
+      <label>Kurum
+        <select id="vipInstitutionSelect">
+          <option value="">Kurum seçin...</option>
+        </select>
+      </label>
+
+      <div class="vip-assign-grid">
+        <label>VIP Seviyesi
+          <select id="vipPlanSelect"></select>
+        </label>
+        <label>Başlangıç Tarihi
+          <input id="vipStartDate" type="date">
+        </label>
+      </div>
+
+      <div id="vipAssignmentPreview" class="vip-assignment-preview">
+        <span>Bir kurum ve VIP seviyesi seçin.</span>
+      </div>
+
+      <div id="vipCurrentStatus" class="vip-current-status">
+        <span>Kurum seçildiğinde mevcut VIP durumu burada görünür.</span>
+      </div>
+
+      <div class="vip-assign-actions">
+        <button type="button" class="advanced-primary-btn" id="vipAssignBtn">VIP Ata / Güncelle</button>
+        <button type="button" class="vip-remove-btn" id="vipRemoveBtn" disabled>VIP'i Kaldır</button>
+      </div>
+      <p id="vipAssignmentMessage" class="advanced-message"></p>
+    </section>
+  </div>
+
+  <section class="vip-list-panel">
+    <div class="vip-list-head">
+      <div>
+        <strong>VIP Kurum Listesi</strong>
+        <small>Aktif ve süresi dolmuş VIP üyeliklerini buradan takip edin.</small>
+      </div>
+      <input id="vipInstitutionSearch" type="search" placeholder="Kurum, şehir veya VIP seviyesi ara...">
+    </div>
+    <div id="vipInstitutionList" class="vip-institution-list"></div>
+  </section>
+</section>
+
+<section id="promotionOrdersSection" hidden>
         <div class="section-title promotion-admin-title">
           <div>
             <h3>🛍️ Tanıtım Siparişleri</h3>
@@ -2815,8 +2898,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=45"></script>
-  <script src="admin-advanced.js?v=51"></script>
+<script src="admin.js?v=46"></script>
+  <script src="admin-advanced.js?v=52"></script>
 
 </body>
 </html>
