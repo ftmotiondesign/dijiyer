@@ -869,6 +869,204 @@
     categorySelect.value=categories.includes(oldCategory)?oldCategory:"";
   }
 
+  function bannerInstitutionPhoneDigits(item){
+    let digits=String(item?.phone||item?.whatsapp||"").replace(/\D/g,"");
+    if(!digits)return "";
+    if(digits.startsWith("0"))digits="90"+digits.slice(1);
+    if(!digits.startsWith("90") && digits.length===10)digits="90"+digits;
+    return digits;
+  }
+
+  function bannerTodayInput(){
+    const d=new Date();
+    const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,10);
+  }
+
+  function bannerAddDaysInput(days){
+    const d=new Date();
+    d.setDate(d.getDate()+Number(days||0));
+    const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,10);
+  }
+
+  function bannerDateSpanDays(item){
+    const start=bannerAdDate(item?.startAt,false);
+    const end=bannerAdDate(item?.endAt,true);
+    if(!start||!end)return 30;
+    return Math.max(1,Math.round((end.getTime()-start.getTime())/86400000));
+  }
+
+  function bannerInstitutionLiveAds(inst){
+    return bannerInstitutionBannerAds(inst).filter(bannerAdIsCurrentlyLive);
+  }
+
+  function renderBannerExistingAdAlert(inst){
+    const root=$("bannerExistingAdAlert");
+    if(!root)return;
+    const live=inst ? bannerInstitutionLiveAds(inst) : [];
+    if(!inst || !live.length){
+      root.classList.add("hidden");
+      root.innerHTML="";
+      return;
+    }
+    const first=live[0];
+    root.classList.remove("hidden");
+    root.innerHTML=
+      '<div><span>⚠ AKTİF REKLAM VAR</span>'+
+      '<strong>'+escapeHtml(inst.name||"Kurum")+' için '+live.length+' aktif banner bulunuyor.</strong>'+
+      '<small>Yanlışlıkla ikinci reklam açmamak için mevcut reklamı düzenleyebilir veya bilinçli olarak yeni reklam oluşturabilirsiniz.</small></div>'+
+      '<div class="banner-existing-ad-actions">'+
+        '<button type="button" data-existing-edit="'+escapeHtml(first.id)+'">Mevcut Reklamı Düzenle</button>'+
+        '<button type="button" data-existing-new>Yeni Reklam Oluştur</button>'+
+      '</div>';
+    root.querySelector("[data-existing-edit]")?.addEventListener("click",()=>editBannerAd(first.id));
+    root.querySelector("[data-existing-new]")?.addEventListener("click",()=>{
+      if($("bannerAdEditId"))$("bannerAdEditId").value="";
+      if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Kurum Reklamı";
+      root.classList.add("acknowledged");
+      $("bannerAdHeadline")?.focus();
+    });
+  }
+
+  function renderBannerInstitutionHistory(inst){
+    const root=$("bannerInstitutionHistory");
+    if(!root)return;
+    if(!inst){
+      root.classList.add("hidden");
+      root.innerHTML="";
+      return;
+    }
+    const rows=[...bannerInstitutionBannerAds(inst)].sort((a,b)=>
+      new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0)
+    );
+    if(!rows.length){
+      root.classList.remove("hidden");
+      root.innerHTML='<div class="banner-history-empty">Bu kurumun daha önce banner reklam kaydı yok.</div>';
+      return;
+    }
+    const total=rows.reduce((sum,item)=>sum+Number(item.salePrice||0),0);
+    root.classList.remove("hidden");
+    root.innerHTML=
+      '<div class="banner-history-head"><div><span>REKLAM GEÇMİŞİ</span><strong>'+rows.length+' kayıt · '+money(total)+'</strong></div><button type="button" data-history-toggle>Geçmişi Gör</button></div>'+
+      '<div class="banner-history-list hidden" data-history-list>'+
+        rows.slice(0,6).map(item=>
+          '<button type="button" data-history-edit="'+escapeHtml(item.id)+'">'+
+            '<span>'+escapeHtml(bannerPlacementLabel(item.placement))+'</span>'+
+            '<strong>'+escapeHtml(item.headline||item.institutionName||"Reklam")+'</strong>'+
+            '<small>'+escapeHtml([item.startAt||"Hemen",item.endAt||"Süresiz"].join(" → "))+' · '+money(item.salePrice||0)+'</small>'+
+          '</button>'
+        ).join("")+
+      '</div>';
+    root.querySelector("[data-history-toggle]")?.addEventListener("click",event=>{
+      const list=root.querySelector("[data-history-list]");
+      list?.classList.toggle("hidden");
+      event.currentTarget.textContent=list?.classList.contains("hidden")?"Geçmişi Gör":"Geçmişi Gizle";
+    });
+    root.querySelectorAll("[data-history-edit]").forEach(button=>{
+      button.addEventListener("click",()=>editBannerAd(button.dataset.historyEdit));
+    });
+  }
+
+  function openBannerWhatsAppOffer(inst){
+    if(!inst)return;
+    const digits=bannerInstitutionPhoneDigits(inst);
+    if(!digits){
+      alert("Bu kurumun telefon / WhatsApp bilgisi yok.");
+      return;
+    }
+    const placement=bannerPlacementLabel($("bannerAdPlacement")?.value);
+    const price=Math.max(0,Number($("bannerAdPrice")?.value||0));
+    const start=String($("bannerAdStartAt")?.value||"");
+    const end=String($("bannerAdEndAt")?.value||"");
+    const lines=[
+      "Merhaba "+(inst.name||"")+",",
+      "",
+      "Dijiyer reklam alanlarımız için size uygun bir yayın planı hazırladık.",
+      "Gösterim alanı: "+placement,
+      (start||end) ? "Yayın dönemi: "+(start||"Hemen")+" - "+(end||"Süresiz") : "",
+      price>0 ? "Tutar: "+money(price) : "",
+      "",
+      "Uygun olursanız reklam görseli ve yayın planını birlikte netleştirebiliriz."
+    ].filter(Boolean);
+    window.open("https://wa.me/"+digits+"?text="+encodeURIComponent(lines.join("\n")),"_blank","noopener");
+  }
+
+  function renderBannerLivePlacementPreview(){
+    const stage=$("bannerLivePlacementStage");
+    const label=$("bannerLivePlacementPreviewLabel");
+    if(!stage)return;
+    const inst=selectedBannerInstitution();
+    const key=normalizeBannerPlacement($("bannerAdPlacement")?.value);
+    const meta=BANNER_PLACEMENT_GUIDE[key]||BANNER_PLACEMENT_GUIDE.search;
+    if(label)label.textContent=meta.label;
+    const headline=String($("bannerAdHeadline")?.value||"").trim()||inst?.name||"Kurum reklamı";
+    const text=String($("bannerAdText")?.value||"").trim()||[bannerInstitutionCity(inst),bannerInstitutionDistrict(inst)].filter(Boolean).join(" / ");
+    const type=$("bannerAdMediaType")?.value==="video"?"video":"image";
+    const video=String($("bannerAdVideoUrl")?.value||"").trim();
+    const image=String($("bannerAdImageUrl")?.value||"").trim()||inst?.coverUrl||inst?.logoUrl||"";
+    const media=type==="video"&&video
+      ? '<video src="'+escapeHtml(video)+'" autoplay muted loop playsinline></video>'
+      : (image?'<img src="'+escapeHtml(image)+'" alt="">':'<div class="banner-live-fallback">📣</div>');
+    stage.className="banner-live-placement-stage placement-"+key;
+    stage.innerHTML=
+      '<div class="banner-live-page-chrome"><i></i><i></i><i></i></div>'+
+      '<div class="banner-live-context">'+
+        '<div class="banner-live-context-line"></div>'+
+        '<div class="banner-live-ad">'+media+
+          '<div class="banner-live-ad-overlay"></div>'+
+          '<div class="banner-live-ad-copy"><span>SPONSORLU</span><strong>'+escapeHtml(headline)+'</strong><small>'+escapeHtml(text||"Reklam metni")+'</small></div>'+
+        '</div>'+
+        '<div class="banner-live-context-line short"></div>'+
+      '</div>';
+  }
+
+  function applyBannerTemplate(name){
+    const templates={
+      mini7:{placement:"page_top_mini",days:7,duration:7},
+      regional15:{placement:"home_sponsor",days:15,duration:7},
+      premium30:{placement:"premium_home",days:30,duration:7}
+    };
+    const preset=templates[String(name||"")];
+    if(!preset)return;
+    $("bannerAdPlacement").value=preset.placement;
+    $("bannerAdDuration").value=String(preset.duration);
+    $("bannerAdStartAt").value=bannerTodayInput();
+    $("bannerAdEndAt").value=bannerAddDaysInput(preset.days);
+    renderBannerPlacementGuide();
+    renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
+  }
+
+  function copyOrRenewBannerAd(id){
+    const item=bannerAdRecords.find(x=>String(x.id)===String(id));
+    if(!item)return;
+    const inst=institutionRecords.find(x=>String(x.id)===String(item.institutionId));
+    if(!inst)return;
+
+    resetBannerAdForm();
+    selectBannerInstitutionForAd(inst);
+    $("bannerAdEditId").value="";
+    $("bannerAdFormTitle").textContent="Reklamı Yenile / Kopyala";
+    $("bannerAdHeadline").value=item.headline||inst.name||"";
+    $("bannerAdText").value=item.text||"";
+    $("bannerAdImageUrl").value=item.imageUrl||inst.coverUrl||inst.logoUrl||"";
+    $("bannerAdVideoUrl").value=item.videoUrl||"";
+    $("bannerAdVideoUrlManual").value=item.videoUrl||"";
+    $("bannerAdMediaType").value=item.mediaType==="video"&&item.videoUrl?"video":"image";
+    $("bannerAdPlacement").value=normalizeBannerPlacement(item.placement);
+    $("bannerAdDuration").value=String([3,5,7].includes(Number(item.durationSeconds))?Number(item.durationSeconds):7);
+    $("bannerAdPrice").value=String(Math.max(0,Number(item.salePrice||0)));
+    $("bannerAdPaymentStatus").value="unpaid";
+    $("bannerAdStartAt").value=bannerTodayInput();
+    $("bannerAdEndAt").value=bannerAddDaysInput(bannerDateSpanDays(item));
+    $("bannerAdActive").checked=true;
+    renderBannerPlacementGuide();
+    renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
+    $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
   function bannerInstitutionResultHtml(item){
     const active=bannerInstitutionIsActive(item);
     const adSummary=bannerInstitutionAdSummary(item);
@@ -939,7 +1137,12 @@
         '<strong>'+escapeHtml(inst.name||"Kurum")+'</strong>'+
         '<small>'+escapeHtml(location)+' · '+escapeHtml(bannerCategoryLabel(bannerInstitutionCategory(inst))||"Sektör belirtilmemiş")+'</small>'+
       '</div>'+
-      '<button type="button" data-banner-institution-change>Başka Kurum Seç</button>';
+      '<div class="banner-institution-selected-actions">'+
+        '<button type="button" data-banner-whatsapp-offer>WhatsApp Teklifi</button>'+
+        '<button type="button" data-banner-institution-change>Başka Kurum Seç</button>'+
+      '</div>';
+
+    root.querySelector("[data-banner-whatsapp-offer]")?.addEventListener("click",()=>openBannerWhatsAppOffer(inst));
 
     root.querySelector("[data-banner-institution-change]")?.addEventListener("click",()=>{
       $("bannerAdInstitution").value="";
@@ -1059,7 +1262,10 @@
 
     renderBannerInstitutionSelected();
     renderBannerInstitutionFinder();
+    renderBannerExistingAdAlert(inst);
+    renderBannerInstitutionHistory(inst);
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
 
     $("bannerInstitutionFinderSearch")?.blur();
 
@@ -1844,8 +2050,11 @@
     if($("bannerAdMessage"))$("bannerAdMessage").textContent="";
     if($("bannerAdInstitution"))$("bannerAdInstitution").value="";
     resetBannerInstitutionFinderFilters();
+    renderBannerExistingAdAlert(null);
+    renderBannerInstitutionHistory(null);
     syncBannerMediaBadge();
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   }
 
   async function loadBannerAdsAdmin(){
@@ -1889,7 +2098,10 @@
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
     $("bannerAdActive").checked=item.active!==false;
+    renderBannerExistingAdAlert(inst);
+    renderBannerInstitutionHistory(inst);
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
     $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
@@ -1950,6 +2162,7 @@
   async function saveBannerAd(event){
     event.preventDefault();
 
+    const saveNext=Boolean(event?.submitter?.dataset?.saveNext==="1");
     const editId=String($("bannerAdEditId")?.value||"");
     const inst=selectedBannerInstitution();
 
@@ -2025,7 +2238,15 @@
       renderManagedInstitutions();
       renderTodayTasks();
 
-      setTimeout(resetBannerAdForm,350);
+      if(saveNext){
+        window.setTimeout(()=>{
+          resetBannerAdForm();
+          $("bannerInstitutionFinderSearch")?.scrollIntoView({behavior:"smooth",block:"center"});
+          $("bannerInstitutionFinderSearch")?.focus();
+        },280);
+      }else{
+        setTimeout(resetBannerAdForm,350);
+      }
     }catch(error){
       console.error("Banner reklamı kaydedilemedi:",error);
       const code=String(error?.code || "");
@@ -2157,12 +2378,14 @@
         '<div class="banner-admin-card-actions">'+
           '<span class="banner-state '+(item.active===false?"passive":"active")+'">'+(item.active===false?"Pasif":"Yayında")+'</span>'+
           '<button type="button" data-banner-edit="'+escapeHtml(item.id)+'">Düzenle</button>'+
+          '<button type="button" data-banner-copy="'+escapeHtml(item.id)+'">Yenile / Kopyala</button>'+
           '<button type="button" data-banner-toggle="'+escapeHtml(item.id)+'">'+(item.active===false?"Yayına Al":"Duraklat")+'</button>'+
           '<button type="button" class="danger" data-banner-delete="'+escapeHtml(item.id)+'">Reklamdan Çıkar</button>'+
         '</div></article>';
     }).join(""):'<div class="advanced-empty">Banner reklamı bulunamadı.</div>';
 
     root.querySelectorAll("[data-banner-edit]").forEach(btn=>btn.addEventListener("click",()=>editBannerAd(btn.dataset.bannerEdit)));
+    root.querySelectorAll("[data-banner-copy]").forEach(btn=>btn.addEventListener("click",()=>copyOrRenewBannerAd(btn.dataset.bannerCopy)));
     root.querySelectorAll("[data-banner-toggle]").forEach(btn=>btn.addEventListener("click",()=>toggleBannerAd(btn.dataset.bannerToggle)));
     root.querySelectorAll("[data-banner-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteBannerAd(btn.dataset.bannerDelete)));
   }
@@ -2219,6 +2442,7 @@
   $("bannerAdPlacement")?.addEventListener("change",()=>{
     renderBannerPlacementGuide();
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   });
 
   $("cloudinarySaveBtn")?.addEventListener("click",saveCloudinaryBannerSettings);
@@ -2246,6 +2470,7 @@
     $("bannerAdVideoUrl").value=value;
     if(value)$("bannerAdMediaType").value="video";
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   });
 
   async function openNewBannerAdEditor(){
@@ -2309,9 +2534,22 @@
   ["bannerAdHeadline","bannerAdText","bannerAdImageUrl"].forEach(id=>$(id)?.addEventListener("input",()=>{
     if(id==="bannerAdImageUrl" && String($(id)?.value||"").trim())$("bannerAdMediaType").value="image";
     renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
   }));
+  document.querySelectorAll("[data-banner-template]").forEach(button=>{
+    button.addEventListener("click",()=>applyBannerTemplate(button.dataset.bannerTemplate));
+  });
+  ["bannerAdStartAt","bannerAdEndAt","bannerAdDuration","bannerAdPrice"].forEach(id=>{
+    $(id)?.addEventListener("change",()=>{
+      renderBannerLivePlacementPreview();
+      const inst=selectedBannerInstitution();
+      if(inst)renderBannerInstitutionSelected();
+    });
+  });
+
   renderBannerPlacementGuide();
   renderBannerInstitutionFinder();
+  renderBannerLivePlacementPreview();
 
 
   const EXTERNAL_AD_PLACEMENT_OPTIONS = [
