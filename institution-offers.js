@@ -278,6 +278,46 @@ function institutionLockBelongsToCurrentInstitution(lock,offer=null){
   return Boolean(lockCode && offerCode && lockCode===offerCode);
 }
 
+function institutionAcceptedByCurrentInstitution(quote){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!quote||!institutionId)return false;
+  return String(quote.acceptedInstitutionId||"")===institutionId
+    && String(quote.status||"").toLowerCase()==="accepted";
+}
+
+function institutionEffectiveLock(quote){
+  const quoteId=String(quote?.id||"");
+  const realLock=institutionLockMap.get(quoteId)||null;
+  if(realLock)return realLock;
+
+  // Talep ve locks/main aynı transaction içinde yazılıyor. Çok kısa süreli
+  // dinleyici gecikmesinde accepted alanları gelmiş ama lock henüz local map'e
+  // düşmemiş olabilir. Bu durumda kabul bilgisini panelde kaybetme.
+  if(!institutionAcceptedByCurrentInstitution(quote))return null;
+
+  const offer=institutionOfferMap.get(quoteId)||null;
+  return {
+    quoteId,
+    institutionId:String(quote.acceptedInstitutionId||currentAccount?.institutionId||""),
+    institutionName:String(quote.acceptedInstitutionName||offer?.institutionName||currentInstitution?.name||"Kurum"),
+    offerCode:String(quote.acceptedOfferCode||offer?.offerCode||""),
+    price:Number(quote.acceptedPrice ?? offer?.price ?? 0),
+    lockedPrice:Number(quote.acceptedPrice ?? offer?.price ?? 0),
+    vatStatus:String(offer?.vatStatus||""),
+    scope:String(offer?.scope||quote.note||quote.service||""),
+    lockedScope:String(offer?.scope||quote.note||quote.service||""),
+    conditions:String(offer?.conditions||""),
+    extraFee:String(offer?.extraFee||"Yok"),
+    acceptedAt:String(quote.acceptedAt||""),
+    lockedAt:String(quote.acceptedAt||""),
+    expiresAt:String(offer?.expiresAt||""),
+    registrationDeadlineAt:String(offer?.expiresAt||""),
+    status:"locked",
+    registrationStatus:"pending",
+    syntheticFromAcceptedRequest:true
+  };
+}
+
 function institutionOfferVersion(offer){
   return Math.max(1,Number(offer?.offerVersion||1));
 }
@@ -322,7 +362,7 @@ function secondOfferPromptHtml(quote,offer){
 
 function sellerOfferState(quote){
   const offer=institutionOfferMap.get(quote.id);
-  const lock=institutionLockMap.get(quote.id);
+  const lock=institutionEffectiveLock(quote);
   const legacy=responseMap.get(quote.id);
 
   if(lock){
@@ -905,7 +945,7 @@ quoteCardHtml = function(quote,compact=false){
   const state=sellerOfferState(quote);
   const [statusText,statusClass]=sellerStateMeta(state);
   const offer=institutionOfferMap.get(quote.id);
-  const lock=institutionLockMap.get(quote.id);
+  const lock=institutionEffectiveLock(quote);
   const sameDistrict=String(quote.district||"").toLocaleLowerCase("tr-TR") === String(currentInstitution.district||"").toLocaleLowerCase("tr-TR");
   const routedToThisInstitution=Array.isArray(quote.forwardInstitutionIds)
     && quote.forwardInstitutionIds.map(String).includes(String(currentAccount.institutionId||""))
@@ -1408,3 +1448,18 @@ quotePanelFilter.addEventListener("change",()=>{
 
 // Kurum paneli açıkken tekli teklif yanıt sürelerini canlı güncelle.
 setInterval(updateInstitutionResponseCountdowns,30000);
+
+
+/* Kurum paneli teklif eklentisi hazır işareti.
+   Auth callback institution.js çalışırken bu dosyadan önce tetiklendiyse
+   gelişmiş teklif/kabul verisini bir kez yeniden yükle. */
+window.__institutionOffersReady=true;
+window.setTimeout(()=>{
+  try{
+    if(currentAccount?.institutionId && currentInstitution && typeof loadMatchedQuotes==="function"){
+      loadMatchedQuotes();
+    }
+  }catch(error){
+    console.warn("Teklif eklentisi ilk senkronizasyonu yapılamadı:",error);
+  }
+},0);
