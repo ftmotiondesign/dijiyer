@@ -7,25 +7,14 @@ const firebaseConfig = {
   appId: "1:847787778815:web:57058aa8dcc4143ec5a2ca"
 };
 
-// Firebase Başlatma
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 
-// Kurum Oturumu İçin İkinci Uygulama
-const institutionSessionApp =
-  firebase.apps.find(app => app.name === 'institutionSession') ||
-  firebase.initializeApp(firebaseConfig, 'institutionSession');
-
-const institutionAuth = firebase.auth(institutionSessionApp);
-
-// ==========================================
-// KOTA VE BELLEK KORUMA DEĞİŞKENLERİ
-// ==========================================
 let regionalBannerAds = [];
-let regionalBannerUnsubscribe = null; // Listener referansı
-let regionalBannerTimer = null;       // Timer referansı
+let regionalBannerUnsubscribe = null;
+let regionalBannerTimer = null;
 let regionalBannerIndex = 0;
 let regionalBannerRegionFilter = "";
 let regionalBannerSectorFilter = "";
@@ -37,11 +26,15 @@ const PREMIUM_SHOWCASE_DURATION = 5500;
 let pageTopMiniBannerTimer = null;
 let pageTopMiniBannerIndex = 0;
 
-// ==========================================
-// 1. DİNLEYİCİ VE TIMER TEMİZLEME YÖNETİMİ
-// ==========================================
+const institutionSessionApp =
+  firebase.apps.find(app => app.name === 'institutionSession') ||
+  firebase.initializeApp(firebaseConfig, 'institutionSession');
 
-// Banners veya diğer koleksiyonları dinlerken eski dinleyiciyi kapatır
+const institutionAuth = firebase.auth(institutionSessionApp);
+
+// ==========================================
+// 1. KOTA VE BELLEK KORUMA FONKSİYONLARI
+// ==========================================
 function stopRegionalBannerListener() {
   if (regionalBannerUnsubscribe) {
     regionalBannerUnsubscribe();
@@ -49,7 +42,6 @@ function stopRegionalBannerListener() {
   }
 }
 
-// Timer birikmesini engeller
 function stopBannerTimer() {
   if (regionalBannerTimer) {
     clearInterval(regionalBannerTimer);
@@ -57,18 +49,8 @@ function stopBannerTimer() {
   }
 }
 
-function startBannerAutoSlide() {
-  stopBannerTimer(); // Önceki zamanlayıcıyı temizle
-  regionalBannerTimer = setInterval(() => {
-    if (regionalBannerAds.length > 0) {
-      regionalBannerIndex = (regionalBannerIndex + 1) % regionalBannerAds.length;
-      // Banner geçiş tetikleyicisi
-    }
-  }, 5000);
-}
-
 // ==========================================
-// 2. MERKEZİ KİLİT KONTROLÜ
+// 2. TEKLİF KİLİT KONTROL MERKEZİ
 // ==========================================
 function checkOfferLocked(offer) {
   if (!offer) return false;
@@ -81,7 +63,7 @@ function checkOfferLocked(offer) {
 }
 
 // ==========================================
-// 3. MÜŞTERİ TEKLİF ONAYLAMA (TEK SEFERLİK GET SORGUSU)
+// 3. MÜŞTERİ TEKLİF ONAYLAMA / KİLİTLEME
 // ==========================================
 async function respondOfferAction(demandId, offerId, action) {
   if (!demandId || !offerId) {
@@ -98,7 +80,6 @@ async function respondOfferAction(demandId, offerId, action) {
 
   try {
     const demandRef = db.collection('demands').doc(demandId);
-    // Kota tasarrufu için tek seferlik .get() kullanımı
     const snap = await demandRef.get();
 
     if (!snap.exists) {
@@ -158,12 +139,7 @@ async function respondOfferAction(demandId, offerId, action) {
     await demandRef.update(updatePayload);
 
     alert(isAccept ? 'Teklif başarıyla kabul edildi ve fiyat kilitlendi!' : 'Teklif reddedildi.');
-    
-    if (typeof loadCustomerOffers === 'function') {
-      loadCustomerOffers();
-    } else {
-      location.reload();
-    }
+    location.reload();
 
   } catch (error) {
     console.error('Teklif kilitleme hatası:', error);
@@ -171,12 +147,11 @@ async function respondOfferAction(demandId, offerId, action) {
   }
 }
 
-// Geriye dönük uyumluluk için
 function acceptOffer(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
 function kabulEt(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
 
 // ==========================================
-// 4. MÜŞTERİ TEKLİF KARTLARI RENDER
+// 4. MÜŞTERİ TEKLİF LİSTESİ ÇİZİMİ
 // ==========================================
 function renderOffersList(offers, demandId) {
   if (!offers || offers.length === 0) {
@@ -220,12 +195,11 @@ function renderOffersList(offers, demandId) {
 }
 
 // ==========================================
-// 5. KURUM PANELİ MODAL VE DÜZENLEME KİLİDİ
+// 5. KURUM DÜZENLEME PANELİ & KİLİT
 // ==========================================
 async function renderInstitutionModal(demandId) {
   try {
     const user = institutionAuth.currentUser;
-    // Oturum yoksa Firestore'a erişim isteği atıp kotayı tüketme
     if (!user) return;
 
     const snap = await db.collection('demands').doc(demandId).get();
@@ -281,9 +255,6 @@ async function renderInstitutionModal(demandId) {
   }
 }
 
-// ==========================================
-// 6. TEKLİF GÖNDERME / GÜNCELLEME SORGUSU
-// ==========================================
 async function submitInstitutionOffer(event, demandId) {
   event.preventDefault();
 
@@ -358,7 +329,6 @@ async function submitInstitutionOffer(event, demandId) {
   }
 }
 
-// Sayfa kapatıldığında veya ayrılındığında çalışan dinleyicileri temizle
 window.addEventListener('beforeunload', () => {
   stopRegionalBannerListener();
   stopBannerTimer();
