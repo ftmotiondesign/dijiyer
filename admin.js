@@ -15,6 +15,27 @@ const auth = adminApp.auth();
 const db = adminApp.firestore();
 const storage = adminApp.storage();
 
+let adminHomeSettingsCache=null;
+let adminHomeSettingsPromise=null;
+
+async function getAdminHomeSettings(force=false){
+  if(!force && adminHomeSettingsCache)return adminHomeSettingsCache;
+  if(!force && adminHomeSettingsPromise)return adminHomeSettingsPromise;
+
+  adminHomeSettingsPromise=db.collection("siteSettings").doc("home").get()
+    .then(snap=>{
+      adminHomeSettingsCache=snap.exists ? (snap.data()||{}) : {};
+      return adminHomeSettingsCache;
+    })
+    .finally(()=>{ adminHomeSettingsPromise=null; });
+
+  return adminHomeSettingsPromise;
+}
+
+function patchAdminHomeSettingsCache(patch){
+  adminHomeSettingsCache={...(adminHomeSettingsCache||{}),...(patch||{})};
+}
+
 const loginSection = document.getElementById("loginSection");
 const dashboardSection = document.getElementById("dashboardSection");
 const loginForm = document.getElementById("adminLoginForm");
@@ -579,8 +600,8 @@ function paintDailyStatsVisibilityState(visible){
 
 async function loadDailyStatsVisibilitySetting(){
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    const visible=snap.exists && snap.data()?.dailyStatsVisible === true;
+    const data=await getAdminHomeSettings();
+    const visible=data.dailyStatsVisible === true;
     paintDailyStatsVisibilityState(visible);
   }catch(error){
     console.error("Günlük istatistik görünürlük ayarı okunamadı:",error);
@@ -597,6 +618,7 @@ async function saveDailyStatsVisibilitySetting(visible){
       updatedAt:new Date().toISOString()
     },{merge:true});
 
+    patchAdminHomeSettingsCache({dailyStatsVisible:Boolean(visible)});
     paintDailyStatsVisibilityState(Boolean(visible));
   }catch(error){
     console.error("Günlük istatistik görünürlük ayarı kaydedilemedi:",error);
@@ -622,8 +644,7 @@ function paintHomeSectionVisibility(toggle,state,visible){
 
 async function loadHomeBottomVisibilitySettings(){
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    const data=snap.exists ? (snap.data() || {}) : {};
+    const data=await getAdminHomeSettings();
 
     // Eski kurulumlarda alan yoksa mevcut görünüm bozulmasın: varsayılan aktif.
     paintHomeSectionVisibility(
@@ -657,6 +678,7 @@ async function saveHomeSectionVisibilitySetting(field,toggle,state,visible){
       updatedAt:new Date().toISOString()
     },{merge:true});
 
+    patchAdminHomeSettingsCache({[field]:Boolean(visible)});
     paintHomeSectionVisibility(toggle,state,Boolean(visible));
   }catch(error){
     console.error("Ana sayfa bölüm görünürlük ayarı kaydedilemedi:",field,error);
@@ -723,9 +745,9 @@ function paintTopMenuPageVisibility(){
 
 async function loadTopMenuVisibilitySettings(){
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    const saved=snap.exists && snap.data()?.topMenuVisibility && typeof snap.data().topMenuVisibility==="object"
-      ? snap.data().topMenuVisibility
+    const data=await getAdminHomeSettings();
+    const saved=data.topMenuVisibility && typeof data.topMenuVisibility==="object"
+      ? data.topMenuVisibility
       : {};
 
     topMenuPageVisibility={
@@ -756,6 +778,7 @@ async function saveTopMenuVisibilitySetting(key,visible,toggle){
       topMenuVisibility:{...topMenuPageVisibility},
       updatedAt:new Date().toISOString()
     },{merge:true});
+    patchAdminHomeSettingsCache({topMenuVisibility:{...topMenuPageVisibility}});
   }catch(error){
     console.error("Üst menü görünürlük ayarı kaydedilemedi:",key,error);
     topMenuPageVisibility=previous;
@@ -940,8 +963,7 @@ async function loadCategoryVisibilitySettings(){
   if(message)message.textContent="Kategoriler yükleniyor...";
 
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    const data=snap.exists ? (snap.data()||{}) : {};
+    const data=await getAdminHomeSettings();
 
     customCategoryTaxonomySettings=
       data.customCategoryTaxonomy && typeof data.customCategoryTaxonomy==="object"
@@ -989,6 +1011,7 @@ async function saveCategoryVisibilitySetting(key,visible,toggle){
       categoryVisibility:{...categoryVisibilitySettings},
       updatedAt:new Date().toISOString()
     },{merge:true});
+    patchAdminHomeSettingsCache({categoryVisibility:{...categoryVisibilitySettings}});
     const message=document.getElementById("categoryAdminMessage");
     if(message){
       message.textContent="✓ Kategori durumu kaydedildi.";
@@ -1357,8 +1380,8 @@ async function openHomeSectionEditor(sectionKey){
 
   let saved={};
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    saved=snap.exists ? (snap.data()?.[config.storageField] || {}) : {};
+    const data=await getAdminHomeSettings();
+    saved=data?.[config.storageField] || {};
   }catch(error){
     console.warn('Bölüm içeriği okunamadı:',sectionKey,error);
   }
@@ -4983,7 +5006,7 @@ async function markQuoteRoutingConsent(requestId,button){
       alternativeConsentRecordedBy:"admin",
       updatedAt:now
     });
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
     renderQuoteRoutingAdmin();
   }catch(error){
     console.error("Müşteri paylaşım izni kaydedilemedi:",error);
@@ -5093,7 +5116,7 @@ async function forwardQuoteRoutingTier(requestId,tier,button){
     });
 
     alert(rows.length+" kuruma teklif fırsatı iletildi.");
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
     renderQuoteRoutingAdmin();
   }catch(error){
     console.error("Teklif dağıtımı yapılamadı:",error);
@@ -5720,7 +5743,7 @@ quoteRoutingSettingsCloseBtn?.addEventListener("click",()=>{
 
 quoteRoutingRefreshBtn?.addEventListener("click",async()=>{
   if(!institutionRecords.length)await loadInstitutions();
-  await loadQuoteRequests();
+  await loadQuoteRequests({force:true});
   await reconcileLeadCreditUsage();
   await loadLeadCreditData();
   renderQuoteRoutingAdmin();
@@ -5744,7 +5767,25 @@ document.querySelectorAll("[data-lead-credit-quick]").forEach(button=>button.add
 }));
 leadCreditModal?.addEventListener("click",event=>{if(event.target===leadCreditModal)closeLeadCreditModal();});
 
-async function loadQuoteRequests() {
+let adminQuoteRequestsLoadedAt=0;
+const ADMIN_QUOTE_CACHE_MS=60000;
+
+async function loadQuoteRequests(options={}) {
+  const force=Boolean(options.force);
+  const cacheFresh=quoteRequestRecords.length
+    && (Date.now()-adminQuoteRequestsLoadedAt)<ADMIN_QUOTE_CACHE_MS;
+
+  if(!force && cacheFresh){
+    updateQuoteDashboardStats();
+    renderQuoteRequests();
+    buildInstitutionOfferReport();
+    renderInstitutionOfferReport();
+    refreshAdminOverview();
+    renderIssueCenter();
+    renderQuoteRoutingAdmin();
+    return;
+  }
+
   adminQuoteActivityCache.clear();
   quoteRequestsList.innerHTML = "Teklif talepleri yükleniyor...";
 
@@ -5815,6 +5856,8 @@ async function loadQuoteRequests() {
         }
       })
     );
+
+    adminQuoteRequestsLoadedAt=Date.now();
 
     try{
       await syncSecondOfferInvitesFallback();
@@ -8052,7 +8095,7 @@ function renderQuoteRequests() {
 
         try {
           await recordQuoteInstitutionForward(request.id, institutionId, institutionName);
-          await loadQuoteRequests();
+          await loadQuoteRequests({force:true});
         } catch (error) {
           console.error("Kurum iletimi kaydedilemedi:", error);
           alert("WhatsApp açıldı ancak kurum iletim kaydı kaydedilemedi.");
@@ -8104,7 +8147,7 @@ function renderQuoteRequests() {
           });
         }
         adminQuoteActivityCache.delete(request.id);
-        await loadQuoteRequests();
+        await loadQuoteRequests({force:true});
       } catch (error) {
         console.error("Teklif talebi arşivlenemedi:", error);
         alert("Arşiv işlemi tamamlanamadı.");
@@ -8215,7 +8258,7 @@ quoteRefreshBtn?.addEventListener("click", async () => {
   quoteRefreshBtn.disabled = true;
   quoteRefreshBtn.innerHTML = "<span>↻</span> Yenileniyor...";
   try {
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
   } finally {
     quoteRefreshBtn.disabled = false;
     quoteRefreshBtn.innerHTML = oldText;
@@ -8629,7 +8672,7 @@ overviewRefreshBtn?.addEventListener("click", async () => {
   try {
     await loadApplications();
     await loadInstitutions();
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
     await loadInstitutionAccounts();
     refreshAdminOverview();
   } finally {
@@ -9030,7 +9073,7 @@ async function saveOfferIssueCase(quoteId, issueId, button) {
       })
     });
 
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
   } catch (error) {
     console.error("Sorun dosyası kaydedilemedi:", error);
     alert("Sorun dosyası kaydedilemedi.");
@@ -9059,7 +9102,7 @@ async function quickOfferIssueStatus(quoteId, issueId, status, summary) {
         })
       });
 
-    await loadQuoteRequests();
+    await loadQuoteRequests({force:true});
   } catch (error) {
     console.error("Sorun durumu güncellenemedi:", error);
     alert("Sorun durumu güncellenemedi.");
