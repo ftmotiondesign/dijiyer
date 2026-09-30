@@ -608,6 +608,103 @@
       return true;
     }
 
+
+    function opportunityCampaignId(inst){
+      var explicit = String(inst && inst.opportunitySponsorCampaignId || '').trim();
+      if(explicit) return explicit;
+      return [
+        'opportunity',
+        String(inst && inst.id || ''),
+        String(inst && inst.opportunitySponsorStartAt || '').slice(0,10) || 'start',
+        String(inst && inst.opportunitySponsorEndAt || '').slice(0,10) || 'open'
+      ].join('_');
+    }
+
+    async function trackOpportunityEvent(inst,action){
+      if(!inst || !inst.id) return;
+      if(inst.opportunitySponsorActive !== true) return;
+      if(!String(inst.opportunitySponsorMediaUrl || '').trim()) return;
+      if(!dateActive(inst.opportunitySponsorStartAt,inst.opportunitySponsorEndAt)) return;
+
+      var isImpression = action === 'impression';
+      var type = isImpression ? 'opportunity_ad_impression' : 'opportunity_ad_click';
+      var day = localDay();
+      var campaignId = opportunityCampaignId(inst);
+
+      if(isImpression){
+        var key = 'dijiyer_opportunity_impression_' + day + '_' + campaignId;
+        if(sessionStorage.getItem(key)) return;
+        sessionStorage.setItem(key,'1');
+      }
+
+      try{
+        await db.collection('institutionAnalytics').add({
+          institutionId:String(inst.id),
+          type:type,
+          action:String(action || ''),
+          source:'firsatlar',
+          campaignId:campaignId,
+          campaignStartAt:String(inst.opportunitySponsorStartAt || '').slice(0,10),
+          campaignEndAt:String(inst.opportunitySponsorEndAt || '').slice(0,10),
+          day:day,
+          date:new Date().toISOString()
+        });
+      }catch(error){
+        console.warn('Fırsat istatistiği kaydedilemedi:',error);
+      }
+    }
+
+    var opportunityObserver = null;
+
+    function bindOpportunityAnalytics(){
+      if(opportunityObserver){
+        opportunityObserver.disconnect();
+        opportunityObserver = null;
+      }
+
+      var cards = Array.from(list.querySelectorAll('.card.sponsored[data-institution-id]'));
+
+      var observeCard = function(card){
+        var id = String(card.dataset.institutionId || '');
+        var inst = institutions.find(function(item){
+          return String(item.id || '') === id;
+        });
+        if(inst) trackOpportunityEvent(inst,'impression');
+      };
+
+      if('IntersectionObserver' in window){
+        opportunityObserver = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if(!entry.isIntersecting || entry.intersectionRatio < 0.35) return;
+            opportunityObserver.unobserve(entry.target);
+            observeCard(entry.target);
+          });
+        },{threshold:[0.35]});
+
+        cards.forEach(function(card){
+          opportunityObserver.observe(card);
+        });
+      }else{
+        cards.forEach(observeCard);
+      }
+    }
+
+    list.addEventListener('click',function(event){
+      var actionEl = event.target.closest('[data-opportunity-action]');
+      if(!actionEl) return;
+
+      var card = actionEl.closest('.card.sponsored[data-institution-id]');
+      if(!card) return;
+
+      var id = String(card.dataset.institutionId || '');
+      var inst = institutions.find(function(item){
+        return String(item.id || '') === id;
+      });
+      if(inst){
+        trackOpportunityEvent(inst,String(actionEl.dataset.opportunityAction || 'click'));
+      }
+    });
+
     function mainSector(record){
       var direct = String(record.mainCategory || '').trim();
       if(direct && taxonomy[direct]) return direct;
@@ -912,9 +1009,9 @@
       if(phone){
         if(phone.charAt(0)==='0' && phone.length===11) phone='90'+phone.slice(1);
         if(phone.length===10 && phone.charAt(0)==='5') phone='90'+phone;
-        secondAction = '<a class="secondary" href="https://wa.me/' + esc(phone) + '" target="_blank" rel="noopener">WhatsApp</a>';
+        secondAction = '<a class="secondary" data-opportunity-action="whatsapp" href="https://wa.me/' + esc(phone) + '" target="_blank" rel="noopener">WhatsApp</a>';
       }else if(location){
-        secondAction = '<a class="secondary" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([inst.name,city,district].filter(Boolean).join(' ')) + '" target="_blank" rel="noopener">Yol Tarifi</a>';
+        secondAction = '<a class="secondary" data-opportunity-action="directions" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([inst.name,city,district].filter(Boolean).join(' ')) + '" target="_blank" rel="noopener">Yol Tarifi</a>';
       }
 
       return '<article id="firsat-' + esc(inst.id || row.id || '') + '" data-institution-id="' + esc(inst.id || row.id || '') + '" class="card' + (row.sponsored ? ' sponsored' : '') + '">' +
@@ -937,7 +1034,7 @@
             (location ? '<span class="pill">📍 ' + esc(location) + '</span>' : '') +
           '</div>' +
           '<div class="actions">' +
-            (inst.id ? '<a class="primary" href="' + esc(detailHref) + '">İncele</a>' : '<span class="primary">Sponsorlu</span>') +
+            (inst.id ? '<a class="primary" data-opportunity-action="detail" href="' + esc(detailHref) + '">İncele</a>' : '<span class="primary">Sponsorlu</span>') +
             secondAction +
           '</div>' +
         '</div>' +
@@ -960,6 +1057,7 @@
       }
 
       loadMoreBtn.hidden = visibleCount >= filteredRows.length;
+      bindOpportunityAnalytics();
     }
 
     function showError(message){
