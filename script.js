@@ -8142,12 +8142,148 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
   const desktopSearchSubmitBtn = document.getElementById('desktopSearchSubmitBtn');
   const searchInput = document.getElementById('searchInput');
   const resultsSection = document.getElementById('resultsSection');
+  const categoryPreview = document.getElementById('desktopCategoryPreview');
+  const categoryPreviewIcon = document.getElementById('desktopCategoryPreviewIcon');
+  const categoryPreviewEyebrow = document.getElementById('desktopCategoryPreviewEyebrow');
+  const categoryPreviewTitle = document.getElementById('desktopCategoryPreviewTitle');
+  const categoryPreviewText = document.getElementById('desktopCategoryPreviewText');
+  const categoryPreviewCount = document.getElementById('desktopCategoryPreviewCount');
+  const categoryPreviewSubs = document.getElementById('desktopCategoryPreviewSubs');
+  const categoryPreviewOpen = document.getElementById('desktopCategoryPreviewOpen');
 
   function syncDesktopLocation(){
     if(!desktopLocationText)return;
     const source = document.getElementById('locationBtnText');
     desktopLocationText.textContent = source?.textContent?.trim() || 'Tüm Türkiye';
   }
+
+  function renderDesktopCategoryPreview(key){
+    if(!categoryPreview)return;
+
+    const meta = key ? categoryTaxonomy[key] : null;
+    const filteredCount = typeof getFilteredInstitutions === 'function'
+      ? getFilteredInstitutions().length
+      : null;
+
+    categoryPreview.dataset.category = key || '';
+    categoryPreview.classList.remove('hidden');
+
+    if(categoryPreviewIcon){
+      categoryPreviewIcon.textContent = key ? (categoryIcons[key] || '•') : '☰';
+    }
+    if(categoryPreviewEyebrow){
+      categoryPreviewEyebrow.textContent = key ? 'SEÇİLEN KATEGORİ' : 'TÜM KURUMLAR';
+    }
+    if(categoryPreviewTitle){
+      categoryPreviewTitle.textContent = meta?.label || 'Tüm Kurumlar';
+    }
+    if(categoryPreviewText){
+      categoryPreviewText.textContent = key
+        ? 'Alt hizmeti seçebilir veya bu kategorideki kurumları inceleyebilirsin.'
+        : 'Dijiyer’deki tüm kategorileri ve kayıtlı kurumları tek yerde inceleyebilirsin.';
+    }
+    if(categoryPreviewCount){
+      categoryPreviewCount.textContent =
+        Number.isFinite(filteredCount) && filteredCount > 0
+          ? filteredCount + ' kurum'
+          : '';
+    }
+
+    if(categoryPreviewSubs){
+      categoryPreviewSubs.innerHTML = '';
+      if(meta?.subs){
+        Object.entries(meta.subs).slice(0,8).forEach(([subKey,label])=>{
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.dataset.desktopPreviewSub = subKey;
+          button.dataset.desktopPreviewMain = key;
+          button.textContent = label;
+          const selected = document.querySelector(
+            '.subCategoryFilter[data-main-category="' + key + '"][value="' + subKey + '"]'
+          )?.checked;
+          button.classList.toggle('is-active',Boolean(selected));
+          categoryPreviewSubs.appendChild(button);
+        });
+      }
+    }
+  }
+
+  function selectDesktopCategory(key){
+    if(typeof clearDiscoveryKeywordForCategorySelection === 'function'){
+      clearDiscoveryKeywordForCategorySelection();
+    }else if(searchInput){
+      searchInput.value = '';
+    }
+
+    if(typeof clearAllCategorySelections === 'function'){
+      clearAllCategorySelections();
+    }else{
+      document.querySelectorAll('.categoryFilter,.subCategoryFilter').forEach(input=>{
+        input.checked=false;
+      });
+    }
+
+    if(key){
+      const target = [...document.querySelectorAll('.categoryFilter')]
+        .find(input=>String(input.value||'')===key);
+      if(target)target.checked=true;
+    }
+
+    document.querySelectorAll('[data-desktop-category]').forEach(item=>{
+      item.classList.toggle(
+        'is-active',
+        String(item.dataset.desktopCategory || '').trim()===key
+      );
+    });
+
+    if(typeof renderMobileCategories === 'function')renderMobileCategories();
+    if(typeof renderList === 'function')renderList();
+    if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+    renderDesktopCategoryPreview(key);
+  }
+
+  categoryPreviewSubs?.addEventListener('click', event=>{
+    const button = event.target.closest('[data-desktop-preview-sub]');
+    if(!button)return;
+
+    const mainKey = String(button.dataset.desktopPreviewMain || '').trim();
+    const subKey = String(button.dataset.desktopPreviewSub || '').trim();
+    if(!mainKey || !subKey)return;
+
+    if(typeof clearDiscoveryKeywordForCategorySelection === 'function'){
+      clearDiscoveryKeywordForCategorySelection();
+    }
+    if(typeof clearAllCategorySelections === 'function'){
+      clearAllCategorySelections();
+    }
+
+    const mainInput = [...document.querySelectorAll('.categoryFilter')]
+      .find(input=>String(input.value||'')===mainKey);
+    const subInput = [...document.querySelectorAll('.subCategoryFilter')]
+      .find(input=>
+        String(input.dataset.mainCategory||'')===mainKey &&
+        String(input.value||'')===subKey
+      );
+
+    if(mainInput)mainInput.checked=true;
+    if(subInput)subInput.checked=true;
+
+    document.querySelectorAll('[data-desktop-category]').forEach(item=>{
+      item.classList.toggle(
+        'is-active',
+        String(item.dataset.desktopCategory || '').trim()===mainKey
+      );
+    });
+
+    if(typeof renderMobileCategories === 'function')renderMobileCategories();
+    if(typeof renderList === 'function')renderList();
+    if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+    renderDesktopCategoryPreview(mainKey);
+  });
+
+  categoryPreviewOpen?.addEventListener('click', ()=>{
+    resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
 
   desktopLocationBtn?.addEventListener('click', event=>{
     event.preventDefault();
@@ -8170,34 +8306,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
   document.querySelectorAll('[data-desktop-category]').forEach(button=>{
     button.addEventListener('click', ()=>{
       const key = String(button.dataset.desktopCategory || '').trim();
-
-      if(typeof clearAllCategorySelections === 'function'){
-        clearAllCategorySelections();
-      }else{
-        document.querySelectorAll('.categoryFilter,.subCategoryFilter').forEach(input=>{
-          input.checked=false;
-        });
-      }
-
-      if(key){
-        const target = [...document.querySelectorAll('.categoryFilter')]
-          .find(input=>String(input.value||'')===key);
-        if(target){
-          target.checked=true;
-          target.dispatchEvent(new Event('change',{bubbles:true}));
-        }
-      }
-
-      document.querySelectorAll('[data-desktop-category]').forEach(item=>{
-        item.classList.toggle(
-          'is-active',
-          String(item.dataset.desktopCategory || '').trim()===key
-        );
-      });
-
-      if(typeof renderList === 'function')renderList();
-      if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
-      resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+      selectDesktopCategory(key);
     });
   });
 
