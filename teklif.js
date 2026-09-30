@@ -60,6 +60,47 @@ function toast(text){
 }
 function normalizeCode(v){return String(v||"").trim().toUpperCase();}
 
+function acceptedQuoteStorageKey(quoteId){
+  return "dijiyerAcceptedQuote_"+String(quoteId||"");
+}
+function markQuoteAcceptedLocally(quoteId,lockData={}){
+  if(!quoteId)return;
+  try{
+    localStorage.setItem(acceptedQuoteStorageKey(quoteId),JSON.stringify({
+      accepted:true,
+      institutionId:String(lockData.institutionId||""),
+      institutionName:String(lockData.institutionName||""),
+      offerCode:String(lockData.offerCode||""),
+      price:Number(lockData.price||0),
+      acceptedAt:String(lockData.acceptedAt||lockData.lockedAt||new Date().toISOString())
+    }));
+  }catch(_){}
+}
+function localAcceptedQuote(quoteId){
+  if(!quoteId)return null;
+  try{
+    const row=JSON.parse(localStorage.getItem(acceptedQuoteStorageKey(quoteId))||"null");
+    return row?.accepted===true ? row : null;
+  }catch(_){
+    return null;
+  }
+}
+function localAcceptedClosedHtml(access){
+  const row=localAcceptedQuote(access?.quoteId)||{};
+  return `
+    <article class="locked-card local-accepted-card">
+      <div class="locked-check">✓</div>
+      <h2>Teklif Kabul Edildi · Talep Kapatıldı</h2>
+      ${row.offerCode?`<div class="locked-code">KABUL EDİLEN TEKLİF · ${safe(row.offerCode)}</div>`:""}
+      ${row.price?`<div class="locked-price">${money(row.price)}</div>`:""}
+      <div class="offer-lock-notice">
+        <strong>Bu talep için bir teklif zaten kabul edildi.</strong>
+        Kabul işlemi tekrar yapılamaz. Satıcı kabul edilen teklifi artık düzenleyemez.
+      </div>
+    </article>
+  `;
+}
+
 function currentTrackingUrl(access){
   const url=new URL("teklif.html",location.href);
   url.search="";
@@ -888,6 +929,8 @@ function routingStatusHtml(access,publicStatus){
 
 function render(bundle){
   const access=bundle.access;
+  if(bundle.lock)markQuoteAcceptedLocally(access?.quoteId,bundle.lock);
+  const acceptedLocally=Boolean(bundle.lock)||Boolean(localAcceptedQuote(access?.quoteId));
   const offers=sortOffersForCustomer(bundle.offers);
   const engagementRows=Array.isArray(bundle.engagement)?bundle.engagement:[];
   const directStatus=directResponseHtml(access,engagementRows,offers);
@@ -918,7 +961,11 @@ function render(bundle){
     ${routingStatusHtml(access,bundle.publicStatus)}
     ${newOfferAlertHtml()}
 
-    ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
+    ${bundle.lock
+      ? lockedHtml(bundle)
+      : acceptedLocally
+        ? localAcceptedClosedHtml(access)
+        : `<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
 
   newlyArrivedOfferIds.forEach(id=>{
@@ -1166,9 +1213,18 @@ async function lockOffer(quoteId,institutionId,button){
     const publicLockedAt=new Date().toISOString();
 
     await db.runTransaction(async tx=>{
-      const [offerSnap,lockSnap]=await Promise.all([tx.get(offerRef),tx.get(lockRef)]);
+      const [offerSnap,lockSnap,quoteSnap]=await Promise.all([
+        tx.get(offerRef),
+        tx.get(lockRef),
+        tx.get(quoteRef)
+      ]);
       if(lockSnap.exists)throw new Error("Bu talep için daha önce bir teklif kabul edildi.");
       if(!offerSnap.exists)throw new Error("Teklif bulunamadı.");
+      if(!quoteSnap.exists)throw new Error("Talep bulunamadı.");
+      const quoteData=quoteSnap.data()||{};
+      if(["accepted","closed","completed","used","cancelled","canceled"].includes(String(quoteData.status||"").toLowerCase())){
+        throw new Error("Bu talep daha önce kapatıldı.");
+      }
       const offer=offerSnap.data();
       if(!offer.expiresAtTs||offer.expiresAtTs.toMillis()<=Date.now())throw new Error("Teklifin süresi dolmuş.");
 
@@ -1213,6 +1269,17 @@ async function lockOffer(quoteId,institutionId,button){
         platformPayment:false,
         paymentPolicy:"offline_direct_between_customer_and_institution"
       });
+
+      // Talebin kendisini de aynı atomik işlem içinde kapat.
+      tx.update(quoteRef,{
+        status:"accepted",
+        acceptedInstitutionId:String(offer.institutionId||institutionId),
+        acceptedInstitutionName:String(offer.institutionName||"Kurum"),
+        acceptedOfferCode:String(offer.offerCode||""),
+        acceptedPrice:Number(offer.price),
+        acceptedAt:publicLockedAt,
+        acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp()
+      });
     });
 
     // Firestore dinleyicisini beklemeden ekranı anında kapat.
@@ -1246,6 +1313,7 @@ async function lockOffer(quoteId,institutionId,button){
       platformPayment:false,
       paymentPolicy:"offline_direct_between_customer_and_institution"
     };
+    markQuoteAcceptedLocally(quoteId,liveLock);
     renderLiveTracking();
 
     await recordPublicAcceptedEvent(quoteId,publicLockedAt);
