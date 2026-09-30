@@ -3,12 +3,12 @@
   const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection",
-    "offerReportSection","issuesSection","accountsSection"
+    "offerReportSection","issuesSection","accountsSection","unmatchedSearchesSection"
   ];
   const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
-    "offerReportTabBtn","issuesTabBtn","accountsTabBtn"
+    "offerReportTabBtn","issuesTabBtn","accountsTabBtn","unmatchedSearchesTabBtn"
   ];
 
   const selectedInstitutionIds = new Set();
