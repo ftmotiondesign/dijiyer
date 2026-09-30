@@ -1027,6 +1027,7 @@ async function loadInstitutions() {
     if (quoteRequestRecords.length) {
       buildInstitutionOfferReport();
       renderInstitutionOfferReport();
+      renderQuoteRoutingAdmin();
     }
 
   } catch (error) {
@@ -3487,6 +3488,7 @@ async function loadQuoteRequests() {
     renderInstitutionOfferReport();
     refreshAdminOverview();
     renderIssueCenter();
+    renderQuoteRoutingAdmin();
 
   } catch (error) {
     console.error("Teklif talepleri yüklenemedi:", error);
