@@ -1122,7 +1122,7 @@ async function lockOffer(quoteId,institutionId,button){
         extraFee:offer.extraFee||"Yok",
         offerCreatedAt:offer.createdAt||"",
         offerUpdatedAt:offer.updatedAt||offer.createdAt||"",
-        offerVersion:offer.updatedAt||offer.createdAt||publicLockedAt,
+        offerVersion:Math.max(1,Number(offer.offerVersion||1)),
         offerSnapshotVersion:1,
 
         // Takip kodu + telefon özeti bu kabul kaydına bağlanır
