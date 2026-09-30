@@ -29,6 +29,8 @@
   let adCalendarCursor = new Date();
   let adCalendarSelectedDate = new Date();
   let adminSettings = loadAdminSettings();
+  let clientErrorRecords = [];
+  const reportedAdminErrorKeys = new Set();
 
   function safeText(value) {
     return String(value ?? "");
@@ -8142,4 +8144,143 @@
     renderTodayTasks();
     renderAudit();
   }, 1200);
+
+  function clientErrorMessage(value){
+    if(value instanceof Error)return value.message||String(value);
+    if(value&&typeof value==="object"&&value.message)return String(value.message);
+    return String(value||"Bilinmeyen hata");
+  }
+
+  function clientErrorStack(value){
+    if(value instanceof Error)return String(value.stack||"").slice(0,5000);
+    if(value&&typeof value==="object"&&value.stack)return String(value.stack).slice(0,5000);
+    return "";
+  }
+
+  async function reportAdminClientError(value,context="window"){
+    try{
+      const user=firebase.auth().currentUser;
+      if(!user)return;
+
+      const message=clientErrorMessage(value).slice(0,1000);
+      const key=context+"|"+message;
+      if(reportedAdminErrorKeys.has(key))return;
+      reportedAdminErrorKeys.add(key);
+      setTimeout(()=>reportedAdminErrorKeys.delete(key),60000);
+
+      await db.collection("clientErrors").add({
+        source:"admin",
+        page:String(location.pathname||"admin.html").slice(0,300),
+        message:(context?context+": ":"")+message,
+        stack:clientErrorStack(value),
+        date:new Date().toISOString(),
+        status:"new",
+        userId:String(user.uid||""),
+        institutionId:""
+      });
+    }catch(_){}
+  }
+
+  async function loadClientErrors(){
+    const list=$("clientErrorList");
+    const count=$("clientErrorCount");
+    if(!list||!count)return;
+
+    list.innerHTML='<div class="empty-state">Hata kayıtları yükleniyor...</div>';
+    try{
+      const snap=await db.collection("clientErrors")
+        .orderBy("date","desc")
+        .limit(100)
+        .get();
+      clientErrorRecords=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      renderClientErrors();
+    }catch(error){
+      console.warn("Hata kayıtları yüklenemedi:",error);
+      count.textContent="Hata kayıtları okunamadı";
+      list.innerHTML='<div class="empty-state">Hata kayıtları okunamadı.</div>';
+    }
+  }
+
+  function renderClientErrors(){
+    const list=$("clientErrorList");
+    const count=$("clientErrorCount");
+    const filter=$("clientErrorFilter");
+    if(!list||!count)return;
+
+    const status=String(filter?.value||"");
+    const rows=clientErrorRecords.filter(row=>!status||String(row.status||"new")===status);
+    const open=clientErrorRecords.filter(row=>String(row.status||"new")==="new").length;
+    count.textContent=open+" açık hata · "+clientErrorRecords.length+" kayıt";
+
+    if(!rows.length){
+      list.innerHTML='<div class="empty-state">Bu filtreye uygun hata kaydı yok.</div>';
+      return;
+    }
+
+    list.innerHTML=rows.map(row=>{
+      const source=String(row.source||"unknown");
+      const sourceLabel=source==="institution"?"Kurum Paneli":"Yönetim Paneli";
+      return `
+        <article class="client-error-row ${String(row.status||"new")==="resolved"?"resolved":""}">
+          <div>
+            <div class="client-error-meta">
+              <strong>${safeText(sourceLabel)}</strong>
+              <span>${formatDateLocal(row.date)}</span>
+              ${row.institutionId?'<span>Kurum: '+safeText(row.institutionId)+'</span>':""}
+            </div>
+            <p>${safeText(row.message||"Bilinmeyen hata")}</p>
+            <small>${safeText(row.page||"")}</small>
+            ${row.stack?'<details><summary>Teknik ayrıntı</summary><pre>'+safeText(row.stack)+'</pre></details>':""}
+          </div>
+          <div class="client-error-row-actions">
+            ${String(row.status||"new")!=="resolved"
+              ? '<button type="button" data-client-error-action="resolve" data-id="'+safeText(row.id)+'">Çözüldü</button>'
+              : '<button type="button" data-client-error-action="reopen" data-id="'+safeText(row.id)+'">Tekrar Aç</button>'}
+            <button type="button" class="danger" data-client-error-action="delete" data-id="${safeText(row.id)}">Sil</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+    list.querySelectorAll("[data-client-error-action]").forEach(button=>{
+      button.addEventListener("click",async()=>{
+        const id=String(button.dataset.id||"");
+        const action=String(button.dataset.clientErrorAction||"");
+        if(!id||!action)return;
+
+        button.disabled=true;
+        try{
+          const ref=db.collection("clientErrors").doc(id);
+          if(action==="delete"){
+            if(!confirm("Bu hata kaydını kalıcı olarak silmek istiyor musunuz?"))return;
+            await ref.delete();
+            clientErrorRecords=clientErrorRecords.filter(row=>row.id!==id);
+          }else{
+            const next=action==="resolve"?"resolved":"new";
+            await ref.update({status:next});
+            const row=clientErrorRecords.find(item=>item.id===id);
+            if(row)row.status=next;
+          }
+          renderClientErrors();
+        }catch(error){
+          console.error("Hata kaydı güncellenemedi:",error);
+        }finally{
+          button.disabled=false;
+        }
+      });
+    });
+  }
+
+  window.addEventListener("error",event=>{
+    reportAdminClientError(event.error||event.message,"window.error");
+  });
+
+  window.addEventListener("unhandledrejection",event=>{
+    reportAdminClientError(event.reason,"unhandledrejection");
+  });
+
+  $("clientErrorFilter")?.addEventListener("change",renderClientErrors);
+  $("clientErrorRefresh")?.addEventListener("click",loadClientErrors);
+  setTimeout(loadClientErrors,1200);
+
 })();
