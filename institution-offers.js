@@ -2,6 +2,106 @@ let institutionOfferMap = new Map();
 let institutionLockMap = new Map();
 let institutionSecondOfferInviteMap = new Map();
 let institutionLeadCreditBalance = 0;
+let institutionOfferStateWatchers = new Map();
+
+function offerStateFingerprint(value){
+  if(!value)return "";
+  return JSON.stringify({
+    institutionId:String(value.institutionId||""),
+    status:String(value.status||""),
+    price:Number(value.price||0),
+    offerCode:String(value.offerCode||""),
+    offerVersion:Number(value.offerVersion||1),
+    acceptedAt:String(value.acceptedAt||value.lockedAt||""),
+    usedAt:String(value.usedAt||""),
+    expiresAt:String(value.expiresAt||""),
+    decision:String(value.decision||"")
+  });
+}
+
+function stopInstitutionOfferStateWatchers(){
+  institutionOfferStateWatchers.forEach(stop=>{
+    try{ stop(); }catch(_){}
+  });
+  institutionOfferStateWatchers.clear();
+}
+
+function syncInstitutionOfferStateWatchers(){
+  const currentInstitutionId=String(currentAccount?.institutionId||"");
+  if(!currentInstitutionId)return;
+
+  const activeQuoteIds=new Set(quoteRecords.map(quote=>String(quote.id)));
+
+  institutionOfferStateWatchers.forEach((stop,quoteId)=>{
+    if(activeQuoteIds.has(String(quoteId)))return;
+    try{ stop(); }catch(_){}
+    institutionOfferStateWatchers.delete(quoteId);
+  });
+
+  quoteRecords.forEach(quote=>{
+    const quoteId=String(quote.id);
+    if(!quoteId || institutionOfferStateWatchers.has(quoteId))return;
+
+    const quoteRef=db.collection("quoteRequests").doc(quoteId);
+    const unsubscribers=[];
+
+    unsubscribers.push(
+      quoteRef.collection("locks").doc("main").onSnapshot(snapshot=>{
+        const before=institutionLockMap.get(quoteId)||null;
+        const after=snapshot.exists ? snapshot.data() : null;
+        if(after)institutionLockMap.set(quoteId,after);
+        else institutionLockMap.delete(quoteId);
+
+        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
+          renderQuotes();
+          renderSummary();
+        }
+      },error=>{
+        console.warn("Kabul/kilit durumu canlı izlenemedi:",quoteId,error);
+      })
+    );
+
+    unsubscribers.push(
+      quoteRef.collection("offers").doc(currentInstitutionId).onSnapshot(snapshot=>{
+        const before=institutionOfferMap.get(quoteId)||null;
+        const after=snapshot.exists ? {id:snapshot.id,...snapshot.data()} : null;
+        if(after)institutionOfferMap.set(quoteId,after);
+        else institutionOfferMap.delete(quoteId);
+
+        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
+          renderQuotes();
+          renderSummary();
+        }
+      },error=>{
+        console.warn("Kurum teklifi canlı izlenemedi:",quoteId,error);
+      })
+    );
+
+    unsubscribers.push(
+      quoteRef.collection("secondOfferInvites").doc(currentInstitutionId).onSnapshot(snapshot=>{
+        const before=institutionSecondOfferInviteMap.get(quoteId)||null;
+        const after=snapshot.exists ? {id:snapshot.id,...snapshot.data()} : null;
+        if(after)institutionSecondOfferInviteMap.set(quoteId,after);
+        else institutionSecondOfferInviteMap.delete(quoteId);
+
+        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
+          renderQuotes();
+        }
+      },error=>{
+        console.warn("2. teklif daveti canlı izlenemedi:",quoteId,error);
+      })
+    );
+
+    institutionOfferStateWatchers.set(quoteId,()=>{
+      unsubscribers.forEach(unsubscribe=>{
+        try{ unsubscribe(); }catch(_){}
+      });
+    });
+  });
+}
+
+window.stopInstitutionOfferStateWatchers=stopInstitutionOfferStateWatchers;
+window.addEventListener("beforeunload",stopInstitutionOfferStateWatchers);
 
 function isRoutedLeadForCurrentInstitution(quote){
   const institutionId=String(currentAccount?.institutionId||"");
@@ -210,6 +310,7 @@ loadMatchedQuotes = async function(){
       if(quote)showSecondOfferInviteNotice(quote,invite);
     });
 
+    syncInstitutionOfferStateWatchers();
     renderQuotes();
     renderSummary();
 
