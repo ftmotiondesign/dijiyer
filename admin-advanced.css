@@ -1283,6 +1283,137 @@
 }
 
 
+
+
+/* =========================================================
+   VIP Kurum Yönetimi
+   ========================================================= */
+.vip-admin-title{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:12px;
+}
+.vip-admin-title>div:first-child{display:grid;gap:4px}
+.vip-eyebrow{font-size:8px;font-weight:950;letter-spacing:.1em;color:#a16207}
+.vip-admin-title-stats{display:flex;gap:8px;flex-wrap:wrap}
+.vip-admin-title-stats span{
+  display:flex;align-items:center;gap:5px;padding:8px 10px;border:1px solid #ead8a8;
+  border-radius:10px;background:#fffbeb;color:#7c5b10;font-size:8.5px;font-weight:800;
+}
+.vip-admin-title-stats b{font-size:12px;color:#8a5a00}
+.vip-admin-layout{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,.65fr);gap:12px;align-items:start;
+}
+.vip-plan-editor,.vip-assign-editor,.vip-list-panel{
+  padding:14px;border:1px solid #e6dfcf;border-radius:13px;background:#fff;
+  box-shadow:0 8px 25px rgba(90,64,10,.04);
+}
+.vip-panel-head{
+  margin-bottom:11px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+  padding-bottom:10px;border-bottom:1px solid #f0eadc;
+}
+.vip-panel-head>div{display:grid;gap:2px}
+.vip-panel-head span{font-size:8px;color:#a16207;font-weight:950;letter-spacing:.08em}
+.vip-panel-head strong{font-size:12px;color:#27231a}
+.vip-panel-head small{font-size:8px;color:#8b8374;line-height:1.4}
+.vip-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.vip-plan-card{
+  display:grid;gap:8px;padding:12px;border:1px solid #e9e2d3;border-radius:12px;
+  background:linear-gradient(180deg,#fff 0%,#fffcf5 100%);
+}
+.vip-plan-card-vip_plus{border-color:#cddcfb;background:linear-gradient(180deg,#fff 0%,#f6f9ff 100%)}
+.vip-plan-card-vip_premium{border-color:#e6cf8d;background:linear-gradient(180deg,#fffdf7 0%,#fff8df 100%)}
+.vip-plan-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.vip-plan-card-head>div{display:grid;gap:3px}
+.vip-plan-card-head>div>span{
+  width:max-content;padding:4px 6px;border-radius:999px;background:#fff2c7;color:#8a5a00;
+  font-size:7px;font-weight:950;letter-spacing:.05em;
+}
+.vip-plan-card-vip_plus .vip-plan-card-head>div>span{background:#eaf2ff;color:#1d4ed8}
+.vip-plan-card-vip_premium .vip-plan-card-head>div>span{background:#231f17;color:#f6d77c}
+.vip-plan-card-head strong{font-size:13px;color:#26221a}
+.vip-plan-active{display:flex!important;align-items:center!important;gap:4px!important;font-size:7.5px!important;color:#64805d!important}
+.vip-plan-active input{width:auto!important}
+.vip-plan-card>label,.vip-plan-price-grid label,.vip-assign-editor>label,.vip-assign-grid label{
+  display:grid;gap:4px;color:#746c5f;font-size:8px;font-weight:850;
+}
+.vip-plan-card input,.vip-plan-card textarea,.vip-assign-editor select,.vip-assign-editor input{
+  width:100%;padding:8px;border:1px solid #ded7c9;border-radius:8px;background:#fff;
+  color:#2f2a22;font-size:9px;outline:none;
+}
+.vip-plan-card textarea{resize:vertical;line-height:1.45}
+.vip-plan-price-grid,.vip-assign-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.vip-assign-editor{display:grid;gap:10px;position:sticky;top:10px}
+.vip-assignment-preview{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:9px;border:1px solid #eadcb5;
+  border-radius:10px;background:#fffbeb;
+}
+.vip-assignment-preview>div{display:grid;gap:2px}
+.vip-assignment-preview span{font-size:7px;color:#8b7b58}
+.vip-assignment-preview strong{font-size:9px;color:#5f4610}
+.vip-current-status{
+  min-height:52px;padding:10px;border:1px dashed #d9d2c5;border-radius:10px;background:#faf9f6;
+  display:grid;align-content:center;color:#756f65;font-size:8px;
+}
+.vip-current-status>div{display:grid;gap:2px}
+.vip-current-status strong{font-size:10px;color:#2f2a22}
+.vip-current-status small{color:#8e877c}
+.vip-assign-actions{display:grid;grid-template-columns:1fr auto;gap:7px}
+.vip-remove-btn{
+  padding:8px 10px;border:1px solid #fecaca;border-radius:8px;background:#fff7f7;
+  color:#b91c1c;font-size:8.5px;font-weight:900;cursor:pointer;
+}
+.vip-remove-btn:disabled{opacity:.4;cursor:not-allowed}
+.vip-list-panel{margin-top:12px}
+.vip-list-head{
+  margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.vip-list-head>div{display:grid;gap:2px}
+.vip-list-head strong{font-size:11px;color:#2f2a22}
+.vip-list-head small{font-size:8px;color:#8b8374}
+.vip-list-head input{
+  min-width:260px;padding:8px 9px;border:1px solid #ded7c9;border-radius:8px;font-size:9px;
+}
+.vip-institution-list{display:grid;gap:7px}
+.vip-institution-card{
+  display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(220px,1fr) 130px 90px auto;
+  gap:10px;align-items:center;padding:10px;border:1px solid #ebe5d9;border-radius:10px;background:#fff;
+}
+.vip-institution-main,.vip-institution-period,.vip-institution-price{display:grid;gap:2px}
+.vip-institution-main>strong{font-size:10px;color:#29251f}
+.vip-institution-main>small,.vip-institution-period>small{font-size:7.5px;color:#938b7e}
+.vip-institution-period>span,.vip-institution-price>span{font-size:7px;color:#9b9284}
+.vip-institution-period>strong,.vip-institution-price>strong{font-size:8.5px;color:#4f473b}
+.vip-level-badge{
+  width:max-content;padding:4px 6px;border-radius:999px;background:#fff2c7;color:#865c0c;
+  font-size:7px;font-weight:950;
+}
+.vip-level-vip_plus{background:#eaf2ff;color:#1d4ed8}
+.vip-level-vip_premium{background:#28231a;color:#f3d577}
+.vip-institution-state{
+  padding:5px 7px;border-radius:999px;text-align:center;font-size:7.5px;font-weight:950;
+}
+.vip-institution-state.active{background:#dcfce7;color:#15803d}
+.vip-institution-state.expired{background:#fff1f2;color:#be123c}
+.vip-institution-state.passive{background:#eef2f7;color:#64748b}
+.vip-institution-card>button{
+  padding:7px 9px;border:1px solid #d7cba8;border-radius:8px;background:#fffbeb;
+  color:#785a14;font-size:8px;font-weight:900;cursor:pointer;
+}
+@media(max-width:1100px){
+  .vip-admin-layout{grid-template-columns:1fr}
+  .vip-assign-editor{position:static}
+  .vip-plan-grid{grid-template-columns:1fr}
+  .vip-institution-card{grid-template-columns:1fr 1fr 120px auto}
+  .vip-institution-price{display:none}
+}
+@media(max-width:650px){
+  .vip-admin-title,.vip-panel-head,.vip-list-head{flex-direction:column;align-items:stretch}
+  .vip-admin-title-stats{width:100%}
+  .vip-plan-price-grid,.vip-assign-grid,.vip-assignment-preview,.vip-assign-actions{grid-template-columns:1fr}
+  .vip-list-head input{min-width:0;width:100%}
+  .vip-institution-card{grid-template-columns:1fr}
+  .vip-institution-price{display:grid}
+}
+
 /* =========================================================
    Bölgesel Banner Reklamları
    ========================================================= */
