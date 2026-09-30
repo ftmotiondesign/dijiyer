@@ -1298,6 +1298,43 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - İSTEMCİ HATA KAYITLARI
+    // Anonim ziyaretçi yazamaz; yalnızca yönetici veya onaylı kurum hesabı.
+    // =====================================================
+    match /clientErrors/{errorId} {
+      allow create: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && request.resource.data.keys().hasOnly([
+            'source',
+            'page',
+            'message',
+            'stack',
+            'date',
+            'status',
+            'userId',
+            'institutionId'
+          ])
+          && request.resource.data.source == 'institution'
+          && request.resource.data.status == 'new'
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.institutionId == bagliKurumId()
+          && request.resource.data.page is string
+          && request.resource.data.message is string
+          && request.resource.data.message.size() > 0
+          && request.resource.data.message.size() <= 1000
+          && request.resource.data.stack is string
+          && request.resource.data.stack.size() <= 5000
+          && request.resource.data.date is string
+        );
+
+      allow get, list, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - İŞ & TİCARET FIRSATLARI
     // =====================================================
     match /businessOpportunities/{opportunityId} {
