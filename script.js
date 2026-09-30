@@ -5013,7 +5013,12 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     }
   } catch (error) {
     console.error('Teklif talebi kaydedilemedi:', error);
-    showToast('Teklif gönderilemedi. Lütfen tekrar deneyin.');
+    const errorCode = String(error?.code || 'unknown');
+    showToast(
+      errorCode.includes('permission-denied')
+        ? 'Teklif gönderilemedi (permission-denied). Firestore kuralını kontrol edin.'
+        : 'Teklif gönderilemedi (' + errorCode + '). Lütfen tekrar deneyin.'
+    );
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = oldText;
