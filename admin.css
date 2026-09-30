@@ -2726,6 +2726,92 @@ button{
   border-color:#dbeafe!important;
 }
 
+.institution-status-manager{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:10px;
+  padding:10px 11px;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#f8fafc;
+}
+.institution-status-manager.is-active{
+  border-color:#bbf7d0;
+  background:#f0fdf4;
+}
+.institution-status-manager.is-passive{
+  border-color:#fecaca;
+  background:#fff7f7;
+}
+.institution-status-copy{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.institution-status-copy span{
+  color:#64748b;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.institution-status-copy strong{
+  color:#0f172a;
+  font-size:11px;
+}
+.institution-status-copy small{
+  color:#64748b;
+  font-size:9px;
+}
+.institution-status-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.institution-status-buttons button{
+  min-height:30px;
+  border:1px solid #dbe3ee;
+  border-radius:8px;
+  background:#fff;
+  color:#475569;
+  padding:6px 9px;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+.institution-status-buttons .institution-activate-btn{
+  border-color:#bbf7d0;
+  color:#15803d;
+  background:#ecfdf5;
+}
+.institution-status-buttons .institution-passivate-btn{
+  border-color:#fde68a;
+  color:#a16207;
+  background:#fffbeb;
+}
+.institution-status-buttons .institution-status-delete-btn{
+  border-color:#fecaca;
+  color:#b91c1c;
+  background:#fff7f7;
+}
+.institution-status-buttons button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+@media(max-width:720px){
+  .institution-status-manager{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .institution-status-buttons{
+    width:100%;
+  }
+  .institution-status-buttons button{
+    flex:1 1 auto;
+  }
+}
+
 .institution-primary-actions{
   display:flex;
   flex-wrap:wrap;
