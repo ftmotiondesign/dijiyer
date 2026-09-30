@@ -45,7 +45,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=58" />
+  <link rel="stylesheet" href="style.css?v=71" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="home-page">
@@ -233,6 +233,25 @@
       <button type="button" data-desktop-category="alisveris"><span>🛒</span><strong>Yerel Esnaf</strong><small>Market · Giyim · Elektronik</small></button>
       <button type="button" data-desktop-category=""><span>☰</span><strong>Tüm Kurumlar</strong><small>Bütün kategorileri göster</small></button>
     </div>
+
+    <section class="desktop-category-preview hidden" id="desktopCategoryPreview" aria-live="polite">
+      <div class="desktop-category-preview-icon" id="desktopCategoryPreviewIcon">📚</div>
+      <div class="desktop-category-preview-body">
+        <div class="desktop-category-preview-head">
+          <div>
+            <span id="desktopCategoryPreviewEyebrow">SEÇİLEN KATEGORİ</span>
+            <strong id="desktopCategoryPreviewTitle">Eğitim</strong>
+            <small id="desktopCategoryPreviewText">Alt hizmeti seç veya bu kategorideki kurumları incele.</small>
+          </div>
+          <b id="desktopCategoryPreviewCount"></b>
+        </div>
+        <div class="desktop-category-preview-subs" id="desktopCategoryPreviewSubs"></div>
+      </div>
+      <div class="desktop-category-preview-actions">
+        <button type="button" class="desktop-category-preview-open" id="desktopCategoryPreviewOpen">Kurumları Gör</button>
+        <a href="teklif-al.html" class="desktop-category-preview-quote">Ücretsiz Teklif Al</a>
+      </div>
+    </section>
 
     <div class="desktop-service-shortcuts">
       <a href="teklif-al.html"><span>🏷</span><div><strong>Ücretsiz Teklif Al</strong><small>İhtiyacını yaz, işletmeler fiyat versin.</small></div><b>→</b></a>
@@ -1308,7 +1327,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=65"></script>
+<script src="script.js?v=66"></script>
 <script src="offers.js?v=4"></script>
 </body>
 </html>
