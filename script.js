@@ -381,6 +381,17 @@ function getSelectedMainCategory() {
   return checkedMain?.value || '';
 }
 
+function openInstitutionDirectQuote(institutionOrId) {
+  const id = typeof institutionOrId === 'object'
+    ? institutionOrId?.id
+    : institutionOrId;
+
+  if (!id) return;
+
+  window.location.href =
+    'kurum.html?id=' + encodeURIComponent(String(id)) + '&teklif=1';
+}
+
 function mobileInstantInstitutionCardHtml(inst) {
   const cover = inst.coverUrl ? safePublicProfileUrl(inst.coverUrl) : '';
   const logo = inst.logoUrl ? safePublicProfileUrl(inst.logoUrl) : '';
@@ -466,10 +477,7 @@ function showMobileInstitutionResults(shouldScroll = true) {
   root.querySelectorAll('[data-mobile-instant-offer]').forEach(button => {
     button.addEventListener('click', event => {
       event.stopPropagation();
-      selectedId = button.dataset.mobileInstantOffer;
-      renderDecisionAlternatives();
-      renderDetail();
-      openModal('quoteModal');
+      openInstitutionDirectQuote(button.dataset.mobileInstantOffer);
     });
   });
 
@@ -3304,10 +3312,7 @@ function renderList() {
   document.querySelectorAll('[data-quick-offer]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      selectedId = btn.dataset.quickOffer;
-      renderDecisionAlternatives();
-      renderDetail();
-      openModal('quoteModal');
+      openInstitutionDirectQuote(btn.dataset.quickOffer);
     });
   });
 
@@ -3512,20 +3517,7 @@ function applyRequestedInstitutionPreview(){
 
   const params=new URLSearchParams(window.location.search);
   if(params.get("teklif")==="1"){
-    const mainCategory=inst.mainCategory || resolveTaxonomy(inst)[0];
-    const subCategory=inst.subCategory || resolveTaxonomy(inst)[1];
-    const categorySelect=document.getElementById("quoteCategory");
-    const serviceSelect=document.getElementById("quoteService");
-
-    if(categorySelect){
-      categorySelect.value=mainCategory || "";
-      fillQuoteServices(mainCategory || "");
-    }
-    if(serviceSelect && subCategory){
-      serviceSelect.value=subCategory;
-    }
-
-    setTimeout(()=>openModal("quoteModal"),80);
+    openInstitutionDirectQuote(inst);
   }else{
     requestAnimationFrame(()=>{
       const panel=document.getElementById("detailPanel");
@@ -3916,7 +3908,10 @@ function renderDetail() {
   });
 
   document.getElementById('quoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
-  document.getElementById('campaignQuoteBtn')?.addEventListener('click', () => openModal('quoteModal'));
+  document.getElementById('campaignQuoteBtn')?.addEventListener('click', () => {
+    trackInstitutionEvent(inst, 'quote_click');
+    openInstitutionDirectQuote(inst);
+  });
 
   document.getElementById('routeBtn')?.addEventListener('click', () => {
     trackInstitutionEvent(inst, 'route_click');
@@ -3924,15 +3919,8 @@ function renderDetail() {
   });
 
   document.getElementById('whatsappBtn')?.addEventListener('click', () => {
-    trackInstitutionEvent(inst, 'whatsapp_click');
-    const msg = encodeURIComponent(
-      `Merhaba, Dijiyer üzerinden ${inst.name} profilinizi gördüm. Fiyat bilgisi almak istiyorum.`
-    );
-    const number = normalizeWhatsappNumber(inst.whatsapp || inst.phone);
-    window.open(
-      number ? `https://wa.me/${number}?text=${msg}` : `https://wa.me/?text=${msg}`,
-      '_blank'
-    );
+    trackInstitutionEvent(inst, 'quote_click');
+    openInstitutionDirectQuote(inst);
   });
 
   document.getElementById('profileOpenBtn')?.addEventListener('click', () => {
