@@ -8236,6 +8236,16 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           button.dataset.desktopPreviewMain = key;
 
           const institutionCount = desktopSubcategoryInstitutionCount(key,subKey);
+          button.dataset.desktopPreviewCount = String(institutionCount);
+          button.disabled = institutionCount <= 0;
+          button.classList.toggle('is-disabled',institutionCount <= 0);
+          button.setAttribute(
+            'aria-label',
+            institutionCount > 0
+              ? label + ' · ' + institutionCount + ' kurum'
+              : label + ' · Yakında'
+          );
+
           button.innerHTML =
             '<span class="desktop-preview-sub-count">' +
               (institutionCount > 0 ? institutionCount + ' kurum' : 'Yakında') +
@@ -8290,6 +8300,9 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     const button = event.target.closest('[data-desktop-preview-sub]');
     if(!button)return;
 
+    const institutionCount = Number(button.dataset.desktopPreviewCount || 0);
+    if(institutionCount <= 0 || button.disabled)return;
+
     const mainKey = String(button.dataset.desktopPreviewMain || '').trim();
     const subKey = String(button.dataset.desktopPreviewSub || '').trim();
     if(!mainKey || !subKey)return;
@@ -8323,6 +8336,10 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
     renderDesktopCategoryPreview(mainKey);
+
+    requestAnimationFrame(()=>{
+      resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
   });
 
   categoryPreviewOpen?.addEventListener('click', ()=>{
