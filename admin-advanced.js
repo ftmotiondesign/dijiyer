@@ -1580,8 +1580,10 @@
     const selectedCount=mediaArchiveSelection.size;
     const selectedRows=buildMediaArchiveRows().filter(row=>mediaArchiveSelection.has(String(row.url||"")));
     const activeSelected=selectedRows.some(row=>row.activeUse);
+    const passiveSelected=selectedRows.some(row=>row.inUse&&!row.activeUse);
 
     if($("mediaArchiveSelectedCount"))$("mediaArchiveSelectedCount").textContent=String(selectedCount);
+    if($("mediaArchiveBulkActive"))$("mediaArchiveBulkActive").disabled=!selectedCount||!passiveSelected;
     if($("mediaArchiveBulkPassive"))$("mediaArchiveBulkPassive").disabled=!selectedCount||!activeSelected;
     if($("mediaArchiveBulkDelete"))$("mediaArchiveBulkDelete").disabled=!selectedCount;
     if($("mediaArchiveBulkClear"))$("mediaArchiveBulkClear").disabled=!selectedCount;
@@ -1689,7 +1691,9 @@
             (publicId?'<button type="button" data-media-copy-id="'+escapeHtml(publicId)+'">ID Kopyala</button>':"")+
             (status==="active"
               ? '<button type="button" class="passive" data-media-passive="'+escapeHtml(item.url)+'">Pasif Yap</button>'
-              : "")+
+              : status==="passive"
+                ? '<button type="button" class="active" data-media-active="'+escapeHtml(item.url)+'">Aktif Yap</button>'
+                : "")+
             '<button type="button" class="danger" data-media-delete="'+escapeHtml(item.url)+'">Arşivden Sil</button>'+
           '</div>'+
         '</div>'+
@@ -1727,6 +1731,12 @@
       });
     });
 
+    root.querySelectorAll("[data-media-active]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        setMediaArchiveItemsActive([button.dataset.mediaActive]);
+      });
+    });
+
     root.querySelectorAll("[data-media-delete]").forEach(button=>{
       button.addEventListener("click",()=>{
         deleteMediaArchiveItems([button.dataset.mediaDelete]);
@@ -1734,7 +1744,7 @@
     });
   }
 
-  function mediaArchiveGroupedReferenceUpdates(urls,{remove=false}={}){
+  function mediaArchiveGroupedReferenceUpdates(urls,{remove=false,active=null}={}){
     const selected=new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean));
     const refs=currentMediaReferences().filter(ref=>selected.has(String(ref.url||"")));
     const updates=new Map();
@@ -1756,7 +1766,7 @@
                 updatedAt:now
               }
             : {
-                opportunitySponsorActive:false,
+                opportunitySponsorActive:active===null?false:Boolean(active),
                 opportunitySponsorUpdatedAt:now,
                 updatedAt:now
               }
@@ -1767,9 +1777,9 @@
       if(ref.source==="banner"){
         const existing=updates.get(key) || {
           ref:db.collection("bannerAds").doc(String(ref.sourceId)),
-          data:{active:false,updatedAt:now}
+          data:{active:active===null?false:Boolean(active),updatedAt:now}
         };
-        existing.data.active=false;
+        existing.data.active=remove?false:(active===null?false:Boolean(active));
         existing.data.updatedAt=now;
 
         if(remove){
@@ -1795,6 +1805,47 @@
     renderBannerAdsAdmin(false);
   }
 
+  async function setMediaArchiveItemsActive(urls){
+    const targets=[...new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean))];
+    if(!targets.length)return;
+
+    const rows=buildMediaArchiveRows().filter(row=>targets.includes(String(row.url||"")));
+    const passiveRows=rows.filter(row=>row.inUse&&!row.activeUse);
+    if(!passiveRows.length){
+      alert("Seçilen medyalar arasında tekrar aktif edilebilecek pasif kayıt yok.");
+      return;
+    }
+
+    const ok=confirm(
+      passiveRows.length+
+      " medya tekrar yayına alınacak. Bağlı Fırsat / Banner alanları aktif edilecek. Devam edilsin mi?"
+    );
+    if(!ok)return;
+
+    const writes=mediaArchiveGroupedReferenceUpdates(
+      passiveRows.map(row=>row.url),
+      {remove:false,active:true}
+    );
+
+    if(!writes.length){
+      alert("Aktif edilebilecek bağlı yayın kaydı bulunamadı.");
+      return;
+    }
+
+    const batch=db.batch();
+    writes.forEach(item=>batch.update(item.ref,item.data));
+
+    try{
+      await batch.commit();
+      passiveRows.forEach(row=>mediaArchiveSelection.delete(String(row.url||"")));
+      addAudit("Medya aktif yapıldı",passiveRows.length+" medya");
+      await refreshMediaArchiveDependencies();
+    }catch(error){
+      console.error("Medya aktif yapılamadı:",error);
+      alert("Medya aktif yapılamadı. Firestore izinlerini kontrol edin.");
+    }
+  }
+
   async function setMediaArchiveItemsPassive(urls){
     const targets=[...new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean))];
     if(!targets.length)return;
@@ -1812,7 +1863,7 @@
     );
     if(!ok)return;
 
-    const writes=mediaArchiveGroupedReferenceUpdates(activeRows.map(row=>row.url),{remove:false});
+    const writes=mediaArchiveGroupedReferenceUpdates(activeRows.map(row=>row.url),{remove:false,active:false});
     if(!writes.length){
       alert("Pasif yapılabilecek aktif yayın bağlantısı bulunamadı.");
       return;
@@ -1953,6 +2004,10 @@
   $("mediaArchiveBulkClear")?.addEventListener("click",()=>{
     mediaArchiveSelection.clear();
     renderMediaArchive();
+  });
+
+  $("mediaArchiveBulkActive")?.addEventListener("click",()=>{
+    setMediaArchiveItemsActive([...mediaArchiveSelection]);
   });
 
   $("mediaArchiveBulkPassive")?.addEventListener("click",()=>{
