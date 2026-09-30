@@ -979,7 +979,7 @@ service cloud.firestore {
         && request.resource.data.offerVersion
             == get(
               /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
-            ).data.updatedAt
+            ).data.offerVersion
         && request.resource.data.expiresAt
             == get(
               /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
