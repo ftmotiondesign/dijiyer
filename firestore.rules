@@ -169,12 +169,11 @@ service cloud.firestore {
 
 
     // =========================================
-    // TOPLU + DOĞRUDAN TEKLİF TALEPLERİ
+    // TOPLU TEKLİF TALEPLERİ
     // =========================================
     match /quoteRequests/{documentId} {
 
-      // Ziyaretçi toplu veya doğrudan teklif talebi oluşturabilir.
-      // Doğrudan talepte targetInstitutionId + targetInstitutionName birlikte bulunur.
+      // Ziyaretçi toplu teklif veya doğrudan kurum teklifi oluşturabilir.
       allow create: if
         request.resource.data.keys().hasOnly([
           'mainCategory',
@@ -202,24 +201,42 @@ service cloud.firestore {
         && request.resource.data.note is string
         && request.resource.data.status == 'new'
         && request.resource.data.date is string
+
+        // Normal toplu teklif: hedef kurum alanları hiç gönderilmez.
+        // Doğrudan teklif: iki hedef alanı birlikte gönderilir ve hedef kurum gerçekten vardır.
         && (
-          (
-            !('targetInstitutionId' in request.resource.data)
-            && !('targetInstitutionName' in request.resource.data)
-          )
+          !request.resource.data.keys().hasAny([
+            'targetInstitutionId',
+            'targetInstitutionName'
+          ])
+
           ||
+
           (
-            request.resource.data.targetInstitutionId is string
+            request.resource.data.keys().hasAll([
+              'targetInstitutionId',
+              'targetInstitutionName'
+            ])
+            && request.resource.data.targetInstitutionId is string
             && request.resource.data.targetInstitutionId.size() > 0
             && request.resource.data.targetInstitutionName is string
             && request.resource.data.targetInstitutionName.size() > 0
+            && request.resource.data.city == '__direct__'
+            && request.resource.data.district == ''
+            && exists(
+              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
+            )
+            && request.resource.data.targetInstitutionName == get(
+              /databases/$(database)/documents/institutions/$(request.resource.data.targetInstitutionId)
+            ).data.name
           )
         );
 
 
-      // Admin tüm talepleri görebilir.
-      // Doğrudan teklif yalnızca hedef kuruma görünür.
-      // Toplu tekliflerde mevcut kategori + şehir + ilçe eşleşmesi korunur.
+      // Admin tüm teklifleri görebilir.
+      // Kurum:
+      // 1) Doğrudan kendisine gönderilen profil talebini görür.
+      // 2) Normal toplu teklifte kategori + şehir/ilçe eşleşen talebi görür.
       allow read: if
         isAdmin()
         ||
@@ -228,13 +245,14 @@ service cloud.firestore {
           &&
           (
             (
-              'targetInstitutionId' in resource.data
+              resource.data.keys().hasAll(['targetInstitutionId'])
               && resource.data.targetInstitutionId == linkedInstitutionId()
             )
+
             ||
+
             (
-              !('targetInstitutionId' in resource.data)
-              && resource.data.category == linkedInstitution().category
+              resource.data.category == linkedInstitution().category
               && resource.data.city == linkedInstitution().city
               && (
                 resource.data.district == ''
@@ -246,7 +264,7 @@ service cloud.firestore {
         );
 
 
-      // Teklif ana kaydını sadece admin değiştirebilir.
+      // Teklif ana kaydını sadece admin değiştirebilir
       allow update, delete: if isAdmin();
     }
 
@@ -531,25 +549,34 @@ service cloud.firestore {
         && request.resource.data.status == 'active'
         && request.resource.data.createdAt is string
 
-        && (
-          (
-            !('targetInstitutionId' in request.resource.data)
-            && !('targetInstitutionName' in request.resource.data)
-          )
-          ||
-          (
-            request.resource.data.targetInstitutionId is string
-            && request.resource.data.targetInstitutionId.size() > 0
-            && request.resource.data.targetInstitutionName is string
-            && request.resource.data.targetInstitutionName.size() > 0
-          )
-        )
-
         // Takip kaydı, gerçekten oluşturulmuş bir teklif talebine bağlı olmalı.
         // Önceki çok sıkı alan karşılaştırması bazı geçerli taleplerde
         // takip kodunun oluşturulmasını engelliyordu.
         && exists(
           /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
+        )
+
+        // Doğrudan kurum talebinde hedef kurum bilgisi takip kaydında da korunur.
+        && (
+          !request.resource.data.keys().hasAny([
+            'targetInstitutionId',
+            'targetInstitutionName'
+          ])
+          ||
+          (
+            request.resource.data.keys().hasAll([
+              'targetInstitutionId',
+              'targetInstitutionName'
+            ])
+            && request.resource.data.targetInstitutionId is string
+            && request.resource.data.targetInstitutionName is string
+            && get(
+              /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
+            ).data.targetInstitutionId == request.resource.data.targetInstitutionId
+            && get(
+              /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
+            ).data.targetInstitutionName == request.resource.data.targetInstitutionName
+          )
         );
 
       allow update, delete: if isAdmin();
@@ -827,44 +854,95 @@ service cloud.firestore {
     // =========================================
     match /quoteRequests/{quoteId}/engagement/{institutionId} {
 
-      // Müşteri teklif takip ekranında tek belgeyi okuyabilir.
-      // Listeleme kapalıdır.
-      allow get: if true;
-      allow list: if false;
+      // Bu alt koleksiyonda müşteri adı/telefonu tutulmaz.
+      // Takip kodunu bilen müşteri kurumların talep durumlarını özet olarak görebilir.
+      allow get, list: if true;
 
-      // Müşteri; teklifi görüntülediği ve revizyon istediği bilgisini oluşturabilir.
+      // Müşteri; gerçekten teklif vermiş kurum için görüntülenme/revizyon bilgisi oluşturabilir.
+      // Kurum ise eşleşen veya doğrudan kendisine gönderilen talep için
+      // ilgileniyorum / ilgilenmiyorum durumunu oluşturabilir.
       allow create: if
-        exists(
-          /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(institutionId)
-        )
-        && request.resource.data.institutionId == institutionId
-        && request.resource.data.keys().hasOnly([
-          'institutionId',
-          'viewedAt',
-          'viewedAtTs',
-          'revisionRequestedAt',
-          'revisionRequestedAtTs',
-          'lastCustomerActionAt'
-        ]);
-
-      // Müşteri yalnızca kendi etkileşim alanlarını değiştirebilir.
-      allow update: if
-        request.resource.data.institutionId == resource.data.institutionId
-        && request.resource.data.institutionId == institutionId
-        && request.resource.data
-          .diff(resource.data)
-          .affectedKeys()
-          .hasOnly([
+        (
+          exists(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(institutionId)
+          )
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.keys().hasOnly([
+            'institutionId',
             'viewedAt',
             'viewedAtTs',
             'revisionRequestedAt',
             'revisionRequestedAtTs',
             'lastCustomerActionAt'
           ])
-
+        )
         ||
+        (
+          isApprovedInstitutionUser()
+          && linkedInstitutionId() == institutionId
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.keys().hasOnly([
+            'institutionId',
+            'institutionName',
+            'institutionResponse',
+            'institutionResponseAt',
+            'lastInstitutionActionAt'
+          ])
+          && request.resource.data.institutionName is string
+          && request.resource.data.institutionResponse is string
+          && (
+            request.resource.data.institutionResponse == 'interested'
+            || request.resource.data.institutionResponse == 'not_interested'
+          )
+          && request.resource.data.institutionResponseAt is string
+          && request.resource.data.lastInstitutionActionAt is string
+          && (
+            (
+              get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.keys().hasAll(['targetInstitutionId'])
+              && get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.targetInstitutionId == linkedInstitutionId()
+            )
+            ||
+            (
+              get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.category == linkedInstitution().category
+              && get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.city == linkedInstitution().city
+              && (
+                get(
+                  /databases/$(database)/documents/quoteRequests/$(quoteId)
+                ).data.district == ''
+                || get(
+                  /databases/$(database)/documents/quoteRequests/$(quoteId)
+                ).data.district == linkedInstitution().district
+              )
+            )
+          )
+        );
 
-        // Kurum yalnızca revizyon yanıtı alanlarını işaretleyebilir.
+      // Müşteri yalnızca kendi etkileşim alanlarını değiştirebilir.
+      // Kurum yalnızca kendi revizyon/yanıt alanlarını değiştirebilir.
+      allow update: if
+        (
+          request.resource.data.institutionId == resource.data.institutionId
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data
+            .diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'viewedAt',
+              'viewedAtTs',
+              'revisionRequestedAt',
+              'revisionRequestedAtTs',
+              'lastCustomerActionAt'
+            ])
+        )
+        ||
         (
           isApprovedInstitutionUser()
           && linkedInstitutionId() == institutionId
@@ -873,10 +951,18 @@ service cloud.firestore {
             .diff(resource.data)
             .affectedKeys()
             .hasOnly([
+              'institutionName',
+              'institutionResponse',
+              'institutionResponseAt',
               'revisionRespondedAt',
               'revisionRespondedAtTs',
               'lastInstitutionActionAt'
             ])
+          && (
+            !request.resource.data.keys().hasAll(['institutionResponse'])
+            || request.resource.data.institutionResponse == 'interested'
+            || request.resource.data.institutionResponse == 'not_interested'
+          )
         );
 
       allow delete: if isAdmin();
@@ -912,130 +998,3 @@ service cloud.firestore {
 
         && (
           // Müşteri yalnızca gerçekten teklif vermiş kurumla mesajlaşabilir.
-          (
-            request.resource.data.sender == 'customer'
-            && exists(
-              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(institutionId)
-            )
-            && (
-              request.resource.data.kind == 'message'
-              ||
-              request.resource.data.kind == 'revision_request'
-            )
-          )
-
-          ||
-
-          // Kurum, kendisiyle eşleşen müşteri talebine teklif vermeden önce de
-          // mesaj gönderebilir.
-          (
-            isApprovedInstitutionUser()
-            && linkedInstitutionId() == institutionId
-
-            && get(
-              /databases/$(database)/documents/quoteRequests/$(quoteId)
-            ).data.category == linkedInstitution().category
-
-            && get(
-              /databases/$(database)/documents/quoteRequests/$(quoteId)
-            ).data.city == linkedInstitution().city
-
-            && (
-              get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)
-              ).data.district == ''
-              ||
-              get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)
-              ).data.district == linkedInstitution().district
-            )
-
-            && request.resource.data.sender == 'institution'
-            && (
-              request.resource.data.kind == 'message'
-              ||
-              request.resource.data.kind == 'revision_response'
-            )
-          )
-        );
-
-      // Mesaj sonradan değiştirilemez.
-      allow update: if false;
-      allow delete: if isAdmin();
-    }
-
-
-
-
-    // =========================================
-    // KURUM DESTEK TALEPLERİ
-    // =========================================
-    match /supportTickets/{ticketId} {
-
-      // Onaylı kurum kendi destek talebini oluşturabilir
-      allow create: if
-        isApprovedInstitutionUser()
-
-        && request.resource.data.keys().hasOnly([
-          'institutionId',
-          'userId',
-          'institutionName',
-          'email',
-          'category',
-          'subject',
-          'message',
-          'status',
-          'date',
-          'updatedAt',
-          'adminReply',
-          'adminReplyAt',
-          'relatedRequestId',
-          'relatedService',
-          'relatedLocation',
-          'relatedRequestDate',
-          'relatedOfferCode',
-          'relatedOfferPrice',
-          'relatedOfferStatus',
-          'relatedOfferStatusLabel'
-        ])
-
-        && request.resource.data.institutionId == linkedInstitutionId()
-        && request.resource.data.userId == request.auth.uid
-
-        && request.resource.data.institutionName is string
-        && request.resource.data.email is string
-        && request.resource.data.category is string
-
-        && request.resource.data.subject is string
-        && request.resource.data.subject.size() > 0
-        && request.resource.data.subject.size() <= 120
-
-        && request.resource.data.message is string
-        && request.resource.data.message.size() > 0
-        && request.resource.data.message.size() <= 1500
-
-        && request.resource.data.status == 'new'
-        && request.resource.data.date is string
-        && request.resource.data.updatedAt is string
-
-        && request.resource.data.adminReply == ''
-        && request.resource.data.adminReplyAt == '';
-
-
-      // Kurum sadece kendi destek taleplerini görebilir
-      // Admin tüm talepleri görebilir
-      allow read: if
-        isAdmin()
-        ||
-        (
-          isApprovedInstitutionUser()
-          && resource.data.institutionId == linkedInstitutionId()
-          && resource.data.userId == request.auth.uid
-        );
-
-
-      // Destek yanıtı ve durum değişikliklerini sadece admin yapar
-      allow update, delete: if isAdmin();
-    }
-
-    // =========================================
