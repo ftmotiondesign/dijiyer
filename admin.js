@@ -4331,14 +4331,44 @@ function renderLeadCreditAdmin(){
 
   if(leadCreditLedgerList){
     const recent=leadCreditLedgerRecords.slice(0,20);
+
     leadCreditLedgerList.innerHTML=recent.length?recent.map(item=>{
       const delta=Number(item.delta||0);
-      return '<div class="lead-credit-ledger-row">'+
-        '<div><strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong><small>'+escapeHtml(item.note||item.type||"Kredi hareketi")+'</small></div>'+
+      const quoteId=String(item.quoteId||"");
+      const request=quoteId
+        ? quoteRequestRecords.find(record=>String(record.id)===quoteId)
+        : null;
+
+      const isUsage=String(item.type||"")==="offer_usage" && Boolean(quoteId);
+      const detailParts=[
+        isUsage ? "Teklif kredisi kullanıldı" : String(item.note||item.type||"Kredi hareketi"),
+        String(item.service||request?.service||"").trim(),
+        request?.name ? "Müşteri: "+String(request.name) : "",
+        [request?.city,request?.district].filter(Boolean).join(" / ")
+      ].filter(Boolean);
+
+      return '<div class="lead-credit-ledger-row '+(isUsage?'usage':'')+'">'+
+        '<div class="lead-credit-ledger-copy">'+
+          '<strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong>'+
+          '<small>'+escapeHtml(detailParts.join(" · "))+'</small>'+
+          (quoteId
+            ? '<em>Talep #'+escapeHtml(quoteId.slice(0,9).toUpperCase())+'</em>'
+            : '')+
+        '</div>'+
         '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
         '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
+        (quoteId
+          ? '<button type="button" class="lead-credit-open-quote" data-credit-quote-id="'+escapeHtml(quoteId)+'">Talebi Aç</button>'
+          : '')+
       '</div>';
     }).join(""):'<div class="empty-state">Henüz kredi hareketi yok.</div>';
+
+    leadCreditLedgerList.querySelectorAll("[data-credit-quote-id]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const quoteId=String(button.dataset.creditQuoteId||"");
+        if(quoteId)openQuoteDetailModal(quoteId);
+      });
+    });
   }
 
   leadCreditTableBody.querySelectorAll("[data-lead-credit-manage]").forEach(button=>{
