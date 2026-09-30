@@ -526,6 +526,7 @@ function lockedHtml(bundle){
         <div><span>Fiyat</span><b>${money(lock.price)}</b></div>
         <div><span>KDV</span><b>${safe(lock.vatStatus||"-")}</b></div>
         <div><span>Kabul tarihi</span><b>${fmtDate(acceptedAt)}</b></div>
+        <div><span>Kabul doğrulaması</span><b>✓ Telefon + takip kodu</b></div>
         <div><span>Gerçek kayıt için son tarih</span><b>${fmtDate(deadline)}</b></div>
         ${lock.conditions?`<div><span>Özel şart</span><b>${safe(lock.conditions)}</b></div>`:""}
         <p>Teklif kabul edildiği andaki fiyat ve şartlar kayıt altına alınmıştır; kurum bu kabul kaydını sonradan sessizce değiştiremez.</p>
