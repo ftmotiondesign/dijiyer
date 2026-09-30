@@ -5627,3 +5627,171 @@
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · ANA GELİR GİRİŞİ
+   ========================================================= */
+.admin-main-nav{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+}
+
+.admin-main-nav-revenue{
+  position:relative;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:5px 9px!important;
+  border:1px solid #f3d49a!important;
+  background:linear-gradient(135deg,#fffaf0,#fff5dc)!important;
+  color:#8a5a00!important;
+}
+
+.admin-main-nav-revenue:hover{
+  border-color:#efb84f!important;
+  background:linear-gradient(135deg,#fff7e5,#ffedbf)!important;
+  color:#744800!important;
+  box-shadow:0 6px 16px rgba(180,111,0,.09);
+}
+
+.admin-main-nav-revenue.active{
+  border-color:#d88900!important;
+  background:linear-gradient(135deg,#f59e0b,#d97706)!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(217,119,6,.22)!important;
+}
+
+.admin-main-nav-revenue.has-opportunity:not(.active){
+  border-color:#f0ad2f!important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.10);
+}
+
+.admin-main-nav-revenue-copy{
+  min-width:0;
+  display:grid;
+  gap:1px;
+  text-align:left;
+  line-height:1.05;
+}
+
+.admin-main-nav-revenue-copy small{
+  color:#c27600;
+  font-size:6.5px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+
+.admin-main-nav-revenue-copy strong{
+  font-size:10.5px;
+  white-space:nowrap;
+}
+
+.admin-main-nav-revenue.active .admin-main-nav-revenue-copy small{
+  color:rgba(255,255,255,.82);
+}
+
+.admin-main-nav-revenue-count{
+  min-width:22px;
+  height:22px;
+  display:inline-grid;
+  place-items:center;
+  padding:0 6px;
+  border-radius:999px;
+  background:#dc2626;
+  color:#fff;
+  font-size:9px;
+  font-weight:950;
+  line-height:1;
+  box-shadow:0 3px 9px rgba(220,38,38,.20);
+}
+
+.admin-main-nav-revenue-count[hidden]{
+  display:none!important;
+}
+
+.admin-main-nav-revenue.active .admin-main-nav-revenue-count{
+  background:#fff;
+  color:#c76600;
+  box-shadow:none;
+}
+
+.unanswered-revenue-callout{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:0 0 13px;
+  padding:12px 14px;
+  border:1px solid #f2d39a;
+  border-radius:13px;
+  background:linear-gradient(135deg,#fffaf0 0%,#fff 72%);
+}
+
+.unanswered-revenue-callout>div{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.unanswered-revenue-icon{
+  flex:0 0 auto;
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:#f59e0b;
+  color:#fff;
+  font-size:20px;
+  font-weight:950;
+  box-shadow:0 6px 14px rgba(245,158,11,.18);
+}
+
+.unanswered-revenue-callout>div>div{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+
+.unanswered-revenue-callout strong{
+  color:#6f4905;
+  font-size:11px;
+}
+
+.unanswered-revenue-callout small{
+  color:#8a7149;
+  font-size:8.5px;
+  line-height:1.45;
+}
+
+.unanswered-revenue-flow{
+  flex:0 0 auto;
+  padding:7px 9px;
+  border-radius:8px;
+  background:#fff;
+  border:1px solid #f2dfba;
+  color:#9a6508;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+@media(max-width:780px){
+  .admin-main-nav{
+    grid-template-columns:repeat(6,max-content)!important;
+  }
+
+  .admin-main-nav-revenue{
+    min-width:152px!important;
+  }
+
+  .unanswered-revenue-callout{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .unanswered-revenue-flow{
+    white-space:normal;
+  }
+}
