@@ -714,5 +714,39 @@ service cloud.firestore {
       allow read, update, delete: if adminMi();
     }
 
+
+    // =====================================================
+    // DİJİYER - KURUM YORUMLARI / TAVSİYE OYLARI
+    // =====================================================
+    match /institutionReviews/{reviewId} {
+
+      // Yayındaki yorumlar ve tavsiye oranları kurum profillerinde gösterilebilir.
+      allow get, list: if true;
+
+      // Ziyaretçi yıldız, yorum ve tavsiye oyunu üyelik olmadan gönderebilir.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'institutionId',
+          'rating',
+          'recommend',
+          'text',
+          'status',
+          'date'
+        ])
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.recommend is bool
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.status == 'published'
+        && request.resource.data.date is string;
+
+      allow update, delete: if adminMi();
+    }
+
   }
 }
