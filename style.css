@@ -16522,3 +16522,424 @@ to{opacity:1;transform:none}
     color:#1677ff;
   }
 }
+
+
+/* =========================================================
+   DIJIYER DESKTOP MARKETPLACE V2 · INCE AYAR
+   Daha sıkı, daha okunaklı ve daha az reklam ağırlıklı PC düzeni.
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-market-nav{
+    position:sticky;
+    top:72px;
+    z-index:940;
+    box-shadow:0 2px 8px rgba(22,37,55,.035);
+  }
+
+  .desktop-market-nav-inner{
+    min-height:40px;
+  }
+
+  .desktop-market-nav a,
+  .desktop-market-nav button{
+    min-height:40px;
+    padding-left:16px;
+    padding-right:16px;
+    font-size:10.5px;
+  }
+
+  .home-page .main-portals-section.desktop-category-hub{
+    margin-top:14px!important;
+    padding:13px!important;
+  }
+
+  .home-page .main-portals-heading{
+    margin-bottom:9px!important;
+  }
+
+  .home-page .main-portals-heading h2{
+    font-size:16px!important;
+  }
+
+  .desktop-category-grid button{
+    min-height:78px;
+    grid-template-columns:31px minmax(0,1fr);
+    column-gap:8px;
+    padding:10px 10px;
+  }
+
+  .desktop-category-grid button>span{
+    width:31px;
+    height:31px;
+    font-size:15px;
+  }
+
+  .desktop-category-grid button>strong{
+    font-size:10.5px;
+  }
+
+  .desktop-category-grid button>small{
+    font-size:7px;
+  }
+
+  .desktop-service-shortcuts{
+    margin-top:9px;
+    gap:8px;
+  }
+
+  .desktop-service-shortcuts a{
+    min-height:60px;
+    grid-template-columns:34px minmax(0,1fr) 18px;
+    padding:8px 11px;
+  }
+
+  .desktop-service-shortcuts a>span{
+    width:34px;
+    height:34px;
+    font-size:16px;
+  }
+
+  .desktop-service-shortcuts strong{
+    font-size:10.5px;
+  }
+
+  .desktop-service-shortcuts small{
+    font-size:7.5px;
+  }
+
+  /* Premium sponsor alanı ana içeriği ezmesin */
+  .home-page .premium-home-showcase{
+    margin-top:14px!important;
+  }
+
+  .home-page .premium-showcase-heading{
+    margin-bottom:7px!important;
+  }
+
+  .home-page .premium-showcase-heading strong{
+    font-size:15px!important;
+  }
+
+  .home-page .premium-showcase-heading>small{
+    font-size:8.5px!important;
+  }
+
+  .home-page .premium-showcase-stage{
+    min-height:188px!important;
+  }
+
+  .home-page .premium-showcase-card.premium-showcase-clean{
+    grid-template-rows:188px auto!important;
+  }
+
+  .home-page .premium-showcase-clean .premium-showcase-media{
+    height:188px!important;
+  }
+
+  .home-page .premium-showcase-loading,
+  .home-page .premium-showcase-card{
+    min-height:188px!important;
+  }
+
+  .home-page .premium-showcase-clean .premium-showcase-content{
+    padding:9px 12px!important;
+  }
+
+  /* Harici reklam: yatay banner hissi */
+  .home-page .external-ad-zone{
+    margin-top:11px!important;
+    padding:7px!important;
+  }
+
+  .home-page .external-ad-zone-head{
+    min-height:22px!important;
+  }
+
+  .home-page .external-ad-card{
+    grid-template-rows:210px auto!important;
+  }
+
+  .home-page .external-ad-public-info{
+    min-height:52px!important;
+    padding:8px 11px!important;
+  }
+
+  /* Sponsorlu kurum kartları kompakt */
+  .home-page .home-sponsored-section{
+    margin-top:14px!important;
+  }
+
+  .home-page .sponsored-section-head{
+    align-items:center!important;
+    margin-bottom:7px!important;
+  }
+
+  .home-page .sponsored-kicker{
+    min-height:21px!important;
+    padding:0 7px!important;
+    margin-bottom:4px!important;
+    font-size:7px!important;
+  }
+
+  .home-page .sponsored-section-head h2{
+    margin:0!important;
+    font-size:16px!important;
+  }
+
+  .home-page .sponsored-section-head p{
+    margin-top:3px!important;
+    font-size:8px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-card{
+    border-color:#dfe4ea!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-media{
+    height:112px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-body{
+    padding:9px 10px 10px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-logo{
+    width:34px!important;
+    height:34px!important;
+    flex-basis:34px!important;
+    border-radius:8px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-title-copy strong{
+    font-size:11px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-title-copy small{
+    font-size:8px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-description{
+    min-height:0!important;
+    margin-top:6px!important;
+    -webkit-line-clamp:1!important;
+    font-size:8.5px!important;
+  }
+
+  .home-page #homeSponsoredRail .sponsored-meta{
+    margin-top:7px!important;
+  }
+
+  /* Sonuç alanı */
+  .home-page #resultsSection.app-layout{
+    margin-top:14px!important;
+    grid-template-columns:235px minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+
+  .home-page #resultsSection .sidebar{
+    top:126px!important;
+    max-height:calc(100vh - 140px)!important;
+  }
+
+  .home-page #resultsSection .panel-title{
+    min-height:46px!important;
+    padding:0 12px!important;
+    font-size:13px!important;
+  }
+
+  .home-page #resultsSection .category-filter-section{
+    padding:8px!important;
+  }
+
+  .home-page #resultsSection .category-group{
+    margin-bottom:5px!important;
+  }
+
+  .home-page #resultsSection .category-main-row{
+    min-height:44px!important;
+    padding:3px 5px 3px 7px!important;
+    border-radius:7px!important;
+    box-shadow:none!important;
+  }
+
+  .home-page #resultsSection .filter-section .category-main-label{
+    min-height:38px!important;
+    grid-template-columns:15px 28px minmax(0,1fr)!important;
+    gap:6px!important;
+    padding:4px 2px!important;
+  }
+
+  .home-page #resultsSection .category-icon{
+    width:28px!important;
+    height:28px!important;
+    flex-basis:28px!important;
+    border-radius:7px!important;
+    font-size:13px!important;
+  }
+
+  .home-page #resultsSection .category-name{
+    font-size:9px!important;
+    line-height:1.2!important;
+  }
+
+  .home-page #resultsSection #map{
+    height:282px!important;
+  }
+
+  .home-page #resultsSection .map-tabs{
+    top:9px!important;
+    left:9px!important;
+  }
+
+  .home-page #resultsSection .map-tabs button{
+    padding:7px 12px!important;
+    font-size:9px!important;
+  }
+
+  .home-page #resultsSection .decision-alternatives{
+    padding:8px!important;
+    border-radius:8px!important;
+    box-shadow:none!important;
+  }
+
+  .home-page #resultsSection .decision-alternatives-head{
+    margin-bottom:6px!important;
+  }
+
+  .home-page #resultsSection .decision-alternatives-head strong{
+    font-size:10px!important;
+  }
+
+  .home-page #resultsSection .decision-alternatives-head>small{
+    font-size:7px!important;
+  }
+
+  .home-page #resultsSection .content-grid{
+    grid-template-columns:minmax(390px,.92fr) minmax(0,1.08fr)!important;
+    gap:10px!important;
+    margin-top:10px!important;
+  }
+
+  .home-page #resultsSection .list-panel{
+    max-height:690px!important;
+    padding:10px!important;
+  }
+
+  .home-page #resultsSection .section-head{
+    margin-bottom:8px!important;
+  }
+
+  .home-page #resultsSection .section-head h2{
+    font-size:15px!important;
+  }
+
+  .home-page #resultsSection .section-head small{
+    font-size:8px!important;
+  }
+
+  .home-page #resultsSection .section-head select{
+    max-width:118px!important;
+    padding:6px 7px!important;
+    border-radius:6px!important;
+    font-size:9px!important;
+  }
+
+  /* Önceki aşırı küçük PC kurum kartı kurallarını geri al */
+  .home-page #resultsSection .institution-list{
+    gap:8px!important;
+  }
+
+  .home-page #resultsSection .institution-card{
+    grid-template-columns:100px minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:9px!important;
+    border-radius:8px!important;
+    box-shadow:none!important;
+  }
+
+  .home-page #resultsSection .institution-card:hover,
+  .home-page #resultsSection .institution-card.active{
+    border-color:#8dbcf3!important;
+    background:#fbfdff!important;
+    box-shadow:0 4px 12px rgba(22,119,255,.07)!important;
+  }
+
+  .home-page #resultsSection .institution-card .thumb{
+    min-height:96px!important;
+    border-radius:7px!important;
+  }
+
+  .home-page #resultsSection .institution-card .card-body h3{
+    margin:1px 0 4px!important;
+    padding-right:72px!important;
+    font-size:13.5px!important;
+  }
+
+  .home-page #resultsSection .institution-card .rating{
+    font-size:10.5px!important;
+  }
+
+  .home-page #resultsSection .institution-card .rating span{
+    font-size:9px!important;
+  }
+
+  .home-page #resultsSection .institution-card .meta{
+    margin-top:4px!important;
+    font-size:9px!important;
+    line-height:1.35!important;
+  }
+
+  .home-page #resultsSection .institution-card .chip{
+    padding:4px 6px!important;
+    border-radius:5px!important;
+    font-size:7.5px!important;
+  }
+
+  .home-page #resultsSection .institution-card .small-btn,
+  .home-page #resultsSection .institution-card .compare-mini-btn{
+    min-height:30px!important;
+    padding:0 8px!important;
+    border-radius:6px!important;
+    font-size:8px!important;
+  }
+
+  .home-page #resultsSection .institution-compare-toggle{
+    top:6px!important;
+    right:6px!important;
+    min-height:24px!important;
+    padding:0 6px!important;
+    font-size:7px!important;
+  }
+
+  .home-page #resultsSection .detail-panel{
+    min-height:0!important;
+    padding:11px!important;
+  }
+
+  .home-page #resultsSection .quick-preview-intro{
+    margin-bottom:7px!important;
+    padding-bottom:7px!important;
+  }
+
+  .home-page #resultsSection .discovery-profile-hero{
+    gap:10px!important;
+  }
+
+  .home-page #resultsSection .discovery-profile-hero .video-box{
+    min-height:210px!important;
+  }
+
+  .home-page .business-cta-section{
+    margin-top:18px!important;
+  }
+}
+
+@media(min-width:821px) and (max-width:1180px){
+  .desktop-category-grid button{
+    min-height:74px;
+  }
+
+  .home-page #resultsSection .institution-card{
+    grid-template-columns:94px minmax(0,1fr)!important;
+  }
+}
