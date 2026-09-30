@@ -131,6 +131,15 @@
     Object.entries(map).forEach(([key,id])=>{
       $(id)?.classList.toggle("active",key===mode);
     });
+
+    const sideMap={
+      banner:"adSideBannerBtn",
+      external:"adSideExternalBtn",
+      opportunity:"adSideOpportunityBtn"
+    };
+    Object.entries(sideMap).forEach(([key,id])=>{
+      $(id)?.classList.toggle("active",key===mode);
+    });
   }
 
   function showAdvancedSection(sectionId, tabId) {
@@ -149,6 +158,14 @@
   baseTabIds.forEach(id => {
     $(id)?.addEventListener("click", hideAdvancedSections);
   });
+
+  $("adSideBannerBtn")?.addEventListener("click",()=>$("bannerAdsTabBtn")?.click());
+  $("adSideExternalBtn")?.addEventListener("click",()=>$("externalAdsTabBtn")?.click());
+  $("adSideOpportunityBtn")?.addEventListener("click",()=>$("opportunitySponsorsTabBtn")?.click());
+  $("adSideCalendarBtn")?.addEventListener("click",()=>$("adCalendarTabBtn")?.click());
+  $("adSideRevenueBtn")?.addEventListener("click",()=>$("adRevenueTabBtn")?.click());
+  $("adSidePackagesBtn")?.addEventListener("click",()=>$("promotionPackagesTabBtn")?.click());
+  $("adSideMediaBtn")?.addEventListener("click",()=>$("mediaArchiveTabBtn")?.click());
 
   $("bannerAdsTabBtn")?.addEventListener("click", async () => {
     setAdCenterHubActive("banner");
@@ -171,6 +188,7 @@
   });
 
   $("mediaArchiveTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
     showAdvancedSection("mediaArchiveSection","mediaArchiveTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("mediaArchiveTabBtn");
     if (typeof loadInstitutions === "function") await loadInstitutions();
@@ -186,24 +204,28 @@
   });
 
   $("promotionPackagesTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
     showAdvancedSection("promotionPackagesSection","promotionPackagesTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionPackagesTabBtn");
     await renderPromotionPackageAdmin(true);
   });
 
   $("promotionOrdersTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
     showAdvancedSection("promotionOrdersSection","promotionOrdersTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionOrdersTabBtn");
     await renderPromotionOrdersAdmin(true);
   });
 
   $("adCalendarTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
     showAdvancedSection("adCalendarSection","adCalendarTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("adCalendarTabBtn");
     await renderAdCalendar(true);
   });
 
   $("adRevenueTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
     showAdvancedSection("adRevenueSection","adRevenueTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("adRevenueTabBtn");
     await renderAdRevenueCenter(true);
@@ -2360,6 +2382,7 @@
     if($("bannerAdAdminCount"))$("bannerAdAdminCount").textContent=bannerAdRecords.length+" kurum reklamı · "+activeCount+" yayında · "+(bannerAdRecords.length-activeCount)+" pasif";
     if($("bannerAdsTabCount"))$("bannerAdsTabCount").textContent=activeCount;
     if($("adCenterBannerCount"))$("adCenterBannerCount").textContent=activeCount+" yayında";
+    if($("adSideBannerCount"))$("adSideBannerCount").textContent=String(activeCount);
 
     root.innerHTML=rows.length?rows.map(item=>{
       const hasVideo=item.mediaType==="video"&&item.videoUrl;
@@ -2810,6 +2833,7 @@
       externalAdRecords.length+" site reklamı · "+liveCount+" yayında";
     if($("externalAdsTabCount"))$("externalAdsTabCount").textContent=String(liveCount);
     if($("adCenterExternalCount"))$("adCenterExternalCount").textContent=liveCount+" yayında";
+    if($("adSideExternalCount"))$("adSideExternalCount").textContent=String(liveCount);
 
     root.innerHTML=rows.length ? rows.map(item=>{
       const status=externalAdStatus(item);
@@ -6246,6 +6270,9 @@
     }
     if($("adCenterOpportunityCount")){
       $("adCenterOpportunityCount").textContent=String(sponsored)+" yayında";
+    }
+    if($("adSideOpportunityCount")){
+      $("adSideOpportunityCount").textContent=String(sponsored);
     }
     if($("opportunityKpiTotal"))$("opportunityKpiTotal").textContent=String(total);
     if($("opportunityKpiSponsored"))$("opportunityKpiSponsored").textContent=String(sponsored);
