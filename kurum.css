@@ -277,3 +277,38 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
 .kp-recommend-score.has-data strong{
   font-size:16px;
 }
+
+
+/* Yanıt gelmezse alternatif kurumlara yönlendirme izni */
+.kp-alternative-consent{
+  display:flex !important;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px 13px;
+  border:1px solid #bfdbfe;
+  border-radius:13px;
+  background:#f8fbff;
+  cursor:pointer;
+}
+.kp-alternative-consent input{
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  margin-top:2px;
+  accent-color:#1677ff;
+}
+.kp-alternative-consent span{
+  display:block;
+}
+.kp-alternative-consent strong{
+  display:block;
+  color:#174b80;
+  font-size:12px;
+  margin-bottom:3px;
+}
+.kp-alternative-consent small{
+  display:block;
+  color:#5b6f88;
+  font-size:10px;
+  line-height:1.5;
+}
