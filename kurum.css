@@ -312,3 +312,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
   font-size:10px;
   line-height:1.5;
 }
+
+/* TEKLI TEKLIF · YANIT SURESI */
+.kp-response-wait-field{
+  padding:10px 11px;
+  border:1px solid #d9e7f7;
+  border-radius:11px;
+  background:#f8fbff;
+}
+.kp-response-wait-field>span{
+  color:#294766!important;
+}
+.kp-response-wait-field select{
+  background:#fff;
+  border-color:#bfd7f3;
+  font-weight:800;
+}
