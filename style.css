@@ -20486,3 +20486,99 @@ to{opacity:1;transform:none}
     font-size:12px;
   }
 }
+
+
+/* =========================================================
+   KATEGORI SONUCLARI - TEKLIF AL CTA
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-inline-results-quote-btn{
+    min-width:138px;
+    min-height:48px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "small arrow"
+      "title arrow";
+    align-content:center;
+    column-gap:10px;
+    padding:8px 13px;
+    border:1px solid #1677ff;
+    border-radius:12px;
+    background:linear-gradient(135deg,#1677ff,#0f63dc);
+    color:#fff;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(22,119,255,.18);
+    transition:transform .16s ease,box-shadow .16s ease,filter .16s ease
+  }
+  .desktop-inline-results-quote-btn:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.03);
+    box-shadow:0 12px 24px rgba(22,119,255,.24)
+  }
+  .desktop-inline-results-quote-btn:active{
+    transform:translateY(0) scale(.98)
+  }
+  .desktop-inline-results-quote-btn span{
+    grid-area:small;
+    color:#dbeafe!important;
+    font-size:7px!important;
+    font-weight:850!important;
+    letter-spacing:.04em!important;
+    text-transform:uppercase
+  }
+  .desktop-inline-results-quote-btn strong{
+    grid-area:title;
+    color:#fff!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    line-height:1.1
+  }
+  .desktop-inline-results-quote-btn b{
+    grid-area:arrow;
+    align-self:center;
+    width:27px;
+    height:27px;
+    display:grid;
+    place-items:center;
+    border-radius:999px;
+    background:rgba(255,255,255,.16);
+    color:#fff;
+    font-size:13px
+  }
+
+  .desktop-inline-empty-quote{
+    margin-left:auto;
+    min-width:112px;
+    min-height:38px;
+    padding:0 13px;
+    border:0;
+    border-radius:10px;
+    background:#1677ff;
+    color:#fff;
+    font-size:9px;
+    font-weight:950;
+    cursor:pointer;
+    white-space:nowrap;
+    box-shadow:0 6px 14px rgba(22,119,255,.16)
+  }
+  .desktop-inline-empty-quote:hover{
+    background:#0f63dc
+  }
+}
+
+@media(min-width:821px) and (max-width:1180px){
+  .desktop-inline-results-quote-btn{
+    min-width:126px
+  }
+}
+
+@media(max-width:900px){
+  .desktop-inline-results-head{
+    align-items:flex-start
+  }
+  .desktop-inline-results-quote-btn{
+    min-width:118px
+  }
+}
