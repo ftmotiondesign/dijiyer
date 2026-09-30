@@ -1,6 +1,10 @@
 (function(){
   const STORAGE_KEY = "dijiyerCustomerQuoteIds";
   const DATA_KEY = "dijiyerCustomerQuoteData";
+  const LATEST_KEY = "dijiyerQuoteLatestSnapshots";
+  const SEEN_KEY = "dijiyerQuoteSeenSnapshots";
+  const UNREAD_KEY = "dijiyerQuoteUnreadMap";
+  const NOTIFY_KEY = "dijiyerQuoteBrowserNotify";
   const myOffersBtn = document.getElementById("myOffersBtn");
   const myOffersCount = document.getElementById("myOffersCount");
   const myOffersList = document.getElementById("myOffersList");
@@ -18,6 +22,27 @@
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]").filter(Boolean); }
     catch(e){ return []; }
   }
+
+  function readLocalJson(key,fallback={}){
+    try{
+      const value=JSON.parse(localStorage.getItem(key)||"");
+      return value && typeof value==="object" ? value : fallback;
+    }catch(_){
+      return fallback;
+    }
+  }
+
+  function writeLocalJson(key,value){
+    try{localStorage.setItem(key,JSON.stringify(value));}catch(_){}
+  }
+
+  function getUnreadMap(){
+    return readLocalJson(UNREAD_KEY,{});
+  }
+
+  function getUnreadCount(){
+    return Object.values(getUnreadMap()).filter(Boolean).length;
+  }
   window.rememberCustomerQuote = function(id,data){
     if(!id) return;
     const ids = getQuoteIds();
@@ -32,7 +57,20 @@
     refreshMyOffersBadge();
   };
   window.refreshMyOffersBadge = function(){
-    if(myOffersCount) myOffersCount.textContent = getQuoteIds().length || "";
+    const total=getQuoteIds().length;
+    const unread=getUnreadCount();
+
+    if(myOffersCount){
+      myOffersCount.textContent=unread ? String(unread) : (total ? String(total) : "");
+      myOffersCount.classList.toggle("unread",unread>0);
+      myOffersCount.title=unread
+        ? unread+" yeni teklif hareketi"
+        : total
+          ? total+" kayıtlı talep"
+          : "";
+    }
+
+    myOffersBtn?.classList.toggle("has-unread",unread>0);
   };
 
   function offerState(offer, lock){
@@ -58,6 +96,7 @@
     try{localData=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");}catch(e){}
 
     let offersList=[];
+    let engagementList=[];
     let lockData=null;
     let loadError=null;
 
@@ -77,10 +116,18 @@
       loadError=loadError || error;
     }
 
+    try{
+      const engagementSnap=await quoteRef.collection("engagement").get();
+      engagementList=engagementSnap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(error){
+      console.warn("Kurum yanıt durumları okunamadı:",quoteId,error);
+    }
+
     return {
       id: quoteId,
       quote: localData[quoteId] || {service:"Teklif Talebi",date:""},
       offers: offersList,
+      engagement: engagementList,
       lock: lockData,
       loadError
     };
@@ -145,6 +192,9 @@
   function requestHtml(bundle){
     const q=bundle.quote;
     const offers=[...bundle.offers].sort((a,b)=>Number(a.price||0)-Number(b.price||0));
+    const engagement=Array.isArray(bundle.engagement)?bundle.engagement:[];
+    const interestedCount=engagement.filter(row=>row.institutionResponse==="interested").length;
+    const declinedCount=engagement.filter(row=>row.institutionResponse==="not_interested").length;
     const body = bundle.lock
       ? lockedTicketHtml(bundle)
       : offers.length
@@ -162,7 +212,22 @@
           </div>
           <span class="offer-status-pill ${bundle.lock ? "locked" : "offered"}">${bundle.lock ? "Fiyat seçildi" : offers.length + " teklif"}</span>
         </div>
+
+        <div class="my-offer-activity-strip">
+          ${interestedCount ? `<span class="positive">✓ ${interestedCount} kurum ilgileniyor</span>` : ""}
+          ${offers.length ? `<span>🏷 ${offers.length} fiyat teklifi</span>` : '<span>⏳ Teklif bekleniyor</span>'}
+          ${declinedCount ? `<span class="muted">✕ ${declinedCount} kurum ilgilenmiyor</span>` : ""}
+        </div>
+
         ${q.note ? `<div class="offer-scope"><b>Talebiniz:</b><br>${safe(q.note)}</div>` : ""}
+
+        ${q.trackingUrl ? `
+          <div class="my-offer-tracking-actions">
+            <button type="button" data-open-tracking="${safe(q.trackingUrl)}">🔍 Takip Ekranını Aç</button>
+            <button type="button" data-copy-tracking="${safe(q.trackingUrl)}">🔗 Takip Linkini Kopyala</button>
+          </div>
+        ` : ""}
+
         ${body}
       </article>
     `;
@@ -274,6 +339,28 @@
     myOffersList.querySelectorAll("[data-report-offer]").forEach(btn=>{
       btn.addEventListener("click",()=>reportIssue(btn.dataset.quoteId,btn.dataset.offerCode));
     });
+    myOffersList.querySelectorAll("[data-open-tracking]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const url=String(btn.dataset.openTracking||"");
+        if(url)window.location.href=url;
+      });
+    });
+    myOffersList.querySelectorAll("[data-copy-tracking]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const url=String(btn.dataset.copyTracking||"");
+        if(!url)return;
+        try{
+          await navigator.clipboard.writeText(url);
+          const old=btn.textContent;
+          btn.textContent="✓ Kopyalandı";
+          showToast("Takip linki kopyalandı.");
+          setTimeout(()=>{btn.textContent=old;},1500);
+        }catch(error){
+          console.error(error);
+          showToast("Takip linki kopyalanamadı.");
+        }
+      });
+    });
   }
 
   function drawQrCodes(){
@@ -299,12 +386,231 @@
     });
   }
 
+
+  function bundleSnapshot(bundle){
+    const offers=(bundle.offers||[])
+      .map(offer=>({
+        id:String(offer.id||offer.institutionId||""),
+        price:Number(offer.price||0),
+        status:String(offer.status||""),
+        updatedAt:String(offer.updatedAt||offer.createdAt||""),
+        expiresAt:String(offer.expiresAt||"")
+      }))
+      .sort((a,b)=>a.id.localeCompare(b.id));
+
+    const engagement=(bundle.engagement||[])
+      .map(row=>({
+        id:String(row.id||row.institutionId||""),
+        response:String(row.institutionResponse||""),
+        responseAt:String(row.institutionResponseAt||""),
+        revisionAt:String(row.revisionRespondedAt||row.revisionRequestedAt||"")
+      }))
+      .sort((a,b)=>a.id.localeCompare(b.id));
+
+    const interestedCount=engagement.filter(row=>row.response==="interested").length;
+    const lockStatus=bundle.lock
+      ? String(bundle.lock.status||"locked")+"|"+String(bundle.lock.institutionId||"")+"|"+String(bundle.lock.price||"")
+      : "";
+
+    const signature=JSON.stringify({offers,engagement,lockStatus});
+
+    return {
+      signature,
+      offerCount:offers.length,
+      interestedCount,
+      lockStatus
+    };
+  }
+
+  function notificationCopy(bundle,previous,current){
+    const service=bundle.quote?.service||"Teklif Talebi";
+
+    if(previous && current.offerCount>Number(previous.offerCount||0)){
+      return {
+        title:"Yeni teklif geldi",
+        body:service+" için "+current.offerCount+" teklifiniz var."
+      };
+    }
+
+    if(previous && current.interestedCount>Number(previous.interestedCount||0)){
+      return {
+        title:"Bir kurum talebinizle ilgileniyor",
+        body:service+" talebinizde yeni kurum yanıtı var."
+      };
+    }
+
+    if(previous && current.lockStatus!==String(previous.lockStatus||"") && current.lockStatus){
+      return {
+        title:"Teklif durumu güncellendi",
+        body:service+" için fiyat kilidi durumu değişti."
+      };
+    }
+
+    return {
+      title:"Teklifiniz güncellendi",
+      body:service+" talebinizde yeni bir hareket var."
+    };
+  }
+
+  function showBrowserNotification(bundle,previous,current){
+    if(localStorage.getItem(NOTIFY_KEY)!=="1")return;
+    if(!("Notification" in window) || Notification.permission!=="granted")return;
+
+    const copy=notificationCopy(bundle,previous,current);
+
+    try{
+      const notice=new Notification("Dijiyer • "+copy.title,{
+        body:copy.body,
+        tag:"dijiyer-quote-"+bundle.id
+      });
+      notice.onclick=()=>{
+        window.focus();
+        if(bundle.quote?.trackingUrl)window.location.href=bundle.quote.trackingUrl;
+      };
+    }catch(error){
+      console.warn("Tarayıcı bildirimi gösterilemedi:",error);
+    }
+  }
+
+  function markBundlesSeen(bundles){
+    const latest=readLocalJson(LATEST_KEY,{});
+    const seen=readLocalJson(SEEN_KEY,{});
+    const unread=readLocalJson(UNREAD_KEY,{});
+
+    bundles.forEach(bundle=>{
+      const snap=bundleSnapshot(bundle);
+      latest[bundle.id]=snap;
+      seen[bundle.id]=snap;
+      unread[bundle.id]=false;
+    });
+
+    writeLocalJson(LATEST_KEY,latest);
+    writeLocalJson(SEEN_KEY,seen);
+    writeLocalJson(UNREAD_KEY,unread);
+    window.refreshMyOffersBadge();
+  }
+
+  async function checkQuoteUpdates({notify=true}={}){
+    const ids=getQuoteIds().slice(0,10);
+    if(!ids.length)return;
+
+    const latest=readLocalJson(LATEST_KEY,{});
+    const seen=readLocalJson(SEEN_KEY,{});
+    const unread=readLocalJson(UNREAD_KEY,{});
+
+    const results=await Promise.allSettled(ids.map(getRequestBundle));
+
+    results.forEach(result=>{
+      if(result.status!=="fulfilled" || !result.value)return;
+
+      const bundle=result.value;
+      const current=bundleSnapshot(bundle);
+      const previousLatest=latest[bundle.id];
+      const previousSeen=seen[bundle.id];
+
+      if(!previousLatest){
+        latest[bundle.id]=current;
+        if(!previousSeen)seen[bundle.id]=current;
+        unread[bundle.id]=false;
+        return;
+      }
+
+      if(previousLatest.signature!==current.signature){
+        latest[bundle.id]=current;
+
+        if(!previousSeen || previousSeen.signature!==current.signature){
+          unread[bundle.id]=true;
+        }
+
+        if(notify)showBrowserNotification(bundle,previousLatest,current);
+      }
+    });
+
+    writeLocalJson(LATEST_KEY,latest);
+    writeLocalJson(SEEN_KEY,seen);
+    writeLocalJson(UNREAD_KEY,unread);
+    window.refreshMyOffersBadge();
+  }
+
+  function ensureNotificationControls(){
+    if(!myOffersList || document.getElementById("myOffersNotifyBar"))return;
+
+    const bar=document.createElement("div");
+    bar.id="myOffersNotifyBar";
+    bar.className="my-offers-notify-bar";
+
+    const supported="Notification" in window;
+    const enabled=supported && Notification.permission==="granted" && localStorage.getItem(NOTIFY_KEY)==="1";
+
+    bar.innerHTML=`
+      <div>
+        <strong>Teklif bildirimleri</strong>
+        <small>${supported
+          ? (enabled
+              ? "Yeni teklif ve kurum yanıtlarında tarayıcı bildirimi açık."
+              : "Yeni teklif geldiğinde bu cihazda bildirim alın.")
+          : "Bu tarayıcı bildirim özelliğini desteklemiyor."}</small>
+      </div>
+      <button type="button" id="myOffersNotifyBtn" ${supported?"":"disabled"}>
+        ${enabled ? "✓ Bildirimler Açık" : "Bildirimleri Aç"}
+      </button>
+    `;
+
+    myOffersList.parentNode?.insertBefore(bar,myOffersList);
+
+    document.getElementById("myOffersNotifyBtn")?.addEventListener("click",async()=>{
+      if(!("Notification" in window))return;
+
+      try{
+        const permission=await Notification.requestPermission();
+        if(permission==="granted"){
+          localStorage.setItem(NOTIFY_KEY,"1");
+          bar.querySelector("small").textContent="Yeni teklif ve kurum yanıtlarında tarayıcı bildirimi açık.";
+          const btn=document.getElementById("myOffersNotifyBtn");
+          if(btn)btn.textContent="✓ Bildirimler Açık";
+          showToast("Teklif bildirimleri açıldı.");
+        }else{
+          localStorage.removeItem(NOTIFY_KEY);
+          showToast("Bildirim izni verilmedi.");
+        }
+      }catch(error){
+        console.error(error);
+        showToast("Bildirim izni açılamadı.");
+      }
+    });
+  }
+
+  ensureNotificationControls();
+
   if(myOffersBtn){
     myOffersBtn.addEventListener("click",async()=>{
       openModal("myOffersModal");
       await loadMyOffers();
+
+      const ids=getQuoteIds();
+      if(ids.length){
+        const results=await Promise.allSettled(ids.slice(0,10).map(getRequestBundle));
+        const bundles=results
+          .filter(result=>result.status==="fulfilled" && result.value)
+          .map(result=>result.value);
+        markBundlesSeen(bundles);
+      }
     });
   }
+
+  async function runBackgroundQuoteCheck(){
+    if(document.hidden)return;
+    try{await checkQuoteUpdates({notify:true});}catch(error){
+      console.warn("Teklif arka plan kontrolü yapılamadı:",error);
+    }
+  }
+
   setInterval(updateCountdowns,60000);
+  setTimeout(runBackgroundQuoteCheck,5000);
+  setInterval(runBackgroundQuoteCheck,90000);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden)runBackgroundQuoteCheck();
+  });
+
   refreshMyOffersBadge();
 })();
