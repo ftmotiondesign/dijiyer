@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/diji-favicon.png">
+  <link rel="apple-touch-icon" href="assets/brand/diji-favicon.png">
+  <meta name="theme-color" content="#6d28d9">
+  <meta name="description" content="Dijiyer'de randevu kabul eden işletmeleri keşfet, uygun kurumu seç ve online randevu talebi oluştur.">
+  <title>Randevu Al | Dijiyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="randevu.css?v=1">
+</head>
+<body>
+  <header class="rv-topbar">
+    <a class="rv-brand" href="index.html">
+      <span class="rv-brand-mark">D</span>
+      <span><strong>Dijiyer</strong><small>Randevu</small></span>
+    </a>
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="teklif-al.html">Teklif Al</a>
+      <a href="firsatlar.html">Fırsatlar</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="rv-hero">
+      <div class="rv-hero-copy">
+        <span class="rv-kicker">DİJİYER RANDEVU</span>
+        <h1>Uygun işletmeyi bul.<br>Randevunu kolayca oluştur.</h1>
+        <p>Randevu kabul eden kurumları keşfet, hizmetini seç ve uygun saat için talep gönder.</p>
+        <div class="rv-hero-points">
+          <span>✓ Üyelik zorunlu değil</span>
+          <span>✓ Uygun saatleri gör</span>
+          <span>✓ Kurum onayıyla kesinleşir</span>
+        </div>
+      </div>
+      <div class="rv-hero-card">
+        <span class="rv-calendar-icon">📅</span>
+        <strong>Randevu almak ücretsiz</strong>
+        <p>Dijiyer üzerinden ödeme alınmaz. Randevu kurum tarafından onaylandığında kesinleşir.</p>
+      </div>
+    </section>
+
+    <section class="rv-search-shell">
+      <div class="rv-search-head">
+        <div>
+          <span class="rv-kicker">RANDEVU VEREN KURUMLAR</span>
+          <h2>Size uygun kurumu bulun</h2>
+        </div>
+        <span id="rvResultCount" class="rv-result-count">Yükleniyor...</span>
+      </div>
+
+      <div class="rv-filters">
+        <label>
+          <span>Kurum veya hizmet ara</span>
+          <input id="rvSearch" type="search" placeholder="Kuaför, oto servis, kurs...">
+        </label>
+        <label>
+          <span>Şehir</span>
+          <select id="rvCity">
+            <option value="">Tüm şehirler</option>
+          </select>
+        </label>
+        <label>
+          <span>Sektör</span>
+          <select id="rvCategory">
+            <option value="">Tüm sektörler</option>
+          </select>
+        </label>
+        <button id="rvClear" type="button">Filtreyi Temizle</button>
+      </div>
+
+      <div id="rvLoading" class="rv-state">
+        <span>📅</span>
+        <strong>Randevu veren kurumlar yükleniyor...</strong>
+      </div>
+
+      <div id="rvEmpty" class="rv-state hidden">
+        <span>🔎</span>
+        <strong>Bu filtrelerde randevu veren kurum bulunamadı.</strong>
+        <p>Filtreleri değiştirerek tekrar deneyin.</p>
+      </div>
+
+      <div id="rvGrid" class="rv-grid"></div>
+    </section>
+
+    <section class="rv-how">
+      <div class="rv-section-head">
+        <span class="rv-kicker">NASIL ÇALIŞIR?</span>
+        <h2>3 adımda randevu</h2>
+      </div>
+      <div class="rv-how-grid">
+        <article><b>1</b><span>🏢</span><strong>Kurumunu seç</strong><p>Randevu kabul eden işletmeler arasından uygun olanı bul.</p></article>
+        <article><b>2</b><span>🕒</span><strong>Tarih ve saat seç</strong><p>Kurumun açık gün ve saatlerinden sana uygun olanı seç.</p></article>
+        <article><b>3</b><span>✓</span><strong>Talebini gönder</strong><p>Kurum onayladığında randevun kesinleşir.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Dijiyer</strong>
+    <span>Bul · Karşılaştır · Teklif Al · Randevu Al</span>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="randevu.js?v=1"></script>
+</body>
+</html>
