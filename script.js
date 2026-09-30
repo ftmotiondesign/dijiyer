@@ -5889,6 +5889,8 @@ async function loadApprovedInstitutions() {
     snapshot.forEach(doc => {
       const data = doc.data();
 
+      if (String(data.status || "active") === "passive") return;
+
       const exists = institutions.some(inst => String(inst.id) === String(doc.id));
       if (exists) return;
 
@@ -6976,6 +6978,7 @@ async function loadInstitutionRegistrationOptions() {
     const snapshot = await db.collection('institutions').get();
     const rows = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(item => String(item.status || "active") !== "passive")
       .sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''), 'tr'));
 
     select.innerHTML = '<option value="">Kurumunuzu seçin</option>';
