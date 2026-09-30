@@ -1208,7 +1208,13 @@ async function saveRealOffer(form){
     }
   }catch(error){
     console.error("Gerçek teklif kaydedilemedi:",error);
-    alert("Teklif kaydedilemedi. Firestore kurallarını kontrol edin.");
+    const errorCode=String(error?.code||"unknown");
+    const errorMessage=String(error?.message||"Bilinmeyen hata");
+    alert(
+      errorCode.includes("permission-denied")
+        ? "Teklif kaydedilemedi (permission-denied). Firebase kuralları güncel değil veya bu işlem kurala takıldı.\n\n"+errorMessage
+        : "Teklif kaydedilemedi ("+errorCode+").\n\n"+errorMessage
+    );
   }finally{
     submit.disabled=false; submit.textContent=oldText;
   }
