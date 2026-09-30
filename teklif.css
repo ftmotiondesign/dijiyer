@@ -893,3 +893,150 @@ button,input{font:inherit}.hidden{display:none!important}
   .direct-customer-status{padding:11px;grid-template-columns:34px minmax(0,1fr)}
   .direct-status-icon{width:34px;height:34px}
 }
+
+/* =========================================================
+   TEKLIF TAKIP AKSIYON BUTONLARI V2
+   Hover, press, kopyalama geri bildirimi ve ana CTA
+   ========================================================= */
+.tracking-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-top:16px;
+}
+
+.tracking-actions .tracking-action-btn{
+  min-height:42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:0 14px;
+  border:1px solid #dce5ef;
+  border-radius:12px;
+  background:#eef2f7;
+  color:#2f4259;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 3px 9px rgba(31,55,85,.04);
+  transition:
+    transform .16s ease,
+    background .16s ease,
+    color .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.tracking-actions .tracking-action-btn:hover{
+  transform:translateY(-2px);
+  border-color:#aacbfa;
+  background:#e9f3ff;
+  color:#1269d8;
+  box-shadow:0 8px 18px rgba(22,119,255,.12);
+}
+
+.tracking-actions .tracking-action-btn:active,
+.tracking-actions .tracking-action-btn.is-pressed{
+  transform:translateY(0) scale(.975);
+  background:#1677ff;
+  border-color:#1677ff;
+  color:#fff;
+  box-shadow:0 3px 9px rgba(22,119,255,.20);
+}
+
+.tracking-action-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:18px;
+  font-size:16px;
+  line-height:1;
+}
+
+.tracking-actions .whatsapp-action:hover{
+  border-color:#99e4b4;
+  background:#eafaf0;
+  color:#148347;
+  box-shadow:0 8px 18px rgba(37,211,102,.12);
+}
+
+.tracking-actions .whatsapp-action:active,
+.tracking-actions .whatsapp-action.is-pressed{
+  border-color:#1fba63;
+  background:#1fba63;
+  color:#fff;
+}
+
+.tracking-actions .new-request-action{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+  box-shadow:0 7px 17px rgba(22,119,255,.18);
+}
+
+.tracking-actions .new-request-action:hover{
+  border-color:#0f68df;
+  background:#0f68df;
+  color:#fff;
+  box-shadow:0 10px 23px rgba(22,119,255,.25);
+}
+
+.tracking-actions .tracking-action-btn.is-success{
+  border-color:#8bd8aa !important;
+  background:#eaf9f0 !important;
+  color:#16834b !important;
+  box-shadow:0 7px 16px rgba(22,131,75,.12) !important;
+}
+
+.tracking-actions .tracking-action-btn.is-error{
+  border-color:#fecaca !important;
+  background:#fff1f2 !important;
+  color:#b4232f !important;
+}
+
+.tracking-actions .refresh-action.is-loading .tracking-action-icon{
+  animation:tracking-refresh-spin .75s linear infinite;
+}
+
+.tracking-actions .tracking-action-btn:disabled{
+  cursor:wait;
+  opacity:.78;
+}
+
+@keyframes tracking-refresh-spin{
+  to{transform:rotate(360deg)}
+}
+
+@media(max-width:640px){
+  .tracking-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .tracking-actions .tracking-action-btn{
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    padding:0 10px;
+    font-size:11px;
+  }
+
+  .tracking-actions .new-request-action{
+    grid-column:1 / -1;
+  }
+}
+
+@media(max-width:390px){
+  .tracking-actions{
+    grid-template-columns:1fr;
+  }
+
+  .tracking-actions .new-request-action{
+    grid-column:auto;
+  }
+}
