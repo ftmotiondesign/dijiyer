@@ -198,9 +198,7 @@
       firmHomeMessageCount.classList.toggle("has-unread",total>0);
     }
 
-    document.title=total>0
-      ? "("+total+") Yeni Mesaj · "+institutionMessageTitleBase
-      : institutionMessageTitleBase;
+    document.title=institutionMessageTitleBase;
   }
 
   function latestCustomerMessage(rows){
