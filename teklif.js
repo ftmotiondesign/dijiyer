@@ -28,6 +28,8 @@ const offerUpdateVersions=new Map();
 const engagementResponseVersions=new Map();
 let offerListenerInitialized=false;
 let engagementListenerInitialized=false;
+const newlyArrivedOfferIds=new Set();
+let latestNewOfferNotice=null;
 let offerSortMode=localStorage.getItem("dijiyerOfferSortMode")||"arrival";
 
 function safe(v){
@@ -148,7 +150,7 @@ function getLocalRequestDetail(access){
   return {};
 }
 
-function requestDetailHtml(access){
+function requestDetailHtml(access,engagementRows=[],offers=[],lock=null){
   const local=getLocalRequestDetail(access);
   const mainLabel=access.mainCategoryLabel||local.mainCategoryLabel||local.mainCategory||"";
   const subLabel=access.subCategoryLabel||local.subCategoryLabel||local.service||access.service||"";
@@ -157,27 +159,89 @@ function requestDetailHtml(access){
   const city=access.city||local.city||"";
   const district=access.district||local.district||"";
   const date=access.date||local.date||"";
-  const targetInstitutionName=
-    access.targetInstitutionName||
-    local.targetInstitutionName||
-    "";
+  const targetInstitutionName=access.targetInstitutionName||local.targetInstitutionName||"";
+
+  const responses=(engagementRows||[]).filter(row=>row?.institutionResponse);
+  const interested=responses.filter(row=>row.institutionResponse==="interested").length;
+  const declined=responses.filter(row=>row.institutionResponse==="not_interested").length;
+  const offerCount=Array.isArray(offers)?offers.length:0;
+
+  const statusText=lock
+    ? "Teklif kabul edildi"
+    : offerCount
+      ? offerCount+" teklif geldi"
+      : interested
+        ? interested+" kurum teklif hazırlıyor"
+        : "Teklif bekleniyor";
+
+  const statusClass=lock
+    ? "accepted"
+    : offerCount
+      ? "offers"
+      : interested
+        ? "interested"
+        : "waiting";
+
+  const deliveryText=targetInstitutionName
+    ? (access.allowAlternativeInstitutions===true
+        ? "İlk kurum + izin sonrası uygun kurumlar"
+        : "Yalnızca seçtiğiniz kurum")
+    : "Uygun kurumlara açık talep";
 
   return `
-    <details class="request-detail-box">
-      <summary>📋 Talep Detayını Gör</summary>
+    <details class="request-detail-box" open>
+      <summary>
+        <span>📋 Talep Detayı</span>
+        <em class="request-detail-live"><i></i> CANLI TAKİP</em>
+      </summary>
+
+      <div class="request-detail-live-note">
+        <span class="request-live-dot"></span>
+        <div>
+          <strong>Bu talep canlı takip ediliyor.</strong>
+          <small>Sonradan yeni bir teklif gelirse bu sayfada otomatik olarak görünür. Sayfayı yenilemeniz gerekmez.</small>
+        </div>
+      </div>
+
+      <div class="request-detail-status-grid">
+        <div class="${statusClass}">
+          <span>Talep Durumu</span>
+          <strong>${safe(statusText)}</strong>
+        </div>
+        <div><span>Gelen Teklif</span><strong>${offerCount}</strong></div>
+        <div><span>İlgilenen Kurum</span><strong>${interested}</strong></div>
+        <div><span>Şu An Veremiyor</span><strong>${declined}</strong></div>
+      </div>
+
       <div class="request-detail-grid">
         <div><span>Hizmet</span><strong>${safe(service)}</strong></div>
         <div><span>Kategori</span><strong>${safe([mainLabel,subLabel].filter(Boolean).join(" / ")||service)}</strong></div>
         ${targetInstitutionName
           ? `<div><span>Talep Türü</span><strong>🎯 Doğrudan kurum talebi</strong></div>
-             <div><span>Hedef Kurum</span><strong>${safe(targetInstitutionName)}</strong></div>`
-          : `<div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>`}
+             <div><span>İlk Hedef Kurum</span><strong>${safe(targetInstitutionName)}</strong></div>`
+          : `<div><span>Talep Türü</span><strong>🔎 Çoklu teklif talebi</strong></div>
+             <div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>`}
+        <div><span>İletim Kapsamı</span><strong>${safe(deliveryText)}</strong></div>
         <div><span>Talep Tarihi</span><strong>${fmtDate(date)}</strong></div>
         <div class="request-detail-note"><span>Talep Notu</span><strong>${safe(note)}</strong></div>
       </div>
     </details>`;
 }
 
+function newOfferAlertHtml(){
+  if(!latestNewOfferNotice)return "";
+  const age=Date.now()-Number(latestNewOfferNotice.at||0);
+  if(age>30000)return "";
+  return `
+    <div class="new-offer-live-alert">
+      <span class="new-offer-live-icon">🔔</span>
+      <div>
+        <strong>Yeni teklif geldi</strong>
+        <small>${safe(latestNewOfferNotice.institutionName||"Kurum")} · ${money(latestNewOfferNotice.price)}</small>
+      </div>
+      <button type="button" data-jump-new-offer="${safe(latestNewOfferNotice.id||"")}">Teklifi Gör</button>
+    </div>`;
+}
 function institutionResponseLabel(status){
   if(status==="interested")return "İlgileniyor";
   if(status==="not_interested")return "Şu anda teklif veremiyor";
