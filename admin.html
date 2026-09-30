@@ -948,7 +948,14 @@
               </div>
             </div>
 
-            <div class="banner-form-grid">
+            <details class="banner-compact-section" id="bannerContentSection" open>
+              <summary>
+                <span>1</span>
+                <div><strong>İçerik & Medya</strong><small>Başlık, reklam metni, görsel veya video</small></div>
+                <b>⌄</b>
+              </summary>
+              <div class="banner-compact-section-body">
+                <div class="banner-form-grid">
               <label>Başlık
                 <input id="bannerAdHeadline" maxlength="100" placeholder="Örn. Ekim kayıtlarında son fırsat">
               </label>
@@ -1019,6 +1026,8 @@
                 </label>
               </details>
             </div>
+              </div>
+            </details>
 
             <div class="banner-ad-templates">
               <div class="banner-ad-templates-head">
@@ -1032,6 +1041,13 @@
               </div>
             </div>
 
+            <details class="banner-compact-section" id="bannerTargetSection">
+              <summary>
+                <span>2</span>
+                <div><strong>Yayın & Hedefleme</strong><small>Gösterim alanı, şehir, ilçe ve sektör</small></div>
+                <b>⌄</b>
+              </summary>
+              <div class="banner-compact-section-body">
             <div class="banner-placement-box">
               <div class="banner-target-head">
                 <strong>Reklam nerede görünsün?</strong>
@@ -1093,6 +1109,16 @@
               </div>
             </div>
 
+              </div>
+            </details>
+
+            <details class="banner-compact-section" id="bannerSalesSection">
+              <summary>
+                <span>3</span>
+                <div><strong>Satış & Tarih</strong><small>Tutar, ödeme ve yayın dönemi</small></div>
+                <b>⌄</b>
+              </summary>
+              <div class="banner-compact-section-body">
             <div class="banner-form-grid banner-sales-grid">
               <label>Satış Tutarı (TL)
                 <input id="bannerAdPrice" type="number" min="0" step="1" value="0" placeholder="Örn. 2500">
@@ -1112,6 +1138,16 @@
               <label>Yayın Bitişi <small>(isteğe bağlı)</small><input id="bannerAdEndAt" type="date"></label>
             </div>
 
+              </div>
+            </details>
+
+            <details class="banner-compact-section banner-preview-compact" id="bannerPreviewSection">
+              <summary>
+                <span>4</span>
+                <div><strong>Önizleme</strong><small>Banner ve gerçek alan görünümü</small></div>
+                <b>⌄</b>
+              </summary>
+              <div class="banner-compact-section-body">
             <div class="banner-preview-admin" id="bannerAdPreview">
               <span>SPONSORLU</span><strong>Banner önizlemesi</strong><small>Kurum seçildiğinde önizleme güncellenir.</small>
             </div>
@@ -1125,6 +1161,9 @@
                 <div class="banner-live-placement-empty">Kurum ve reklam içeriği seçildiğinde burada görünür.</div>
               </div>
             </div>
+
+              </div>
+            </details>
 
             <div class="promotion-package-form-actions banner-save-actions">
               <button type="button" id="bannerAdCancelBtn">Temizle</button>
@@ -2328,7 +2367,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=37"></script>
-  <script src="admin-advanced.js?v=31"></script>
+  <script src="admin-advanced.js?v=47"></script>
 
 </body>
 </html>
