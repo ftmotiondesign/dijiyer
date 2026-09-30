@@ -131,6 +131,20 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - SİTE / YÖNETİM AYARLARI
+    // =====================================================
+    match /siteSettings/{settingId} {
+
+      // Ana sayfa görünürlük/içerik ayarları kullanıcı arayüzü tarafından okunur.
+      // Reklam tarifesi gibi yönetim ayarları yalnızca admin tarafından okunur.
+      allow read: if settingId == 'home' || adminMi();
+
+      // Tüm site ayarlarını yalnızca yönetici değiştirebilir.
+      allow create, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - KURUM BAŞVURULARI
     // =====================================================
     match /institutionApplications/{applicationId} {
