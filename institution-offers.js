@@ -27,6 +27,8 @@ function stopInstitutionOfferStateWatchers(){
   institutionOfferStateWatchers.clear();
 }
 
+// Yalnız kabul kilidi ve 2. teklif daveti canlı izlenir.
+// Kurumun kendi teklifini ayrıca onSnapshot ile dinlemiyoruz; kaydetme sonrası local map güncelleniyor.
 function syncInstitutionOfferStateWatchers(){
   const currentInstitutionId=String(currentAccount?.institutionId||"");
   if(!currentInstitutionId)return;
@@ -65,26 +67,7 @@ function syncInstitutionOfferStateWatchers(){
       })
     );
 
-    unsubscribers.push(
-      quoteRef.collection("offers").onSnapshot(snapshot=>{
-        const before=institutionOfferMap.get(quoteId)||null;
-        const ownDoc=snapshot.docs.find(doc=>{
-          const data=doc.data()||{};
-          return institutionOfferBelongsToCurrentInstitution(data,doc.id);
-        })||null;
-        const after=ownDoc ? {id:ownDoc.id,...ownDoc.data()} : null;
 
-        if(after)institutionOfferMap.set(quoteId,after);
-        else institutionOfferMap.delete(quoteId);
-
-        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
-          renderQuotes();
-          renderSummary();
-        }
-      },error=>{
-        console.warn("Kurum teklifleri canlı izlenemedi:",quoteId,error);
-      })
-    );
 
     unsubscribers.push(
       quoteRef.collection("secondOfferInvites").doc(currentInstitutionId).onSnapshot(snapshot=>{
@@ -112,170 +95,8 @@ function syncInstitutionOfferStateWatchers(){
 window.stopInstitutionOfferStateWatchers=stopInstitutionOfferStateWatchers;
 window.addEventListener("beforeunload",stopInstitutionOfferStateWatchers);
 
-let institutionOfferStateRefreshBusy=false;
-async function refreshInstitutionOfferStatesFromServer(){
-  if(institutionOfferStateRefreshBusy || !currentAccount?.institutionId || !quoteRecords.length)return;
-  institutionOfferStateRefreshBusy=true;
-
-  try{
-    let changed=false;
-    const institutionId=String(currentAccount.institutionId||"");
-
-    await Promise.all(quoteRecords.map(async quote=>{
-      const quoteId=String(quote.id||"");
-      if(!quoteId)return;
-
-      const quoteRef=db.collection("quoteRequests").doc(quoteId);
-      const [offersSnap,lockSnap]=await Promise.all([
-        quoteRef.collection("offers").get(),
-        quoteRef.collection("locks").doc("main").get()
-      ]);
-
-      const beforeOffer=institutionOfferMap.get(quoteId)||null;
-      const beforeLock=institutionLockMap.get(quoteId)||null;
-
-      const ownOfferDoc=offersSnap.docs.find(doc=>{
-        const data=doc.data()||{};
-        return String(doc.id)===institutionId || String(data.institutionId||"")===institutionId;
-      })||null;
-      const afterOffer=ownOfferDoc ? {id:ownOfferDoc.id,...ownOfferDoc.data()} : null;
-      const afterLock=lockSnap.exists ? lockSnap.data() : null;
-
-      if(afterOffer)institutionOfferMap.set(quoteId,afterOffer);
-      else institutionOfferMap.delete(quoteId);
-
-      if(afterLock)institutionLockMap.set(quoteId,afterLock);
-      else institutionLockMap.delete(quoteId);
-
-      if(
-        offerStateFingerprint(beforeOffer)!==offerStateFingerprint(afterOffer)
-        || offerStateFingerprint(beforeLock)!==offerStateFingerprint(afterLock)
-      ){
-        changed=true;
-      }
-    }));
-
-    if(changed){
-      renderQuotes();
-      renderSummary();
-    }
-  }catch(error){
-    console.warn("Kurum teklif/kabul durumu yeniden doğrulanamadı:",error);
-  }finally{
-    institutionOfferStateRefreshBusy=false;
-  }
-}
-
-window.addEventListener("focus",()=>{
-  refreshInstitutionOfferStatesFromServer();
-});
-
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"){
-    refreshInstitutionOfferStatesFromServer();
-  }
-});
-
-function institutionArchiveDocId(quoteId){
-  return String(currentAccount?.institutionId||"")+"__"+String(quoteId||"");
-}
-
-function institutionArchiveStorageKey(){
-  return "dijiyerInstitutionQuoteArchive:"+String(currentAccount?.institutionId||"");
-}
-
-function readInstitutionArchiveLocal(){
-  try{
-    const raw=localStorage.getItem(institutionArchiveStorageKey());
-    const rows=raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(rows)?rows.map(String):[]);
-  }catch(_){
-    return new Set();
-  }
-}
-
-function writeInstitutionArchiveLocal(){
-  try{
-    localStorage.setItem(
-      institutionArchiveStorageKey(),
-      JSON.stringify([...institutionArchivedQuoteIds])
-    );
-  }catch(_){}
-}
-
-function institutionQuoteIsArchived(quoteId){
-  return institutionArchivedQuoteIds.has(String(quoteId||""));
-}
-
-async function loadInstitutionQuoteArchive(){
-  institutionArchivedQuoteIds=readInstitutionArchiveLocal();
-  const institutionId=String(currentAccount?.institutionId||"");
-  if(!institutionId)return;
-
-  try{
-    const snap=await db.collection("institutionQuoteArchive")
-      .where("institutionId","==",institutionId)
-      .get();
-
-    snap.forEach(doc=>{
-      const data=doc.data()||{};
-      const quoteId=String(data.quoteId||"");
-      if(!quoteId)return;
-      if(data.archived===true)institutionArchivedQuoteIds.add(quoteId);
-      if(data.archived===false)institutionArchivedQuoteIds.delete(quoteId);
-    });
-    writeInstitutionArchiveLocal();
-  }catch(error){
-    console.warn("Firestore arşiv senkronizasyonu kullanılamıyor; yerel arşiv kullanılacak:",error);
-  }
-}
-
-async function setInstitutionQuoteArchived(quoteId,archived){
-  const id=String(quoteId||"");
-  const institutionId=String(currentAccount?.institutionId||"");
-  if(!id||!institutionId)return;
-
-  const quote=quoteRecords.find(item=>String(item.id)===id);
-  const state=quote ? sellerOfferState(quote) : "";
-  if(archived && (state==="locked" || state==="used")){
-    alert("Kabul edilmiş teklifler arşivlenemez. Bu kayıt kurum panelinde kalmalıdır.");
-    return;
-  }
-
-  if(archived){
-    const ok=window.confirm("Bu talebi teklif listenizden kaldırmak istiyor musunuz? Sistem kaydı silinmez; Arşiv bölümünden geri getirebilirsiniz.");
-    if(!ok)return;
-    institutionArchivedQuoteIds.add(id);
-  }else{
-    institutionArchivedQuoteIds.delete(id);
-  }
-
-  writeInstitutionArchiveLocal();
-  renderQuotes();
-  renderSummary();
-
-  try{
-    const ref=db.collection("institutionQuoteArchive").doc(institutionArchiveDocId(id));
-    await ref.set({
-      institutionId,
-      quoteId:id,
-      archived:Boolean(archived),
-      archivedAt:archived ? new Date().toISOString() : "",
-      restoredAt:archived ? "" : new Date().toISOString(),
-      updatedAt:new Date().toISOString()
-    },{merge:true});
-  }catch(error){
-    console.warn("Arşiv Firestore'a kaydedilemedi; bu tarayıcıda yerel olarak saklandı:",error);
-  }
-
-  try{
-    showToast(archived ? "Talep arşive alındı." : "Talep tekrar listeye alındı.");
-  }catch(_){}
-}
-
-function visibleInstitutionQuoteRecords(){
-  return quoteRecords.filter(quote=>!institutionQuoteIsArchived(quote.id));
-}
+// Canlı lock ve ikinci teklif dinleyicileri zaten açıkken sekmeye dönüldüğünde
+// tekrar toplu .get() çalıştırmıyoruz. Bu, Firestore okuma sayısını ciddi azaltır.
 
 function isRoutedLeadForCurrentInstitution(quote){
   const institutionId=String(currentAccount?.institutionId||"");
@@ -516,27 +337,19 @@ loadMatchedQuotes = async function(){
 
     await Promise.all(quoteRecords.map(async quote=>{
       const quoteRef=db.collection("quoteRequests").doc(quote.id);
-      const [offersSnap,lockSnap]=await Promise.all([
-        quoteRef.collection("offers").get(),
-        quoteRef.collection("locks").doc("main").get()
+      const [ownOfferSnap,lockSnap,inviteSnap]=await Promise.all([
+        quoteRef.collection("offers").doc(String(currentAccount.institutionId)).get(),
+        quoteRef.collection("locks").doc("main").get(),
+        quoteRef.collection("secondOfferInvites").doc(String(currentAccount.institutionId)).get()
+          .catch(error=>{
+            console.warn("2. teklif daveti okunamadı:",quote.id,error);
+            return null;
+          })
       ]);
 
-      const ownOfferDoc=offersSnap.docs.find(doc=>{
-        const data=doc.data()||{};
-        return institutionOfferBelongsToCurrentInstitution(data,doc.id);
-      })||null;
-
-      let inviteSnap=null;
-      try{
-        inviteSnap=await quoteRef
-          .collection("secondOfferInvites")
-          .doc(currentAccount.institutionId)
-          .get();
-      }catch(error){
-        console.warn("2. teklif daveti okunamadı:",quote.id,error);
+      if(ownOfferSnap?.exists){
+        institutionOfferMap.set(quote.id,{id:ownOfferSnap.id,...ownOfferSnap.data()});
       }
-
-      if(ownOfferDoc) institutionOfferMap.set(quote.id,{id:ownOfferDoc.id,...ownOfferDoc.data()});
       if(lockSnap.exists) institutionLockMap.set(quote.id,lockSnap.data());
       if(inviteSnap?.exists){
         institutionSecondOfferInviteMap.set(String(quote.id),{id:inviteSnap.id,...inviteSnap.data()});
