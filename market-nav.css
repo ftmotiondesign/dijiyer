@@ -99,9 +99,57 @@
     min-height:72px;
     margin:0 auto;
     display:grid;
-    grid-template-columns:minmax(0,1fr) 150px 192px;
+    grid-template-columns:180px minmax(0,1fr) 150px 192px;
     align-items:center;
     gap:12px;
+  }
+
+  .dijiyer-global-brand{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#17223b;
+    text-decoration:none;
+  }
+
+  .dijiyer-global-brand-mark{
+    width:40px;
+    height:40px;
+    flex:0 0 40px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:linear-gradient(135deg,#1677ff,#0b4eae);
+    color:#fff;
+    box-shadow:0 5px 14px rgba(22,119,255,.25);
+    font-size:22px;
+    font-weight:900;
+    line-height:1;
+  }
+
+  .dijiyer-global-brand-copy{
+    min-width:0;
+    display:grid;
+    gap:4px;
+  }
+
+  .dijiyer-global-brand-copy strong{
+    color:#17223b;
+    font-size:18px;
+    font-weight:900;
+    line-height:1;
+    letter-spacing:-.02em;
+  }
+
+  .dijiyer-global-brand-copy small{
+    overflow:hidden;
+    color:#7b8795;
+    font-size:8.5px;
+    font-weight:700;
+    line-height:1.15;
+    white-space:nowrap;
+    text-overflow:ellipsis;
   }
 
   .dijiyer-global-search{
@@ -308,6 +356,25 @@
   .dijiyer-global-institution-menu small{
     color:#7c8999;
     font-size:8.5px;
+  }
+
+  @media(max-width:1120px){
+    .dijiyer-global-topbar-inner{
+      grid-template-columns:52px minmax(0,1fr) 132px 168px;
+      gap:9px;
+    }
+
+    .dijiyer-global-brand-copy{
+      display:none;
+    }
+
+    .dijiyer-global-search{
+      grid-template-columns:28px minmax(120px,1fr) auto 68px;
+    }
+
+    .dijiyer-global-location strong{
+      max-width:110px;
+    }
   }
 
   .dijiyer-global-location-popover{
