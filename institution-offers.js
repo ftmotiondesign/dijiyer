@@ -108,6 +108,70 @@ function syncInstitutionOfferStateWatchers(){
 window.stopInstitutionOfferStateWatchers=stopInstitutionOfferStateWatchers;
 window.addEventListener("beforeunload",stopInstitutionOfferStateWatchers);
 
+let institutionOfferStateRefreshBusy=false;
+async function refreshInstitutionOfferStatesFromServer(){
+  if(institutionOfferStateRefreshBusy || !currentAccount?.institutionId || !quoteRecords.length)return;
+  institutionOfferStateRefreshBusy=true;
+
+  try{
+    let changed=false;
+    const institutionId=String(currentAccount.institutionId||"");
+
+    await Promise.all(quoteRecords.map(async quote=>{
+      const quoteId=String(quote.id||"");
+      if(!quoteId)return;
+
+      const quoteRef=db.collection("quoteRequests").doc(quoteId);
+      const [offersSnap,lockSnap]=await Promise.all([
+        quoteRef.collection("offers").get(),
+        quoteRef.collection("locks").doc("main").get()
+      ]);
+
+      const beforeOffer=institutionOfferMap.get(quoteId)||null;
+      const beforeLock=institutionLockMap.get(quoteId)||null;
+
+      const ownOfferDoc=offersSnap.docs.find(doc=>{
+        const data=doc.data()||{};
+        return String(doc.id)===institutionId || String(data.institutionId||"")===institutionId;
+      })||null;
+      const afterOffer=ownOfferDoc ? {id:ownOfferDoc.id,...ownOfferDoc.data()} : null;
+      const afterLock=lockSnap.exists ? lockSnap.data() : null;
+
+      if(afterOffer)institutionOfferMap.set(quoteId,afterOffer);
+      else institutionOfferMap.delete(quoteId);
+
+      if(afterLock)institutionLockMap.set(quoteId,afterLock);
+      else institutionLockMap.delete(quoteId);
+
+      if(
+        offerStateFingerprint(beforeOffer)!==offerStateFingerprint(afterOffer)
+        || offerStateFingerprint(beforeLock)!==offerStateFingerprint(afterLock)
+      ){
+        changed=true;
+      }
+    }));
+
+    if(changed){
+      renderQuotes();
+      renderSummary();
+    }
+  }catch(error){
+    console.warn("Kurum teklif/kabul durumu yeniden doğrulanamadı:",error);
+  }finally{
+    institutionOfferStateRefreshBusy=false;
+  }
+}
+
+window.addEventListener("focus",()=>{
+  refreshInstitutionOfferStatesFromServer();
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"){
+    refreshInstitutionOfferStatesFromServer();
+  }
+});
+
 function isRoutedLeadForCurrentInstitution(quote){
   const institutionId=String(currentAccount?.institutionId||"");
   if(!institutionId)return false;
