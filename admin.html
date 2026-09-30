@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=53">
+  <link rel="stylesheet" href="admin.css?v=54">
   <link rel="stylesheet" href="admin-advanced.css?v=38">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -542,36 +542,24 @@
             >
           </div>
 
-          <select id="institutionCategoryFilter">
-            <option value="">Tüm kategoriler</option>
-            <option value="teknoloji">Bilgisayar & Teknoloji</option>
-            <option value="diger">Diğer</option>
-            <option value="dugun">Düğün & Organizasyon</option>
-            <option value="egitim">Eğitim & Kurslar</option>
-            <option value="emlak">Emlak & Gayrimenkul</option>
-            <option value="evteknik">Ev & Teknik Servis</option>
-            <option value="medya">Fotoğraf & Video</option>
-            <option value="guzellik">Güzellik & Bakım</option>
-            <option value="hukuk">Hukuk & Danışmanlık</option>
-            <option value="insaat">İnşaat & Tadilat</option>
-            <option value="kres">Kreş & Anaokulu</option>
-            <option value="kurye">Kurye & Teslimat</option>
-            <option value="perakende">Mağaza & Perakende</option>
-            <option value="reklam">Matbaa, Reklam & Tasarım</option>
-            <option value="mobilya">Mobilya & Dekorasyon</option>
-            <option value="muhasebe">Muhasebe & Mali Müşavirlik</option>
-            <option value="nakliyat">Nakliyat & Taşımacılık</option>
-            <option value="yurt">Öğrenci Yurdu</option>
-            <option value="oto">Oto Servis & Sanayi</option>
-            <option value="restoran">Restoran & Kafe</option>
-            <option value="saglik">Sağlık & Klinik</option>
-            <option value="spor">Spor & Fitness</option>
-            <option value="surucu">Sürücü Kursu</option>
-            <option value="tarim">Tarım & Hayvancılık</option>
-            <option value="temizlik">Temizlik Hizmetleri</option>
+          <select id="institutionCategoryFilter" aria-label="Ana kategori">
+            <option value="">Tüm ana kategoriler</option>
+            <option value="egitim">Eğitim</option>
+            <option value="otomotiv">Otomotiv</option>
+            <option value="yemeicme">Yeme & İçme</option>
+            <option value="saglikguzellik">Sağlık & Güzellik</option>
+            <option value="evyapi">Ev & Yapı</option>
+            <option value="emlak">Emlak</option>
             <option value="turizm">Turizm & Konaklama</option>
-            <option value="veteriner">Veteriner & Evcil Hayvan</option>
-            <option value="esnaf">Yerel Esnaf</option>
+            <option value="organizasyonmedya">Organizasyon & Medya</option>
+            <option value="tasimacilik">Taşımacılık & Teslimat</option>
+            <option value="profesyonel">Profesyonel Hizmetler</option>
+            <option value="alisveris">Alışveriş & Yerel Esnaf</option>
+            <option value="diger">Diğer</option>
+          </select>
+
+          <select id="institutionSubCategoryFilter" aria-label="Alt kategori" disabled>
+            <option value="">Tüm alt kategoriler</option>
           </select>
 
           <select id="institutionCityFilter">
@@ -2914,38 +2902,41 @@
           <input type="text" id="editName" required>
         </label>
 
-        <label>Kategori
-          <select id="editCategory" required>
-            <option value="teknoloji">Bilgisayar & Teknoloji</option>
-            <option value="diger">Diğer</option>
-            <option value="dugun">Düğün & Organizasyon</option>
-            <option value="egitim">Eğitim & Kurslar</option>
-            <option value="emlak">Emlak & Gayrimenkul</option>
-            <option value="evteknik">Ev & Teknik Servis</option>
-            <option value="medya">Fotoğraf & Video</option>
-            <option value="guzellik">Güzellik & Bakım</option>
-            <option value="hukuk">Hukuk & Danışmanlık</option>
-            <option value="insaat">İnşaat & Tadilat</option>
-            <option value="kres">Kreş & Anaokulu</option>
-            <option value="kurye">Kurye & Teslimat</option>
-            <option value="perakende">Mağaza & Perakende</option>
-            <option value="reklam">Matbaa, Reklam & Tasarım</option>
-            <option value="mobilya">Mobilya & Dekorasyon</option>
-            <option value="muhasebe">Muhasebe & Mali Müşavirlik</option>
-            <option value="nakliyat">Nakliyat & Taşımacılık</option>
-            <option value="yurt">Öğrenci Yurdu</option>
-            <option value="oto">Oto Servis & Sanayi</option>
-            <option value="restoran">Restoran & Kafe</option>
-            <option value="saglik">Sağlık & Klinik</option>
-            <option value="spor">Spor & Fitness</option>
-            <option value="surucu">Sürücü Kursu</option>
-            <option value="tarim">Tarım & Hayvancılık</option>
-            <option value="temizlik">Temizlik Hizmetleri</option>
-            <option value="turizm">Turizm & Konaklama</option>
-            <option value="veteriner">Veteriner & Evcil Hayvan</option>
-            <option value="esnaf">Yerel Esnaf</option>
-          </select>
-        </label>
+        <section class="institution-category-editor">
+          <div class="institution-category-editor-head">
+            <div>
+              <span>KATEGORİ YÖNETİMİ</span>
+              <strong>Kurumun ana ve alt kategorisini düzeltin</strong>
+              <small>Müşteri veya kurum yanlış kategori seçtiyse buradan değiştirebilirsiniz. Bu seçim arama ve teklif eşleşmelerinde kullanılır.</small>
+            </div>
+            <div id="editCategoryCurrent" class="institution-category-current">Kategori hazırlanıyor...</div>
+          </div>
+
+          <div class="form-grid institution-category-grid">
+            <label>Ana Kategori
+              <select id="editCategory" required>
+                <option value="egitim">Eğitim</option>
+                <option value="otomotiv">Otomotiv</option>
+                <option value="yemeicme">Yeme & İçme</option>
+                <option value="saglikguzellik">Sağlık & Güzellik</option>
+                <option value="evyapi">Ev & Yapı</option>
+                <option value="emlak">Emlak</option>
+                <option value="turizm">Turizm & Konaklama</option>
+                <option value="organizasyonmedya">Organizasyon & Medya</option>
+                <option value="tasimacilik">Taşımacılık & Teslimat</option>
+                <option value="profesyonel">Profesyonel Hizmetler</option>
+                <option value="alisveris">Alışveriş & Yerel Esnaf</option>
+                <option value="diger">Diğer</option>
+              </select>
+            </label>
+
+            <label>Alt Kategori
+              <select id="editSubCategory" required>
+                <option value="">Önce ana kategori seçin</option>
+              </select>
+            </label>
+          </div>
+        </section>
 
         <div class="form-grid">
           <label>Şehir
@@ -3189,7 +3180,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=56"></script>
+<script src="admin.js?v=57"></script>
   <script src="admin-advanced.js?v=54"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
