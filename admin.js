@@ -844,45 +844,17 @@ auth.onAuthStateChanged(async (user) => {
     loginSection.hidden = true;
     dashboardSection.hidden = false;
 
-    // URL'deki / son açık yönetim bölümünü veri yüklemelerini beklemeden aç.
-    // Böylece herhangi bir Firebase isteği hata verse bile kullanıcı bulunduğu
-    // sayfada kalır ve panelin geri kalanı çalışmaya devam eder.
-    restoreSimpleAdminNavigation();
-
-    const safeLoad = async (label, task) => {
-      try {
-        await task();
-      } catch (error) {
-        console.error(label + " yüklenemedi:", error);
-      }
-    };
-
-    await safeLoad("Reklam fiyat ayarları", loadAdminAdRateSettings);
-    await safeLoad("Başvurular", loadApplications);
-    await safeLoad("Kurumlar", loadInstitutions);
-    await safeLoad("Teklif talepleri", loadQuoteRequests);
-    await safeLoad("Kurum hesapları", loadInstitutionAccounts);
-    await safeLoad("Bulunamayan aramalar", () => loadUnmatchedSearches(true));
-    await safeLoad("Günlük istatistik ayarı", loadDailyStatsVisibilitySetting);
-    await safeLoad("Ana sayfa görünürlük ayarları", loadHomeBottomVisibilitySettings);
-
-    try { refreshAdminOverview(); } catch (error) { console.error("Genel bakış yenilenemedi:", error); }
-    try { renderIssueCenter(); } catch (error) { console.error("Sorun merkezi çizilemedi:", error); }
-
-    // Veriler geldikten sonra açık sekmeyi yeniden çiz.
-    setTimeout(() => {
-      const activeTab =
-        adminTabFromLocation() ||
-        localStorage.getItem("dijiyerAdminLastTab") ||
-        "overviewTabBtn";
-
-      if (activeTab === "quoteRoutingTabBtn") {
-        try { renderQuoteRoutingAdmin(); } catch (error) { console.error("Yanıtsız teklifler çizilemedi:", error); }
-        try { renderLeadCreditAdmin(); } catch (error) { console.error("Kredi takibi çizilemedi:", error); }
-      } else if (activeTab === "quotesTabBtn") {
-        try { renderQuoteRequests(); } catch (error) { console.error("Teklifler çizilemedi:", error); }
-      }
-    }, 80);
+    await loadAdminAdRateSettings();
+    await loadApplications();
+    await loadInstitutions();
+    await loadQuoteRequests();
+    await loadInstitutionAccounts();
+    await loadUnmatchedSearches(true);
+    await loadDailyStatsVisibilitySetting();
+    await loadHomeBottomVisibilitySettings();
+    refreshAdminOverview();
+    renderIssueCenter();
+    setTimeout(restoreSimpleAdminNavigation, 120);
   } else {
     if (user && user.uid !== ADMIN_UID) {
       loginMessage.textContent = "Bu hesap yönetici hesabı değil.";
@@ -1201,30 +1173,13 @@ quoteRoutingTabBtn?.addEventListener("click", async () => {
     .forEach(button => button?.classList.remove("active"));
   quoteRoutingTabBtn.classList.add("active");
 
-  // Bölüm hemen görünür; verilerden biri hata verse bile sayfa kapanmaz.
-  try {
-    if (!institutionRecords.length) await loadInstitutions();
-  } catch (error) {
-    console.error("Yanıtsız teklifler kurumları yüklenemedi:", error);
-  }
-
-  try { await loadQuoteRequests(); }
-  catch (error) { console.error("Yanıtsız teklifler talepleri yüklenemedi:", error); }
-
-  try { await loadLeadRoutingSettings(); }
-  catch (error) { console.error("Teklif kredi ayarları yüklenemedi:", error); }
-
-  try { await reconcileLeadCreditUsage(); }
-  catch (error) { console.error("Kredi kullanımı mutabakatı yapılamadı:", error); }
-
-  try { await loadLeadCreditData(); }
-  catch (error) { console.error("Kredi kayıtları yüklenemedi:", error); }
-
-  try { renderQuoteRoutingAdmin(); }
-  catch (error) { console.error("Yanıtsız teklifler çizilemedi:", error); }
-
-  try { renderLeadCreditAdmin(); }
-  catch (error) { console.error("Kredi tablosu çizilemedi:", error); }
+  if (!institutionRecords.length) await loadInstitutions();
+  await loadQuoteRequests();
+  await loadLeadRoutingSettings();
+  await reconcileLeadCreditUsage();
+  await loadLeadCreditData();
+  renderQuoteRoutingAdmin();
+  renderLeadCreditAdmin();
 });
 
 offerReportTabBtn.addEventListener("click", async () => {
@@ -3538,43 +3493,15 @@ function quoteRoutingDirectRequest(request){
   return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
 }
 
-function quoteRoutingWaitMinutesForRequest(request){
-  const value=Number(request?.responseWaitMinutes||30);
-  return [15,30,45,60,1440].includes(value) ? value : 30;
-}
-
-function quoteRoutingDeadlineTime(request){
-  const explicit=new Date(request?.responseDeadlineAt||"").getTime();
-  if(Number.isFinite(explicit))return explicit;
-
-  const created=new Date(request?.date||request?.createdAt||"").getTime();
-  if(!Number.isFinite(created))return NaN;
-
-  return created + quoteRoutingWaitMinutesForRequest(request)*60000;
-}
-
-function quoteRoutingWaitLabelForRequest(request){
-  const minutes=quoteRoutingWaitMinutesForRequest(request);
-  if(minutes===1440)return "1 gün";
-  if(minutes===60)return "1 saat";
-  return minutes+" dk";
-}
-
 function quoteRoutingFlowStatus(request){
   if(request?.liveLock || ["done","archived"].includes(String(request?.status||"")))return "completed";
-
   const forwarded=Array.isArray(request?.forwardInstitutionIds) && request.forwardInstitutionIds.length>0;
   const offers=Array.isArray(request?.liveOffers) ? request.liveOffers : [];
   const forwardedSet=new Set((request?.forwardInstitutionIds||[]).map(String));
   const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
-
   if(routedOffers.length)return "responded";
-  if(!forwarded && offers.length)return "responded";
   if(forwarded)return "forwarded";
-
-  const deadline=quoteRoutingDeadlineTime(request);
-  if(Number.isFinite(deadline) && Date.now()>=deadline)return "waiting";
-
+  if(quoteRoutingAgeMinutes(request)>=Number(quoteRoutingWaitMinutes?.value||30))return "waiting";
   return "fresh";
 }
 
@@ -3679,7 +3606,6 @@ function quoteRoutingInstitutionChips(rows){
       '<b>#'+(index+1)+' '+escapeHtml(inst.name||"Kurum")+'</b>'+
       (isInstitutionVipActive(inst)?'<em>VIP</em>':'')+
       '<small>'+credit.totalLoaded+' kredi aldı · '+credit.balance+' bakiye'+
-        (credit.balance<=0?' · KREDİ YOK':'')+
         (inst.alreadyForwarded?' · ✓ İLETİLDİ':'')+
       '</small>'+
     '</span>';
@@ -3773,7 +3699,7 @@ function renderQuoteRoutingAdmin(){
     fresh:["Yeni","fresh"],
     waiting:["Dağıtım bekliyor","waiting"],
     forwarded:["Yönlendirildi · yanıt bekliyor","forwarded"],
-    responded:["Teklif geldi","responded"],
+    responded:["Yönlendirmeden teklif geldi","responded"],
     completed:["Kayıt sürecine geçti","completed"]
   };
 
@@ -3808,8 +3734,6 @@ function renderQuoteRoutingAdmin(){
       '</div>'+
       '<div class="quote-routing-original">'+
         '<div><span>İlk hedef kurum</span><strong>'+escapeHtml(request.targetInstitutionName||"Kurum")+'</strong></div>'+
-        '<div><span>Yanıt süresi</span><strong>'+escapeHtml(quoteRoutingWaitLabelForRequest(request))+'</strong></div>'+
-        '<div><span>Son yanıt zamanı</span><strong>'+escapeHtml(Number.isFinite(quoteRoutingDeadlineTime(request))?formatDate(new Date(quoteRoutingDeadlineTime(request)).toISOString()):"-")+'</strong></div>'+
         '<div><span>Dağıtım kapsamı</span><strong>'+escapeHtml(candidates.scopeLabel)+'</strong></div>'+
         '<div><span>İletilen</span><strong>'+totalForwarded+' kurum</strong></div>'+
         '<div><span>Teklif</span><strong>'+offers.length+' adet</strong></div>'+
@@ -3903,8 +3827,7 @@ async function sendAdminTestRoutedOffer(requestId,button){
     const choices=availableInstitutions
       .map((inst,index)=>{
         const credit=quoteInstitutionCreditMeta(inst);
-        return (index+1)+". "+String(inst.name||"Kurum")+" · bakiye: "+credit.balance+
-          (credit.balance<=0 ? " · KREDİ YOK" : "");
+        return (index+1)+". "+String(inst.name||"Kurum")+" · bakiye: "+credit.balance;
       })
       .join("\n");
 
@@ -3927,16 +3850,6 @@ async function sendAdminTestRoutedOffer(requestId,button){
 
   const institutionId=String(institution.id||"");
   const creditBefore=quoteInstitutionCreditMeta(institution).balance;
-
-  if(creditBefore<=0){
-    alert(
-      String(institution.name||"Kurum")+
-      " için test teklifi oluşturulamadı.\n\n"+
-      "Mevcut teklif kredisi: 0\n"+
-      "Önce kuruma kredi yükleyin."
-    );
-    return;
-  }
 
   const rawPrice=prompt(
     String(institution.name||"Kurum")+" için test teklif fiyatını yazın (TL):",
@@ -4372,43 +4285,14 @@ function renderLeadCreditAdmin(){
 
   if(leadCreditLedgerList){
     const recent=leadCreditLedgerRecords.slice(0,20);
-    const meta=document.getElementById("leadCreditLedgerMeta");
-    if(meta)meta.textContent="En yeni 20 işlem";
-
     leadCreditLedgerList.innerHTML=recent.length?recent.map(item=>{
       const delta=Number(item.delta||0);
-      const request=item.quoteId
-        ? quoteRequestRecords.find(record=>String(record.id)===String(item.quoteId))
-        : null;
-      const usage=String(item.type||"")==="offer_usage" || Boolean(item.quoteId);
-      const service=String(item.service||request?.service||"").trim();
-      const customer=String(request?.name||"").trim();
-
-      const detail=[
-        usage ? "Teklif kredisi kullanımı" : String(item.note||item.type||"Kredi hareketi"),
-        service,
-        customer ? "Müşteri: "+customer : ""
-      ].filter(Boolean).join(" · ");
-
-      return '<div class="lead-credit-ledger-row '+(usage?'usage':'')+'">'+
-        '<div class="lead-credit-ledger-main"><strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong>'+
-          '<small>'+escapeHtml(detail)+'</small>'+
-          (item.quoteId?'<code>Talep #'+escapeHtml(String(item.quoteId).slice(0,9).toUpperCase())+'</code>':'')+
-        '</div>'+
+      return '<div class="lead-credit-ledger-row">'+
+        '<div><strong>'+escapeHtml(item.institutionName||"Kurum")+'</strong><small>'+escapeHtml(item.note||item.type||"Kredi hareketi")+'</small></div>'+
         '<span class="'+(delta<0?"minus":"plus")+'">'+(delta>0?"+":"")+delta+' kredi</span>'+
         '<small>'+escapeHtml(formatDate(item.createdAt)||"-")+'</small>'+
-        (item.quoteId
-          ? '<button type="button" class="lead-credit-open-quote" data-lead-credit-quote="'+escapeHtml(String(item.quoteId))+'">Talebi Aç</button>'
-          : '<span class="lead-credit-no-quote">—</span>')+
       '</div>';
     }).join(""):'<div class="empty-state">Henüz kredi hareketi yok.</div>';
-
-    leadCreditLedgerList.querySelectorAll("[data-lead-credit-quote]").forEach(button=>{
-      button.addEventListener("click",()=>{
-        const quoteId=String(button.dataset.leadCreditQuote||"");
-        if(quoteId)openQuoteDetailModal(quoteId);
-      });
-    });
   }
 
   leadCreditTableBody.querySelectorAll("[data-lead-credit-manage]").forEach(button=>{
