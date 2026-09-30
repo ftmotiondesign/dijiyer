@@ -46,6 +46,17 @@ button{
   font-weight:bold;
 }
 
+.admin-header .admin-header-brand{
+  display:inline-block;
+  color:inherit;
+  font-weight:normal;
+  cursor:pointer;
+}
+
+.admin-header .admin-header-brand:hover h1{
+  opacity:.82;
+}
+
 .admin-card{
   max-width:450px;
   margin:60px auto;
