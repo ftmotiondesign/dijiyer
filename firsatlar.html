@@ -207,6 +207,15 @@
       border-color:#f4d38c;
       box-shadow:0 10px 28px rgba(183,118,13,.11);
     }
+    .card.focus-card{
+      outline:3px solid rgba(37,99,235,.24);
+      outline-offset:3px;
+      animation:focusPulse 1.25s ease 2;
+    }
+    @keyframes focusPulse{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-3px)}
+    }
     .card.sponsored .media{
       aspect-ratio:4/5;
     }
@@ -654,7 +663,8 @@
         .map(function(inst){
           var sponsored =
             inst.opportunitySponsorActive === true &&
-            Boolean(String(inst.opportunitySponsorMediaUrl || '').trim());
+            Boolean(String(inst.opportunitySponsorMediaUrl || '').trim()) &&
+            dateActive(inst.opportunitySponsorStartAt,inst.opportunitySponsorEndAt);
 
           return {
             kind:'institution',
@@ -666,6 +676,11 @@
         })
         .sort(function(a,b){
           if(a.sponsored !== b.sponsored) return a.sponsored ? -1 : 1;
+          if(a.sponsored && b.sponsored){
+            var ap = Math.max(1,Math.min(99,Number(a.inst.opportunitySponsorPriority || 10) || 10));
+            var bp = Math.max(1,Math.min(99,Number(b.inst.opportunitySponsorPriority || 10) || 10));
+            if(ap !== bp) return ap - bp;
+          }
           return String(a.inst.name || '').localeCompare(
             String(b.inst.name || ''),
             'tr',
@@ -812,7 +827,27 @@
       });
 
       visibleCount = PAGE_SIZE;
+
+      var focusId = new URLSearchParams(window.location.search).get('kurum');
+      if(focusId){
+        var focusIndex = filteredRows.findIndex(function(row){
+          return String(row.id || row.inst && row.inst.id || '') === String(focusId);
+        });
+        if(focusIndex >= 0){
+          visibleCount = Math.max(visibleCount,focusIndex + 1);
+        }
+      }
+
       render();
+
+      if(focusId){
+        setTimeout(function(){
+          var target = document.getElementById('firsat-' + focusId);
+          if(!target) return;
+          target.classList.add('focus-card');
+          target.scrollIntoView({behavior:'smooth',block:'center'});
+        },120);
+      }
     }
 
     function mediaInfo(row){
@@ -882,7 +917,7 @@
         secondAction = '<a class="secondary" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([inst.name,city,district].filter(Boolean).join(' ')) + '" target="_blank" rel="noopener">Yol Tarifi</a>';
       }
 
-      return '<article class="card' + (row.sponsored ? ' sponsored' : '') + '">' +
+      return '<article id="firsat-' + esc(inst.id || row.id || '') + '" data-institution-id="' + esc(inst.id || row.id || '') + '" class="card' + (row.sponsored ? ' sponsored' : '') + '">' +
         '<div class="media' + (media.logoOnly ? ' logo-only' : '') + '">' +
           mediaHtml +
           (row.sponsored ? '<span class="badge">★ SPONSORLU</span>' : '') +
