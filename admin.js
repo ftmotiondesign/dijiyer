@@ -3493,15 +3493,43 @@ function quoteRoutingDirectRequest(request){
   return String(request?.requestType||"") === "direct" || Boolean(request?.targetInstitutionId);
 }
 
+function quoteRoutingWaitMinutesForRequest(request){
+  const value=Number(request?.responseWaitMinutes||30);
+  return [15,30,45,60,1440].includes(value) ? value : 30;
+}
+
+function quoteRoutingDeadlineTime(request){
+  const explicit=new Date(request?.responseDeadlineAt||"").getTime();
+  if(Number.isFinite(explicit))return explicit;
+
+  const created=new Date(request?.date||request?.createdAt||"").getTime();
+  if(!Number.isFinite(created))return NaN;
+
+  return created + quoteRoutingWaitMinutesForRequest(request)*60000;
+}
+
+function quoteRoutingWaitLabelForRequest(request){
+  const minutes=quoteRoutingWaitMinutesForRequest(request);
+  if(minutes===1440)return "1 gün";
+  if(minutes===60)return "1 saat";
+  return minutes+" dk";
+}
+
 function quoteRoutingFlowStatus(request){
   if(request?.liveLock || ["done","archived"].includes(String(request?.status||"")))return "completed";
+
   const forwarded=Array.isArray(request?.forwardInstitutionIds) && request.forwardInstitutionIds.length>0;
   const offers=Array.isArray(request?.liveOffers) ? request.liveOffers : [];
   const forwardedSet=new Set((request?.forwardInstitutionIds||[]).map(String));
   const routedOffers=offers.filter(offer=>forwardedSet.has(String(offer.institutionId||offer.id||"")));
+
   if(routedOffers.length)return "responded";
+  if(!forwarded && offers.length)return "responded";
   if(forwarded)return "forwarded";
-  if(quoteRoutingAgeMinutes(request)>=Number(quoteRoutingWaitMinutes?.value||30))return "waiting";
+
+  const deadline=quoteRoutingDeadlineTime(request);
+  if(Number.isFinite(deadline) && Date.now()>=deadline)return "waiting";
+
   return "fresh";
 }
 
@@ -3700,7 +3728,7 @@ function renderQuoteRoutingAdmin(){
     fresh:["Yeni","fresh"],
     waiting:["Dağıtım bekliyor","waiting"],
     forwarded:["Yönlendirildi · yanıt bekliyor","forwarded"],
-    responded:["Yönlendirmeden teklif geldi","responded"],
+    responded:["Teklif geldi","responded"],
     completed:["Kayıt sürecine geçti","completed"]
   };
 
@@ -3735,6 +3763,8 @@ function renderQuoteRoutingAdmin(){
       '</div>'+
       '<div class="quote-routing-original">'+
         '<div><span>İlk hedef kurum</span><strong>'+escapeHtml(request.targetInstitutionName||"Kurum")+'</strong></div>'+
+        '<div><span>Yanıt süresi</span><strong>'+escapeHtml(quoteRoutingWaitLabelForRequest(request))+'</strong></div>'+
+        '<div><span>Son yanıt zamanı</span><strong>'+escapeHtml(Number.isFinite(quoteRoutingDeadlineTime(request))?formatDate(new Date(quoteRoutingDeadlineTime(request)).toISOString()):"-")+'</strong></div>'+
         '<div><span>Dağıtım kapsamı</span><strong>'+escapeHtml(candidates.scopeLabel)+'</strong></div>'+
         '<div><span>İletilen</span><strong>'+totalForwarded+' kurum</strong></div>'+
         '<div><span>Teklif</span><strong>'+offers.length+' adet</strong></div>'+
