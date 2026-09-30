@@ -8224,19 +8224,19 @@
         <article class="client-error-row ${String(row.status||"new")==="resolved"?"resolved":""}">
           <div>
             <div class="client-error-meta">
-              <strong>${safeText(sourceLabel)}</strong>
+              <strong>${escapeHtml(sourceLabel)}</strong>
               <span>${formatDateLocal(row.date)}</span>
               ${row.institutionId?'<span>Kurum: '+safeText(row.institutionId)+'</span>':""}
             </div>
-            <p>${safeText(row.message||"Bilinmeyen hata")}</p>
-            <small>${safeText(row.page||"")}</small>
+            <p>${escapeHtml(row.message||"Bilinmeyen hata")}</p>
+            <small>${escapeHtml(row.page||"")}</small>
             ${row.stack?'<details><summary>Teknik ayrıntı</summary><pre>'+safeText(row.stack)+'</pre></details>':""}
           </div>
           <div class="client-error-row-actions">
             ${String(row.status||"new")!=="resolved"
-              ? '<button type="button" data-client-error-action="resolve" data-id="'+safeText(row.id)+'">Çözüldü</button>'
-              : '<button type="button" data-client-error-action="reopen" data-id="'+safeText(row.id)+'">Tekrar Aç</button>'}
-            <button type="button" class="danger" data-client-error-action="delete" data-id="${safeText(row.id)}">Sil</button>
+              ? '<button type="button" data-client-error-action="resolve" data-id="'+escapeHtml(row.id)+'">Çözüldü</button>'
+              : '<button type="button" data-client-error-action="reopen" data-id="'+escapeHtml(row.id)+'">Tekrar Aç</button>'}
+            <button type="button" class="danger" data-client-error-action="delete" data-id="${escapeHtml(row.id)}">Sil</button>
           </div>
         </article>
       `;
