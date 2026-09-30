@@ -1033,6 +1033,7 @@
     $("bannerAdDuration").value=String(preset.duration);
     $("bannerAdStartAt").value=bannerTodayInput();
     $("bannerAdEndAt").value=bannerAddDaysInput(preset.days);
+    if($("bannerTargetSection"))$("bannerTargetSection").open=true;
     renderBannerPlacementGuide();
     renderBannerAdminPreview();
     renderBannerLivePlacementPreview();
@@ -1117,13 +1118,17 @@
   function renderBannerInstitutionSelected(){
     const root=$("bannerInstitutionSelected");
     if(!root)return;
+    const finder=root.closest(".banner-institution-finder");
     const inst=selectedBannerInstitution();
 
     if(!inst){
+      finder?.classList.remove("has-selection");
       root.classList.add("hidden");
       root.innerHTML="";
       return;
     }
+
+    finder?.classList.add("has-selection");
 
     const logo=String(inst.logoUrl||inst.coverUrl||"").trim();
     const location=[bannerInstitutionCity(inst),bannerInstitutionDistrict(inst)].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
@@ -1148,7 +1153,9 @@
       $("bannerAdInstitution").value="";
       renderBannerInstitutionSelected();
       renderBannerInstitutionFinder();
-      $("bannerInstitutionFinderSearch")?.focus();
+      const search=$("bannerInstitutionFinderSearch");
+      search?.scrollIntoView({behavior:"smooth",block:"center"});
+      window.setTimeout(()=>search?.focus(),180);
     });
   }
 
@@ -1264,6 +1271,7 @@
     renderBannerInstitutionFinder();
     renderBannerExistingAdAlert(inst);
     renderBannerInstitutionHistory(inst);
+    if($("bannerContentSection"))$("bannerContentSection").open=true;
     renderBannerAdminPreview();
     renderBannerLivePlacementPreview();
 
@@ -2100,6 +2108,8 @@
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
     $("bannerAdActive").checked=item.active!==false;
+    if($("bannerContentSection"))$("bannerContentSection").open=true;
+    if($("bannerTargetSection"))$("bannerTargetSection").open=true;
     renderBannerExistingAdAlert(inst);
     renderBannerInstitutionHistory(inst);
     renderBannerAdminPreview();
