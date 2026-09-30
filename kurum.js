@@ -50,24 +50,111 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
 }
 function directQuoteServiceOptions(x){
   const key=String(x?.subCategory||x?.category||"").trim();
+
   const presets={
-    kres:["Kayıt / Eğitim Ücreti","Yaz Okulu","Servis","Yemek","Diğer / Özel Talep"],
-    dershane:["Kayıt / Eğitim Ücreti","Deneme Kulübü","Etüt / Özel Ders","Kurs Programı","Diğer / Özel Talep"],
-    surucu:["B Sınıfı Ehliyet","A / Motosiklet Ehliyeti","C / D / Ağır Vasıta","Kurs Ücreti","Diğer / Özel Talep"],
-    ozel_okul:["Kayıt / Eğitim Ücreti","Bursluluk / İndirim","Servis","Yemek","Diğer / Özel Talep"],
-    yurt:["Aylık / Yıllık Ücret","Oda Seçenekleri","Yemek / Servis","Kayıt Şartları","Diğer / Özel Talep"],
-    oto_servis:["Bakım / Periyodik Servis","Arıza / Tamir","Parça + İşçilik","Kontrol / Fiyat Bilgisi","Diğer / Özel Talep"],
-    lastik_jant:["Lastik Fiyatı","Jant Fiyatı","Değişim / Montaj","Balans / Rotasyon","Diğer / Özel Talep"],
-    rentacar:["Günlük Kiralama","Haftalık Kiralama","Aylık Kiralama","Araç Uygunluğu","Diğer / Özel Talep"],
-    restoran:["Menü / Fiyat Bilgisi","Toplu Yemek","Rezervasyon","Organizasyon / Grup","Diğer / Özel Talep"],
-    dugun_salonu:["Salon Fiyatı","Paket İçeriği","Tarih Uygunluğu","Yemekli Organizasyon","Diğer / Özel Talep"],
-    organizasyon:["Organizasyon Paketi","Tarih Uygunluğu","Süsleme / Konsept","Fiyat Bilgisi","Diğer / Özel Talep"],
-    fotograf:["Fotoğraf Çekimi","Video Çekimi","Düğün / Organizasyon","Paket Fiyatı","Diğer / Özel Talep"],
-    drone:["Drone Çekimi","Mekan / Konum Çekimi","Etkinlik Çekimi","Paket Fiyatı","Diğer / Özel Talep"],
-    reklam:["Sosyal Medya Tasarımı","Video / Reels","Matbaa / Baskı","Reklam Paketi","Diğer / Özel Talep"],
-    nakliyat:["Evden Eve Nakliyat","Şehirler Arası Nakliyat","Parça Eşya Taşıma","Depolama","Diğer / Özel Talep"],
-    otel:["Konaklama Fiyatı","Oda Uygunluğu","Grup Rezervasyonu","Paket / Kampanya","Diğer / Özel Talep"]
+    // Eğitim
+    kres:["Kayıt / Eğitim Ücreti","Yaz Okulu","Servis","Yemek","Erken Kayıt / İndirim","Diğer / Özel Talep"],
+    dershane:["Kayıt / Eğitim Ücreti","LGS Programı","YKS / TYT-AYT Programı","Deneme Kulübü","Etüt / Özel Ders","Diğer / Özel Talep"],
+    surucu:["B Sınıfı Ehliyet","A / A1 / A2 Motosiklet Ehliyeti","C / CE / D Ağır Vasıta","Direksiyon Eğitimi","Kurs Ücreti","Diğer / Özel Talep"],
+    ozel_ders:["Özel Ders Ücreti","Ders / Branş Bilgisi","Paket Ders","Online Ders","Program / Uygunluk","Diğer / Özel Talep"],
+    dil_kursu:["Kurs Ücreti","İngilizce","Almanca","Diğer Dil Programı","Seviye / Program Bilgisi","Diğer / Özel Talep"],
+    etut:["Kayıt / Aylık Ücret","Etüt Programı","Ödev Takibi","Sınav Hazırlık","Birebir Ders","Diğer / Özel Talep"],
+    ozel_okul:["Kayıt / Eğitim Ücreti","Bursluluk / İndirim","Servis","Yemek","Erken Kayıt","Diğer / Özel Talep"],
+    yurt:["Aylık / Yıllık Ücret","Oda Seçenekleri","Yemek / Servis","Kayıt Şartları","Depozito / Ek Hizmetler","Diğer / Özel Talep"],
+
+    // Otomotiv
+    oto_servis:["Bakım / Periyodik Servis","Arıza / Tamir","Parça + İşçilik","Yağ / Filtre Değişimi","Kontrol / Fiyat Bilgisi","Diğer / Özel Talep"],
+    kaporta_boya:["Kaporta Onarımı","Boya","Göçük Düzeltme","Hasar Tespiti","Parça + İşçilik","Diğer / Özel Talep"],
+    oto_elektrik:["Elektrik Arızası","Akü / Şarj Sistemi","Aydınlatma","Elektronik Arıza","Kontrol / Fiyat Bilgisi","Diğer / Özel Talep"],
+    lastik_jant:["Lastik Fiyatı","Jant Fiyatı","Değişim / Montaj","Balans / Rotasyon","Mevsimlik Lastik","Diğer / Özel Talep"],
+    oto_yikama:["İç-Dış Yıkama","Detaylı Temizlik","Pasta / Cila","Seramik Kaplama","Koltuk Temizliği","Diğer / Özel Talep"],
+    ekspertiz:["Standart Ekspertiz","Detaylı Ekspertiz","Motor / Mekanik Kontrol","Kaporta / Boya Kontrolü","Paket Fiyatı","Diğer / Özel Talep"],
+    galeri:["Araç Fiyatı","Araç Takas","Araç Uygunluğu","Finansman Bilgisi","Belirli Model Talebi","Diğer / Özel Talep"],
+    rentacar:["Günlük Kiralama","Haftalık Kiralama","Aylık Kiralama","Araç Uygunluğu","Uzun Dönem Kiralama","Diğer / Özel Talep"],
+    yedek_parca:["Parça Fiyatı","Orijinal Parça","Muadil Parça","Parça Uygunluğu","Toplu Parça Talebi","Diğer / Özel Talep"],
+    motosiklet:["Bakım / Servis","Arıza / Tamir","Lastik","Yedek Parça","Kontrol / Fiyat Bilgisi","Diğer / Özel Talep"],
+
+    // Yeme - İçme
+    restoran:["Menü / Fiyat Bilgisi","Toplu Yemek","Rezervasyon","Organizasyon / Grup","Paket Servis","Diğer / Özel Talep"],
+    kafe:["Menü / Fiyat Bilgisi","Rezervasyon","Toplu Organizasyon","Doğum Günü / Etkinlik","Paket Sipariş","Diğer / Özel Talep"],
+    fastfood:["Menü / Fiyat Bilgisi","Toplu Sipariş","Öğrenci / Grup Menüsü","Paket Servis","Organizasyon","Diğer / Özel Talep"],
+    pastane:["Pasta Siparişi","Özel Tasarım Pasta","Toplu Sipariş","Nişan / Düğün Ürünleri","Fiyat Bilgisi","Diğer / Özel Talep"],
+    pizza:["Menü / Fiyat Bilgisi","Toplu Sipariş","Paket Servis","Grup Menüsü","Kampanya","Diğer / Özel Talep"],
+    doner:["Menü / Fiyat Bilgisi","Toplu Sipariş","Paket Servis","Catering / Organizasyon","Kampanya","Diğer / Özel Talep"],
+    pide_lahmacun:["Menü / Fiyat Bilgisi","Toplu Sipariş","Paket Servis","Organizasyon","Kampanya","Diğer / Özel Talep"],
+    catering:["Kişi Başı Menü","Toplu Yemek","Düğün / Organizasyon","Kurumsal Yemek","Taşımalı Yemek","Diğer / Özel Talep"],
+    ev_yemekleri:["Günlük Menü","Toplu Yemek","Paket Servis","Kurumsal Yemek","Özel Gün Siparişi","Diğer / Özel Talep"],
+
+    // Sağlık - Güzellik - Spor
+    dis_klinigi:["Muayene / Kontrol","Dolgu / Kanal Tedavisi","İmplant","Ortodonti","Diş Temizliği","Diğer / Özel Talep"],
+    klinik:["Muayene / Randevu","Tedavi Bilgisi","Kontrol","Paket / Uygulama Bilgisi","Fiyat Bilgisi","Diğer / Özel Talep"],
+    psikolog:["Seans Ücreti","Bireysel Görüşme","Çift / Aile Görüşmesi","Çocuk / Ergen","Online Görüşme","Diğer / Özel Talep"],
+    diyetisyen:["İlk Görüşme","Aylık Takip","Online Danışmanlık","Beslenme Programı","Paket Ücreti","Diğer / Özel Talep"],
+    fizyoterapi:["Değerlendirme","Seans Ücreti","Rehabilitasyon","Manuel Terapi","Paket Seans","Diğer / Özel Talep"],
+    guzellik:["Cilt Bakımı","Lazer Epilasyon","Bölgesel İncelme","Kalıcı Makyaj","Paket / Kampanya","Diğer / Özel Talep"],
+    kuafor:["Saç Kesimi","Boya / Röfle","Bakım","Gelin Saçı","Paket / Fiyat Bilgisi","Diğer / Özel Talep"],
+    berber:["Saç Kesimi","Sakal","Bakım","Damat Paketi","Fiyat Bilgisi","Diğer / Özel Talep"],
+    spor:["Aylık Üyelik","Pilates","Fitness","Personal Training","Grup Dersi","Diğer / Özel Talep"],
+
+    // Ev - Yapı - Teknik
+    mobilya:["Mutfak Dolabı","Gardırop","Özel Ölçü Mobilya","Salon / Yatak Odası","Montaj","Diğer / Özel Talep"],
+    dekorasyon:["İç Mekan Dekorasyon","Tasarım / Projelendirme","Uygulama","Tadilat","Keşif / Fiyat Teklifi","Diğer / Özel Talep"],
+    insaat:["Tadilat","Anahtar Teslim","Boya / Alçı","Banyo / Mutfak Yenileme","Keşif / Fiyat Teklifi","Diğer / Özel Talep"],
+    elektrikci:["Elektrik Arızası","Tesisat Yenileme","Priz / Aydınlatma","Pano / Sigorta","Keşif / Fiyat","Diğer / Özel Talep"],
+    tesisatci:["Su Tesisatı","Tıkanıklık Açma","Kaçak Tespiti","Kombi / Petek Tesisatı","Keşif / Fiyat","Diğer / Özel Talep"],
+    teknik_servis:["Arıza / Tamir","Bakım","Montaj","Yedek Parça","Servis Ücreti","Diğer / Özel Talep"],
+    klima:["Klima Bakımı","Klima Tamiri","Montaj","Gaz Dolumu","Yeni Klima / Fiyat","Diğer / Özel Talep"],
+    cam_balkon:["Cam Balkon","PVC Doğrama","Sineklik","Balkon Kapatma","Keşif / Fiyat Teklifi","Diğer / Özel Talep"],
+    temizlik:["Ev Temizliği","Ofis Temizliği","İnşaat Sonrası Temizlik","Koltuk / Halı Temizliği","Düzenli Temizlik","Diğer / Özel Talep"],
+
+    // Emlak - Konaklama - Seyahat
+    emlak_ofisi:["Kiralık Konut","Satılık Konut","Arsa / Tarla","Ticari Gayrimenkul","Değerleme / Danışmanlık","Diğer / Özel Talep"],
+    konut:["Satılık Konut","Kiralık Konut","Belirli Bölge / Özellik","Fiyat Bilgisi","Randevu / Görüşme","Diğer / Özel Talep"],
+    arsa:["Satılık Arsa / Tarla","Bölge / Metrekare","İmar Bilgisi","Fiyat Bilgisi","Randevu / Görüşme","Diğer / Özel Talep"],
+    ticari:["Satılık İş Yeri","Kiralık İş Yeri","Depo / Dükkan","Fiyat Bilgisi","Randevu / Görüşme","Diğer / Özel Talep"],
+    gunluk_kiralik:["Gecelik Fiyat","Tarih Uygunluğu","Kişi Sayısı","Uzun Konaklama","Konum / Özellikler","Diğer / Özel Talep"],
+    otel:["Konaklama Fiyatı","Oda Uygunluğu","Grup Rezervasyonu","Paket / Kampanya","Etkinlik / Toplantı","Diğer / Özel Talep"],
+    pansiyon:["Konaklama Fiyatı","Oda Uygunluğu","Uzun Konaklama","Grup Rezervasyonu","Kahvaltı / Ek Hizmet","Diğer / Özel Talep"],
+    apart:["Konaklama Fiyatı","Daire Uygunluğu","Aylık Konaklama","Kişi Sayısı","Ek Hizmetler","Diğer / Özel Talep"],
+    bungalov:["Gecelik Fiyat","Tarih Uygunluğu","Kişi Sayısı","Paket / Kampanya","Özel Gün","Diğer / Özel Talep"],
+    seyahat:["Tur Paketi","Otobüs / Ulaşım","Konaklamalı Tur","Günübirlik Tur","Grup Organizasyonu","Diğer / Özel Talep"],
+    kamp:["Konaklama / Kamp Alanı","Karavan Alanı","Tarih Uygunluğu","Kişi Sayısı","Paket / Aktivite","Diğer / Özel Talep"],
+
+    // Organizasyon - Medya
+    dugun_salonu:["Salon Fiyatı","Paket İçeriği","Tarih Uygunluğu","Yemekli Organizasyon","Kişi Sayısı","Diğer / Özel Talep"],
+    organizasyon:["Organizasyon Paketi","Tarih Uygunluğu","Süsleme / Konsept","Ses / Işık","Fiyat Bilgisi","Diğer / Özel Talep"],
+    fotograf:["Fotoğraf Çekimi","Video Çekimi","Düğün / Organizasyon","Dış Çekim","Paket Fiyatı","Diğer / Özel Talep"],
+    video:["Tanıtım Videosu","Reels / Sosyal Medya","Etkinlik Çekimi","Kurumsal Video","Paket Fiyatı","Diğer / Özel Talep"],
+    drone:["Drone Çekimi","Mekan / Konum Çekimi","Etkinlik Çekimi","Kurumsal Çekim","Paket Fiyatı","Diğer / Özel Talep"],
+    gelinlik:["Gelinlik Fiyatı","Kiralama","Dikim / Özel Tasarım","Prova / Randevu","Aksesuar","Diğer / Özel Talep"],
+    cicekci:["Gelin Buketi","Düğün / Nişan Çiçeği","Aranjman","Toplu Sipariş","Özel Gün","Diğer / Özel Talep"],
+    reklam:["Sosyal Medya Tasarımı","Video / Reels","Matbaa / Baskı","Tabela / Dijital Baskı","Reklam Paketi","Diğer / Özel Talep"],
+
+    // Taşıma - Profesyonel Hizmetler
+    nakliyat:["Evden Eve Nakliyat","Şehirler Arası Nakliyat","Parça Eşya Taşıma","Depolama","Paketleme","Diğer / Özel Talep"],
+    kurye:["Kurye Teslimatı","Aynı Gün Teslimat","Düzenli Kurye","Toplu Gönderi","Fiyat Bilgisi","Diğer / Özel Talep"],
+    sehirici:["Şehir İçi Taşıma","Personel / Servis","Yük Taşıma","Düzenli Taşıma","Fiyat Bilgisi","Diğer / Özel Talep"],
+    depolama:["Aylık Depolama","Eşya Depolama","Ticari Depolama","Nakliye + Depolama","Alan / Fiyat Bilgisi","Diğer / Özel Talep"],
+    hukuk:["Hukuki Danışmanlık","Dava / Dosya Görüşmesi","Sözleşme","İcra / Alacak","Randevu","Diğer / Özel Talep"],
+    muhasebe:["Aylık Muhasebe","Şirket Kuruluşu","Vergi Danışmanlığı","Beyanname / Defter","Fiyat Bilgisi","Diğer / Özel Talep"],
+    web:["Kurumsal Web Sitesi","E-Ticaret Sitesi","Site Yenileme","Bakım / Destek","Fiyat Teklifi","Diğer / Özel Talep"],
+    sosyal_medya:["Sosyal Medya Yönetimi","Reels / Video","Görsel Tasarım","Reklam Yönetimi","Aylık Paket","Diğer / Özel Talep"],
+    bilgisayar:["Bilgisayar Tamiri","Format / Yazılım","Donanım Yükseltme","Veri / Yedekleme","Teknik Destek","Diğer / Özel Talep"],
+    danismanlik:["Danışmanlık Görüşmesi","Proje Danışmanlığı","Kurumsal Danışmanlık","Online Görüşme","Fiyat / Paket","Diğer / Özel Talep"],
+
+    // Pet - Tarım - Perakende
+    veteriner:["Muayene","Aşı","Tedavi","Pet Bakım","Acil / Randevu","Diğer / Özel Talep"],
+    tarim:["Ürün / Ekipman Fiyatı","Tohum / Gübre","Hayvancılık","Tarım Danışmanlığı","Toplu Alım","Diğer / Özel Talep"],
+    giyim:["Ürün Fiyatı","Beden / Stok","Toplu Alım","Özel Sipariş","Kampanya","Diğer / Özel Talep"],
+    ayakkabi:["Ürün Fiyatı","Numara / Stok","Toplu Alım","Özel Sipariş","Kampanya","Diğer / Özel Talep"],
+    market:["Ürün Fiyatı","Toplu Alışveriş","Sipariş / Teslimat","Stok Bilgisi","Kampanya","Diğer / Özel Talep"],
+    elektronik:["Ürün Fiyatı","Stok / Model","Telefon / Aksesuar","Teknik Servis","Toplu Alım","Diğer / Özel Talep"],
+    kirtasiye:["Ürün Fiyatı","Okul / Ofis Listesi","Toplu Sipariş","Baskı / Fotokopi","Teslimat","Diğer / Özel Talep"],
+    petshop:["Mama / Ürün Fiyatı","Stok / Marka","Toplu Alım","Pet Aksesuarı","Teslimat","Diğer / Özel Talep"],
+    zuccaciye:["Ürün Fiyatı","Çeyiz Paketi","Toplu Alım","Stok Bilgisi","Kampanya","Diğer / Özel Talep"],
+    esnaf:["Fiyat Bilgisi","Hizmet / Ürün Detayı","Randevu / Uygunluk","Toplu Talep","Kampanya / İndirim","Diğer / Özel Talep"]
   };
+
   const fallback=[
     categoryLabel(x)+" için fiyat bilgisi",
     "Hizmet / paket detayları",
