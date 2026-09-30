@@ -1360,3 +1360,41 @@ button,input{font:inherit}.hidden{display:none!important}
     width:100%
   }
 }
+
+
+/* Dijiyer yönlendirme ve ikinci teklif durumu */
+.customer-routing-status{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:13px;
+  align-items:flex-start;
+  margin:14px 0;
+  padding:15px 16px;
+  border:1px solid #bfdbfe;
+  border-radius:16px;
+  background:linear-gradient(135deg,#eff6ff,#f8fbff);
+}
+.customer-routing-status-icon{
+  width:42px;height:42px;border-radius:13px;
+  display:grid;place-items:center;
+  background:#2563eb;color:#fff;font-size:22px;font-weight:900;
+}
+.customer-routing-status span{
+  display:block;color:#2563eb;font-size:11px;font-weight:900;letter-spacing:.07em;margin-bottom:3px;
+}
+.customer-routing-status strong{display:block;color:#172033;line-height:1.45}
+.customer-routing-status small{display:block;color:#64748b;margin-top:4px;line-height:1.45}
+.alternative-offer-notice{
+  display:flex;flex-direction:column;gap:3px;
+  margin:10px 0 12px;padding:11px 12px;
+  border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;
+}
+.alternative-offer-notice b{color:#c2410c;font-size:13px}
+.alternative-offer-notice span{color:#7c2d12;font-size:12px;line-height:1.45}
+.offer-version-badge{
+  display:inline-flex;align-items:center;
+  margin:0 0 10px;padding:6px 9px;
+  border-radius:999px;
+  background:#eef2ff;color:#4338ca;
+  font-size:11px;font-weight:900;
+}
