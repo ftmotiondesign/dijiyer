@@ -56,7 +56,8 @@ service cloud.firestore {
           )
           ||
           (
-            !talep.keys().hasAny(['targetInstitutionId'])
+            talep.keys().hasAny(['requestType'])
+            && talep.requestType == 'bulk'
             && talep.category == bagliKurum().category
             && talep.city == bagliKurum().city
             && (
@@ -285,7 +286,8 @@ service cloud.firestore {
             )
             ||
             (
-              !resource.data.keys().hasAny(['targetInstitutionId'])
+              resource.data.keys().hasAny(['requestType'])
+              && resource.data.requestType == 'bulk'
               && resource.data.category == bagliKurum().category
               && resource.data.city == bagliKurum().city
               && (
