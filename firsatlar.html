@@ -176,6 +176,84 @@
       border-color:#9bb8ef;
       box-shadow:0 0 0 3px rgba(37,99,235,.08);
     }
+    .affiliate-zone{
+      margin:0 0 18px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      box-shadow:0 8px 24px rgba(23,34,59,.055);
+    }
+    .affiliate-zone[hidden]{display:none}
+    .affiliate-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 2px 8px;
+    }
+    .affiliate-head span{
+      color:#64748b;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:.08em;
+    }
+    .affiliate-head small{color:#94a3b8;font-size:10px}
+    .affiliate-card{
+      display:grid;
+      grid-template-columns:minmax(0,1.25fr) minmax(210px,.75fr);
+      overflow:hidden;
+      border:1px solid #e2e8f0;
+      border-radius:13px;
+      background:#fff;
+      color:inherit;
+      text-decoration:none;
+    }
+    .affiliate-media{
+      position:relative;
+      min-height:225px;
+      overflow:hidden;
+      background:#eef3f8;
+    }
+    .affiliate-media img,.affiliate-media video{width:100%;height:100%;display:block;object-fit:cover}
+    .affiliate-media>span{
+      position:absolute;
+      top:10px;left:10px;
+      padding:6px 8px;
+      border-radius:999px;
+      background:rgba(23,34,59,.7);
+      color:#fff;
+      font-size:9px;
+      font-weight:900;
+    }
+    .affiliate-copy{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:18px;
+    }
+    .affiliate-copy>span{color:var(--blue);font-size:9px;font-weight:900;letter-spacing:.06em}
+    .affiliate-copy strong{margin-top:5px;font-size:19px;line-height:1.2}
+    .affiliate-copy small{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+    .affiliate-copy b{
+      align-self:flex-start;
+      margin-top:14px;
+      padding:9px 11px;
+      border-radius:10px;
+      background:var(--blue-soft);
+      color:var(--blue);
+      font-size:11px;
+    }
+    .affiliate-dots{display:flex;justify-content:center;gap:5px;margin-top:8px}
+    .affiliate-dots button{width:7px;height:7px;padding:0;border:0;border-radius:999px;background:#cbd5e1}
+    .affiliate-dots button.active{width:20px;background:var(--blue)}
+    @media(max-width:720px){
+      .affiliate-card{grid-template-columns:1fr}
+      .affiliate-media{min-height:165px}
+      .affiliate-copy{padding:12px}
+      .affiliate-copy strong{font-size:15px}
+    }
+
     .summary{
       display:flex;
       align-items:center;
@@ -484,6 +562,12 @@
 
     <div id="errorBox" class="error-note" hidden></div>
 
+    <section class="affiliate-zone" id="affiliateZone" hidden aria-label="Harici reklam">
+      <div class="affiliate-head"><span>REKLAM</span><small>Harici / iş ortaklığı</small></div>
+      <div id="affiliateStage"></div>
+      <div class="affiliate-dots" id="affiliateDots"></div>
+    </section>
+
     <div class="summary">
       <strong id="resultTitle">Fırsatlar yükleniyor</strong>
       <span id="resultCount"></span>
@@ -528,6 +612,9 @@
     var filteredRows = [];
     var visibleCount = 12;
     var PAGE_SIZE = 12;
+    var externalAds = [];
+    var externalAdIndex = 0;
+    var externalAdTimer = null;
 
     var cityFilter = document.getElementById('cityFilter');
     var districtFilter = document.getElementById('districtFilter');
@@ -1071,6 +1158,96 @@
       bindOpportunityAnalytics();
     }
 
+    function safeExternalUrl(value){
+      var raw=String(value||'').trim();
+      if(!raw)return '';
+      try{
+        var url=new URL(raw,window.location.href);
+        return ['http:','https:'].includes(url.protocol) ? url.href : '';
+      }catch(_){return ''}
+    }
+
+    function externalAdLive(item){
+      if(!item || item.active===false || item.rightsConfirmed===false)return false;
+      var placements=Array.isArray(item.placements)&&item.placements.length ? item.placements : ['home'];
+      if(!placements.map(String).includes('opportunities'))return false;
+      var now=Date.now();
+      var start=item.startAt ? new Date(item.startAt).getTime() : 0;
+      var end=item.endAt ? new Date(item.endAt).getTime() : 0;
+      if(start&&start>now)return false;
+      if(end&&end<now)return false;
+      var target=safeExternalUrl(item.targetUrl);
+      var image=safeExternalUrl(item.imageUrl);
+      var video=safeExternalUrl(item.videoUrl);
+      if(!target)return false;
+      return Boolean(image||video);
+    }
+
+    function renderAffiliateAds(){
+      var zone=document.getElementById('affiliateZone');
+      var stage=document.getElementById('affiliateStage');
+      var dots=document.getElementById('affiliateDots');
+      if(!zone||!stage)return;
+      if(externalAdTimer){clearTimeout(externalAdTimer);externalAdTimer=null}
+      var live=externalAds.filter(externalAdLive);
+      if(!live.length){
+        zone.hidden=true;
+        stage.innerHTML='';
+        if(dots)dots.innerHTML='';
+        return;
+      }
+      zone.hidden=false;
+      if(externalAdIndex>=live.length)externalAdIndex=0;
+      var item=live[externalAdIndex];
+      var target=safeExternalUrl(item.targetUrl);
+      var image=safeExternalUrl(item.imageUrl);
+      var video=safeExternalUrl(item.videoUrl);
+      var isVideo=String(item.mediaType||'')==='video'&&Boolean(video);
+      stage.innerHTML=
+        '<a class="affiliate-card" href="'+esc(target)+'" target="_blank" rel="sponsored nofollow noopener noreferrer">'+
+          '<div class="affiliate-media">'+
+            (isVideo
+              ? '<video src="'+esc(video)+'" autoplay muted loop playsinline poster="'+esc(image)+'"></video>'
+              : '<img src="'+esc(image||video)+'" alt="'+esc(item.brandName||'Reklam')+' reklamı">')+
+            '<span>REKLAM</span>'+
+          '</div>'+
+          '<div class="affiliate-copy">'+
+            '<span>İŞ ORTAKLIĞI · SPONSORLU BAĞLANTI</span>'+
+            '<strong>'+esc(item.brandName||'Marka')+'</strong>'+
+            '<small>'+esc(item.headline||'Fırsatı incelemek için markanın sitesine gidebilirsiniz.')+'</small>'+
+            '<b>Markayı İncele →</b>'+
+          '</div>'+
+        '</a>';
+      if(dots){
+        dots.innerHTML=live.length>1 ? live.map(function(_,i){
+          return '<button type="button" class="'+(i===externalAdIndex?'active':'')+'" data-affiliate-dot="'+i+'" aria-label="'+(i+1)+'. reklam"></button>';
+        }).join('') : '';
+        dots.querySelectorAll('[data-affiliate-dot]').forEach(function(button){
+          button.addEventListener('click',function(){
+            externalAdIndex=Number(button.dataset.affiliateDot||0);
+            renderAffiliateAds();
+          });
+        });
+      }
+      if(live.length>1){
+        var seconds=Math.max(5,Math.min(60,Number(item.rotationSeconds||5)));
+        externalAdTimer=setTimeout(function(){
+          externalAdIndex=(externalAdIndex+1)%live.length;
+          renderAffiliateAds();
+        },seconds*1000);
+      }
+    }
+
+    async function loadAffiliateAds(){
+      try{
+        var snapshot=await db.collection('externalAds').get();
+        externalAds=snapshot.docs.map(function(doc){return {id:doc.id,...doc.data()};});
+        renderAffiliateAds();
+      }catch(error){
+        console.warn('Harici reklamlar yüklenemedi:',error);
+      }
+    }
+
     function showError(message){
       errorBox.hidden = false;
       errorBox.textContent = message;
@@ -1088,6 +1265,7 @@
 
         populateFilters();
         applyFilters();
+        loadAffiliateAds();
       }catch(error){
         console.error('Fırsat sayfası yükleme hatası:',error);
         showError('Fırsatlar şu anda yüklenemedi. Firestore okuma izinlerini kontrol edin.');
