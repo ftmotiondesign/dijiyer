@@ -171,6 +171,8 @@ renderSummary = function(){
   const offeredCount = states.filter(state => state === "offered").length;
   const lockedCount = states.filter(state => state === "locked").length;
   const usedCount = states.filter(state => state === "used").length;
+  const completedRegistrationCount = document.getElementById("completedRegistrationCount");
+  if (completedRegistrationCount) completedRegistrationCount.textContent = String(usedCount);
 
   if (typeof updatePersistentNewRequestCard === "function") updatePersistentNewRequestCard(newCount);
 
@@ -616,6 +618,7 @@ async function verifyOfferByCode(rawCode){
           <div><span>Tutar</span><strong>${offerMoney(lock.price)}</strong></div>
           <div><span>KDV</span><strong>${offerSafe(lock.vatStatus || "-")}</strong></div>
           <div><span>Teklif Kaydı</span><strong class="verify-lock-value">🔒 Kabul Edildi</strong></div>
+          <div><span>Müşteri Doğrulaması</span><strong>✓ Telefon + takip kodu</strong></div>
           <div><span>Gerçek Kayıt Son Tarihi</span><strong>${formatDate(lock.registrationDeadlineAt || lock.expiresAt)}</strong></div>
           <div><span>Kalan Süre</span><strong>${offerSafe(offerRemainingLabel(lock.expiresAt))}</strong></div>
           <div><span>Durum</span><strong>${used?"Gerçek Kayıt Tamamlandı":expired?"Süresi Doldu":"Kayıt Bekliyor"}</strong></div>
