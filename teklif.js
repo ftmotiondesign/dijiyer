@@ -210,6 +210,25 @@ function bulkResponseSummaryHtml(engagementRows,offers){
   `;
 }
 
+function responseWaitLabel(access){
+  const minutes=Number(access?.responseWaitMinutes||0);
+  if(minutes===1440)return "1 gün";
+  if(minutes===60)return "1 saat";
+  if([15,30,45].includes(minutes))return minutes+" dakika";
+  return minutes>0 ? minutes+" dakika" : "";
+}
+
+function responseDeadlineState(access){
+  const target=new Date(access?.responseDeadlineAt||"").getTime();
+  if(!Number.isFinite(target))return null;
+  const diff=target-Date.now();
+  return {
+    target,
+    expired:diff<=0,
+    diff:Math.max(0,diff)
+  };
+}
+
 function directResponseHtml(access,engagementRows,offers){
   if(!access?.targetInstitutionId)return "";
 
@@ -260,12 +279,32 @@ function directResponseHtml(access,engagementRows,offers){
     `;
   }
 
+  const deadline=responseDeadlineState(access);
+  const waitLabel=responseWaitLabel(access);
+
+  if(deadline?.expired){
+    return `
+      <div class="direct-customer-status declined">
+        <span class="direct-status-icon">⏱</span>
+        <div>
+          <strong>${waitLabel?waitLabel+" yanıt süresi doldu":"Yanıt süresi doldu"}</strong>
+          <p>${access.allowAlternativeInstitutions===true
+            ? "Talebiniz için diğer uygun kurumlara yönlendirme izni verdiniz. Dijiyer yönetiminde yönlendirmeye hazır olarak görünecek."
+            : "Talebiniz başka kurumlara otomatik açılmaz. İsterseniz benzer kurumlardan yeni teklif isteyebilirsiniz."}</p>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="direct-customer-status pending">
       <span class="direct-status-icon">…</span>
       <div>
         <strong>Talebiniz ${safe(institutionName)} kurumuna ulaştı</strong>
         <p>Kurum henüz yanıt vermedi. Yanıt geldiğinde bu sayfa otomatik güncellenecek.</p>
+        ${deadline
+          ? `<div class="direct-response-timer"><span>Yanıt için kalan süre</span><strong data-response-countdown="${safe(access.responseDeadlineAt)}">Hesaplanıyor...</strong><small>${access.allowAlternativeInstitutions===true ? "Süre dolarsa talebiniz diğer uygun kurumlara yönlendirmeye hazır olur." : "Süre dolsa da izniniz olmadan başka kuruma iletilmez."}</small></div>`
+          : ""}
       </div>
     </div>
   `;
@@ -327,6 +366,9 @@ function rememberVerifiedQuoteOnDevice(access){
       district:access.district||existing.district||"",
       note:access.note||existing.note||"",
       date:access.date||existing.date||"",
+      responseWaitMinutes:Number(access.responseWaitMinutes||existing.responseWaitMinutes||0),
+      responseDeadlineAt:access.responseDeadlineAt||existing.responseDeadlineAt||"",
+      allowAlternativeInstitutions:access.allowAlternativeInstitutions===true || existing.allowAlternativeInstitutions===true,
       trackingCode:access.trackingCode||existing.trackingCode||"",
       trackingUrl:currentTrackingUrl(access)
     };
@@ -1004,6 +1046,28 @@ function updateCountdowns(){
     if(!diff){el.textContent="Teklifin süresi doldu.";return;}
     const d=Math.floor(diff/86400000),h=Math.floor(diff%86400000/3600000),m=Math.floor(diff%3600000/60000);
     el.textContent=`Kalan süre: ${d} gün ${h} saat ${m} dakika`;
+  });
+
+  document.querySelectorAll("[data-response-countdown]").forEach(el=>{
+    const target=new Date(el.dataset.responseCountdown).getTime();
+    const diff=Math.max(0,target-Date.now());
+    if(!Number.isFinite(target)){el.textContent="-";return;}
+    if(!diff){el.textContent="Yanıt süresi doldu";return;}
+
+    const totalMinutes=Math.max(1,Math.ceil(diff/60000));
+    if(totalMinutes>=1440){
+      const d=Math.floor(totalMinutes/1440);
+      const h=Math.floor((totalMinutes%1440)/60);
+      el.textContent=d+" gün"+(h?" "+h+" saat":"");
+      return;
+    }
+    if(totalMinutes>=60){
+      const h=Math.floor(totalMinutes/60);
+      const m=totalMinutes%60;
+      el.textContent=h+" saat"+(m?" "+m+" dk":"");
+      return;
+    }
+    el.textContent=totalMinutes+" dakika";
   });
 }
 
