@@ -871,6 +871,12 @@ function escapeHtml(text) {
     issuesTabBtn.classList.remove("active");
   }, true));
 
+[overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
+  .forEach(button => button?.addEventListener("click", () => {
+    if (quoteRoutingSection) quoteRoutingSection.hidden = true;
+    quoteRoutingTabBtn?.classList.remove("active");
+  }, true));
+
 overviewTabBtn?.addEventListener("click", () => {
   overviewSection.hidden = false;
   applicationsSection.hidden = true;
