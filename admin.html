@@ -124,7 +124,7 @@
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
-        <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 Fırsat Sayfası <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
+        <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="mediaArchiveTabBtn" data-admin-group="ads">🗂 Medya Arşivi <span id="mediaArchiveTabCount" class="admin-tab-count">0</span></button>
                 <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads">🌐 Harici Reklamlar <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
 <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
@@ -1947,7 +1947,7 @@
       <button type="button" class="opportunity-sponsor-modal-close" id="opportunitySponsorModalClose" aria-label="Kapat">×</button>
 
       <div class="opportunity-sponsor-modal-head">
-        <span>FIRSAT SAYFASI SPONSORU</span>
+        <span>KEŞFET / FIRSAT SPONSORU</span>
         <h2 id="opportunitySponsorModalTitle">Kurum</h2>
         <p id="opportunitySponsorModalMeta"></p>
       </div>
@@ -1965,7 +1965,7 @@
       <div class="opportunity-media-size-note">
         <span>ÖNERİLEN MOBİL MEDYA EBATI</span>
         <strong>1080 × 1350 px · 4:5 dikey</strong>
-        <small>Görsel veya videoyu bu ölçüde hazırlayın. Fırsat sayfasındaki sponsor kartı mobilde bu orana göre gösterilir.</small>
+        <small>Görsel veya videoyu bu ölçüde hazırlayın. Keşfet ve Fırsat sponsor kartlarında mobil uyumlu gösterilir.</small>
       </div>
 
       <input type="hidden" id="opportunitySponsorInstitutionId">
@@ -2012,13 +2012,22 @@
           <input type="number" id="opportunitySponsorPriority" min="1" max="99" value="10">
           <small>1 en üst sıradır. Küçük sayı önce gösterilir.</small>
         </label>
+        <label>
+          <span>Gösterim Yeri</span>
+          <select id="opportunitySponsorPlacement">
+            <option value="both">Keşfet + Fırsatlar</option>
+            <option value="discover">Sadece Keşfet</option>
+            <option value="opportunity">Sadece Fırsatlar</option>
+          </select>
+          <small>Sponsorun hangi kullanıcı ekranlarında öne çıkacağını seçin.</small>
+        </label>
       </div>
 
       <label class="opportunity-sponsor-switch">
         <input type="checkbox" id="opportunitySponsorActive">
         <span></span>
-        <b>Fırsat Sponsor Aktif</b>
-        <small>Tarih aralığı uygunsa kurum sponsorlu olarak en üstte gösterilir.</small>
+        <b>Sponsor Aktif</b>
+        <small>Tarih aralığı uygunsa kurum seçilen gösterim yerlerinde sponsorlu olarak öne çıkar.</small>
       </label>
 
       <div class="opportunity-sponsor-modal-actions">
@@ -2036,8 +2045,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=55"></script>
-  <script src="admin-advanced.js?v=38"></script>
+<script src="admin.js?v=56"></script>
+  <script src="admin-advanced.js?v=39"></script>
 
 </body>
 </html>
