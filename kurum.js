@@ -44,7 +44,10 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
     targetInstitutionId:String(request.targetInstitutionId||institution?.id||""),
     targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum"),
     requestType:"direct",
-    email:String(request.email||"")
+    email:String(request.email||""),
+    responseWaitMinutes:Number(request.responseWaitMinutes||30),
+    responseDeadlineAt:String(request.responseDeadlineAt||""),
+    allowAlternativeInstitutions:Boolean(request.allowAlternativeInstitutions)
   });
   return {trackingCode,trackingUrl:url,normalizedPhone};
 }
@@ -597,6 +600,13 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   const note=document.getElementById("directQuoteNote").value.trim();
   const email=String(document.getElementById("directQuoteEmail")?.value||"").trim().toLowerCase();
   const normalizedPhone=normalizeTrackingPhone(phone);
+  const responseWaitMinutes=Number(
+    document.getElementById("directQuoteResponseWait")?.value || 30
+  );
+  const allowedResponseWaitMinutes=[15,30,45,60,1440];
+  const safeResponseWaitMinutes=allowedResponseWaitMinutes.includes(responseWaitMinutes)
+    ? responseWaitMinutes
+    : 30;
   const allowAlternativeInstitutions=Boolean(
     document.getElementById("directQuoteAlternativeConsent")?.checked
   );
@@ -614,6 +624,12 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   const mainCategory=String(institution.mainCategory||"diger");
   const subCategory=String(institution.subCategory||institution.category||"diger");
   const institutionCategory=String(institution.category||institution.subCategory||"diger");
+  const requestDate=new Date();
+  const requestDateIso=requestDate.toISOString();
+  const responseDeadlineAt=new Date(
+    requestDate.getTime() + safeResponseWaitMinutes*60000
+  ).toISOString();
+
   const request={
     mainCategory,
     subCategory,
@@ -627,10 +643,10 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     note,
     status:"new",
     requestType:"direct",
+    responseWaitMinutes:safeResponseWaitMinutes,
+    responseDeadlineAt,
     allowAlternativeInstitutions,
-    alternativeConsentSource:allowAlternativeInstitutions?"direct_form":"",
-    alternativeConsentAt:allowAlternativeInstitutions?new Date().toISOString():"",
-    date:new Date().toISOString(),
+    date:requestDateIso,
     targetInstitutionId:String(institution.id),
     targetInstitutionName:String(institution.name||"Kurum")
   };
@@ -673,8 +689,16 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
 
     document.getElementById("directQuoteFormView").classList.add("hidden");
     document.getElementById("directQuoteSuccess").classList.remove("hidden");
+    const waitLabel=safeResponseWaitMinutes===1440
+      ? "1 gün"
+      : safeResponseWaitMinutes===60
+        ? "1 saat"
+        : safeResponseWaitMinutes+" dakika";
     document.getElementById("directQuoteSuccessText").textContent=
-      "Talebiniz yalnızca "+(institution.name||"bu kuruma")+" gönderildi. Kurum fiyat verdiğinde teklifinizi takip edebilirsiniz.";
+      "Talebiniz "+(institution.name||"bu kuruma")+" gönderildi. Yanıt süresi: "+waitLabel+"."+
+      (allowAlternativeInstitutions
+        ? " Bu sürede teklif gelmezse talebiniz uygun diğer kurumlara yönlendirmeye hazır olacak."
+        : " Süre dolsa bile izniniz olmadan başka kuruma iletilmez.");
 
     const codeEl=document.getElementById("directTrackingCode");
     const linkEl=document.getElementById("directTrackingLink");
