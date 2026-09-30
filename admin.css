@@ -2420,6 +2420,9 @@ button{
   background:#eaf2ff;
   color:#1d4ed8;
 }
+.admin-subtabs .admin-tab[hidden]{
+  display:none !important;
+}
 
 .admin-section-context{
   display:flex;
