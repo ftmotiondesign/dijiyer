@@ -6330,8 +6330,21 @@ body[data-panel-current="showcase"] .panel-heading-action{
   background:#2563eb;color:#fff;font-weight:900;cursor:pointer;white-space:nowrap;
 }
 .second-offer-prompt button:hover{filter:brightness(.96)}
+.second-offer-prompt-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+.second-offer-prompt-actions .secondary{
+  background:#fff;
+  color:#475569;
+  border:1px solid #cbd5e1;
+}
 .offer-edit-details[open]{padding-top:4px}
 @media(max-width:760px){
   .second-offer-prompt{grid-template-columns:auto 1fr}
-  .second-offer-prompt button{grid-column:1/-1;width:100%}
+  .second-offer-prompt-actions{grid-column:1/-1;width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .second-offer-prompt button{width:100%}
 }
