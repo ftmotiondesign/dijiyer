@@ -6978,6 +6978,34 @@ button{
 .lead-credit-ledger-row>span.plus{color:#15803d}
 .lead-credit-ledger-row>span.minus{color:#b91c1c}
 
+.lead-credit-ledger-row.usage{
+  border-left:4px solid #16a34a;
+  background:#fbfffc;
+}
+.lead-credit-ledger-copy em{
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 6px;
+  border-radius:6px;
+  background:#f1f5f9;
+  color:#64748b;
+  font-size:8px;
+  font-style:normal;
+  font-weight:800;
+}
+.lead-credit-open-quote{
+  min-height:29px;
+  border:1px solid #bfdbfe;
+  border-radius:7px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  padding:0 9px;
+  font-size:8.5px;
+  font-weight:850;
+  cursor:pointer;
+}
+
+
 .quote-routing-list-head{
   margin:16px 0 9px;
   align-items:flex-end;
