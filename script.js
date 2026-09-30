@@ -7,12 +7,25 @@ const firebaseConfig = {
   appId: "1:847787778815:web:57058aa8dcc4143ec5a2ca"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Firebase Başlatma
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 
+// Kurum Oturumu İçin İkinci Uygulama
+const institutionSessionApp =
+  firebase.apps.find(app => app.name === 'institutionSession') ||
+  firebase.initializeApp(firebaseConfig, 'institutionSession');
+
+const institutionAuth = firebase.auth(institutionSessionApp);
+
+// ==========================================
+// KOTA VE BELLEK KORUMA DEĞİŞKENLERİ
+// ==========================================
 let regionalBannerAds = [];
-let regionalBannerUnsubscribe = null;
-let regionalBannerTimer = null;
+let regionalBannerUnsubscribe = null; // Listener referansı
+let regionalBannerTimer = null;       // Timer referansı
 let regionalBannerIndex = 0;
 let regionalBannerRegionFilter = "";
 let regionalBannerSectorFilter = "";
@@ -24,14 +37,38 @@ const PREMIUM_SHOWCASE_DURATION = 5500;
 let pageTopMiniBannerTimer = null;
 let pageTopMiniBannerIndex = 0;
 
-const institutionSessionApp =
-  firebase.apps.find(app => app.name === 'institutionSession') ||
-  firebase.initializeApp(firebaseConfig, 'institutionSession');
+// ==========================================
+// 1. DİNLEYİCİ VE TIMER TEMİZLEME YÖNETİMİ
+// ==========================================
 
-const institutionAuth = firebase.auth(institutionSessionApp);
+// Banners veya diğer koleksiyonları dinlerken eski dinleyiciyi kapatır
+function stopRegionalBannerListener() {
+  if (regionalBannerUnsubscribe) {
+    regionalBannerUnsubscribe();
+    regionalBannerUnsubscribe = null;
+  }
+}
+
+// Timer birikmesini engeller
+function stopBannerTimer() {
+  if (regionalBannerTimer) {
+    clearInterval(regionalBannerTimer);
+    regionalBannerTimer = null;
+  }
+}
+
+function startBannerAutoSlide() {
+  stopBannerTimer(); // Önceki zamanlayıcıyı temizle
+  regionalBannerTimer = setInterval(() => {
+    if (regionalBannerAds.length > 0) {
+      regionalBannerIndex = (regionalBannerIndex + 1) % regionalBannerAds.length;
+      // Banner geçiş tetikleyicisi
+    }
+  }, 5000);
+}
 
 // ==========================================
-// MERKEZİ KİLİT KONTROLÜ (TÜM DEĞİŞKENLERİ KAPSAR)
+// 2. MERKEZİ KİLİT KONTROLÜ
 // ==========================================
 function checkOfferLocked(offer) {
   if (!offer) return false;
@@ -44,7 +81,7 @@ function checkOfferLocked(offer) {
 }
 
 // ==========================================
-// MÜŞTERİ TEKLİF ONAYLAMA (GÜVENLİ & ANLIK)
+// 3. MÜŞTERİ TEKLİF ONAYLAMA (TEK SEFERLİK GET SORGUSU)
 // ==========================================
 async function respondOfferAction(demandId, offerId, action) {
   if (!demandId || !offerId) {
@@ -61,6 +98,7 @@ async function respondOfferAction(demandId, offerId, action) {
 
   try {
     const demandRef = db.collection('demands').doc(demandId);
+    // Kota tasarrufu için tek seferlik .get() kullanımı
     const snap = await demandRef.get();
 
     if (!snap.exists) {
@@ -69,7 +107,6 @@ async function respondOfferAction(demandId, offerId, action) {
     }
 
     const data = snap.data() || {};
-    // Farklı alan adlarını destekle (teklifler veya offers)
     const rawOffers = data.teklifler || data.offers || [];
     const offers = Array.isArray(rawOffers) ? rawOffers : [];
     
@@ -122,7 +159,6 @@ async function respondOfferAction(demandId, offerId, action) {
 
     alert(isAccept ? 'Teklif başarıyla kabul edildi ve fiyat kilitlendi!' : 'Teklif reddedildi.');
     
-    // Ekranı anında yenile
     if (typeof loadCustomerOffers === 'function') {
       loadCustomerOffers();
     } else {
@@ -135,12 +171,12 @@ async function respondOfferAction(demandId, offerId, action) {
   }
 }
 
-// Eski/Alternatif fonksiyon isimlerini ana fonksiyona yönlendir (Geriye Uyumluluk)
+// Geriye dönük uyumluluk için
 function acceptOffer(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
 function kabulEt(demandId, offerId) { respondOfferAction(demandId, offerId, 'accept'); }
 
 // ==========================================
-// MÜŞTERİ TEKLİF KARTLARI ARAYÜZÜ
+// 4. MÜŞTERİ TEKLİF KARTLARI RENDER
 // ==========================================
 function renderOffersList(offers, demandId) {
   if (!offers || offers.length === 0) {
@@ -184,17 +220,18 @@ function renderOffersList(offers, demandId) {
 }
 
 // ==========================================
-// KURUM PANELİ MODAL VE DÜZENLEME ENGELİ
+// 5. KURUM PANELİ MODAL VE DÜZENLEME KİLİDİ
 // ==========================================
 async function renderInstitutionModal(demandId) {
   try {
+    const user = institutionAuth.currentUser;
+    // Oturum yoksa Firestore'a erişim isteği atıp kotayı tüketme
+    if (!user) return;
+
     const snap = await db.collection('demands').doc(demandId).get();
     if (!snap.exists) return;
 
     const demand = snap.data();
-    const user = institutionAuth.currentUser;
-    if (!user) return;
-
     const rawOffers = demand.teklifler || demand.offers || [];
     const offers = Array.isArray(rawOffers) ? rawOffers : [];
     const myOffer = offers.find(o => o.kurumId === user.uid || o.institutionId === user.uid);
@@ -210,7 +247,6 @@ async function renderInstitutionModal(demandId) {
     `;
 
     if (isLocked) {
-      // KİLİTLİ: DÜZENLEME FORMUNU KAPAT VE YEŞİL UYARI KOY
       html += `
         <div style="background:#f0fff4; border:2px solid #38a169; color:#276749; padding:15px; border-radius:8px; margin-bottom:15px;">
           <h4 style="margin:0 0 5px 0; color:#22543d;">✓ TEKLİF MÜŞTERİ TARAFINDAN KABUL EDİLDİ</h4>
@@ -223,7 +259,6 @@ async function renderInstitutionModal(demandId) {
         </div>
       `;
     } else {
-      // AÇIK: KURUM TEKLİF GİREBİLİR / REVİZE EDEBİLİR
       html += `
         <form id="institutionOfferForm" onsubmit="submitInstitutionOffer(event, '${demandId}')">
           <label style="display:block; margin-bottom:5px; font-weight:bold;">Verilen Fiyat (TL):</label>
@@ -247,7 +282,7 @@ async function renderInstitutionModal(demandId) {
 }
 
 // ==========================================
-// KURUM VERİTABANI DÜZENLEME ENGELİ
+// 6. TEKLİF GÖNDERME / GÜNCELLEME SORGUSU
 // ==========================================
 async function submitInstitutionOffer(event, demandId) {
   event.preventDefault();
@@ -322,3 +357,9 @@ async function submitInstitutionOffer(event, demandId) {
     alert('Hata: ' + error.message);
   }
 }
+
+// Sayfa kapatıldığında veya ayrılındığında çalışan dinleyicileri temizle
+window.addEventListener('beforeunload', () => {
+  stopRegionalBannerListener();
+  stopBannerTimer();
+});
