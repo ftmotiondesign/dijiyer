@@ -8232,11 +8232,23 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
         );
 
     const realRows = sourceRows.filter(isDesktopRealInstitution);
+    const mainKey = String(categoryPreview?.dataset.category || '').trim();
+    const subKey = String(categoryPreview?.dataset.subcategory || '').trim();
+    const mainLabel = categoryTaxonomy[mainKey]?.label || '';
+    const subLabel = categoryTaxonomy[mainKey]?.subs?.[subKey] || '';
+    const selectionLabel = subLabel || mainLabel || 'Seçiminiz';
 
     if(!realRows.length){
       categoryInlineResults.innerHTML =
-        '<div class="desktop-inline-empty"><strong>Bu seçimde kayıtlı aktif kurum bulunamadı.</strong><small>Başka bir alt hizmet seçebilirsin.</small></div>';
+        '<div class="desktop-inline-empty">' +
+          '<span class="desktop-inline-empty-icon">⌕</span>' +
+          '<div><strong>' + escapeHtml(selectionLabel) + ' için aktif kurum bulunamadı.</strong>' +
+          '<small>Başka bir alt hizmet seçebilir veya ücretsiz teklif oluşturabilirsin.</small></div>' +
+        '</div>';
       categoryInlineResults.classList.remove('hidden');
+      categoryInlineResults.classList.remove('is-revealed');
+      void categoryInlineResults.offsetWidth;
+      categoryInlineResults.classList.add('is-revealed');
       if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
       return;
     }
@@ -8244,17 +8256,21 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     const visibleRows = realRows.slice(0,12);
     categoryInlineResults.innerHTML =
       '<div class="desktop-inline-results-head">' +
-        '<div><span>KAYITLI KURUMLAR</span><strong>' + realRows.length + ' aktif kurum bulundu</strong></div>' +
-        '<small>Kurum kartına tıklayarak profilini açabilirsin.</small>' +
+        '<div class="desktop-inline-results-title">' +
+          '<span class="desktop-inline-results-opened"><i>↓</i> SONUÇLAR AÇILDI</span>' +
+          '<strong>' + escapeHtml(selectionLabel) + ' için ' + realRows.length + ' aktif kurum</strong>' +
+          '<small>Seçtiğin hizmete uygun kurumlar aşağıda listelendi.</small>' +
+        '</div>' +
+        '<div class="desktop-inline-results-tip"><span>Kurum kartına tıkla</span><b>Profili İncele →</b></div>' +
       '</div>' +
       '<div class="desktop-inline-institution-grid">' +
-        visibleRows.map(inst=>{
+        visibleRows.map((inst,index)=>{
           const logo = safePublicProfileUrl(inst.logoUrl || inst.coverUrl || '');
           const location = [inst.district,inst.city].filter(Boolean).join(' / ') || String(inst.location || '');
           const rating = Number(inst.rating || 0);
           const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
 
-          return '<a class="desktop-inline-institution-card" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
+          return '<a class="desktop-inline-institution-card" style="--result-index:' + index + '" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
             '<div class="desktop-inline-institution-logo">' +
               (logo ? '<img src="' + logo + '" alt="">' : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>') +
             '</div>' +
@@ -8263,7 +8279,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
               '<small>📍 ' + escapeHtml(location || 'Konum bilgisi yok') + '</small>' +
               '<div>' + (rating > 0 ? '<span>⭐ ' + rating.toFixed(1) + '</span>' : '') + offerText + '</div>' +
             '</div>' +
-            '<b>→</b>' +
+            '<b class="desktop-inline-card-arrow">→</b>' +
           '</a>';
         }).join('') +
       '</div>' +
@@ -8272,6 +8288,10 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
         : '');
 
     categoryInlineResults.classList.remove('hidden');
+    categoryInlineResults.classList.remove('is-revealed');
+    void categoryInlineResults.offsetWidth;
+    categoryInlineResults.classList.add('is-revealed');
+
     if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
   }
 
