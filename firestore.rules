@@ -961,6 +961,103 @@ service cloud.firestore {
     // DİJİYER - KURUM YORUMLARI / TAVSİYE OYLARI
     // =====================================================
     // =====================================================
+    // DİJİYER - KURUM ANALİTİĞİ
+    // =====================================================
+    match /institutionAnalytics/{eventId} {
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'institutionId',
+          'type',
+          'day',
+          'date'
+        ])
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.type is string
+        && request.resource.data.type.size() > 0
+        && request.resource.data.type.size() <= 80
+        && request.resource.data.day is string
+        && request.resource.data.date is string;
+
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+        );
+
+      allow update, delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - BULUNAMAYAN ARAMALAR
+    // =====================================================
+    match /unmatchedSearches/{searchId} {
+      allow create: if
+        request.resource.data.query is string
+        && request.resource.data.query.size() > 0
+        && request.resource.data.query.size() <= 180
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is string;
+
+      allow get, list, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - KURUM DESTEK TALEPLERİ
+    // =====================================================
+    match /supportTickets/{ticketId} {
+      allow create: if
+        onayliKurumKullanicisi()
+        && request.resource.data.institutionId == bagliKurumId()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'new';
+
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow update, delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - TEKLİF KREDİ HESAPLARI
+    // =====================================================
+    match /leadCreditAccounts/{institutionId} {
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+        );
+
+      allow create, update, delete: if adminMi();
+    }
+
+    match /leadCreditLedger/{entryId} {
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+        );
+
+      allow create, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - İŞ & TİCARET FIRSATLARI
     // =====================================================
     match /businessOpportunities/{opportunityId} {
