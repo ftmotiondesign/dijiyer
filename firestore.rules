@@ -12,6 +12,54 @@ service cloud.firestore {
         && request.auth.uid == "jTN0GipmU3RtqbWaChuJY0XBUSg1";
     }
 
+    function onayliKurumKullanicisi() {
+      return girisYapmis()
+        && exists(
+          /databases/$(database)/documents/institutionUsers/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/institutionUsers/$(request.auth.uid)
+        ).data.status == "approved"
+        && get(
+          /databases/$(database)/documents/institutionUsers/$(request.auth.uid)
+        ).data.institutionId is string;
+    }
+
+    function bagliKurumId() {
+      return get(
+        /databases/$(database)/documents/institutionUsers/$(request.auth.uid)
+      ).data.institutionId;
+    }
+
+    function bagliKurum() {
+      return get(
+        /databases/$(database)/documents/institutions/$(bagliKurumId())
+      ).data;
+    }
+
+    function kurumTalebineErisebilir(quoteId) {
+      let talep = get(
+        /databases/$(database)/documents/quoteRequests/$(quoteId)
+      ).data;
+
+      return onayliKurumKullanicisi()
+        && (
+          (
+            talep.keys().hasAny(['targetInstitutionId'])
+            && talep.targetInstitutionId == bagliKurumId()
+          )
+          ||
+          (
+            talep.category == bagliKurum().category
+            && talep.city == bagliKurum().city
+            && (
+              talep.district == ''
+              || talep.district == bagliKurum().district
+            )
+          )
+        );
+    }
+
 
     // =====================================================
     // SİPARİŞLER
@@ -151,8 +199,29 @@ service cloud.firestore {
       // Toplu teklif ve tek kuruma özel teklif üyelik olmadan gönderilebilir.
       allow create: if true;
 
-      // Müşteri bilgileri halka açık değildir.
-      allow get, list: if adminMi();
+      // Yönetici tüm talepleri; onaylı kurum ise yalnızca kendisine uygun
+      // toplu talepleri veya doğrudan kendisine gönderilmiş talepleri okuyabilir.
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && (
+            (
+              resource.data.keys().hasAny(['targetInstitutionId'])
+              && resource.data.targetInstitutionId == bagliKurumId()
+            )
+            ||
+            (
+              resource.data.category == bagliKurum().category
+              && resource.data.city == bagliKurum().city
+              && (
+                resource.data.district == ''
+                || resource.data.district == bagliKurum().district
+              )
+            )
+          )
+        );
 
       allow update, delete: if adminMi();
     }
@@ -163,8 +232,16 @@ service cloud.firestore {
     // =====================================================
     match /quoteAccess/{phoneHash}/codes/{trackingCode} {
 
-      // Teklif oluşturulduktan sonra takip kodu anonim olarak kaydedilebilir.
-      allow create: if true;
+      // Talep oluşturulduktan sonra takip kaydı anonim oluşturulabilir.
+      allow create: if
+        request.resource.data.quoteId is string
+        && request.resource.data.quoteId.size() > 0
+        && request.resource.data.trackingCode == trackingCode
+        && request.resource.data.phoneHash == phoneHash
+        && request.resource.data.status == 'active'
+        && exists(
+          /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
+        );
 
       allow get: if
         resource.data.phoneHash == phoneHash
@@ -178,51 +255,414 @@ service cloud.firestore {
 
     // =====================================================
     // DİJİYER - GELEN FİYAT TEKLİFLERİ
-    // AŞAMA 2A
     // =====================================================
     match /quoteRequests/{quoteId}/offers/{institutionId} {
 
+      // Teklif takip ekranı fiyat tekliflerini okuyabilir.
       allow get, list: if true;
+
+      // Yalnızca talebe erişebilen onaylı kurum kendi teklifini oluşturabilir.
+      allow create: if
+        onayliKurumKullanicisi()
+        && bagliKurumId() == institutionId
+        && kurumTalebineErisebilir(quoteId)
+        && request.resource.data.keys().hasOnly([
+          'institutionId',
+          'institutionName',
+          'offerCode',
+          'price',
+          'vatStatus',
+          'scope',
+          'extraFee',
+          'conditions',
+          'expiresAt',
+          'expiresAtTs',
+          'status',
+          'validityHours',
+          'registrationRequired',
+          'platformPayment',
+          'paymentPolicy',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.institutionId == institutionId
+        && request.resource.data.offerCode is string
+        && request.resource.data.offerCode.size() > 0
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.scope is string
+        && request.resource.data.scope.size() > 0
+        && request.resource.data.status == 'offered'
+        && request.resource.data.validityHours is number
+        && request.resource.data.validityHours > 0
+        && request.resource.data.registrationRequired == true
+        && request.resource.data.platformPayment == false
+        && request.resource.data.paymentPolicy
+            == 'offline_direct_between_customer_and_institution'
+        && request.resource.data.expiresAtTs is timestamp
+        && request.resource.data.expiresAtTs > request.time;
+
+      // Müşteri teklifi kabul ettikten sonra teklif değiştirilemez.
+      allow update: if
+        onayliKurumKullanicisi()
+        && bagliKurumId() == institutionId
+        && kurumTalebineErisebilir(quoteId)
+        && resource.data.institutionId == institutionId
+        && request.resource.data.institutionId == institutionId
+        && request.resource.data.offerCode == resource.data.offerCode
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.status == 'offered'
+        && !exists(
+          /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+        )
+        && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'institutionName',
+              'price',
+              'vatStatus',
+              'scope',
+              'extraFee',
+              'conditions',
+              'expiresAt',
+              'expiresAtTs',
+              'status',
+              'validityHours',
+              'registrationRequired',
+              'platformPayment',
+              'paymentPolicy',
+              'updatedAt'
+            ])
+        && request.resource.data.registrationRequired == true
+        && request.resource.data.platformPayment == false
+        && request.resource.data.paymentPolicy
+            == 'offline_direct_between_customer_and_institution'
+        && request.resource.data.expiresAtTs is timestamp
+        && request.resource.data.expiresAtTs > request.time;
 
       allow delete: if adminMi();
     }
 
 
     // =====================================================
-    // DİJİYER - FİYAT KİLİDİ
-    // AŞAMA 2B
+    // DİJİYER - TEKLİF KODU / QR DOĞRULAMA İNDEKSİ
+    // =====================================================
+    match /offerLookup/{offerCode} {
+
+      allow get: if true;
+      allow list: if false;
+
+      allow create: if
+        onayliKurumKullanicisi()
+        && request.resource.data.keys().hasOnly([
+          'quoteId',
+          'institutionId',
+          'offerCode',
+          'updatedAt'
+        ])
+        && request.resource.data.institutionId == bagliKurumId()
+        && request.resource.data.offerCode == offerCode
+        && kurumTalebineErisebilir(request.resource.data.quoteId);
+
+      allow update: if
+        onayliKurumKullanicisi()
+        && resource.data.institutionId == bagliKurumId()
+        && request.resource.data.quoteId == resource.data.quoteId
+        && request.resource.data.institutionId == resource.data.institutionId
+        && request.resource.data.offerCode == resource.data.offerCode
+        && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly(['updatedAt']);
+
+      allow delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - TEKLİF KABULÜ / GERÇEK KAYIT
     // =====================================================
     match /quoteRequests/{quoteId}/locks/{lockId} {
 
-      // Müşteri yalnızca ana kilit kaydını okuyabilir.
-      allow get: if lockId == "main";
-
+      allow get: if lockId == 'main';
       allow list: if false;
 
-
-      // Müşteri seçtiği teklifi kilitleyebilir.
+      // Müşteri, telefon özeti + takip koduyla doğrulanmış kendi talebindeki
+      // aktif tekliflerden yalnızca birini kabul edebilir.
       allow create: if
-        lockId == "main"
-
+        lockId == 'main'
         && !exists(
           /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
         )
-
+        && request.resource.data.keys().hasOnly([
+          'quoteId',
+          'institutionId',
+          'institutionName',
+          'offerCode',
+          'price',
+          'lockedPrice',
+          'vatStatus',
+          'scope',
+          'lockedScope',
+          'conditions',
+          'extraFee',
+          'offerCreatedAt',
+          'offerUpdatedAt',
+          'offerVersion',
+          'offerSnapshotVersion',
+          'trackingCode',
+          'phoneHash',
+          'acceptanceConsent',
+          'status',
+          'registrationStatus',
+          'acceptedAt',
+          'acceptedAtTs',
+          'lockedAt',
+          'lockedAtTs',
+          'expiresAt',
+          'expiresAtTs',
+          'registrationDeadlineAt',
+          'registrationDeadlineAtTs',
+          'platformPayment',
+          'paymentPolicy'
+        ])
         && request.resource.data.quoteId == quoteId
-
-        && request.resource.data.status == "locked"
-
-        && request.resource.data.institutionId is string
-        && request.resource.data.offerCode is string
-
-        && request.resource.data.price is number
-        && request.resource.data.lockedPrice is number
-
-        && request.resource.data.price
-          == request.resource.data.lockedPrice
-
+        && request.resource.data.status == 'locked'
+        && request.resource.data.registrationStatus == 'pending'
+        && request.resource.data.acceptanceConsent == true
+        && request.resource.data.offerSnapshotVersion == 1
+        && request.resource.data.platformPayment == false
+        && request.resource.data.paymentPolicy
+            == 'offline_direct_between_customer_and_institution'
+        && request.resource.data.acceptedAtTs == request.time
+        && request.resource.data.lockedAtTs == request.time
+        && request.resource.data.trackingCode is string
+        && request.resource.data.trackingCode.size() > 0
+        && request.resource.data.phoneHash is string
+        && request.resource.data.phoneHash.size() > 0
+        && exists(
+          /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+        )
+        && get(
+          /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+        ).data.quoteId == quoteId
         && exists(
           /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+        )
+        && request.resource.data.offerCode
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.offerCode
+        && request.resource.data.price
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.price
+        && request.resource.data.lockedPrice
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.price
+        && request.resource.data.scope
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.scope
+        && request.resource.data.lockedScope
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.scope
+        && request.resource.data.institutionName
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.institutionName
+        && request.resource.data.vatStatus
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.vatStatus
+        && request.resource.data.conditions
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.conditions
+        && request.resource.data.extraFee
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.extraFee
+        && request.resource.data.offerCreatedAt
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.createdAt
+        && request.resource.data.offerUpdatedAt
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.updatedAt
+        && request.resource.data.offerVersion
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.updatedAt
+        && request.resource.data.expiresAt
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.expiresAt
+        && request.resource.data.expiresAtTs
+            == get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
+            ).data.expiresAtTs
+        && request.resource.data.registrationDeadlineAt
+            == request.resource.data.expiresAt
+        && request.resource.data.registrationDeadlineAtTs
+            == request.resource.data.expiresAtTs
+        && request.time < request.resource.data.expiresAtTs;
+
+      // Gerçek kaydı yalnızca teklifi veren kurum ve süre dolmadan tamamlayabilir.
+      allow update: if
+        lockId == 'main'
+        && onayliKurumKullanicisi()
+        && bagliKurumId() == resource.data.institutionId
+        && resource.data.status == 'locked'
+        && resource.data.registrationStatus == 'pending'
+        && request.resource.data.status == 'used'
+        && request.resource.data.registrationStatus == 'completed'
+        && request.resource.data.registrationCompletedAtTs == request.time
+        && request.resource.data.usedAtTs == request.time
+        && request.time < resource.data.registrationDeadlineAtTs
+        && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'status',
+              'registrationStatus',
+              'registrationCompletedAt',
+              'registrationCompletedAtTs',
+              'usedAt',
+              'usedAtTs'
+            ]);
+
+      allow delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - KURUM CEVAPLARI
+    // =====================================================
+    match /quoteResponses/{responseId} {
+
+      allow read: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow create, update: if
+        onayliKurumKullanicisi()
+        && request.resource.data.keys().hasOnly([
+          'quoteId',
+          'institutionId',
+          'userId',
+          'status',
+          'date'
+        ])
+        && request.resource.data.institutionId == bagliKurumId()
+        && request.resource.data.userId == request.auth.uid
+        && (
+          request.resource.data.status == 'interested'
+          || request.resource.data.status == 'not_interested'
+        )
+        && kurumTalebineErisebilir(request.resource.data.quoteId);
+
+      allow delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - KURUM YANITLARI / ENGAGEMENT
+    // =====================================================
+    match /quoteRequests/{quoteId}/engagement/{institutionId} {
+
+      // Müşteri takip ekranı kurum yanıtlarını okuyabilir.
+      allow get, list: if true;
+
+      // Müşteri tarafı: görüntüleme ve revizyon talebi.
+      allow create: if
+        (
+          request.resource.data.institutionId == institutionId
+          && request.resource.data.keys().hasOnly([
+            'institutionId',
+            'viewedAt',
+            'viewedAtTs',
+            'lastCustomerActionAt',
+            'revisionRequestedAt',
+            'revisionRequestedAtTs'
+          ])
+        )
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+          && kurumTalebineErisebilir(quoteId)
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.keys().hasOnly([
+            'institutionId',
+            'institutionName',
+            'institutionResponse',
+            'institutionResponseAt',
+            'lastInstitutionActionAt',
+            'revisionRespondedAt',
+            'revisionRespondedAtTs'
+          ])
+        );
+
+      allow update: if
+        (
+          request.resource.data.institutionId == institutionId
+          && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'viewedAt',
+                'viewedAtTs',
+                'lastCustomerActionAt',
+                'revisionRequestedAt',
+                'revisionRequestedAtTs'
+              ])
+        )
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+          && kurumTalebineErisebilir(quoteId)
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'institutionName',
+                'institutionResponse',
+                'institutionResponseAt',
+                'lastInstitutionActionAt',
+                'revisionRespondedAt',
+                'revisionRespondedAtTs'
+              ])
+        );
+
+      allow delete: if adminMi();
+    }
+
+
+    // =====================================================
+    // DİJİYER - TEKLİF MESAJLAŞMASI
+    // =====================================================
+    match /quoteRequests/{quoteId}/conversations/{institutionId}/messages/{messageId} {
+
+      allow get, list: if true;
+
+      allow create: if
+        request.resource.data.institutionId == institutionId
+        && (
+          request.resource.data.sender == 'customer'
+          ||
+          (
+            request.resource.data.sender == 'institution'
+            && onayliKurumKullanicisi()
+            && bagliKurumId() == institutionId
+            && kurumTalebineErisebilir(quoteId)
+          )
         );
 
       allow update, delete: if adminMi();
@@ -230,39 +670,29 @@ service cloud.firestore {
 
 
     // =====================================================
-    // DİJİYER - KURUM YANITLARI / ENGAGEMENT
-    // AŞAMA 2C
+    // DİJİYER - GÜNLÜK TEKLİF / KABUL İSTATİSTİĞİ
     // =====================================================
-    match /quoteRequests/{quoteId}/engagement/{institutionId} {
+    match /publicOfferEvents/{eventId} {
+      allow get: if true;
+      allow list: if true;
 
-      // Teklif takip ekranı kurum yanıtlarını okuyabilir.
-      allow get, list: if true;
-
-      // Müşterinin teklif görüntüleme / revizyon talebi kayıtları.
       allow create: if
-        request.resource.data.institutionId == institutionId
-        && request.resource.data.keys().hasOnly([
-          'institutionId',
-          'viewedAt',
-          'viewedAtTs',
-          'lastCustomerActionAt',
-          'revisionRequestedAt',
-          'revisionRequestedAtTs'
-        ]);
+        onayliKurumKullanicisi()
+        && request.resource.data.institutionId == bagliKurumId()
+        && kurumTalebineErisebilir(request.resource.data.quoteId);
 
-      allow update: if
-        request.resource.data.institutionId == institutionId
-        && request.resource.data.diff(resource.data)
-            .affectedKeys()
-            .hasOnly([
-              'viewedAt',
-              'viewedAtTs',
-              'lastCustomerActionAt',
-              'revisionRequestedAt',
-              'revisionRequestedAtTs'
-            ]);
+      allow update, delete: if adminMi();
+    }
 
-      allow delete: if adminMi();
+    match /publicAcceptedEvents/{eventId} {
+      allow get: if true;
+      allow list: if true;
+
+      allow create: if
+        request.resource.data.quoteId == eventId
+        && request.resource.data.date is string;
+
+      allow update, delete: if adminMi();
     }
 
 
