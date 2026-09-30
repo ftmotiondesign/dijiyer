@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=62">
+  <link rel="stylesheet" href="admin.css?v=49">
   <link rel="stylesheet" href="admin-advanced.css?v=46">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -575,9 +575,13 @@
           <div>
             <span class="categories-admin-eyebrow">SEKTÖR & KATEGORİ YÖNETİMİ</span>
             <h3>Kategoriler</h3>
-            <p>Ana sektörleri ve alt kategorileri aktif / pasif yapın. Pasif yapılan kategori daha sonra kullanıcı tarafındaki seçimlerden gizlenebilir.</p>
+            <p>Ana kategorileri kompakt görünümde yönetin. Bir ana kategoriye tıklayınca alt kategoriler açılır.</p>
           </div>
-          <button type="button" id="categoriesRefreshBtn" class="overview-refresh-btn">Yenile</button>
+          <div class="categories-admin-title-actions">
+            <button type="button" id="addMainCategoryBtn" class="category-add-btn primary">＋ Ana Kategori</button>
+            <button type="button" id="addSubCategoryBtn" class="category-add-btn">＋ Alt Kategori</button>
+            <button type="button" id="categoriesRefreshBtn" class="overview-refresh-btn">Yenile</button>
+          </div>
         </div>
 
         <div class="categories-admin-summary">
@@ -599,6 +603,42 @@
         <div id="categoryAdminMessage" class="categories-admin-message"></div>
         <div id="categoryAdminList" class="categories-admin-list">
           <div class="empty-state">Kategoriler hazırlanıyor...</div>
+        </div>
+
+        <div id="categoryAddModal" class="category-add-modal hidden" aria-hidden="true">
+          <div class="category-add-card" role="dialog" aria-modal="true" aria-labelledby="categoryAddTitle">
+            <button type="button" id="categoryAddClose" class="category-add-close" aria-label="Kapat">×</button>
+            <span class="categories-admin-eyebrow">YENİ KATEGORİ</span>
+            <h3 id="categoryAddTitle">Yeni Ana Kategori</h3>
+            <p id="categoryAddHelp">Yeni ana kategori adını yazın. Sistem kodunu otomatik oluşturur.</p>
+
+            <form id="categoryAddForm">
+              <input type="hidden" id="categoryAddType" value="main">
+
+              <label id="categoryAddParentWrap" class="hidden">
+                <span>Ana Kategori</span>
+                <select id="categoryAddParent"></select>
+              </label>
+
+              <label>
+                <span id="categoryAddNameLabel">Ana Kategori Adı</span>
+                <input type="text" id="categoryAddName" maxlength="80" required placeholder="Örn. Evcil Hayvan Hizmetleri">
+              </label>
+
+              <label>
+                <span>Kategori Kodu</span>
+                <input type="text" id="categoryAddKey" maxlength="60" placeholder="Otomatik oluşturulur">
+                <small>Türkçe karakter kullanmadan sistem içinde saklanır. İsterseniz değiştirebilirsiniz.</small>
+              </label>
+
+              <div id="categoryAddMessage" class="category-add-message"></div>
+
+              <div class="category-add-actions">
+                <button type="button" id="categoryAddCancel">Vazgeç</button>
+                <button type="submit" id="categoryAddSave">Kaydet</button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 
@@ -3428,7 +3468,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=67"></script>
+<script src="admin.js?v=62"></script>
   <script src="admin-advanced.js?v=57"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
