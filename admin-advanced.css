@@ -4834,3 +4834,309 @@
     font-size:7px;
   }
 }
+
+
+/* =========================================================
+   YÖNETİM PANELİ · SOL REKLAM KONTROL MERKEZİ
+   ========================================================= */
+.admin-dashboard-shell{
+  display:grid;
+  grid-template-columns:232px minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+}
+.admin-dashboard-main{
+  min-width:0;
+}
+.admin-ad-side-panel{
+  position:sticky;
+  top:8px;
+  z-index:72;
+  display:grid;
+  gap:8px;
+  padding:9px;
+  border:1px solid #dbe6f2;
+  border-radius:14px;
+  background:linear-gradient(180deg,#f8fbff 0%,#fff 42%);
+  box-shadow:0 8px 24px rgba(21,56,91,.07);
+}
+.admin-ad-side-main{
+  width:100%;
+  min-height:82px;
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 22px;
+  gap:8px;
+  align-items:center;
+  padding:9px;
+  border:1px solid #a9cdf7;
+  border-radius:11px;
+  background:linear-gradient(145deg,#edf6ff,#f8fbff);
+  color:#24476f;
+  text-align:left;
+  cursor:pointer;
+}
+.admin-ad-side-main:hover{
+  border-color:#6daaf1;
+  box-shadow:0 5px 14px rgba(22,119,255,.09);
+}
+.admin-ad-side-main.active{
+  border-color:#1677ff;
+  background:linear-gradient(145deg,#1677ff,#1268da);
+  color:#fff;
+}
+.admin-ad-side-main-icon{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#fff;
+  font-size:19px;
+  box-shadow:0 2px 8px rgba(22,119,255,.08);
+}
+.admin-ad-side-main>span:nth-child(2){
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.admin-ad-side-main b{
+  color:#1677ff;
+  font-size:6px;
+  font-weight:950;
+  letter-spacing:.11em;
+}
+.admin-ad-side-main strong{
+  font-size:10px;
+}
+.admin-ad-side-main small{
+  color:#71849a;
+  font-size:6.3px;
+  line-height:1.3;
+}
+.admin-ad-side-main i{
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  background:rgba(22,119,255,.08);
+  color:#1677ff;
+  font-size:11px;
+  font-style:normal;
+}
+.admin-ad-side-main.active b,
+.admin-ad-side-main.active small{
+  color:rgba(255,255,255,.82);
+}
+.admin-ad-side-main.active i{
+  background:rgba(255,255,255,.16);
+  color:#fff;
+}
+.admin-ad-side-status{
+  padding:2px 3px 0;
+  display:flex;
+  justify-content:space-between;
+  gap:6px;
+  align-items:center;
+}
+.admin-ad-side-status span,
+.admin-ad-side-tools>span{
+  color:#7c8b9f;
+  font-size:5.7px;
+  font-weight:950;
+  letter-spacing:.09em;
+}
+.admin-ad-side-status small{
+  color:#a0acba;
+  font-size:5.8px;
+}
+.admin-ad-side-categories{
+  display:grid;
+  gap:5px;
+}
+.admin-ad-side-categories>button{
+  width:100%;
+  min-height:54px;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr) auto;
+  gap:7px;
+  align-items:center;
+  padding:6px 7px;
+  border:1px solid #e0e7ef;
+  border-radius:9px;
+  background:#fff;
+  color:#42566e;
+  text-align:left;
+  cursor:pointer;
+  transition:.15s ease;
+}
+.admin-ad-side-categories>button:hover{
+  border-color:#b7d2f3;
+  background:#f9fcff;
+}
+.admin-ad-side-categories>button.active{
+  border-color:#80b8f8;
+  background:#eef6ff;
+  color:#1268da;
+  box-shadow:0 3px 10px rgba(22,119,255,.06);
+}
+.admin-ad-side-cat-icon{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#f1f5f9;
+  font-size:13px;
+}
+.admin-ad-side-categories>button.active .admin-ad-side-cat-icon{
+  background:#dfeeff;
+}
+.admin-ad-side-cat-copy{
+  min-width:0;
+  display:grid;
+  gap:1px;
+}
+.admin-ad-side-cat-copy strong{
+  overflow:hidden;
+  font-size:7.4px;
+  font-weight:900;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.admin-ad-side-cat-copy small{
+  overflow:hidden;
+  color:#8794a5;
+  font-size:5.7px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.admin-ad-side-categories>button>b{
+  min-width:24px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  padding:0 5px;
+  border-radius:999px;
+  background:#eef2f6;
+  color:#617188;
+  font-size:6px;
+}
+.admin-ad-side-categories>button.active>b{
+  background:#1677ff;
+  color:#fff;
+}
+.admin-ad-side-tools{
+  display:grid;
+  gap:4px;
+  padding-top:7px;
+  border-top:1px solid #e8edf3;
+}
+.admin-ad-side-tools>span{
+  padding:0 3px 2px;
+}
+.admin-ad-side-tools button{
+  width:100%;
+  min-height:31px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 8px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#607188;
+  font-size:7px;
+  text-align:left;
+  cursor:pointer;
+}
+.admin-ad-side-tools button:hover{
+  background:#f2f7fc;
+  color:#1268da;
+}
+.admin-ad-side-tools button strong{
+  font-size:7px;
+}
+
+/* Eski üst reklam kartı artık kullanılmıyor. */
+.admin-ad-main-entry{display:none!important}
+
+/* Sağ ana içerik kendi genişliğini korur. */
+.admin-dashboard-main>.admin-main-nav{
+  margin-top:0;
+}
+
+@media(max-width:1180px){
+  .admin-dashboard-shell{
+    grid-template-columns:1fr;
+  }
+  .admin-ad-side-panel{
+    position:static;
+    grid-template-columns:minmax(220px,.9fr) 1.6fr;
+    align-items:start;
+  }
+  .admin-ad-side-main{
+    min-height:70px;
+  }
+  .admin-ad-side-status{
+    display:none;
+  }
+  .admin-ad-side-categories{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .admin-ad-side-categories>button{
+    min-height:70px;
+    grid-template-columns:30px minmax(0,1fr);
+  }
+  .admin-ad-side-categories>button>b{
+    grid-column:1/-1;
+    justify-self:start;
+  }
+  .admin-ad-side-tools{
+    grid-column:1/-1;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    border-top:1px solid #e8edf3;
+  }
+  .admin-ad-side-tools>span{
+    display:none;
+  }
+  .admin-ad-side-tools button{
+    justify-content:center;
+    background:#f8fafc;
+  }
+}
+
+@media(max-width:700px){
+  .admin-ad-side-panel{
+    grid-template-columns:1fr;
+    padding:7px;
+  }
+  .admin-ad-side-main{
+    min-height:62px;
+  }
+  .admin-ad-side-categories{
+    display:flex;
+    overflow-x:auto;
+    gap:5px;
+    scrollbar-width:none;
+  }
+  .admin-ad-side-categories::-webkit-scrollbar{display:none}
+  .admin-ad-side-categories>button{
+    flex:0 0 185px;
+    min-height:56px;
+  }
+  .admin-ad-side-categories>button>b{
+    grid-column:auto;
+  }
+  .admin-ad-side-tools{
+    display:flex;
+    overflow-x:auto;
+    gap:4px;
+    scrollbar-width:none;
+  }
+  .admin-ad-side-tools::-webkit-scrollbar{display:none}
+  .admin-ad-side-tools button{
+    flex:0 0 auto;
+    min-width:112px;
+  }
+}
