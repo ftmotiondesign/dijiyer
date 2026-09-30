@@ -607,6 +607,396 @@
       .slice(-90);
   }
 
+
+  const MEDIA_ARCHIVE_LOCAL_KEY="dijiyer_media_archive_v1";
+
+  function cloudinaryPublicIdFromUrl(value){
+    const raw=String(value||"").trim();
+    if(!raw)return "";
+    try{
+      const url=new URL(raw);
+      if(!/cloudinary\.com$/i.test(url.hostname))return "";
+      const parts=url.pathname.split("/").filter(Boolean);
+      const uploadIndex=parts.indexOf("upload");
+      if(uploadIndex<0)return "";
+      let rest=parts.slice(uploadIndex+1);
+      const versionIndex=rest.findIndex(part=>/^v\d+$/i.test(part));
+      if(versionIndex>=0)rest=rest.slice(versionIndex+1);
+      if(!rest.length)return "";
+      rest[rest.length-1]=rest[rest.length-1].replace(/\.[a-z0-9]+$/i,"");
+      return decodeURIComponent(rest.join("/"));
+    }catch(_){
+      return "";
+    }
+  }
+
+  function isDijiyerUploadedMediaUrl(value){
+    const raw=String(value||"").trim();
+    if(!raw)return false;
+    try{
+      const url=new URL(raw);
+      return /cloudinary\.com$/i.test(url.hostname) &&
+        (
+          url.pathname.includes("/dijiyer/firsatlar/") ||
+          url.pathname.includes("/dijiyer/bannerAds/")
+        );
+    }catch(_){
+      return false;
+    }
+  }
+
+  function loadMediaArchiveLocal(){
+    try{
+      const rows=JSON.parse(localStorage.getItem(MEDIA_ARCHIVE_LOCAL_KEY)||"[]");
+      return Array.isArray(rows)?rows:[];
+    }catch(_){
+      return [];
+    }
+  }
+
+  function saveMediaArchiveLocal(rows){
+    localStorage.setItem(
+      MEDIA_ARCHIVE_LOCAL_KEY,
+      JSON.stringify((Array.isArray(rows)?rows:[]).slice(0,600))
+    );
+  }
+
+  function rememberMediaAsset(result,meta={}){
+    const url=String(result?.secure_url||result?.url||"").trim();
+    if(!url)return;
+
+    const rows=loadMediaArchiveLocal();
+    const existingIndex=rows.findIndex(item=>String(item.url||"")===url);
+    const current=existingIndex>=0?rows[existingIndex]:{};
+    const row={
+      ...current,
+      id:String(
+        result?.asset_id ||
+        current.id ||
+        result?.public_id ||
+        uid("MED")
+      ),
+      url,
+      publicId:String(
+        result?.public_id ||
+        current.publicId ||
+        cloudinaryPublicIdFromUrl(url)
+      ),
+      source:String(meta.source||current.source||"other"),
+      institutionId:String(meta.institutionId||current.institutionId||""),
+      institutionName:String(meta.institutionName||current.institutionName||""),
+      mediaType:String(meta.mediaType||current.mediaType||result?.resource_type==="video"?"video":"image"),
+      resourceType:String(result?.resource_type||current.resourceType||meta.mediaType||"image"),
+      bytes:Number(result?.bytes||current.bytes||0),
+      width:Number(result?.width||current.width||0),
+      height:Number(result?.height||current.height||0),
+      format:String(result?.format||current.format||""),
+      uploadedAt:String(current.uploadedAt||new Date().toISOString()),
+      updatedAt:new Date().toISOString()
+    };
+
+    if(existingIndex>=0)rows.splice(existingIndex,1);
+    rows.unshift(row);
+    saveMediaArchiveLocal(rows);
+  }
+
+  function currentMediaReferences(){
+    const refs=[];
+
+    (institutionRecords||[]).forEach(inst=>{
+      const url=String(inst.opportunitySponsorMediaUrl||"").trim();
+      if(!url)return;
+      refs.push({
+        url,
+        source:"opportunity",
+        sourceId:String(inst.id||""),
+        institutionId:String(inst.id||""),
+        institutionName:String(inst.name||"Kurum"),
+        mediaType:String(inst.opportunitySponsorMediaType||"image")==="video"?"video":"image",
+        active:Boolean(inst.opportunitySponsorActive),
+        label:"Fırsat Sayfası"
+      });
+    });
+
+    (bannerAdRecords||[]).forEach(ad=>{
+      const videoUrl=String(ad.videoUrl||"").trim();
+      const imageUrl=String(ad.imageUrl||"").trim();
+
+      if(videoUrl && isDijiyerUploadedMediaUrl(videoUrl)){
+        refs.push({
+          url:videoUrl,
+          source:"banner",
+          sourceId:String(ad.id||""),
+          institutionId:String(ad.institutionId||""),
+          institutionName:String(ad.institutionName||"Kurum"),
+          mediaType:"video",
+          active:ad.active!==false,
+          label:"Banner Reklam"
+        });
+      }
+
+      if(imageUrl && isDijiyerUploadedMediaUrl(imageUrl)){
+        refs.push({
+          url:imageUrl,
+          source:"banner",
+          sourceId:String(ad.id||""),
+          institutionId:String(ad.institutionId||""),
+          institutionName:String(ad.institutionName||"Kurum"),
+          mediaType:"image",
+          active:ad.active!==false,
+          label:"Banner Reklam"
+        });
+      }
+    });
+
+    return refs;
+  }
+
+  function buildMediaArchiveRows(){
+    const refs=currentMediaReferences();
+    const local=loadMediaArchiveLocal();
+    const map=new Map();
+
+    local.forEach(item=>{
+      const url=String(item.url||"").trim();
+      if(!url)return;
+      map.set(url,{
+        ...item,
+        url,
+        publicId:String(item.publicId||cloudinaryPublicIdFromUrl(url)),
+        usages:[]
+      });
+    });
+
+    refs.forEach(ref=>{
+      if(!map.has(ref.url)){
+        map.set(ref.url,{
+          id:uid("MED"),
+          url:ref.url,
+          publicId:cloudinaryPublicIdFromUrl(ref.url),
+          source:ref.source,
+          institutionId:ref.institutionId,
+          institutionName:ref.institutionName,
+          mediaType:ref.mediaType,
+          uploadedAt:"",
+          updatedAt:"",
+          usages:[]
+        });
+      }
+      const row=map.get(ref.url);
+      row.usages.push(ref);
+      if(!row.institutionName)row.institutionName=ref.institutionName;
+      if(!row.institutionId)row.institutionId=ref.institutionId;
+      if(!row.source)row.source=ref.source;
+      if(!row.mediaType)row.mediaType=ref.mediaType;
+    });
+
+    return [...map.values()]
+      .map(row=>({
+        ...row,
+        inUse:Array.isArray(row.usages)&&row.usages.length>0,
+        activeUse:Array.isArray(row.usages)&&row.usages.some(use=>use.active!==false)
+      }))
+      .sort((a,b)=>{
+        if(a.inUse!==b.inUse)return a.inUse?-1:1;
+        return new Date(b.updatedAt||b.uploadedAt||0)-new Date(a.updatedAt||a.uploadedAt||0);
+      });
+  }
+
+  function mediaArchiveSourceLabel(source){
+    if(source==="opportunity")return "Fırsat Sayfası";
+    if(source==="banner")return "Banner Reklam";
+    return "Medya";
+  }
+
+  function mediaArchiveSizeLabel(item){
+    const bytes=Number(item?.bytes||0);
+    if(bytes>0){
+      if(bytes>=1024*1024)return (bytes/(1024*1024)).toFixed(1)+" MB";
+      return Math.max(1,Math.round(bytes/1024))+" KB";
+    }
+    return "-";
+  }
+
+  function mediaArchivePreviewHtml(item){
+    const url=String(item?.url||"");
+    if(item?.mediaType==="video"){
+      return '<video src="'+escapeHtml(url)+'" muted playsinline preload="metadata"></video>';
+    }
+    return '<img src="'+escapeHtml(url)+'" alt="">';
+  }
+
+  function renderMediaArchive(){
+    const root=$("mediaArchiveList");
+    if(!root)return;
+
+    const allRows=buildMediaArchiveRows();
+    const query=normalize($("mediaArchiveSearch")?.value||"");
+    const sourceFilter=String($("mediaArchiveSourceFilter")?.value||"all");
+    const usageFilter=String($("mediaArchiveUsageFilter")?.value||"all");
+    const typeFilter=String($("mediaArchiveTypeFilter")?.value||"all");
+
+    const inUseCount=allRows.filter(row=>row.inUse).length;
+    const unusedCount=allRows.length-inUseCount;
+    const videoCount=allRows.filter(row=>row.mediaType==="video").length;
+
+    if($("mediaArchiveCount")){
+      $("mediaArchiveCount").textContent=
+        allRows.length+" medya · "+inUseCount+" kullanımda · "+unusedCount+" kullanılmıyor";
+    }
+    if($("mediaArchiveTabCount"))$("mediaArchiveTabCount").textContent=String(unusedCount);
+    if($("mediaArchiveTotal"))$("mediaArchiveTotal").textContent=String(allRows.length);
+    if($("mediaArchiveInUse"))$("mediaArchiveInUse").textContent=String(inUseCount);
+    if($("mediaArchiveUnused"))$("mediaArchiveUnused").textContent=String(unusedCount);
+    if($("mediaArchiveVideo"))$("mediaArchiveVideo").textContent=String(videoCount);
+
+    const rows=allRows.filter(row=>{
+      if(sourceFilter!=="all" && row.source!==sourceFilter)return false;
+      if(usageFilter==="in_use" && !row.inUse)return false;
+      if(usageFilter==="unused" && row.inUse)return false;
+      if(typeFilter!=="all" && row.mediaType!==typeFilter)return false;
+      if(!query)return true;
+      return normalize([
+        row.institutionName,
+        row.publicId,
+        row.source,
+        mediaArchiveSourceLabel(row.source),
+        row.url
+      ].filter(Boolean).join(" ")).includes(query);
+    });
+
+    if(!rows.length){
+      root.innerHTML='<div class="advanced-empty">Bu filtreye uygun medya kaydı bulunamadı.</div>';
+      return;
+    }
+
+    root.innerHTML=rows.map(item=>{
+      const publicId=String(item.publicId||cloudinaryPublicIdFromUrl(item.url)||"");
+      const usageText=item.inUse
+        ? item.usages.map(use=>use.label+(use.active===false?" · Pasif":"")).join(" · ")
+        : "Dijiyer içinde kullanılmıyor";
+      const sourceLabel=mediaArchiveSourceLabel(item.source);
+
+      return '<article class="media-archive-card '+(item.inUse?"is-in-use":"is-unused")+'">'+
+        '<div class="media-archive-preview">'+mediaArchivePreviewHtml(item)+'</div>'+
+        '<div class="media-archive-copy">'+
+          '<div class="media-archive-title-row">'+
+            '<div>'+
+              '<span>'+escapeHtml(sourceLabel)+'</span>'+
+              '<strong>'+escapeHtml(item.institutionName||"Kurum / Medya")+'</strong>'+
+            '</div>'+
+            '<b class="'+(item.inUse?"active":"unused")+'">'+(item.inUse?"Kullanımda":"Kullanılmıyor")+'</b>'+
+          '</div>'+
+          '<small>'+escapeHtml(item.mediaType==="video"?"🎬 Video":"🖼 Görsel")+
+            ' · '+escapeHtml(mediaArchiveSizeLabel(item))+
+            (item.width&&item.height?' · '+escapeHtml(item.width+"×"+item.height):"")+
+          '</small>'+
+          '<div class="media-archive-usage">'+escapeHtml(usageText)+'</div>'+
+          '<div class="media-archive-public-id">'+
+            '<span>Public ID</span>'+
+            '<code>'+escapeHtml(publicId||"Cloudinary ID okunamadı")+'</code>'+
+          '</div>'+
+          '<div class="media-archive-actions">'+
+            '<a href="'+escapeHtml(item.url)+'" target="_blank" rel="noopener">Dosyayı Aç</a>'+
+            (publicId?'<button type="button" data-media-copy-id="'+escapeHtml(publicId)+'">ID Kopyala</button>':"")+
+            (item.inUse
+              ? '<button type="button" class="danger" data-media-detach="'+escapeHtml(item.url)+'">Kullanımdan Kaldır</button>'
+              : '<span class="ready-delete">Cloudinary’de kalıcı silmeye hazır</span>')+
+          '</div>'+
+        '</div>'+
+      '</article>';
+    }).join("");
+
+    root.querySelectorAll("[data-media-copy-id]").forEach(button=>{
+      button.addEventListener("click",async()=>{
+        const value=String(button.dataset.mediaCopyId||"");
+        try{
+          await navigator.clipboard.writeText(value);
+          const old=button.textContent;
+          button.textContent="Kopyalandı";
+          setTimeout(()=>button.textContent=old,1200);
+        }catch(_){
+          alert("Public ID: "+value);
+        }
+      });
+    });
+
+    root.querySelectorAll("[data-media-detach]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        detachMediaFromDijiyer(button.dataset.mediaDetach);
+      });
+    });
+  }
+
+  async function detachMediaFromDijiyer(url){
+    const target=String(url||"").trim();
+    if(!target)return;
+
+    const refs=currentMediaReferences().filter(ref=>ref.url===target);
+    if(!refs.length){
+      renderMediaArchive();
+      return;
+    }
+
+    const names=[...new Set(refs.map(ref=>ref.institutionName).filter(Boolean))].join(", ");
+    const ok=confirm(
+      (names||"Bu medya")+
+      " için medya Dijiyer yayınından kaldırılacak. Cloudinary dosyası bu işlemle fiziksel olarak silinmez. Devam edilsin mi?"
+    );
+    if(!ok)return;
+
+    const batch=db.batch();
+    const now=new Date().toISOString();
+
+    refs.forEach(ref=>{
+      if(ref.source==="opportunity"){
+        batch.update(db.collection("institutions").doc(String(ref.sourceId)),{
+          opportunitySponsorActive:false,
+          opportunitySponsorMediaUrl:"",
+          opportunitySponsorMediaType:"image",
+          opportunitySponsorUpdatedAt:now,
+          updatedAt:now
+        });
+      }else if(ref.source==="banner"){
+        const updates={
+          active:false,
+          updatedAt:now
+        };
+        if(ref.mediaType==="video"){
+          updates.videoUrl="";
+          updates.mediaType="image";
+        }else{
+          updates.imageUrl="";
+        }
+        batch.update(db.collection("bannerAds").doc(String(ref.sourceId)),updates);
+      }
+    });
+
+    try{
+      await batch.commit();
+
+      addAudit(
+        "Medya kullanımdan kaldırıldı",
+        (names||"Medya")+" · "+cloudinaryPublicIdFromUrl(target)
+      );
+
+      if(typeof loadInstitutions==="function")await loadInstitutions();
+      await loadBannerAdsAdmin();
+      renderMediaArchive();
+      renderOpportunitySponsorsAdmin();
+      renderBannerAdsAdmin(false);
+    }catch(error){
+      console.error("Medya kullanımdan kaldırılamadı:",error);
+      alert("Medya kullanımdan kaldırılamadı. Firestore izinlerini kontrol edin.");
+    }
+  }
+
+  ["mediaArchiveSearch","mediaArchiveSourceFilter","mediaArchiveUsageFilter","mediaArchiveTypeFilter"]
+    .forEach(id=>{
+      $(id)?.addEventListener(id==="mediaArchiveSearch"?"input":"change",renderMediaArchive);
+    });
+
+
   const CLOUDINARY_BANNER_SETTINGS_KEY="dijiyer_cloudinary_banner";
   const CLOUDINARY_BANNER_DEFAULTS={
     cloudName:"okefpzsy",
