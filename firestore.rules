@@ -709,22 +709,33 @@ service cloud.firestore {
     // =====================================================
     match /quoteRequests/{quoteId}/offers/{institutionId} {
 
-      // Teklif takip ekranı fiyat tekliflerini okuyabilir.
       allow get, list: if true;
 
-      // Kurum yalnızca kendi erişebildiği açık talebe teklif verebilir.
-      // Şema kontrolleri bilerek temel alanlarla sınırlı tutulur; yeni teklif
-      // detay alanları eklendiğinde tüm teklif akışının permission-denied ile
-      // kırılmasını önler.
+      // DOĞRUDAN / ÖZEL TEKLİF:
+      // Talep açıkça bu kuruma gönderildiyse kurum kendi teklifini yazabilir.
+      // Bu yol kategori/şehir/kredi eşleşmesine bağlı değildir.
       allow create: if
         adminMi()
         ||
         (
           onayliKurumKullanicisi()
           && bagliKurumId() == institutionId
-          && kurumTalebineErisebilir(quoteId)
           && teklifTalebiAcik(quoteId)
-          && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
+          && (
+            (
+              get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.keys().hasAny(['targetInstitutionId'])
+              && get(
+                /databases/$(database)/documents/quoteRequests/$(quoteId)
+              ).data.targetInstitutionId == institutionId
+            )
+            ||
+            (
+              kurumTalebineErisebilir(quoteId)
+              && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
+            )
+          )
           && request.resource.data.institutionId == institutionId
           && request.resource.data.offerCode is string
           && request.resource.data.offerCode.size() > 0
@@ -745,27 +756,26 @@ service cloud.firestore {
           && request.resource.data.expiresAtTs > request.time
         );
 
-      // Müşteri kabul ettikten sonra teklif değiştirilemez.
       allow update: if
         onayliKurumKullanicisi()
         && bagliKurumId() == institutionId
-        && kurumTalebineErisebilir(quoteId)
         && teklifTalebiAcik(quoteId)
+        && (
+          (
+            get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)
+            ).data.keys().hasAny(['targetInstitutionId'])
+            && get(
+              /databases/$(database)/documents/quoteRequests/$(quoteId)
+            ).data.targetInstitutionId == institutionId
+          )
+          ||
+          kurumTalebineErisebilir(quoteId)
+        )
         && resource.data.institutionId == institutionId
         && request.resource.data.institutionId == institutionId
         && request.resource.data.offerCode == resource.data.offerCode
-        && (
-          (
-            resource.data.keys().hasAny(['createdAt'])
-            && request.resource.data.createdAt == resource.data.createdAt
-          )
-          ||
-          (
-            !resource.data.keys().hasAny(['createdAt'])
-            && request.resource.data.createdAt is string
-            && request.resource.data.createdAt.size() > 0
-          )
-        )
+        && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.status == 'offered'
         && !exists(
           /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
@@ -781,7 +791,7 @@ service cloud.firestore {
         && request.resource.data.paymentPolicy
             == 'offline_direct_between_customer_and_institution'
         && request.resource.data.offerVersion is number
-        && request.resource.data.offerVersion >= resource.data.offerVersion
+        && request.resource.data.offerVersion >= 1
         && request.resource.data.expiresAtTs is timestamp
         && request.resource.data.expiresAtTs > request.time;
 
