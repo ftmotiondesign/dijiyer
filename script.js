@@ -8168,33 +8168,50 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     desktopLocationText.textContent = source?.textContent?.trim() || 'Tüm Türkiye';
   }
 
-  function desktopSubcategoryInstitutionCount(mainKey,subKey){
-    if(!mainKey || !subKey || !Array.isArray(institutions))return 0;
+  function isDesktopRealInstitution(inst){
+    return Boolean(
+      inst &&
+      String(inst.source || '') === 'firestore' &&
+      String(inst.status || 'active') !== 'passive'
+    );
+  }
 
+  function desktopInstitutionMatchesLocation(inst){
     const normalizedActiveCity = normalizeQuoteSearch(activeLocationCity || '');
     const normalizedActiveDistrict = normalizeQuoteSearch(activeLocationDistrict || '');
 
+    const locationParts = String(inst.location || '')
+      .split(',')
+      .map(part=>part.trim());
+
+    const institutionCity = String(inst.city || locationParts[0] || '').trim();
+    const institutionDistrict = String(inst.district || locationParts[1] || '').trim();
+
+    return (
+      (!normalizedActiveCity ||
+        normalizeQuoteSearch(institutionCity)===normalizedActiveCity) &&
+      (!normalizedActiveDistrict ||
+        normalizeQuoteSearch(institutionDistrict)===normalizedActiveDistrict)
+    );
+  }
+
+  function desktopCategoryInstitutions(mainKey,subKey=''){
+    if(!Array.isArray(institutions))return [];
+
     return institutions.filter(inst=>{
+      if(!isDesktopRealInstitution(inst))return false;
+      if(!desktopInstitutionMatchesLocation(inst))return false;
+
       const [instMain,instSub] = resolveTaxonomy(inst);
-      if(String(instMain)!==String(mainKey) || String(instSub)!==String(subKey))return false;
+      if(mainKey && String(instMain)!==String(mainKey))return false;
+      if(subKey && String(instSub)!==String(subKey))return false;
 
-      const locationParts = String(inst.location || '')
-        .split(',')
-        .map(part=>part.trim());
+      return true;
+    });
+  }
 
-      const institutionCity = String(inst.city || locationParts[0] || '').trim();
-      const institutionDistrict = String(inst.district || locationParts[1] || '').trim();
-
-      const cityMatches =
-        !normalizedActiveCity ||
-        normalizeQuoteSearch(institutionCity)===normalizedActiveCity;
-
-      const districtMatches =
-        !normalizedActiveDistrict ||
-        normalizeQuoteSearch(institutionDistrict)===normalizedActiveDistrict;
-
-      return cityMatches && districtMatches;
-    }).length;
+  function desktopSubcategoryInstitutionCount(mainKey,subKey){
+    return desktopCategoryInstitutions(mainKey,subKey).length;
   }
 
   function hideDesktopInlineInstitutions(){
@@ -8204,33 +8221,39 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gör';
   }
 
-  function renderDesktopInlineInstitutions(){
+  function renderDesktopInlineInstitutions(rows){
     if(!categoryInlineResults)return;
 
-    const rows = typeof getFilteredInstitutions === 'function'
-      ? getFilteredInstitutions()
-      : [];
+    const sourceRows = Array.isArray(rows)
+      ? rows
+      : desktopCategoryInstitutions(
+          String(categoryPreview?.dataset.category || '').trim(),
+          String(categoryPreview?.dataset.subcategory || '').trim()
+        );
 
-    if(!rows.length){
+    const realRows = sourceRows.filter(isDesktopRealInstitution);
+
+    if(!realRows.length){
       categoryInlineResults.innerHTML =
-        '<div class="desktop-inline-empty"><strong>Bu seçimde aktif kurum bulunamadı.</strong><small>Başka bir alt hizmet seçebilirsin.</small></div>';
+        '<div class="desktop-inline-empty"><strong>Bu seçimde kayıtlı aktif kurum bulunamadı.</strong><small>Başka bir alt hizmet seçebilirsin.</small></div>';
       categoryInlineResults.classList.remove('hidden');
       if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
       return;
     }
 
-    const visibleRows = rows.slice(0,12);
+    const visibleRows = realRows.slice(0,12);
     categoryInlineResults.innerHTML =
       '<div class="desktop-inline-results-head">' +
-        '<div><span>KAYITLI KURUMLAR</span><strong>' + rows.length + ' kurum bulundu</strong></div>' +
+        '<div><span>KAYITLI KURUMLAR</span><strong>' + realRows.length + ' aktif kurum bulundu</strong></div>' +
         '<small>Kurum kartına tıklayarak profilini açabilirsin.</small>' +
       '</div>' +
       '<div class="desktop-inline-institution-grid">' +
         visibleRows.map(inst=>{
-          const logo = safePublicProfileUrl(inst.logoUrl || '');
+          const logo = safePublicProfileUrl(inst.logoUrl || inst.coverUrl || '');
           const location = [inst.district,inst.city].filter(Boolean).join(' / ') || String(inst.location || '');
           const rating = Number(inst.rating || 0);
           const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
+
           return '<a class="desktop-inline-institution-card" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
             '<div class="desktop-inline-institution-logo">' +
               (logo ? '<img src="' + logo + '" alt="">' : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>') +
@@ -8244,20 +8267,22 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           '</a>';
         }).join('') +
       '</div>' +
-      (rows.length > visibleRows.length ? '<div class="desktop-inline-more">+' + (rows.length-visibleRows.length) + ' kurum daha</div>' : '');
+      (realRows.length > visibleRows.length
+        ? '<div class="desktop-inline-more">+' + (realRows.length-visibleRows.length) + ' kurum daha</div>'
+        : '');
 
     categoryInlineResults.classList.remove('hidden');
     if(categoryPreviewOpen)categoryPreviewOpen.textContent='Kurumları Gizle';
   }
+
   function renderDesktopCategoryPreview(key){
     if(!categoryPreview)return;
 
     const meta = key ? categoryTaxonomy[key] : null;
-    const filteredCount = typeof getFilteredInstitutions === 'function'
-      ? getFilteredInstitutions().length
-      : null;
+    const filteredCount = desktopCategoryInstitutions(key || '').length;
 
     categoryPreview.dataset.category = key || '';
+    if(!categoryPreview.dataset.subcategory)categoryPreview.dataset.subcategory = '';
     categoryPreview.classList.remove('hidden');
     categoryPreview.classList.remove('attention');
     void categoryPreview.offsetWidth;
@@ -8351,6 +8376,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderMobileCategories === 'function')renderMobileCategories();
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+    if(categoryPreview)categoryPreview.dataset.subcategory = '';
     hideDesktopInlineInstitutions();
     renderDesktopCategoryPreview(key);
   }
@@ -8394,17 +8420,29 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderMobileCategories === 'function')renderMobileCategories();
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+    if(categoryPreview){
+      categoryPreview.dataset.category = mainKey;
+      categoryPreview.dataset.subcategory = subKey;
+    }
     renderDesktopCategoryPreview(mainKey);
-    renderDesktopInlineInstitutions();
+    renderDesktopInlineInstitutions(
+      desktopCategoryInstitutions(mainKey,subKey)
+    );
   });
 
   categoryPreviewOpen?.addEventListener('click', ()=>{
     if(!categoryInlineResults)return;
-    if(categoryInlineResults.classList.contains('hidden')){
-      renderDesktopInlineInstitutions();
-    }else{
+
+    if(!categoryInlineResults.classList.contains('hidden')){
       hideDesktopInlineInstitutions();
+      return;
     }
+
+    const mainKey = String(categoryPreview?.dataset.category || '').trim();
+    const subKey = String(categoryPreview?.dataset.subcategory || '').trim();
+    renderDesktopInlineInstitutions(
+      desktopCategoryInstitutions(mainKey,subKey)
+    );
   });
 
   desktopLocationBtn?.addEventListener('click', event=>{
