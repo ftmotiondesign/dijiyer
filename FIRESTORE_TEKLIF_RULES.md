@@ -175,6 +175,14 @@ match /quoteRequests/{quoteId}/locks/{lockId} {
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.scope
     && request.resource.data.lockedScope ==
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.scope
+    && request.resource.data.institutionName ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.institutionName
+    && request.resource.data.vatStatus ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.vatStatus
+    && request.resource.data.conditions ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.conditions
+    && request.resource.data.extraFee ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.extraFee
     && request.resource.data.offerCreatedAt ==
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.createdAt
     && request.resource.data.offerUpdatedAt ==
