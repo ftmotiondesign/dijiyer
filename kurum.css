@@ -119,3 +119,38 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
     border-radius:9px;
   }
 }
+
+
+/* Dijiyer ödeme ve gerçek kayıt politikası */
+.kp-payment-policy{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  margin:12px 0 14px;
+  padding:13px 14px;
+  border:1px solid #f6c453;
+  border-radius:14px;
+  background:#fff9e8;
+  color:#6b4f00;
+}
+.kp-payment-policy>span{
+  flex:0 0 auto;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#fff1bd;
+}
+.kp-payment-policy strong{
+  display:block;
+  margin-bottom:4px;
+  color:#4b3900;
+  font-size:13px;
+}
+.kp-payment-policy small{
+  display:block;
+  color:#725c16;
+  font-size:11px;
+  line-height:1.55;
+}
