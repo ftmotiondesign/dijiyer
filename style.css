@@ -17369,7 +17369,8 @@ to{opacity:1;transform:none}
   font-size:8px;
 }
 
-.quote-seo-cta>a{
+.quote-seo-cta>a,
+.quote-seo-cta>button{
   min-height:38px;
   display:inline-flex;
   align-items:center;
@@ -17451,7 +17452,8 @@ to{opacity:1;transform:none}
     flex-direction:column;
   }
 
-  .quote-seo-cta>a{
+  .quote-seo-cta>a,
+.quote-seo-cta>button{
     width:100%;
   }
 }
@@ -17813,7 +17815,8 @@ to{opacity:1;transform:none}
   font-size:8px;
 }
 
-.quote-seo-cta>a{
+.quote-seo-cta>a,
+.quote-seo-cta>button{
   min-width:150px;
   min-height:40px !important;
   display:inline-flex !important;
@@ -17931,7 +17934,8 @@ to{opacity:1;transform:none}
     padding:12px !important;
   }
 
-  .quote-seo-cta>a{
+  .quote-seo-cta>a,
+.quote-seo-cta>button{
     width:100% !important;
     min-width:0 !important;
   }
