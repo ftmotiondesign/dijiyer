@@ -86,49 +86,19 @@ service cloud.firestore {
     // =====================================================
     match /quoteRequests/{quoteId} {
 
-      // Üyeliksiz toplu veya doğrudan teklif talebi oluşturulabilir.
-      // Alanlar temel tip ve uzunluk kontrollerinden geçer.
+      // Teklif formu üyeliksiz kullanılabilir.
+      // Burada yalnızca temel zorunlu alanları doğruluyoruz.
       allow create: if
-        request.resource.data.mainCategory is string
-        && request.resource.data.subCategory is string
-        && request.resource.data.category is string
-        && request.resource.data['service'] is string
-        && request.resource.data['service'].size() > 0
-        && request.resource.data.city is string
-        && request.resource.data.district is string
+        request.resource.data.status == 'new'
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 120
         && request.resource.data.phone is string
         && request.resource.data.phone.size() >= 10
-        && request.resource.data.phone.size() <= 40
-        && request.resource.data.note is string
-        && request.resource.data.note.size() <= 1500
-        && request.resource.data.status == 'new'
-        && request.resource.data.date is string
+        && request.resource.data['service'] is string
+        && request.resource.data['service'].size() > 0
+        && request.resource.data.date is string;
 
-        // E-posta varsa geçerli tipte ve makul uzunlukta olmalı.
-        && (
-          !request.resource.data.keys().hasAny(['email'])
-          || (
-            request.resource.data.email is string
-            && request.resource.data.email.size() <= 160
-          )
-        )
-
-        // Doğrudan teklifte hedef kurum kimliği birlikte gelmeli.
-        && (
-          !request.resource.data.keys().hasAny(['requestType'])
-          || (
-            request.resource.data.requestType == 'direct'
-            && request.resource.data.targetInstitutionId is string
-            && request.resource.data.targetInstitutionId.size() > 0
-            && request.resource.data.targetInstitutionName is string
-            && request.resource.data.targetInstitutionName.size() > 0
-          )
-        );
-
-      // Müşteri bilgileri yalnızca yönetici tarafından okunur.
+      // Müşteri bilgileri halka açık değildir.
       allow get, list: if adminMi();
 
       allow update, delete: if adminMi();
@@ -141,19 +111,10 @@ service cloud.firestore {
     match /quoteAccess/{phoneHash}/codes/{trackingCode} {
 
       allow create: if
-        request.resource.data.quoteId is string
+        request.resource.data.status == 'active'
+        && request.resource.data.quoteId is string
         && request.resource.data.trackingCode == trackingCode
         && request.resource.data.phoneHash == phoneHash
-        && request.resource.data['service'] is string
-        && request.resource.data.mainCategory is string
-        && request.resource.data.subCategory is string
-        && request.resource.data.mainCategoryLabel is string
-        && request.resource.data.subCategoryLabel is string
-        && request.resource.data.city is string
-        && request.resource.data.district is string
-        && request.resource.data.note is string
-        && request.resource.data.date is string
-        && request.resource.data.status == 'active'
         && request.resource.data.createdAt is string
         && exists(
           /databases/$(database)/documents/quoteRequests/$(request.resource.data.quoteId)
