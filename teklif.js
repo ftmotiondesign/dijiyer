@@ -829,7 +829,12 @@ form.addEventListener("submit",async e=>{
     document.getElementById("trackingLoginCard").classList.add("hidden");
   }catch(error){
     console.error(error);
-    message.textContent=error.message||"Teklifler açılamadı.";
+    const rawMessage=String(error?.message||"");
+    if(/missing or insufficient permissions/i.test(rawMessage)){
+      message.textContent="Teklif takip erişimi henüz Firebase güvenlik kuralında açılmamış. Yönetici Firestore Rules ayarını güncelledikten sonra tekrar deneyin.";
+    }else{
+      message.textContent=rawMessage||"Teklifler açılamadı.";
+    }
   }finally{
     submitBtn.disabled=false;submitBtn.textContent="Tekliflerimi Göster";
   }
