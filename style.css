@@ -20332,3 +20332,14 @@ to{opacity:1;transform:none}
   font-weight:900;
   vertical-align:middle;
 }
+
+
+/* ANA SAYFA YORUM TAVSIYE FORMU V1 */
+.review-recommend-question{margin:10px 0}
+.review-recommend-question>span{display:block;margin-bottom:6px;color:#42536a;font-size:12px;font-weight:800}
+.review-recommend-question small{color:#8a97a8;font-size:10px;font-weight:650}
+.review-recommend-picker{display:grid;grid-template-columns:1fr 90px;gap:7px}
+.review-recommend-picker button{min-height:38px;border:1px solid #d8e1eb;border-radius:9px;background:#fff;color:#526275;font-weight:800;cursor:pointer}
+.review-recommend-picker button.active[data-review-recommend="true"]{border-color:#72c695;background:#ecfdf3;color:#16824a}
+.review-recommend-picker button.active[data-review-recommend="false"]{border-color:#b9c4d0;background:#f1f5f9;color:#475569}
+.review-safety-note{margin-top:8px;padding:8px 9px;border:1px solid #d9e6f5;border-radius:8px;background:#f7faff;color:#63758b;font-size:10px;font-weight:700;line-height:1.45}
