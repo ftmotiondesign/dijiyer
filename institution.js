@@ -32,6 +32,50 @@ const panelError = document.getElementById("panelError");
 const institutionQuotesList = document.getElementById("institutionQuotesList");
 const recentQuotes = document.getElementById("recentQuotes");
 const quotePanelFilter = document.getElementById("quotePanelFilter");
+const reportedInstitutionErrorKeys = new Set();
+
+function institutionClientErrorMessage(value){
+  if(value instanceof Error)return value.message||String(value);
+  if(value&&typeof value==="object"&&value.message)return String(value.message);
+  return String(value||"Bilinmeyen hata");
+}
+
+function institutionClientErrorStack(value){
+  if(value instanceof Error)return String(value.stack||"").slice(0,5000);
+  if(value&&typeof value==="object"&&value.stack)return String(value.stack).slice(0,5000);
+  return "";
+}
+
+async function reportInstitutionClientError(value,context="window"){
+  if(!currentUser||!currentAccount?.institutionId)return;
+
+  const message=institutionClientErrorMessage(value).slice(0,1000);
+  const key=context+"|"+message;
+  if(reportedInstitutionErrorKeys.has(key))return;
+  reportedInstitutionErrorKeys.add(key);
+  setTimeout(()=>reportedInstitutionErrorKeys.delete(key),60000);
+
+  try{
+    await db.collection("clientErrors").add({
+      source:"institution",
+      page:String(location.pathname||"institution.html").slice(0,300),
+      message:(context?context+": ":"")+message,
+      stack:institutionClientErrorStack(value),
+      date:new Date().toISOString(),
+      status:"new",
+      userId:String(currentUser.uid||""),
+      institutionId:String(currentAccount.institutionId||"")
+    });
+  }catch(_){}
+}
+
+window.addEventListener("error",event=>{
+  reportInstitutionClientError(event.error||event.message,"window.error");
+});
+
+window.addEventListener("unhandledrejection",event=>{
+  reportInstitutionClientError(event.reason,"unhandledrejection");
+});
 
 const categoryLabels = {
   kres:"Kreş & Anaokulu",
