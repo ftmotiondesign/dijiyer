@@ -5562,3 +5562,181 @@ button{
   color:#fff!important;
   box-shadow:0 6px 14px rgba(22,119,255,.18);
 }
+
+
+/* =========================================================
+   EN DÜŞÜK TEKLİF - MÜŞTERİ HATIRLATMASI
+   ========================================================= */
+.quote-compare-reminder{
+  margin:14px 26px 0;
+}
+
+.quote-reminder-main{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:13px;
+  padding:14px 15px;
+  border:1px solid #bbf7d0;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 94% 20%,rgba(34,197,94,.10),transparent 30%),
+    linear-gradient(135deg,#f0fdf4 0%,#ffffff 72%);
+}
+
+.quote-reminder-icon{
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  border-radius:11px;
+  background:#dcfce7;
+  color:#15803d;
+  font-size:18px;
+  font-weight:900;
+}
+
+.quote-reminder-copy{
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+
+.quote-reminder-eyebrow{
+  color:#15803d;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.quote-reminder-copy > strong{
+  color:#0f172a;
+  font-size:14px;
+}
+
+.quote-reminder-copy > small{
+  color:#64748b;
+  font-size:10px;
+}
+
+.reminder-expiring{
+  color:#c2410c;
+}
+
+.quote-reminder-history{
+  margin-top:4px;
+  color:#64748b;
+  font-size:10px;
+}
+
+.quote-reminder-history b{
+  color:#334155;
+}
+
+.quote-reminder-action{
+  display:grid;
+  justify-items:end;
+  gap:4px;
+}
+
+.quote-reminder-action button{
+  min-height:38px;
+  padding:0 13px;
+  border:1px solid #16a34a;
+  border-radius:10px;
+  background:#16a34a;
+  color:#fff;
+  font-weight:850;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.18s ease;
+}
+
+.quote-reminder-action button:hover:not(:disabled){
+  background:#15803d;
+  border-color:#15803d;
+  transform:translateY(-1px);
+}
+
+.quote-reminder-action button:disabled{
+  border-color:#cbd5e1;
+  background:#e2e8f0;
+  color:#64748b;
+  cursor:not-allowed;
+}
+
+.quote-reminder-action small{
+  color:#94a3b8;
+  font-size:9px;
+  text-align:right;
+}
+
+.quote-reminder-unavailable{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border:1px dashed #cbd5e1;
+  border-radius:12px;
+  background:#f8fafc;
+}
+
+.quote-reminder-unavailable strong{
+  color:#475569;
+  font-size:11px;
+}
+
+.quote-reminder-unavailable span{
+  color:#94a3b8;
+  font-size:10px;
+}
+
+.quote-reminder-unavailable.selected{
+  border-color:#ddd6fe;
+  background:#faf5ff;
+}
+
+.quote-reminder-unavailable.selected strong{
+  color:#6d28d9;
+}
+
+@media(max-width:760px){
+  .quote-compare-reminder{
+    margin-left:16px;
+    margin-right:16px;
+  }
+
+  .quote-reminder-main{
+    grid-template-columns:auto 1fr;
+  }
+
+  .quote-reminder-action{
+    grid-column:1 / -1;
+    width:100%;
+    justify-items:stretch;
+  }
+
+  .quote-reminder-action button{
+    width:100%;
+  }
+
+  .quote-reminder-action small{
+    text-align:left;
+  }
+}
+
+@media(max-width:480px){
+  .quote-reminder-main{
+    grid-template-columns:1fr;
+  }
+
+  .quote-reminder-icon{
+    display:none;
+  }
+
+  .quote-reminder-unavailable{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
