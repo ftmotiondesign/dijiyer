@@ -881,8 +881,9 @@
     const latestText=adSummary.latestAt && !Number.isNaN(adSummary.latestAt.getTime())
       ? bannerShortDate(adSummary.latestAt)
       : "";
+    const id=escapeHtml(String(item.id));
 
-    return '<button type="button" class="banner-institution-result'+(selected?' is-selected':'')+'" data-banner-institution-pick="'+escapeHtml(String(item.id))+'">'+
+    return '<article class="banner-institution-result'+(selected?' is-selected':'')+'">'+
       '<span class="banner-institution-result-logo">'+
         (logo
           ? '<img src="'+escapeHtml(logo)+'" alt="">'
@@ -905,7 +906,14 @@
         (adSummary.expiring.length?'<i class="expiring">Yakında Bitecek</i>':'')+
         (selected?'<i class="selected">Seçildi</i>':'')+
       '</span>'+
-    '</button>';
+      '<span class="banner-institution-result-actions">'+
+        '<button type="button" data-banner-institution-view="'+id+'">Sayfasını Gör</button>'+
+        '<button type="button" data-banner-institution-edit="'+id+'">Düzenle</button>'+
+        '<button type="button" class="primary" data-banner-institution-pick="'+id+'" '+(selected?'disabled':'')+'>'+
+          (selected?'✓ Seçildi':'Reklama Seç')+
+        '</button>'+
+      '</span>'+
+    '</article>';
   }
 
   function renderBannerInstitutionSelected(){
@@ -1006,6 +1014,24 @@
     root.innerHTML=shown.length
       ? shown.map(bannerInstitutionResultHtml).join("")
       : '<div class="advanced-empty">Arama veya filtrelere uygun kurum bulunamadı.</div>';
+
+    root.querySelectorAll("[data-banner-institution-view]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const id=String(button.dataset.bannerInstitutionView||"");
+        if(!id)return;
+        window.open("kurum.html?id="+encodeURIComponent(id),"_blank","noopener");
+      });
+    });
+
+    root.querySelectorAll("[data-banner-institution-edit]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const id=String(button.dataset.bannerInstitutionEdit||"");
+        const inst=(institutionRecords||[]).find(item=>String(item.id)===id);
+        if(inst && typeof openInstitutionEdit==="function"){
+          openInstitutionEdit(inst.id,inst);
+        }
+      });
+    });
 
     root.querySelectorAll("[data-banner-institution-pick]").forEach(button=>{
       button.addEventListener("click",()=>{
