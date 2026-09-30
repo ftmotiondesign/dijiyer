@@ -4890,6 +4890,9 @@
           '<button type="button" '+(phone?'':'disabled')+' data-opportunity-report-wa="'+escapeHtml(inst.id)+'">WhatsApp Raporu</button>'+
           '<button type="button" '+(email?'':'disabled')+' data-opportunity-report-email="'+escapeHtml(inst.id)+'">E-posta Raporu</button>'+
           '<button type="button" data-opportunity-report-copy="'+escapeHtml(inst.id)+'">Metni Kopyala</button>'+
+          '<button type="button" class="renew" data-opportunity-renew="'+escapeHtml(inst.id)+'" data-days="7">+7 Gün</button>'+
+          '<button type="button" class="renew" data-opportunity-renew="'+escapeHtml(inst.id)+'" data-days="15">+15 Gün</button>'+
+          '<button type="button" class="renew" data-opportunity-renew="'+escapeHtml(inst.id)+'" data-days="30">+30 Gün</button>'+
         '</div>'+
         ((!phone||!email)
           ? '<small class="opportunity-report-missing">'+
@@ -4945,6 +4948,15 @@
         }catch(_){
           alert(textValue);
         }
+      });
+    });
+
+    root.querySelectorAll("[data-opportunity-renew]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        renewOpportunitySponsor(
+          button.dataset.opportunityRenew,
+          Number(button.dataset.days||15)
+        );
       });
     });
   }
