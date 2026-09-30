@@ -3314,12 +3314,16 @@ async function forwardQuoteRoutingTier(requestId,tier,button){
 
   try{
     const ref=db.collection("quoteRequests").doc(requestId);
+    const lockRef=ref.collection("locks").doc("main");
     await db.runTransaction(async tx=>{
-      const snap=await tx.get(ref);
+      const [snap,lockSnap]=await Promise.all([
+        tx.get(ref),
+        tx.get(lockRef)
+      ]);
       if(!snap.exists)throw new Error("Talep bulunamadı.");
+      if(lockSnap.exists)throw new Error("Bu talepte müşteri zaten bir teklifi kabul etmiş.");
 
       const data=snap.data();
-      if(data.liveLock)throw new Error("Bu talepte seçim yapılmış.");
       const existingIds=Array.isArray(data.forwardInstitutionIds)
         ? data.forwardInstitutionIds.map(String)
         : [];
