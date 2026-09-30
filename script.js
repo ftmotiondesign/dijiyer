@@ -3253,7 +3253,7 @@ function renderList() {
         ${inst.vip ? '<div class="vip">VIP</div>' : ''}
         <div class="card-body">
           <h3>${escapeHtml(inst.name)}</h3>
-          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 %'+Math.round(Number(inst.recommendationRate))+' tavsiye</em>' : ''}</div>
+          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 '+Number(inst.recommendationYes||0)+' kişi · %'+Math.round(Number(inst.recommendationRate))+'</em>' : ''}</div>
           <div class="meta">📍 ${escapeHtml(inst.location || '')}<br>${escapeHtml(inst.address || '')}</div>
           <div class="card-actions">
             ${inst.offer ? '<span class="chip positive">Teklif veriyor</span>' : ''}
@@ -5025,6 +5025,55 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
   }
 });
 
+let currentReviewRecommendation=null;
+
+function moderateReviewText(raw){
+  const original=String(raw||"").trim();
+  if(!original)return {ok:false,message:"Lütfen yorumunuzu yazın."};
+
+  const leetMap={"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t"};
+  const normalized=original
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[013457]/g,ch=>leetMap[ch]||ch)
+    .replace(/(.)\1{2,}/gu,"$1$1")
+    .replace(/[^\p{L}\p{N}\s]/gu," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const compact=normalized.replace(/\s+/g,"");
+
+  const profanityPatterns=[
+    /\b(amk|siktir|sikeyim|sikerim|sikik|orospu|yarrak|yarak|piç|pic|pezevenk|kahpe|şerefsiz|serefsiz|gerizekalı|gerizekali)\b/u,
+    /\borospu\s+çocuğu\b/u,
+    /\bananı\s+sikeyim\b/u,
+    /\banneni\s+sikeyim\b/u
+  ];
+
+  const dangerousPatterns=[
+    /\b(öldüreceğim|öldürecem|oldurecegim|gebertirim|vuracağım|vurucam|vuracagim|bıçaklayacağım|bicaklayacagim|yakacağım|yakacagim)\b/u,
+    /\b(seni|sizi|onu|onları)\b.{0,28}\b(öldür|oldur|gebert|vur|bıçakla|bicakla|yak)\b/u,
+    /\b(bomba|patlayıcı|patlayici)\b.{0,24}\b(koy|yerleştir|yerlestir|patlat)\b/u,
+    /\b(kendini\s+öldür|kendini\s+oldur|intihar\s+et)\b/u,
+    /\b(tecavüz|tecavuz)\b/u
+  ];
+
+  const compactBlocked=[
+    "siktir","orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
+    "annenisikeyim","öldüreceğim","oldurecegim","gebertirim","vuracağım",
+    "vuracagim","bıçaklayacağım","bicaklayacagim","kendiniöldür","kendinioldur"
+  ];
+
+  if(profanityPatterns.some(pattern=>pattern.test(normalized)) || compactBlocked.some(term=>compact.includes(term))){
+    return {ok:false,message:"Yorum gönderilemedi: küfür veya hakaret içeren ifadeler kullanılamaz."};
+  }
+
+  if(dangerousPatterns.some(pattern=>pattern.test(normalized))){
+    return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
+  }
+
+  return {ok:true};
+}
+
 document.getElementById('reviewForm').addEventListener('submit', async e => {
   e.preventDefault();
 
@@ -5042,31 +5091,63 @@ document.getElementById('reviewForm').addEventListener('submit', async e => {
     return;
   }
 
+  const moderation = moderateReviewText(text);
+  if (!moderation.ok) {
+    showToast(moderation.message);
+    return;
+  }
+
   try {
     if (inst && inst.source === 'firestore') {
-      await db.collection('institutionReviews').add({
+      const reviewData = {
         institutionId: String(inst.id),
         rating,
         text,
         status: 'published',
         date: new Date().toISOString()
-      });
+      };
+      if (typeof currentReviewRecommendation === 'boolean') {
+        reviewData.recommend = currentReviewRecommendation;
+      }
+      await db.collection('institutionReviews').add(reviewData);
+      await loadInstitutionReviewStats();
     } else {
       const key = `reviews_${selectedId}`;
       const reviews = JSON.parse(localStorage.getItem(key) || '[]');
-      reviews.push({ rating, text, date: new Date().toISOString() });
+      reviews.push({
+        rating,
+        ...(typeof currentReviewRecommendation === 'boolean' ? {recommend:currentReviewRecommendation} : {}),
+        text,
+        date: new Date().toISOString()
+      });
       localStorage.setItem(key, JSON.stringify(reviews));
     }
 
     closeModal('reviewModal');
     showToast('Yorumunuz ve puanınız kaydedildi.');
     e.target.reset();
+    currentReviewRecommendation = null;
+    document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(btn => btn.classList.remove('active'));
     setStars(0);
+    renderList();
     renderDetail();
   } catch (error) {
     console.error('Yorum kaydedilemedi:', error);
-    showToast('Yorum kaydedilemedi. Lütfen tekrar deneyin.');
+    showToast(
+      String(error?.code||'').includes('permission-denied')
+        ? 'Yorum kaydedilemedi. Firestore yorum kuralını yayınlayın.'
+        : 'Yorum kaydedilemedi. Lütfen tekrar deneyin.'
+    );
   }
+});
+
+document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentReviewRecommendation = btn.dataset.reviewRecommend === 'true';
+    document.querySelectorAll('#reviewRecommendPicker [data-review-recommend]').forEach(item => {
+      item.classList.toggle('active', item === btn);
+    });
+  });
 });
 
 document.querySelectorAll('#starsInput [data-star]').forEach(btn => {
@@ -6294,6 +6375,7 @@ async function loadInstitutionReviewStats(){
         inst.reviewCount=stat.ratingCount;
       }
 
+      inst.recommendationYes=stat.recommendYes;
       inst.recommendationCount=stat.recommendCount;
       inst.recommendationRate=stat.recommendCount>0
         ? Math.round((stat.recommendYes/stat.recommendCount)*100)
@@ -6327,6 +6409,7 @@ async function loadApprovedInstitutions() {
         rating: Number(data.rating || 0),
         reviewCount: Number(data.reviewCount || 0),
         recommendationRate: Number.isFinite(Number(data.recommendationRate)) ? Number(data.recommendationRate) : null,
+        recommendationYes: Number(data.recommendationYes || 0),
         recommendationCount: Number(data.recommendationCount || 0),
         location: data.location || [data.city, data.district].filter(Boolean).join(', '),
         city: data.city || '',
@@ -8326,11 +8409,12 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           const rating = Number(inst.rating || 0);
           const reviewCount = Number(inst.reviewCount || 0);
           const recommendationCount = Number(inst.recommendationCount || 0);
+          const recommendationYes = Number(inst.recommendationYes || 0);
           const recommendationRate = Number(inst.recommendationRate);
           const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
           const ratingText = reviewCount > 0 ? '<span class="desktop-inline-rating">⭐ ' + rating.toFixed(1) + '</span>' : '';
           const recommendText = recommendationCount > 0 && Number.isFinite(recommendationRate)
-            ? '<span class="desktop-inline-recommend">👍 %' + Math.round(recommendationRate) + ' tavsiye</span>'
+            ? '<span class="desktop-inline-recommend">👍 ' + recommendationYes + ' kişi · %' + Math.round(recommendationRate) + '</span>'
             : '';
 
           return '<a class="desktop-inline-institution-card" style="--result-index:' + index + '" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">' +
