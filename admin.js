@@ -4090,7 +4090,7 @@ function getAdminQuoteStateMeta(state) {
   const map = {
     new: ["Yeni / Teklif Yok", "status-new"],
     offered: ["Teklif Aktif", "status-offered"],
-    locked: ["Kayıt Bekliyor", "status-locked"],
+    locked: ["Teklif Kabul Edildi", "status-locked"],
     used: ["Gerçek Kayıt Tamamlandı", "status-used"],
     expired: ["Süresi Doldu", "status-expired"],
     sent: ["İletildi", "status-sent"],
@@ -4105,6 +4105,12 @@ function adminOfferListHtml(request) {
     ? [...request.liveOffers].sort((a,b) => Number(a.price || 0) - Number(b.price || 0))
     : [];
   const lock = request.liveLock || null;
+  const selectedOffer = lock
+    ? offers.find(offer => String(offer.institutionId || offer.id || "") === String(lock.institutionId || ""))
+    : null;
+  const acceptedOfferVersion = lock
+    ? Math.max(1, Number(lock.offerVersion) || Number(selectedOffer?.offerVersion) || 1)
+    : 1;
 
   const offersHtml = offers.length
     ? offers.map(offer => {
@@ -4156,6 +4162,10 @@ function adminOfferListHtml(request) {
         <div>
           <small>Teklif No</small>
           <strong>${escapeHtml(lock.offerCode || "-")}</strong>
+        </div>
+        <div>
+          <small>Kabul Edilen Sürüm</small>
+          <strong>${acceptedOfferVersion}. teklif</strong>
         </div>
         <div>
           <small>Geçerlilik</small>
@@ -4668,7 +4678,7 @@ function renderQuoteRoutingAdmin(){
     const acceptedOffer=acceptedLock
       ? offers.find(offer=>String(offer.institutionId||offer.id||"")===String(acceptedLock.institutionId||""))
       : null;
-    const acceptedPrice=Number(acceptedLock?.price||acceptedOffer?.price||0);
+    const acceptedPrice=Number(acceptedLock?.lockedPrice??acceptedLock?.price??acceptedOffer?.price??0);
     const acceptedInstitution=String(
       acceptedLock?.institutionName||
       acceptedOffer?.institutionName||
@@ -7536,7 +7546,7 @@ function updateQuoteDashboardStats() {
   );
 
   const waiting = states.filter(state => ["new", "sent"].includes(state)).length;
-  const offered = states.filter(state => state === "offered").length;
+  const offered = states.filter(state => ["offered", "locked"].includes(state)).length;
   const locked = states.filter(state => state === "locked").length;
   const completed = states.filter(state => ["done", "used"].includes(state)).length;
   const issues = quoteRequestRecords.filter(request => Number(request.issueCount || 0) > 0).length;
@@ -7582,7 +7592,11 @@ function renderQuoteRequests() {
       item.district,
       item.service,
       item.note,
-      item.targetInstitutionName
+      item.targetInstitutionName,
+      item.liveLock?.institutionName,
+      item.liveLock?.offerCode,
+      item.liveLock?.lockedPrice,
+      item.liveLock?.price
     ].filter(Boolean).join(" ").toLocaleLowerCase("tr-TR");
 
     const currentState = item.currentState || getAdminQuoteLiveState(item);
@@ -7594,7 +7608,9 @@ function renderQuoteRequests() {
           ? ["new", "sent"].includes(currentState)
           : status === "completed"
             ? ["done", "used"].includes(currentState)
-            : currentState === status);
+            : status === "offered"
+              ? ["offered", "locked"].includes(currentState)
+              : currentState === status);
 
     const offerSearch = (Array.isArray(item.liveOffers) ? item.liveOffers : [])
       .map(offer => [offer.institutionName, offer.offerCode, offer.price].filter(Boolean).join(" "))
