@@ -42,9 +42,49 @@ async function createDirectTrackingAccess(quoteId,request,displayCity,displayDis
     status:"active",
     createdAt:new Date().toISOString(),
     targetInstitutionId:String(request.targetInstitutionId||institution?.id||""),
-    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum")
+    targetInstitutionName:String(request.targetInstitutionName||institution?.name||"Kurum"),
+    requestType:"direct",
+    email:String(request.email||"")
   });
   return {trackingCode,trackingUrl:url,normalizedPhone};
+}
+function directQuoteServiceOptions(x){
+  const key=String(x?.subCategory||x?.category||"").trim();
+  const presets={
+    kres:["Kayıt / Eğitim Ücreti","Yaz Okulu","Servis","Yemek","Diğer / Özel Talep"],
+    dershane:["Kayıt / Eğitim Ücreti","Deneme Kulübü","Etüt / Özel Ders","Kurs Programı","Diğer / Özel Talep"],
+    surucu:["B Sınıfı Ehliyet","A / Motosiklet Ehliyeti","C / D / Ağır Vasıta","Kurs Ücreti","Diğer / Özel Talep"],
+    ozel_okul:["Kayıt / Eğitim Ücreti","Bursluluk / İndirim","Servis","Yemek","Diğer / Özel Talep"],
+    yurt:["Aylık / Yıllık Ücret","Oda Seçenekleri","Yemek / Servis","Kayıt Şartları","Diğer / Özel Talep"],
+    oto_servis:["Bakım / Periyodik Servis","Arıza / Tamir","Parça + İşçilik","Kontrol / Fiyat Bilgisi","Diğer / Özel Talep"],
+    lastik_jant:["Lastik Fiyatı","Jant Fiyatı","Değişim / Montaj","Balans / Rotasyon","Diğer / Özel Talep"],
+    rentacar:["Günlük Kiralama","Haftalık Kiralama","Aylık Kiralama","Araç Uygunluğu","Diğer / Özel Talep"],
+    restoran:["Menü / Fiyat Bilgisi","Toplu Yemek","Rezervasyon","Organizasyon / Grup","Diğer / Özel Talep"],
+    dugun_salonu:["Salon Fiyatı","Paket İçeriği","Tarih Uygunluğu","Yemekli Organizasyon","Diğer / Özel Talep"],
+    organizasyon:["Organizasyon Paketi","Tarih Uygunluğu","Süsleme / Konsept","Fiyat Bilgisi","Diğer / Özel Talep"],
+    fotograf:["Fotoğraf Çekimi","Video Çekimi","Düğün / Organizasyon","Paket Fiyatı","Diğer / Özel Talep"],
+    drone:["Drone Çekimi","Mekan / Konum Çekimi","Etkinlik Çekimi","Paket Fiyatı","Diğer / Özel Talep"],
+    reklam:["Sosyal Medya Tasarımı","Video / Reels","Matbaa / Baskı","Reklam Paketi","Diğer / Özel Talep"],
+    nakliyat:["Evden Eve Nakliyat","Şehirler Arası Nakliyat","Parça Eşya Taşıma","Depolama","Diğer / Özel Talep"],
+    otel:["Konaklama Fiyatı","Oda Uygunluğu","Grup Rezervasyonu","Paket / Kampanya","Diğer / Özel Talep"]
+  };
+  const fallback=[
+    categoryLabel(x)+" için fiyat bilgisi",
+    "Hizmet / paket detayları",
+    "Randevu / uygunluk",
+    "Kampanya / indirim",
+    "Diğer / Özel Talep"
+  ];
+  return presets[key]||fallback;
+}
+function fillDirectQuoteServiceOptions(x){
+  const select=document.getElementById("directQuoteService");
+  if(!select)return;
+  select.innerHTML='<option value="">Talep konusu seçin</option>'+
+    directQuoteServiceOptions(x)
+      .map(item=>'<option value="'+escapeHtml(item)+'">'+escapeHtml(item)+'</option>')
+      .join("");
+  select.value="";
 }
 function openDirectQuote(){
   if(!institution||institution.isDemo){showToast("Demo kurum için doğrudan teklif gönderilemez.");return}
@@ -53,11 +93,34 @@ function openDirectQuote(){
   document.getElementById("directQuoteSuccess").classList.add("hidden");
   document.getElementById("directQuoteMessage").textContent="";
   document.getElementById("directQuoteInstitutionName").textContent=institution.name||"Kurum";
-  const service=document.getElementById("directQuoteService");
-  if(service&&!service.value)service.value=categoryLabel(institution);
+  document.getElementById("directQuoteInstitutionLocation").textContent=locationLabel(institution);
+
+  const icon=document.getElementById("directQuoteInstitutionIcon");
+  const logo=safeUrl(institution.logoUrl);
+  if(icon){
+    icon.innerHTML=logo
+      ? '<img src="'+escapeHtml(logo)+'" alt="">'
+      : escapeHtml(institution.emoji||"🏢");
+  }
+
+  fillDirectQuoteServiceOptions(institution);
+
+  const email=document.getElementById("directQuoteEmail");
+  if(email&&!email.value){
+    email.value=localStorage.getItem("dijiyerCustomerEmail")||"";
+  }
+
   document.getElementById("directQuoteModal").classList.remove("hidden");
 }
-function closeDirectQuote(){document.getElementById("directQuoteModal").classList.add("hidden")}
+function closeDirectQuote(){
+  document.getElementById("directQuoteModal").classList.add("hidden");
+  if(params.get("teklif")==="1"){
+    params.delete("teklif");
+    const cleanUrl=new URL(location.href);
+    cleanUrl.searchParams.delete("teklif");
+    history.replaceState(null,"",cleanUrl.toString());
+  }
+}
 function routeUrl(x){if(Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))return"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(x.lat+","+x.lng);return"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([x.address,x.district,x.city].filter(Boolean).join(", "))}
 function services(x){const rows=[categoryLabel(x)];String(x.classes||"").split(/[,;\n]/).map(s=>s.trim()).filter(s=>s&&s.toLocaleLowerCase("tr-TR")!=="bilgi eklenecek").forEach(s=>rows.push(s));String(x.services||"").split(/[,;\n]/).map(s=>s.trim()).filter(Boolean).forEach(s=>rows.push(s));return[...new Set(rows)].slice(0,12)}
 function showToast(text){const e=document.getElementById("toast");e.textContent=text;e.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>e.classList.remove("show"),2000)}
@@ -392,10 +455,18 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   const phone=document.getElementById("directQuotePhone").value.trim();
   const service=document.getElementById("directQuoteService").value.trim();
   const note=document.getElementById("directQuoteNote").value.trim();
+  const email=String(document.getElementById("directQuoteEmail")?.value||"").trim().toLowerCase();
   const normalizedPhone=normalizeTrackingPhone(phone);
 
-  if(!name||!service){message.textContent="Adınızı ve talep konusunu yazın.";return}
+  if(!name||!service){message.textContent="Adınızı ve talep konusunu seçin.";return}
   if(normalizedPhone.length<10){message.textContent="Geçerli bir telefon numarası yazın.";return}
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    message.textContent="E-posta adresini kontrol edin.";
+    document.getElementById("directQuoteEmail")?.focus();
+    return;
+  }
+
+  if(email)localStorage.setItem("dijiyerCustomerEmail",email);
 
   const mainCategory=String(institution.mainCategory||"diger");
   const subCategory=String(institution.subCategory||institution.category||"diger");
@@ -408,8 +479,10 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     district:String(institution.district||""),
     name,
     phone,
+    email,
     note,
     status:"new",
+    requestType:"direct",
     date:new Date().toISOString(),
     targetInstitutionId:String(institution.id),
     targetInstitutionName:String(institution.name||"Kurum")
@@ -519,10 +592,20 @@ async function init(){
     if(doc.exists){
       const data=doc.data();
       if(String(data.status||"active")==="passive"){showError();return}
-      institution={id:doc.id,...data,isDemo:false};renderProfile();await loadReviews();return
+      institution={id:doc.id,...data,isDemo:false};
+      renderProfile();
+      if(params.get("teklif")==="1")setTimeout(openDirectQuote,80);
+      await loadReviews();
+      return
     }
   }catch(error){console.error(error)}
-  if(demoInstitutions[institutionId]){institution={...demoInstitutions[institutionId]};renderProfile();renderReviews();return}
+  if(demoInstitutions[institutionId]){
+    institution={...demoInstitutions[institutionId]};
+    renderProfile();
+    renderReviews();
+    if(params.get("teklif")==="1")setTimeout(openDirectQuote,80);
+    return
+  }
   showError();
 }
 init();
