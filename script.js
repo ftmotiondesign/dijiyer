@@ -8336,10 +8336,6 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     if(typeof renderList === 'function')renderList();
     if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
     renderDesktopCategoryPreview(mainKey);
-
-    requestAnimationFrame(()=>{
-      resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
-    });
   });
 
   categoryPreviewOpen?.addEventListener('click', ()=>{
