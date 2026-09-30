@@ -23,8 +23,7 @@ function currentInstitutionId() {
 
 ```firestore
 match /quoteRequests/{quoteId}/offers/{institutionId} {
-  // Müşteri yalnızca kendi cihazında bildiği quoteId altındaki teklifleri görüntüler.
-  // Bu dokümanlarda müşteri telefon/ad bilgisi tutulmaz.
+  // Müşteri takip ekranında teklifleri okuyabilir; teklif belgelerinde müşteri telefon/ad bilgisi tutulmaz.
   allow get, list: if true;
 
   allow create: if isApprovedInstitutionUser()
@@ -41,6 +40,10 @@ match /quoteRequests/{quoteId}/offers/{institutionId} {
       "expiresAt",
       "expiresAtTs",
       "status",
+      "validityHours",
+      "registrationRequired",
+      "platformPayment",
+      "paymentPolicy",
       "createdAt",
       "updatedAt"
     ])
@@ -51,10 +54,15 @@ match /quoteRequests/{quoteId}/offers/{institutionId} {
     && request.resource.data.scope is string
     && request.resource.data.scope.size() > 0
     && request.resource.data.status == "offered"
+    && request.resource.data.validityHours is number
+    && request.resource.data.validityHours > 0
+    && request.resource.data.registrationRequired == true
+    && request.resource.data.platformPayment == false
+    && request.resource.data.paymentPolicy == "offline_direct_between_customer_and_institution"
     && request.resource.data.expiresAtTs is timestamp
     && request.resource.data.expiresAtTs > request.time;
 
-  // Müşteri fiyatı kilitledikten sonra satıcı artık teklifi değiştiremez.
+  // Müşteri teklifi kabul ettikten sonra kurum fiyat ve şartları değiştiremez.
   allow update: if isApprovedInstitutionUser()
     && currentInstitutionId() == institutionId
     && resource.data.institutionId == institutionId
@@ -72,22 +80,29 @@ match /quoteRequests/{quoteId}/offers/{institutionId} {
       "expiresAt",
       "expiresAtTs",
       "status",
+      "validityHours",
+      "registrationRequired",
+      "platformPayment",
+      "paymentPolicy",
       "updatedAt"
     ])
+    && request.resource.data.registrationRequired == true
+    && request.resource.data.platformPayment == false
+    && request.resource.data.paymentPolicy == "offline_direct_between_customer_and_institution"
     && request.resource.data.expiresAtTs > request.time;
 
   allow delete: if isAdmin();
 }
 ```
-
-## 3) Müşterinin fiyat kilidi
+## 3) Müşterinin doğrulanmış teklif kabulü ve gerçek kayıt
 
 ```firestore
 match /quoteRequests/{quoteId}/locks/{lockId} {
   allow get: if lockId == "main";
   allow list: if false;
 
-  // Aynı talepte yalnızca bir adet ana kilit oluşturulabilir.
+  // Aynı talepte yalnızca bir ana kabul kaydı oluşturulur.
+  // Kabul, takip kodu + telefon özetinin ait olduğu quoteAccess kaydına bağlanır.
   allow create: if lockId == "main"
     && !exists(/databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main)
     && request.resource.data.keys().hasOnly([
@@ -96,20 +111,57 @@ match /quoteRequests/{quoteId}/locks/{lockId} {
       "institutionName",
       "offerCode",
       "price",
+      "lockedPrice",
       "vatStatus",
       "scope",
+      "lockedScope",
       "conditions",
-      "expiresAt",
-      "expiresAtTs",
+      "extraFee",
+      "offerCreatedAt",
+      "offerUpdatedAt",
+      "offerVersion",
+      "offerSnapshotVersion",
+      "trackingCode",
+      "phoneHash",
+      "acceptanceConsent",
       "status",
+      "registrationStatus",
+      "acceptedAt",
+      "acceptedAtTs",
       "lockedAt",
       "lockedAtTs",
-      "lockedPrice",
-      "lockedScope"
+      "expiresAt",
+      "expiresAtTs",
+      "registrationDeadlineAt",
+      "registrationDeadlineAtTs",
+      "platformPayment",
+      "paymentPolicy"
     ])
     && request.resource.data.quoteId == quoteId
     && request.resource.data.status == "locked"
+    && request.resource.data.registrationStatus == "pending"
+    && request.resource.data.acceptanceConsent == true
+    && request.resource.data.offerSnapshotVersion == 1
+    && request.resource.data.platformPayment == false
+    && request.resource.data.paymentPolicy == "offline_direct_between_customer_and_institution"
+    && request.resource.data.acceptedAtTs == request.time
     && request.resource.data.lockedAtTs == request.time
+    && request.resource.data.trackingCode is string
+    && request.resource.data.trackingCode.size() > 0
+    && request.resource.data.phoneHash is string
+    && request.resource.data.phoneHash.size() > 0
+    && exists(
+      /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+    )
+    && get(
+      /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+    ).data.quoteId == quoteId
+    && get(
+      /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+    ).data.phoneHash == request.resource.data.phoneHash
+    && get(
+      /databases/$(database)/documents/quoteAccess/$(request.resource.data.phoneHash)/codes/$(request.resource.data.trackingCode)
+    ).data.trackingCode == request.resource.data.trackingCode
     && exists(
       /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
     )
@@ -123,23 +175,36 @@ match /quoteRequests/{quoteId}/locks/{lockId} {
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.scope
     && request.resource.data.lockedScope ==
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.scope
+    && request.resource.data.offerCreatedAt ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.createdAt
+    && request.resource.data.offerUpdatedAt ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.updatedAt
+    && request.resource.data.offerVersion ==
+      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.updatedAt
     && request.resource.data.expiresAt ==
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.expiresAt
     && request.resource.data.expiresAtTs ==
       get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.expiresAtTs
-    && request.time <
-      get(/databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)).data.expiresAtTs;
+    && request.resource.data.registrationDeadlineAt == request.resource.data.expiresAt
+    && request.resource.data.registrationDeadlineAtTs == request.resource.data.expiresAtTs
+    && request.time < request.resource.data.expiresAtTs;
 
-  // Kilit kaydını yalnızca seçilen kurum "kullanıldı" durumuna çevirebilir.
+  // Yalnızca teklifi veren onaylı kurum, süre dolmadan gerçek kaydı tamamlandı yapabilir.
   allow update: if lockId == "main"
     && isApprovedInstitutionUser()
     && currentInstitutionId() == resource.data.institutionId
     && resource.data.status == "locked"
+    && resource.data.registrationStatus == "pending"
     && request.resource.data.status == "used"
+    && request.resource.data.registrationStatus == "completed"
+    && request.resource.data.registrationCompletedAtTs == request.time
     && request.resource.data.usedAtTs == request.time
-    && request.time < resource.data.expiresAtTs
+    && request.time < resource.data.registrationDeadlineAtTs
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
       "status",
+      "registrationStatus",
+      "registrationCompletedAt",
+      "registrationCompletedAtTs",
       "usedAt",
       "usedAtTs"
     ]);
@@ -147,6 +212,7 @@ match /quoteRequests/{quoteId}/locks/{lockId} {
   allow delete: if isAdmin();
 }
 ```
+> **Ödeme politikası:** Bu kurallar Dijiyer içinde ödeme/kapora alanı açmaz. `platformPayment == false` ve sabit `paymentPolicy` alanı kabul ve teklif kayıtlarında zorunlu tutulur. Gerçek ödeme ve kayıt işlemi müşteri ile kurum arasında doğrudan yapılır.
 
 ## 4) QR / teklif kodu doğrulama indeksi
 
