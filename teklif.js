@@ -1063,28 +1063,80 @@ async function recordPublicAcceptedEvent(quoteId,date){
 }
 
 function confirmOfferLock(offer){
-  const validity=offerValidityText(offer);
-  const lines=[
-    "Bu teklifi kabul etmek üzeresiniz.",
-    "",
-    "Firma: "+(offer.institutionName||"Kurum"),
-    "Fiyat: "+money(offer.price),
-    "Geçerlilik: "+validity,
-    "Son geçerlilik: "+fmtDate(offer.expiresAt),
-    "KDV: "+(offer.vatStatus||"-")
-  ];
-  if(offer.conditions)lines.push("Özel şart: "+offer.conditions);
-  lines.push(
-    "",
-    "Bu işlem kesin kayıt değildir. Belirtilen son tarihe kadar kurumla doğrudan görüşüp gerçek kaydınızı tamamlamanız gerekir.",
-    "Süre dolarsa fiyat ve şartlar garanti edilmez ve kurumla yeniden görüşülür.",
-    "",
-    "Dijiyer üzerinden ödeme yapılmaz. Ücret, kapora veya kayıt bedeli yalnızca müşteri ile kurum arasında doğrudan yapılır.",
-    "",
-    "Teklif kabul edildiği andaki fiyat ve şartlar kayıt altına alınacaktır.",
-    "Devam etmek istiyor musunuz?"
-  );
-  return window.confirm(lines.join("\n"));
+  return new Promise(resolve=>{
+    document.getElementById("offerAcceptConfirmModal")?.remove();
+
+    const validity=offerValidityText(offer);
+    document.body.insertAdjacentHTML("beforeend",`
+      <div class="offer-accept-confirm-modal" id="offerAcceptConfirmModal" role="dialog" aria-modal="true" aria-labelledby="offerAcceptConfirmTitle">
+        <div class="offer-accept-confirm-card">
+          <button type="button" class="offer-accept-confirm-close" data-accept-confirm-cancel aria-label="Kapat">×</button>
+          <div class="offer-accept-confirm-icon">✓</div>
+          <span class="offer-accept-confirm-kicker">SON ONAY</span>
+          <h2 id="offerAcceptConfirmTitle">Teklif detaylarını kontrol edin</h2>
+          <p class="offer-accept-confirm-lead">Onay verdiğiniz anda bu teklif kapanır. Kabul edilen fiyat ve şartlar sabitlenir; satıcı artık teklifi düzenleyemez.</p>
+
+          <div class="offer-accept-confirm-grid">
+            <div><span>Kurum</span><strong>${safe(offer.institutionName||"Kurum")}</strong></div>
+            <div><span>Fiyat</span><strong>${money(offer.price)}</strong></div>
+            <div><span>Geçerlilik</span><strong>${safe(validity)}</strong></div>
+            <div><span>Son geçerlilik</span><strong>${fmtDate(offer.expiresAt)}</strong></div>
+            <div><span>KDV</span><strong>${safe(offer.vatStatus||"-")}</strong></div>
+            <div><span>Ek ücret</span><strong>${safe(offer.extraFee||"Yok")}</strong></div>
+          </div>
+
+          <div class="offer-accept-confirm-scope">
+            <span>Teklif kapsamı</span>
+            <strong>${safe(offer.scope||"-")}</strong>
+          </div>
+          ${offer.conditions?`<div class="offer-accept-confirm-scope"><span>Özel şart</span><strong>${safe(offer.conditions)}</strong></div>`:""}
+
+          <div class="offer-accept-confirm-warning">
+            <strong>Önemli</strong>
+            <span>Dijiyer üzerinden ödeme yapılmaz. Ödeme veya kapora yalnızca müşteri ile kurum arasında doğrudan yapılır.</span>
+          </div>
+
+          <label class="offer-accept-confirm-check">
+            <input type="checkbox" id="offerAcceptFinalConsent">
+            <span>Yukarıdaki fiyatı, kapsamı, süreyi ve ödeme bilgisini kontrol ettim. Bu teklifi kabul etmek istiyorum.</span>
+          </label>
+
+          <div class="offer-accept-confirm-actions">
+            <button type="button" class="secondary" data-accept-confirm-cancel>Vazgeç</button>
+            <button type="button" class="primary" id="offerAcceptFinalButton" disabled>Teklifi Onayla ve Kapat</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const modal=document.getElementById("offerAcceptConfirmModal");
+    const consent=document.getElementById("offerAcceptFinalConsent");
+    const approve=document.getElementById("offerAcceptFinalButton");
+    let settled=false;
+
+    const finish=value=>{
+      if(settled)return;
+      settled=true;
+      document.removeEventListener("keydown",onKeydown);
+      modal?.remove();
+      resolve(value);
+    };
+    const onKeydown=event=>{
+      if(event.key==="Escape")finish(false);
+    };
+
+    consent?.addEventListener("change",()=>{
+      if(approve)approve.disabled=!consent.checked;
+    });
+    approve?.addEventListener("click",()=>finish(true));
+    modal?.querySelectorAll("[data-accept-confirm-cancel]").forEach(button=>{
+      button.addEventListener("click",()=>finish(false));
+    });
+    modal?.addEventListener("click",event=>{
+      if(event.target===modal)finish(false);
+    });
+    document.addEventListener("keydown",onKeydown);
+  });
 }
 async function lockOffer(quoteId,institutionId,button){
   const quoteRef=db.collection("quoteRequests").doc(quoteId);
@@ -1094,7 +1146,7 @@ async function lockOffer(quoteId,institutionId,button){
     const previewSnap=await offerRef.get();
     if(!previewSnap.exists){ toast("Teklif bulunamadı."); return; }
     const previewOffer=previewSnap.data();
-    if(!confirmOfferLock(previewOffer))return;
+    if(!(await confirmOfferLock(previewOffer)))return;
     button.disabled=true;
     button.textContent="Kabul ediliyor...";
     const publicLockedAt=new Date().toISOString();
