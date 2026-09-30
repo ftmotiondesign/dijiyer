@@ -222,7 +222,7 @@ renderSummary = function(){
     focusCard.dataset.state = "paused";
   } else if (lockedCount > 0) {
     priorityText.textContent =
-      lockedCount + " teklif müşteriler tarafından kilitlendi. Müşteri geldiğinde teklif kodunu doğrulayın.";
+      lockedCount + " müşteri teklifinizi kabul etti. Gerçek kaydı süre dolmadan tamamlamak için teklif kodunu doğrulayın.";
     focusCard.dataset.state = "locked";
   } else if (newCount > 0) {
     priorityText.textContent =
@@ -234,7 +234,7 @@ renderSummary = function(){
     focusCard.dataset.state = "waiting";
   } else if (usedCount > 0) {
     priorityText.textContent =
-      "Şu anda yeni işlem yok. Son kullanılan teklifleriniz tamamlanmış görünüyor.";
+      "Şu anda yeni işlem yok. Son gerçek kayıtlarınız tamamlanmış görünüyor.";
     focusCard.dataset.state = "clear";
   } else {
     priorityText.textContent =
