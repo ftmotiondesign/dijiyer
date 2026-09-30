@@ -1,5 +1,5 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-const { defineSecret } = require("firebase-functions/params");
+const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 
@@ -7,6 +7,9 @@ admin.initializeApp();
 
 const SMTP_USER = defineSecret("SMTP_USER");
 const SMTP_PASS = defineSecret("SMTP_PASS");
+const PUBLIC_BASE_URL = defineString("PUBLIC_BASE_URL", {
+  default: "https://ftmotiondesign.github.io/dijiyer"
+});
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -18,7 +21,8 @@ function escapeHtml(value) {
 }
 
 function buildTrackingUrl(trackingCode) {
-  return "https://ftmotiondesign.github.io/dijiyer/teklif.html?v=5&kod=" +
+  const base = String(PUBLIC_BASE_URL.value() || "").replace(/\/$/, "");
+  return base + "/teklif.html?v=5&kod=" +
     encodeURIComponent(String(trackingCode || ""));
 }
 
