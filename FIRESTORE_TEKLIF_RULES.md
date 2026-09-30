@@ -214,8 +214,34 @@ quoteAccess/{phoneHash}/codes/{trackingCode}
 
 Bu yapıda özel link yalnızca takip kodunu taşır. Kullanıcı ayrıca talep formunda kullandığı telefon numarasını girer; tarayıcı telefonun SHA-256 özetini üretir ve ancak iki bilgi birlikte doğruysa erişim belgesinin yolu bulunur. Koleksiyon listeleme kapalı tutulmalıdır.
 
-Tam uygulanabilir sürüm için sohbet içinde üretilen `firestore_garantili_teklif_takip.rules` dosyasını kullanın.
+### Takip ekranında “Missing or insufficient permissions” hatası için gerekli okuma bloğu
 
+Aşağıdaki blokları mevcut Firestore Rules içinde, en sondaki genel reddetme/catch-all kuralından **önce** ekleyin. Bunlar yalnızca takip ekranının ihtiyaç duyduğu okuma izinlerini açar; mevcut create/update kurallarına dokunmaz.
+
+```firestore
+match /quoteAccess/{phoneHash}/codes/{trackingCode} {
+  allow get: if resource.data.phoneHash == phoneHash
+    && resource.data.trackingCode == trackingCode;
+  allow list: if false;
+}
+
+match /quoteRequests/{quoteId}/offers/{institutionId} {
+  allow get, list: if true;
+}
+
+match /quoteRequests/{quoteId}/locks/{lockId} {
+  allow get: if lockId == "main";
+  allow list: if false;
+}
+
+match /quoteRequests/{quoteId}/engagement/{institutionId} {
+  // Bu koleksiyonda müşterinin adı veya telefonu tutulmaz.
+  // Takip ekranı kurumların ilgileniyor / teklif veremiyor durumunu özetler.
+  allow get, list: if true;
+}
+```
+
+Not: `quoteAccess` belgesinin oluşturulması zaten çalışıyorsa mevcut `allow create` kuralınızı değiştirmeyin. Yukarıdaki bloklar testte görülen **okuma** hatasını çözmek içindir.
 
 ## 7) Teklif Takip Pro: mesajlaşma, revizyon ve görüntülenme
 
