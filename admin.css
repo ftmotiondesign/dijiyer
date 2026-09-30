@@ -8630,3 +8630,81 @@ details.matching-institutions .matching-buttons{
     height:28px;
   }
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · DAR EKRANDA TAM DİKEY AKIŞ
+   ========================================================= */
+@media(max-width:1150px){
+  .quote-routing-v2>.quote-routing-stage-nav{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:9px !important;
+    overflow:visible !important;
+    padding:0 !important;
+    margin-bottom:12px !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    min-height:82px !important;
+    display:grid !important;
+    grid-template-columns:36px minmax(0,1fr) auto !important;
+    align-items:center !important;
+    gap:10px !important;
+    padding:11px 12px !important;
+    scroll-snap-align:none !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .stage-no{
+    width:34px !important;
+    height:34px !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .stage-copy{
+    display:grid !important;
+    gap:3px !important;
+    padding-right:0 !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .stage-copy em{
+    display:block !important;
+    margin:0 !important;
+    font-size:7.5px !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .stage-copy strong{
+    display:block !important;
+    margin:0 !important;
+    font-size:12px !important;
+    line-height:1.25 !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .stage-copy small{
+    display:block !important;
+    font-size:9px !important;
+    line-height:1.4 !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage>b{
+    position:static !important;
+    min-width:30px !important;
+    height:30px !important;
+  }
+}
+
+@media(max-width:650px){
+  .quote-routing-v2>.quote-routing-stage-nav{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    overflow:visible !important;
+  }
+
+  .quote-routing-v2>.quote-routing-stage-nav .quote-routing-stage{
+    flex:none !important;
+    width:100% !important;
+    min-height:80px !important;
+  }
+}
