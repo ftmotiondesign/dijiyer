@@ -1156,6 +1156,13 @@
       const url=String(result.secure_url||"");
       if(!url)throw new Error("Cloudinary dosya adresi dönmedi.");
 
+      rememberMediaAsset(result,{
+        source:"banner",
+        institutionId:String(inst.id),
+        institutionName:String(inst.name||"Kurum"),
+        mediaType:isVideo?"video":"image"
+      });
+
       if(isVideo){
         $("bannerAdVideoUrl").value=url;
         $("bannerAdVideoUrlManual").value=url;
@@ -4820,6 +4827,13 @@
 
       const url=String(result.secure_url||"");
       if(!url)throw new Error("Yüklenen dosyanın adresi alınamadı.");
+
+      rememberMediaAsset(result,{
+        source:"opportunity",
+        institutionId:String(inst.id),
+        institutionName:String(inst.name||"Kurum"),
+        mediaType:isVideo?"video":"image"
+      });
 
       $("opportunitySponsorMediaUrl").value=url;
       $("opportunitySponsorMediaType").value=isVideo?"video":"image";
