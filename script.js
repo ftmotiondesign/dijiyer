@@ -1619,19 +1619,31 @@ function applyHomeBottomSectionVisibility(data={}){
   }
 }
 
-function watchHomeBottomSectionVisibility(){
+let homepageSettingsCache=null;
+let homepageSettingsPromise=null;
+
+async function getHomepageSettings(){
+  if(homepageSettingsCache)return homepageSettingsCache;
+  if(homepageSettingsPromise)return homepageSettingsPromise;
+
+  homepageSettingsPromise=db.collection('siteSettings').doc('home').get()
+    .then(snap=>{
+      homepageSettingsCache=snap.exists ? (snap.data() || {}) : {};
+      return homepageSettingsCache;
+    })
+    .finally(()=>{ homepageSettingsPromise=null; });
+
+  return homepageSettingsPromise;
+}
+
+async function watchHomeBottomSectionVisibility(){
   try{
-    return db.collection('siteSettings').doc('home').onSnapshot(snap=>{
-      const data=snap.exists ? (snap.data() || {}) : {};
-      applyHomeBottomSectionVisibility(data);
-      applyHomeEditableContent(data);
-    },error=>{
-      console.warn('Ana sayfa alt bölüm görünürlük ayarları dinlenemedi:',error);
-      applyHomeBottomSectionVisibility({earningsVisible:false,homeFooterVisible:false});
-      applyHomeEditableContent({});
-    });
+    const data=await getHomepageSettings();
+    applyHomeBottomSectionVisibility(data);
+    applyHomeEditableContent(data);
+    return data;
   }catch(error){
-    console.warn('Ana sayfa alt bölüm görünürlük ayarı başlatılamadı:',error);
+    console.warn('Ana sayfa alt bölüm görünürlük ayarları okunamadı:',error);
     applyHomeBottomSectionVisibility({earningsVisible:false,homeFooterVisible:false});
     applyHomeEditableContent({});
     return null;
@@ -4244,9 +4256,9 @@ function setupRegionalBannerZone(){
   renderRegionalBannerCarousel(true);
 }
 
-function startRegionalBannerAds(){
-  if(regionalBannerUnsubscribe)regionalBannerUnsubscribe();
-  regionalBannerUnsubscribe=db.collection("bannerAds").where("active","==",true).onSnapshot(snapshot=>{
+async function startRegionalBannerAds(){
+  try{
+    const snapshot=await db.collection("bannerAds").where("active","==",true).get();
     regionalBannerAds=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
     regionalBannerIndex=0;
 
@@ -4265,12 +4277,12 @@ function startRegionalBannerAds(){
 
     if(document.getElementById("regionalBannerZone"))setupRegionalBannerZone();
     if(!window.DIJIYER_UNIFIED_PAGE_BANNER && document.getElementById("pageTopMiniBanner"))renderPageTopMiniBanner(true);
-  },error=>{
+  }catch(error){
     console.warn("Banner reklamları yüklenemedi:",error);
     regionalBannerAds=[];
     document.getElementById("regionalBannerZone")?.classList.add("hidden");
     if(!window.DIJIYER_UNIFIED_PAGE_BANNER)document.getElementById("pageTopMiniBanner")?.classList.add("hidden");
-  });
+  }
 }
 
 let externalAds=[];
@@ -4473,21 +4485,20 @@ function renderExternalAds(){
   }
 }
 
-function startExternalAds(){
-  if(externalAdUnsubscribe)externalAdUnsubscribe();
-
-  externalAdUnsubscribe=db.collection("externalAds").onSnapshot(snapshot=>{
+async function startExternalAds(){
+  try{
+    const snapshot=await db.collection("externalAds").get();
     externalAds=snapshot.docs
       .map(doc=>({id:doc.id,...doc.data()}))
       .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
 
     externalAdRandomized=false;
     renderExternalAds();
-  },error=>{
+  }catch(error){
     console.warn("Harici reklamlar yüklenemedi:",error);
     externalAds=[];
     document.getElementById("externalAdZone")?.classList.add("hidden");
-  });
+  }
 }
 
 function localDayKey(date = new Date()) {
@@ -7459,12 +7470,26 @@ institutionRegisterTab.addEventListener('click', () => setInstitutionAccessMode(
 
 async function loadInstitutionRegistrationOptions() {
   const select = document.getElementById('institutionAccountInstitution');
+  if(!select)return;
   select.innerHTML = '<option value="">Kurumlar yükleniyor...</option>';
 
   try {
-    const snapshot = await db.collection('institutions').get();
-    const rows = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+    let rows=institutions
+      .filter(item=>item && item.source==='firestore')
+      .map(item=>({
+        id:item.id,
+        name:item.name,
+        city:item.city,
+        district:item.district,
+        status:'active'
+      }));
+
+    if(!rows.length){
+      const snapshot = await db.collection('institutions').get();
+      rows = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    rows=rows
       .filter(item => String(item.status || "active") !== "passive")
       .sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''), 'tr'));
 
@@ -7719,11 +7744,11 @@ document.getElementById('exploreScrollBtn')?.addEventListener('click', () => {
 loadMainLocationProvinces();
 loadProvinces();
 loadQuoteProvinces();
-loadInstitutionRegistrationOptions();
 renderList();
 renderDetail();
-loadApprovedInstitutions();
-
+loadApprovedInstitutions()
+  .then(()=>loadInstitutionRegistrationOptions())
+  .catch(()=>loadInstitutionRegistrationOptions());
 
 startRegionalBannerAds();
 startExternalAds();
@@ -8697,9 +8722,9 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
    ========================================================= */
 async function syncCustomCategoryTaxonomyFromSettings(){
   try{
-    const snap=await db.collection("siteSettings").doc("home").get();
-    const custom=snap.exists && snap.data()?.customCategoryTaxonomy && typeof snap.data().customCategoryTaxonomy==="object"
-      ? snap.data().customCategoryTaxonomy
+    const data=await getHomepageSettings();
+    const custom=data?.customCategoryTaxonomy && typeof data.customCategoryTaxonomy==="object"
+      ? data.customCategoryTaxonomy
       : {};
 
     let changed=false;
