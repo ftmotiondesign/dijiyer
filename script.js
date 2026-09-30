@@ -872,7 +872,7 @@ function renderMobileCategories() {
                 type="button"
                 class="mobile-subcategory-btn mobile-subcategory-missing"
                 data-mobile-subcategory-missing="${activeMain}"
-              >＋ Aradığım hizmet listede yok</button>
+              ><span class="missing-service-icon" aria-hidden="true">✦</span><span class="missing-service-copy"><strong>Aradığın hizmeti bulamadın mı?</strong><small>Hizmeti yaz, sana uygun kurumları bulalım.</small></span><span class="missing-service-action">Hizmeti Yaz <span aria-hidden="true">→</span></span></button>
             </div>
           </div>
         `);
