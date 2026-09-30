@@ -8340,7 +8340,25 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           '<span class="desktop-inline-empty-icon">⌕</span>' +
           '<div><strong>' + escapeHtml(selectionLabel) + ' için aktif kurum bulunamadı.</strong>' +
           '<small>Başka bir alt hizmet seçebilir veya ücretsiz teklif oluşturabilirsin.</small></div>' +
+          '<button type="button" class="desktop-inline-empty-quote" data-desktop-inline-empty-quote>Teklif Al →</button>' +
         '</div>';
+      categoryInlineResults.querySelector('[data-desktop-inline-empty-quote]')?.addEventListener('click',()=>{
+        const categorySelect = document.getElementById('quoteCategory');
+        const serviceSelect = document.getElementById('quoteService');
+
+        if(categorySelect && mainKey){
+          categorySelect.value = mainKey;
+          if(typeof fillQuoteServices === 'function') fillQuoteServices(mainKey);
+          else if(typeof fillSubCategorySelect === 'function') fillSubCategorySelect(mainKey,'quoteService','Alt kategori seçin');
+        }
+        if(serviceSelect && subKey && [...serviceSelect.options].some(option=>option.value===subKey)){
+          serviceSelect.value = subKey;
+        }
+
+        if(typeof openModal === 'function') openModal('quoteModal');
+        else document.getElementById('quoteModal')?.classList.remove('hidden');
+      });
+
       categoryInlineResults.classList.remove('hidden');
       categoryInlineResults.classList.remove('is-revealed');
       void categoryInlineResults.offsetWidth;
@@ -8357,7 +8375,9 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           '<strong>' + escapeHtml(selectionLabel) + ' için ' + realRows.length + ' aktif kurum</strong>' +
           '<small>Seçtiğin hizmete uygun kurumlar aşağıda listelendi.</small>' +
         '</div>' +
-        '<div class="desktop-inline-results-tip"><span>Kurum kartına tıkla</span><b>Profili İncele →</b></div>' +
+        '<button type="button" class="desktop-inline-results-quote-btn" data-desktop-inline-quote data-main-category="' + escapeHtml(mainKey) + '" data-sub-category="' + escapeHtml(subKey) + '">' +
+          '<span>Ücretsiz</span><strong>Teklif Al</strong><b>→</b>' +
+        '</button>' +
       '</div>' +
       '<div class="desktop-inline-institution-grid">' +
         visibleRows.map((inst,index)=>{
@@ -8390,6 +8410,35 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
       (realRows.length > visibleRows.length
         ? '<div class="desktop-inline-more">+' + (realRows.length-visibleRows.length) + ' kurum daha</div>'
         : '');
+
+    const inlineQuoteBtn = categoryInlineResults.querySelector('[data-desktop-inline-quote]');
+    inlineQuoteBtn?.addEventListener('click',()=>{
+      const selectedMain = String(inlineQuoteBtn.dataset.mainCategory || '').trim();
+      const selectedSub = String(inlineQuoteBtn.dataset.subCategory || '').trim();
+
+      const categorySelect = document.getElementById('quoteCategory');
+      const serviceSelect = document.getElementById('quoteService');
+
+      if(categorySelect && selectedMain){
+        categorySelect.value = selectedMain;
+        if(typeof fillQuoteServices === 'function'){
+          fillQuoteServices(selectedMain);
+        }else if(typeof fillSubCategorySelect === 'function'){
+          fillSubCategorySelect(selectedMain,'quoteService','Alt kategori seçin');
+        }
+      }
+
+      if(serviceSelect && selectedSub){
+        const hasOption=[...serviceSelect.options].some(option=>option.value===selectedSub);
+        if(hasOption)serviceSelect.value=selectedSub;
+      }
+
+      if(typeof openModal === 'function'){
+        openModal('quoteModal');
+      }else{
+        document.getElementById('quoteModal')?.classList.remove('hidden');
+      }
+    });
 
     categoryInlineResults.classList.remove('hidden');
     categoryInlineResults.classList.remove('is-revealed');
