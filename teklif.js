@@ -688,7 +688,7 @@ function startLiveTracking(access){
       console.error("Fiyat kilidi canlı izlenemedi:",error);
     }
   );
-
+}
 
 async function refreshTracking(){
   if(!currentAccess)return;
