@@ -1676,11 +1676,11 @@
 
 
   const EXTERNAL_AD_PLACEMENT_OPTIONS = [
-    {key:"home",label:"Ana Sayfa"},
-    {key:"quote",label:"Teklif Al"},
-    {key:"jobs",label:"İş Fırsatları"},
-    {key:"brands",label:"Bayi & Servis"},
-    {key:"opportunities",label:"Fırsatlar"}
+    {key:"home",label:"Ana Sayfa",location:"Premium vitrinin altında"},
+    {key:"quote",label:"Teklif Al",location:"Teklif formu sayfasında"},
+    {key:"jobs",label:"İş Fırsatları",location:"İş ilanları bölümünün üstünde"},
+    {key:"brands",label:"Bayi & Servis",location:"Marka ve servis rehberinin üstünde"},
+    {key:"opportunities",label:"Fırsatlar",location:"Filtrelerin altında, sonuçlardan önce"}
   ];
 
   function normalizedExternalAdPlacements(itemOrValues){
@@ -1695,6 +1695,10 @@
 
   function externalAdPlacementLabel(key){
     return EXTERNAL_AD_PLACEMENT_OPTIONS.find(row=>row.key===key)?.label || key;
+  }
+
+  function externalAdPlacementLocation(key){
+    return EXTERNAL_AD_PLACEMENT_OPTIONS.find(row=>row.key===key)?.location || "";
   }
 
   function externalAdPlacementSummary(values){
@@ -1714,15 +1718,38 @@
     const inputs=[...document.querySelectorAll("[data-external-placement]")];
     const selected=inputs.filter(input=>input.checked).map(input=>input.value);
     const all=$("externalAdPlacementAll");
+
     if(all){
       all.checked=inputs.length>0 && selected.length===inputs.length;
       all.indeterminate=selected.length>0 && selected.length<inputs.length;
     }
-    if($("externalAdPlacementNote")){
-      $("externalAdPlacementNote").textContent=selected.length
-        ? "Şu anda: "+externalAdPlacementSummary(selected)
-        : "En az bir yayın alanı seçin.";
-      $("externalAdPlacementNote").classList.toggle("warning",selected.length===0);
+
+    document.querySelectorAll(".external-ad-placement-card").forEach(card=>{
+      const input=card.querySelector("[data-external-placement]");
+      card.classList.toggle("is-selected",Boolean(input?.checked));
+    });
+
+    const count=$("externalAdPlacementCount");
+    if(count){
+      count.textContent=selected.length
+        ? selected.length+" yayın alanı seçili"
+        : "Yayın alanı seçilmedi";
+      count.classList.toggle("warning",selected.length===0);
+    }
+
+    const note=$("externalAdPlacementNote");
+    if(note){
+      if(!selected.length){
+        note.textContent="Reklamı kaydetmek için en az bir alan seçin.";
+      }else if(selected.length===1){
+        const key=selected[0];
+        note.textContent=externalAdPlacementLabel(key)+" · "+externalAdPlacementLocation(key);
+      }else if(selected.length===EXTERNAL_AD_PLACEMENT_OPTIONS.length){
+        note.textContent="Tüm sayfalarda yayınlanacak.";
+      }else{
+        note.textContent=selected.map(externalAdPlacementLabel).join(" · ");
+      }
+      note.classList.toggle("warning",selected.length===0);
     }
   }
 
