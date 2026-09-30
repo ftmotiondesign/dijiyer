@@ -17,6 +17,7 @@
   let promotionAdminRecords = [];
   let promotionPackageRecords = [];
   let bannerAdRecords = [];
+  let bannerInstitutionQuickMode = "all";
   let externalAdRecords = [];
   let externalAdEditingId = "";
   let adAnalyticsRecords = [];
@@ -625,6 +626,88 @@
     return ["active","paused"].includes(raw) && !expired;
   }
 
+  function bannerInstitutionBannerAds(item){
+    const id=String(item?.id||"");
+    return (bannerAdRecords||[]).filter(ad=>String(ad.institutionId||"")===id);
+  }
+
+  function bannerAdDate(value,endOfDay=false){
+    if(!value)return null;
+    const raw=String(value);
+    const date=new Date(raw.length<=10 ? raw+(endOfDay?"T23:59:59":"T00:00:00") : raw);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function bannerAdIsCurrentlyLive(ad){
+    if(!ad || ad.active===false)return false;
+    const now=Date.now();
+    const start=bannerAdDate(ad.startAt,false);
+    const end=bannerAdDate(ad.endAt,true);
+    if(start && start.getTime()>now)return false;
+    if(end && end.getTime()<now)return false;
+    return true;
+  }
+
+  function bannerInstitutionAdSummary(item){
+    const ads=bannerInstitutionBannerAds(item);
+    const live=ads.filter(bannerAdIsCurrentlyLive);
+    const now=Date.now();
+    const sevenDays=7*86400000;
+    const expiring=live.filter(ad=>{
+      const end=bannerAdDate(ad.endAt,true);
+      if(!end)return false;
+      const diff=end.getTime()-now;
+      return diff>=0 && diff<=sevenDays;
+    });
+    const latest=[...ads].sort((a,b)=>
+      new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0)
+    )[0] || null;
+    return {
+      ads,live,expiring,latest,
+      latestAt:latest ? new Date(latest.updatedAt||latest.createdAt||0) : null
+    };
+  }
+
+  function bannerShortDate(value){
+    const date=value instanceof Date ? value : new Date(value||0);
+    if(Number.isNaN(date.getTime()) || !date.getTime())return "";
+    try{
+      return date.toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"2-digit"});
+    }catch(_){
+      return "";
+    }
+  }
+
+  function bannerQuickModeMatches(item,mode){
+    const summary=bannerInstitutionAdSummary(item);
+    if(mode==="no_ads")return summary.ads.length===0;
+    if(mode==="live_ads")return summary.live.length>0;
+    if(mode==="expiring")return summary.expiring.length>0;
+    if(mode==="recent")return summary.ads.length>0;
+    if(mode==="passive")return !bannerInstitutionIsActive(item);
+    return true;
+  }
+
+  function updateBannerInstitutionQuickCounts(){
+    const rows=[...(institutionRecords||[])];
+    const set=(id,value)=>{if($(id))$(id).textContent=String(value)};
+    set("bannerQuickCountAll",rows.length);
+    set("bannerQuickCountNoAds",rows.filter(item=>bannerQuickModeMatches(item,"no_ads")).length);
+    set("bannerQuickCountLive",rows.filter(item=>bannerQuickModeMatches(item,"live_ads")).length);
+    set("bannerQuickCountExpiring",rows.filter(item=>bannerQuickModeMatches(item,"expiring")).length);
+    set("bannerQuickCountRecent",rows.filter(item=>bannerQuickModeMatches(item,"recent")).length);
+    set("bannerQuickCountPassive",rows.filter(item=>bannerQuickModeMatches(item,"passive")).length);
+  }
+
+  function setBannerInstitutionQuickMode(mode){
+    bannerInstitutionQuickMode=String(mode||"all");
+    document.querySelectorAll("[data-banner-quick]").forEach(button=>{
+      button.classList.toggle("active",button.dataset.bannerQuick===bannerInstitutionQuickMode);
+    });
+    if($("bannerInstitutionFinderStatus"))$("bannerInstitutionFinderStatus").value="";
+    renderBannerInstitutionFinder();
+  }
+
   function bannerInstitutionCategory(item){
     return String(item?.subCategory || item?.category || item?.mainCategory || "").trim();
   }
@@ -670,12 +753,16 @@
 
   function bannerInstitutionResultHtml(item){
     const active=bannerInstitutionIsActive(item);
-    const advertiser=bannerInstitutionHasAd(item);
+    const adSummary=bannerInstitutionAdSummary(item);
+    const advertiser=adSummary.live.length>0;
     const logo=String(item.logoUrl||item.coverUrl||"").trim();
     const location=[item.city,item.district].filter(Boolean).join(" / ") || "Konum belirtilmemiş";
     const category=bannerCategoryLabel(bannerInstitutionCategory(item)) || "Sektör belirtilmemiş";
     const phone=String(item.phone||"").trim();
     const selected=String($("bannerAdInstitution")?.value||"")===String(item.id);
+    const latestText=adSummary.latestAt && !Number.isNaN(adSummary.latestAt.getTime())
+      ? bannerShortDate(adSummary.latestAt)
+      : "";
 
     return '<button type="button" class="banner-institution-result'+(selected?' is-selected':'')+'" data-banner-institution-pick="'+escapeHtml(String(item.id))+'">'+
       '<span class="banner-institution-result-logo">'+
@@ -687,10 +774,17 @@
         '<strong>'+escapeHtml(item.name||"Kurum")+'</strong>'+
         '<small>📍 '+escapeHtml(location)+'</small>'+
         '<em>'+escapeHtml(category)+(phone?' · '+escapeHtml(phone):'')+'</em>'+
+        '<span class="banner-institution-ad-history">'+
+          (adSummary.live.length
+            ? '<b class="live">● '+adSummary.live.length+' yayında</b>'
+            : '<b>'+adSummary.ads.length+' reklam kaydı</b>')+
+          (latestText?'<small>Son: '+escapeHtml(latestText)+'</small>':'')+
+        '</span>'+
       '</span>'+
       '<span class="banner-institution-result-badges">'+
         '<i class="'+(active?'active':'passive')+'">'+(active?'Aktif':'Pasif')+'</i>'+
-        '<i class="'+(advertiser?'advertiser':'none')+'">'+(advertiser?'Reklam Veriyor':'Reklam Yok')+'</i>'+
+        '<i class="'+(advertiser?'advertiser':'none')+'">'+(advertiser?'Banner Yayında':'Banner Yok')+'</i>'+
+        (adSummary.expiring.length?'<i class="expiring">Yakında Bitecek</i>':'')+
         (selected?'<i class="selected">Seçildi</i>':'')+
       '</span>'+
     '</button>';
@@ -742,12 +836,14 @@
     const status=String($("bannerInstitutionFinderStatus")?.value||"");
 
     let rows=[...(institutionRecords||[])].filter(item=>{
+      if(!bannerQuickModeMatches(item,bannerInstitutionQuickMode))return false;
       if(query && !bannerInstitutionSearchHaystack(item).includes(query))return false;
       if(city && String(item.city||"")!==city)return false;
       if(category && bannerInstitutionCategory(item)!==category)return false;
 
       const active=bannerInstitutionIsActive(item);
-      const advertiser=bannerInstitutionHasAd(item);
+      const adSummary=bannerInstitutionAdSummary(item);
+      const advertiser=adSummary.live.length>0;
 
       if(status==="active" && !active)return false;
       if(status==="passive" && active)return false;
@@ -756,13 +852,38 @@
       return true;
     });
 
-    rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
+    if(bannerInstitutionQuickMode==="recent"){
+      rows.sort((a,b)=>{
+        const aDate=bannerInstitutionAdSummary(a).latestAt?.getTime()||0;
+        const bDate=bannerInstitutionAdSummary(b).latestAt?.getTime()||0;
+        return bDate-aDate;
+      });
+    }else if(bannerInstitutionQuickMode==="expiring"){
+      const nextEnd=item=>{
+        const dates=bannerInstitutionAdSummary(item).expiring
+          .map(ad=>bannerAdDate(ad.endAt,true)?.getTime()||Infinity);
+        return Math.min(...dates,Infinity);
+      };
+      rows.sort((a,b)=>nextEnd(a)-nextEnd(b));
+    }else{
+      rows.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
+    }
+
+    updateBannerInstitutionQuickCounts();
 
     const total=rows.length;
     const shown=rows.slice(0,12);
+    const quickLabels={
+      all:"Tüm kurumlar",
+      no_ads:"Reklamsız kurumlar",
+      live_ads:"Yayında reklamı olanlar",
+      expiring:"7 gün içinde bitecekler",
+      recent:"Son reklam verenler",
+      passive:"Pasif kurumlar"
+    };
     count.textContent=total
-      ? total+" kurum bulundu"+(total>12?" · İlk 12 gösteriliyor":"")
-      : "Eşleşen kurum bulunamadı";
+      ? (quickLabels[bannerInstitutionQuickMode]||"Kurumlar")+" · "+total+" sonuç"+(total>12?" · İlk 12 gösteriliyor":"")
+      : (quickLabels[bannerInstitutionQuickMode]||"Filtre")+" · sonuç bulunamadı";
 
     root.innerHTML=shown.length
       ? shown.map(bannerInstitutionResultHtml).join("")
@@ -804,6 +925,10 @@
     if($("bannerInstitutionFinderCity"))$("bannerInstitutionFinderCity").value="";
     if($("bannerInstitutionFinderCategory"))$("bannerInstitutionFinderCategory").value="";
     if($("bannerInstitutionFinderStatus"))$("bannerInstitutionFinderStatus").value="";
+    bannerInstitutionQuickMode="all";
+    document.querySelectorAll("[data-banner-quick]").forEach(button=>{
+      button.classList.toggle("active",button.dataset.bannerQuick==="all");
+    });
     renderBannerInstitutionFinder();
   }
 
@@ -1980,6 +2105,9 @@
     if(typeof loadInstitutions==="function"){
       await loadInstitutions();
     }
+    if(!bannerAdRecords.length){
+      await loadBannerAdsAdmin();
+    }
 
     resetBannerAdForm();
 
@@ -1999,6 +2127,10 @@
   $("bannerAdNewBtn")?.addEventListener("click",openNewBannerAdEditor);
   $("bannerAdCancelBtn")?.addEventListener("click",resetBannerAdForm);
   $("bannerAdSearch")?.addEventListener("input",()=>renderBannerAdsAdmin(false));
+  document.querySelectorAll("[data-banner-quick]").forEach(button=>{
+    button.addEventListener("click",()=>setBannerInstitutionQuickMode(button.dataset.bannerQuick||"all"));
+  });
+
   $("bannerInstitutionFinderSearch")?.addEventListener("input",renderBannerInstitutionFinder);
   ["bannerInstitutionFinderCity","bannerInstitutionFinderCategory","bannerInstitutionFinderStatus"].forEach(id=>{
     $(id)?.addEventListener("change",renderBannerInstitutionFinder);
