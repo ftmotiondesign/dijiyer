@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=19">
+  <link rel="stylesheet" href="admin-advanced.css?v=23">
 </head>
 
 <body>
@@ -596,7 +596,10 @@
           </div>
           <div class="opportunity-title-actions">
             <button type="button" class="opportunity-add-sponsor-btn" id="opportunitySponsorNewBtn">＋ Yeni Sponsor Ekle</button>
+            <div class="opportunity-title-actions">
+            <button type="button" class="opportunity-stats-refresh" id="opportunityStatsRefreshBtn">↻ İstatistikleri Yenile</button>
             <a class="opportunity-page-preview-link" href="firsatlar.html" target="_blank" rel="noopener">Fırsat Sayfasını Gör</a>
+          </div>
           </div>
         </div>
 
@@ -643,6 +646,19 @@
             <option value="normal">Sponsor olmayanlar</option>
           </select>
         </div>
+
+        <details class="opportunity-report-panel" id="opportunityReportPanel">
+          <summary>
+            <span>
+              <b>📊 Biten Sponsor Raporları</b>
+              <small>Reklam süresi dolan kurumların performansını WhatsApp veya e-posta ile paylaşın.</small>
+            </span>
+            <strong id="opportunityReportReadyCount">0 rapor hazır</strong>
+          </summary>
+          <div id="opportunityReportList" class="opportunity-report-list">
+            <div class="advanced-empty">Biten sponsor kampanyası bulunmuyor.</div>
+          </div>
+        </details>
 
         <div id="opportunitySponsorList" class="opportunity-sponsor-list">
           <div class="advanced-empty">Kurumlar yükleniyor...</div>
@@ -2003,7 +2019,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=55"></script>
-  <script src="admin-advanced.js?v=33"></script>
+  <script src="admin-advanced.js?v=34"></script>
 
 </body>
 </html>
