@@ -849,7 +849,7 @@ function offerHtml(bundle,offer){
       ? '<div class="offer-version-badge">🔔 '+version+'. teklif · Güncellenmiş teklif</div>'
       : '<div class="offer-version-badge first">1. teklif · İlk teklif</div>';
   return `
-    <article class="offer-card ${historical?"offer-card-history":""}">
+    <article class="offer-card${historical?" offer-card-history":""}">
       <div class="offer-head">
         <div>
           <h3>${safe(offer.institutionName||"Kurum")}</h3>
@@ -1510,6 +1510,7 @@ form.addEventListener("submit",async e=>{
     }
 
     liveOffers=initialBundle.offers;
+    liveOfferHistory=initialBundle.offerHistory||[];
     liveLock=initialBundle.lock;
     liveEngagement=initialBundle.engagement||[];
     livePublicStatus=initialBundle.publicStatus||null;
