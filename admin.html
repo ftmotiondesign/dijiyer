@@ -386,13 +386,19 @@
 
       <section id="institutionsSection" hidden>
         <div class="section-title">
-          <h3>Yayındaki Kurumlar</h3>
+          <h3>Kurumlar</h3>
           <p id="institutionCount">Kurumlar yükleniyor...</p>
         </div>
 
         <div class="institution-mini-stats ad-focused">
           <button type="button" data-institution-stat-filter="">
             <span>Toplam</span><strong id="institutionStatTotal">0</strong>
+          </button>
+          <button type="button" class="ad-active" data-institution-status-filter="active">
+            <span>Aktif</span><strong id="institutionStatActive">0</strong>
+          </button>
+          <button type="button" data-institution-status-filter="passive">
+            <span>Pasif</span><strong id="institutionStatPassive">0</strong>
           </button>
           <button type="button" class="ad-active" data-institution-stat-filter="ad_active">
             <span>Reklam Veren</span><strong id="institutionStatAdActive">0</strong>
@@ -462,6 +468,12 @@
             <option value="">Tüm şehirler</option>
           </select>
 
+          <select id="institutionStatusFilter">
+            <option value="">Tümü: Aktif + Pasif</option>
+            <option value="active">Sadece aktif kurumlar</option>
+            <option value="passive">Sadece pasif kurumlar</option>
+          </select>
+
           <select id="institutionFeatureFilter">
             <option value="">Tüm özellikler</option>
             <option value="vip">Sadece VIP</option>
@@ -501,6 +513,8 @@
             <option value="vip_off">VIP kaldır</option>
             <option value="video_on">Videolu işaretle</option>
             <option value="video_off">Video işaretini kaldır</option>
+            <option value="status_active">Kurumları aktif yap</option>
+            <option value="status_passive">Kurumları pasif yap</option>
             <option value="ad_pause">Reklamı duraklat</option>
             <option value="ad_off">Reklamı kapat</option>
             <option value="announcement">Seçilenlere duyuru gönder</option>
@@ -1773,8 +1787,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=49"></script>
-  <script src="admin-advanced.js?v=27"></script>
+<script src="admin.js?v=50"></script>
+  <script src="admin-advanced.js?v=28"></script>
 
 </body>
 </html>
