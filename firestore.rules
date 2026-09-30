@@ -248,9 +248,9 @@ service cloud.firestore {
         && request.resource.data.customerPhone is string
         && request.resource.data.customerPhone.size() >= 10
         && request.resource.data.customerPhone.size() <= 20
-        && request.resource.data['service'] is string
-        && request.resource.data['service'].size() > 0
-        && request.resource.data['service'].size() <= 120
+        && request.resource.data.get('service', '') is string
+        && request.resource.data.get('service', '').size() > 0
+        && request.resource.data.get('service', '').size() <= 120
         && request.resource.data.date is string
         && request.resource.data.date.size() == 10
         && request.resource.data.time is string
