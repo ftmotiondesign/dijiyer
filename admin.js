@@ -5532,6 +5532,109 @@ function adminQuoteDetailState(request) {
   return {label:"Teklif Bekleniyor", cls:"waiting"};
 }
 
+function adminQuoteForwardMeta(request,institutionId){
+  const id=String(institutionId||"");
+  const history=Array.isArray(request?.forwardHistory)?request.forwardHistory:[];
+  for(let index=history.length-1;index>=0;index--){
+    const item=history[index]||{};
+    const ids=Array.isArray(item.institutionIds)?item.institutionIds.map(String):[];
+    const matchIndex=ids.indexOf(id);
+    if(matchIndex<0)continue;
+    const names=Array.isArray(item.institutionNames)?item.institutionNames:[];
+    return {
+      date:item.date||"",
+      tier:String(item.tier||""),
+      tierLabel:String(item.tierLabel||""),
+      institutionName:String(names[matchIndex]||"")
+    };
+  }
+  return {date:"",tier:"",tierLabel:"",institutionName:""};
+}
+
+function adminQuoteForwardTierLabel(meta,inst){
+  if(meta?.tierLabel)return meta.tierLabel;
+  if(meta?.tier==="vip")return "VIP";
+  if(meta?.tier==="ad")return "Reklam Veren";
+  if(meta?.tier==="standard")return "Standart";
+  if(meta?.tier==="manual")return "Manuel İletim";
+  if(isInstitutionVipActive(inst))return "VIP";
+  const adState=typeof getInstitutionAdState==="function" ? getInstitutionAdState(inst) : null;
+  if(adState?.advertiser)return "Reklam Veren";
+  return "Standart";
+}
+
+function adminQuoteForwardedRows(request,offers){
+  const targetId=String(request?.targetInstitutionId||"");
+  const ids=[...new Set(
+    (Array.isArray(request?.forwardInstitutionIds)?request.forwardInstitutionIds:[])
+      .map(String)
+      .filter(Boolean)
+  )];
+
+  return ids
+    .filter(id=>id!==targetId)
+    .map(id=>{
+      const inst=institutionRecords.find(item=>String(item.id)===id) || null;
+      const meta=adminQuoteForwardMeta(request,id);
+      const offer=(Array.isArray(offers)?offers:[]).find(
+        item=>String(item.institutionId||item.id||"")===id
+      ) || null;
+      const credit=quoteInstitutionCreditMeta(inst||{id});
+      const name=inst?.name || meta.institutionName || id;
+      return {id,inst,meta,offer,credit,name};
+    });
+}
+
+function adminQuoteForwardedHtml(request,offers){
+  const rows=adminQuoteForwardedRows(request,offers);
+
+  if(!rows.length){
+    return '<div class="quote-detail-empty"><strong>Henüz başka kuruma iletilmedi.</strong><span>Hedef kurum dışında bir kuruma yönlendirme yapıldığında kurum adı, yanıt durumu ve kredi bilgileri burada görünecek.</span></div>';
+  }
+
+  return '<div class="quote-detail-forwarded-list">'+rows.map(row=>{
+    const inst=row.inst;
+    const phoneDigits=normalizeWhatsApp(inst?.phone || inst?.whatsapp || "");
+    const statusClass=row.offer?"responded":"waiting";
+    const statusText=row.offer
+      ? "✓ Teklif verdi"+(Number(row.offer.price||0)>0?" · "+quoteMoney(row.offer.price):"")
+      : "⏳ Henüz teklif vermedi";
+    const tierLabel=adminQuoteForwardTierLabel(row.meta,inst);
+    const currentRequestCredit=row.offer ? 1 : 0;
+    const location=inst
+      ? ([inst.city,inst.district].filter(Boolean).join(" / ")||"-")
+      : "Kurum kaydı bulunamadı";
+
+    return '<article class="quote-detail-forwarded-card '+statusClass+'">'+
+      '<div class="quote-detail-forwarded-main">'+
+        '<div class="quote-detail-forwarded-name">'+
+          '<strong>'+escapeHtml(row.name)+'</strong>'+
+          '<span>'+escapeHtml(location)+'</span>'+
+          '<div class="quote-detail-forwarded-meta">'+
+            '<em>'+escapeHtml(tierLabel)+'</em>'+
+            (row.meta.date?'<small>İletim: '+escapeHtml(formatDate(row.meta.date))+'</small>':'')+
+          '</div>'+
+        '</div>'+
+        '<span class="quote-detail-forward-status '+statusClass+'">'+escapeHtml(statusText)+'</span>'+
+      '</div>'+
+      '<div class="quote-detail-credit-grid">'+
+        '<div><span>Toplam kredi</span><strong>'+row.credit.totalLoaded+'</strong></div>'+
+        '<div><span>Kalan bakiye</span><strong class="'+(row.credit.balance<0?'debt':'')+'">'+row.credit.balance+'</strong></div>'+
+        '<div><span>Kullanılan</span><strong>'+row.credit.totalUsed+'</strong></div>'+
+        '<div><span>Bu talep</span><strong>'+currentRequestCredit+' kredi</strong></div>'+
+      '</div>'+
+      '<div class="quote-detail-forwarded-actions">'+
+        (inst
+          ? '<a href="kurum.html?id='+encodeURIComponent(row.id)+'" target="_blank" rel="noopener">Sayfayı Gör</a>'
+          : '')+
+        (phoneDigits
+          ? '<a class="wa" href="https://wa.me/'+phoneDigits+'" target="_blank" rel="noopener">WhatsApp</a>'
+          : '')+
+      '</div>'+
+    '</article>';
+  }).join("")+'</div>';
+}
+
 function openQuoteDetailModal(requestId) {
   const request = quoteRequestRecords.find(item => String(item.id) === String(requestId));
   if (!request || !quoteDetailModal || !quoteDetailBody) return;
@@ -5544,6 +5647,8 @@ function openQuoteDetailModal(requestId) {
   const targetInstitution = request.targetInstitutionId
     ? institutionRecords.find(item => String(item.id) === String(request.targetInstitutionId))
     : null;
+  const forwardedRows = adminQuoteForwardedRows(request,offers);
+  const forwardedHtml = adminQuoteForwardedHtml(request,offers);
 
   if (quoteDetailTitle) quoteDetailTitle.textContent = request.service || "Teklif Talebi";
   if (quoteDetailMeta) {
@@ -5563,11 +5668,12 @@ function openQuoteDetailModal(requestId) {
     ? matching.slice(0, 12).map(inst => {
         const offer = offers.find(item => String(item.institutionId || item.id || "") === String(inst.id));
         const phoneDigits = normalizeWhatsApp(inst.phone || inst.whatsapp || "");
+        const credit = quoteInstitutionCreditMeta(inst);
         return '<article class="quote-detail-institution-card"><div><strong>' +
           escapeHtml(inst.name || "Kurum") +
           '</strong><span>' + escapeHtml([inst.city,inst.district].filter(Boolean).join(" / ") || "-") +
           '</span><small>' + (offer ? "✓ Teklif verdi" : "Henüz teklif vermedi") +
-          '</small></div><div class="quote-detail-institution-actions"><a href="kurum.html?id=' +
+          '</small><div class="quote-detail-institution-credit"><span><b>'+credit.totalLoaded+'</b> toplam kredi</span><span><b>'+credit.balance+'</b> bakiye</span><span><b>'+credit.totalUsed+'</b> kullanılan</span></div></div><div class="quote-detail-institution-actions"><a href="kurum.html?id=' +
           encodeURIComponent(inst.id) +
           '" target="_blank" rel="noopener">Sayfayı Gör</a>' +
           (phoneDigits ? '<a class="wa" href="https://wa.me/' + phoneDigits + '" target="_blank" rel="noopener">WhatsApp</a>' : "") +
@@ -5600,7 +5706,7 @@ function openQuoteDetailModal(requestId) {
     : '<div class="quote-detail-empty"><strong>Henüz kurum teklifi yok.</strong><span>Uygun kurum teklif gönderdiğinde fiyat ve kapsam burada görünecek.</span></div>';
 
   let html = "";
-  html += '<div class="quote-detail-status-strip state-' + state.cls + '"><div><span>SON DURUM</span><strong>' + escapeHtml(state.label) + '</strong></div><div class="quote-detail-status-stats"><span><b>' + offers.length + '</b> kurum teklifi</span><span><b>' + matching.length + '</b> uygun kurum</span>' + (lock ? '<span><b>✓</b> teklif kabulü var</span>' : "") + '</div></div>';
+  html += '<div class="quote-detail-status-strip state-' + state.cls + '"><div><span>SON DURUM</span><strong>' + escapeHtml(state.label) + '</strong></div><div class="quote-detail-status-stats"><span><b>' + offers.length + '</b> kurum teklifi</span><span><b>' + matching.length + '</b> uygun kurum</span>' + (forwardedRows.length ? '<span><b>'+forwardedRows.length+'</b> diğer kuruma iletildi</span>' : "") + (lock ? '<span><b>✓</b> teklif kabulü var</span>' : "") + '</div></div>';
 
   html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>MÜŞTERİ VE TALEP</span><h3>Talep Bilgileri</h3></div></div><div class="quote-detail-info-grid">' +
     '<div><span>Müşteri</span><strong>' + escapeHtml(request.name || "-") + '</strong></div>' +
@@ -5614,10 +5720,26 @@ function openQuoteDetailModal(requestId) {
     '<div class="quote-detail-note"><span>Müşteri notu</span><strong>' + escapeHtml(request.note || "Not eklenmemiş.") + '</strong></div></section>';
 
   if (request.targetInstitutionId) {
+    const targetCredit = targetInstitution ? quoteInstitutionCreditMeta(targetInstitution) : {balance:0,totalLoaded:0,totalUsed:0};
+    const targetOffer = offers.find(item=>String(item.institutionId||item.id||"")===String(request.targetInstitutionId));
     html += '<section class="quote-detail-section"><div class="quote-detail-section-head"><div><span>HEDEF KURUM</span><h3>' + escapeHtml(request.targetInstitutionName || targetInstitution?.name || "Kurum") + '</h3></div>' +
       (targetInstitution ? '<a class="quote-detail-head-link" href="kurum.html?id=' + encodeURIComponent(targetInstitution.id) + '" target="_blank" rel="noopener">Kurum Sayfası ↗</a>' : "") +
-      '</div><p class="quote-detail-helper">Bu talep toplu havuza açılmadan yalnızca hedef kuruma gönderilmiştir.</p></section>';
+      '</div>'+
+      '<div class="quote-detail-target-summary">'+
+        '<span class="quote-detail-forward-status '+(targetOffer?'responded':'waiting')+'">'+(targetOffer?'✓ Teklif verdi':'⏳ Henüz teklif vermedi')+'</span>'+
+        '<div class="quote-detail-target-credit"><span><b>'+targetCredit.totalLoaded+'</b> toplam kredi</span><span><b>'+targetCredit.balance+'</b> bakiye</span><span><b>'+targetCredit.totalUsed+'</b> kullanılan</span></div>'+
+      '</div>'+
+      '<p class="quote-detail-helper">' +
+        (forwardedRows.length
+          ? 'Talep önce hedef kuruma gönderildi. Ardından müşteri paylaşım izni kapsamında <strong>'+forwardedRows.length+' farklı kuruma daha</strong> iletildi.'
+          : 'Bu talep toplu havuza açılmadan yalnızca hedef kuruma gönderilmiştir.') +
+      '</p></section>';
   }
+
+  html += '<section class="quote-detail-section quote-detail-forwarded-section"><div class="quote-detail-section-head"><div><span>DAĞITIM TAKİBİ</span><h3>Teklif Gönderilen Diğer Kurumlar (' + forwardedRows.length + ')</h3></div></div>' +
+    '<p class="quote-detail-helper quote-detail-forwarded-helper">Hedef kurum dışındaki gerçek iletimler burada gösterilir. Teklif veren kurumda bu talep için 1 kredi kullanılmış sayılır.</p>' +
+    forwardedHtml +
+  '</section>';
 
   if (lock) {
     const completed = lock.status === "used" || lock.registrationStatus === "completed";
