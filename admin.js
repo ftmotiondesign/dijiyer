@@ -219,6 +219,7 @@ const ADMIN_TAB_META = {
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
   unmatchedSearchesTabBtn:["institutions","Bulunamayan Aramalar","Kullanıcıların bulamadığı hizmetleri inceleyin; yeni alt kategori ve kurum ihtiyacını gerçek aramalardan görün."],
+  businessOpportunitiesTabBtn:["business","İş & Ticaret Fırsatları","İhaleleri, tedarik taleplerini, toplu alımları, bayilikleri ve diğer ticari fırsatları yönetin."],
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
   opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
   mediaArchiveTabBtn:["ads","Medya Arşivi","Fırsat ve banner medyalarını, kullanım durumlarını ve temizleme işlemlerini yönetin."],
@@ -277,6 +278,7 @@ function initSimpleAdminNavigation(){
         quotes:"quotesTabBtn",
         unanswered:"quoteRoutingTabBtn",
         institutions:"institutionsTabBtn",
+        business:"businessOpportunitiesTabBtn",
         ads:"bannerAdsTabBtn",
         support:"supportTabBtn",
         system:"systemTabBtn"
