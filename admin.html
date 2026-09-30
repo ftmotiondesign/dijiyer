@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=21">
+  <link rel="stylesheet" href="admin-advanced.css?v=22">
 </head>
 
 <body>
@@ -126,7 +126,7 @@
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="mediaArchiveTabBtn" data-admin-group="ads">🗂 Medya Arşivi <span id="mediaArchiveTabCount" class="admin-tab-count">0</span></button>
-                <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads">🌐 Harici Reklamlar <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
+                <button class="admin-tab" id="externalAdsTabBtn" data-admin-group="ads" hidden>🌐 Site / Affiliate Reklamları <span id="externalAdsTabCount" class="admin-tab-count">0</span></button>
 <button class="admin-tab" id="promotionOrdersTabBtn" data-admin-group="ads">🛍️ Siparişler <span id="promotionOrdersTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="promotionPackagesTabBtn" data-admin-group="ads">📦 Paketler</button>
         <button class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></button>
@@ -749,10 +749,42 @@
       <section id="bannerAdsSection" hidden>
         <div class="section-title banner-admin-title">
           <div>
-            <h3>📣 Reklam Merkezi / Yayın Alanları</h3>
+            <h3>📣 Reklam Merkezi</h3>
             <p id="bannerAdAdminCount">Reklamlar yükleniyor...</p>
           </div>
-          <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Banner Reklama Ekle</button>
+          <button type="button" class="advanced-primary-btn" id="bannerAdNewBtn">+ Kurum Reklamı Ekle</button>
+        </div>
+
+        <div class="ad-center-hub">
+          <button type="button" class="ad-center-hub-card active" id="adCenterFocusBanner">
+            <span class="ad-center-hub-icon">🏢</span>
+            <span class="ad-center-hub-copy">
+              <strong>Kurum Reklamları</strong>
+              <small>Dijiyer'deki kayıtlı kurumları banner ve sponsor alanlarında yayınla.</small>
+              <em>7 farklı gösterim alanı</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterBannerCount">0 yayında</span>
+          </button>
+
+          <button type="button" class="ad-center-hub-card" id="adCenterOpenExternal">
+            <span class="ad-center-hub-icon">🌐</span>
+            <span class="ad-center-hub-copy">
+              <strong>Site / Affiliate Reklamları</strong>
+              <small>Harici markaları Ana Sayfa, Teklif, İş, Bayi ve Fırsatlar sayfalarında yayınla.</small>
+              <em>5 sayfada hedefli yayın</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterExternalCount">0 yayında</span>
+          </button>
+
+          <button type="button" class="ad-center-hub-card" id="adCenterOpenOpportunity">
+            <span class="ad-center-hub-icon">🎯</span>
+            <span class="ad-center-hub-copy">
+              <strong>KEŞFET / FIRSAT Sponsorları</strong>
+              <small>Kayıtlı kurumları Fırsatlar ekranında sponsorlu olarak öne çıkar.</small>
+              <em>Kurum havuzundan tek tıkla</em>
+            </span>
+            <span class="ad-center-hub-count" id="adCenterOpportunityCount">0 yayında</span>
+          </button>
         </div>
 
         <div class="banner-list-placement-note">
@@ -772,7 +804,7 @@
             <input type="hidden" id="bannerAdEditId">
 
             <div class="banner-editor-head">
-              <div><span>BANNER REKLAMA EKLE</span><strong id="bannerAdFormTitle">Yeni Banner Reklamı</strong></div>
+              <div><span>KURUM REKLAMI OLUŞTUR</span><strong id="bannerAdFormTitle">Yeni Kurum Reklamı</strong></div>
               <label class="promotion-package-active-toggle">
                 <input type="checkbox" id="bannerAdActive" checked><span>Yayında</span>
               </label>
@@ -856,29 +888,32 @@
 
             <div class="banner-placement-box">
               <div class="banner-target-head">
-                <strong>Gösterim Yeri</strong>
-                <small>Reklamın sitede hangi alanda gösterileceğini seçin.</small>
+                <strong>Reklam nerede görünsün?</strong>
+                <small>Teknik isim yerine reklamın gerçek konumunu seçin.</small>
               </div>
-              <label>Reklam Türü
+              <label>Gösterim Alanı
                 <select id="bannerAdPlacement">
-                  <option value="search">🔎 Arama Sonuçları · 2. kurumdan sonra</option>
-                  <option value="home_sponsor">📣 Bölgenizde Öne Çıkanlar · Sponsor alanı</option>
-                  <option value="premium_home">◆ Ana Sayfa Premium Vitrini</option>
-                  <option value="mobile_sponsor">📱 Mobil 2’li Sponsor Alanı · Premium vitrinin altı</option>
-                  <option value="sidebar_sponsor">▤ Masaüstü Yan Sponsor Alanı</option>
-                  <option value="detail_banner">🏢 Kurum Hızlı Önizleme Altı Banner</option>
-                  <option value="page_top_mini">▰ Sayfa Üstü Mini Banner · Teklif / İş / Bayi</option>
+                  <option value="search">🔎 Ana Sayfa · Kurum listesi · 2. kurumdan sonra</option>
+                  <option value="home_sponsor">📣 Ana Sayfa · Bölgenizde Öne Çıkanlar</option>
+                  <option value="premium_home">◆ Ana Sayfa · Geniş Premium Vitrin</option>
+                  <option value="mobile_sponsor">📱 Ana Sayfa (Mobil) · Premium altı 2’li alan</option>
+                  <option value="sidebar_sponsor">▤ Ana Sayfa (Masaüstü) · Sonuçların yanında</option>
+                  <option value="detail_banner">🏢 Kurum Önizleme (Masaüstü) · Alt banner</option>
+                  <option value="page_top_mini">▰ Teklif / İş / Bayi · Sayfa üstü mini banner</option>
                 </select>
               </label>
-              <div class="banner-placement-help">
-                <span><b>Arama Sonuçları:</b> Kurum listesindeki 2. kurumdan sonra görünür.</span>
-                <span><b>Bölgenizde Öne Çıkanlar:</b> Ana sayfadaki sponsorlu işletmeler bölümünde görünür.</span>
-                <span><b>Premium Vitrin:</b> Ana sayfadaki geniş premium reklam alanında görünür.</span>
-                <span><b>Mobil 2’li Sponsor Alanı:</b> Mobil ana sayfada Premium vitrinin hemen altında, iki reklam yan yana ve kaydırmalı olarak görünür.</span>
-                <span><b>Masaüstü Yan Sponsor:</b> Sonuç sayfasında filtrelerin yanındaki reklam alanında görünür.</span>
-                <span><b>Hızlı Önizleme Bannerı:</b> Masaüstünde kurum hızlı önizlemesinin altında görünür.</span>
-                <span><b>Sayfa Üstü Mini Banner:</b> Teklif Al, İş Fırsatları ve Bayi &amp; Servis sayfalarında Ana Sayfa butonunun yanında görünür. Birden fazla reklam varsa seçilen süreye göre dönüşür.</span>
-                <span><b>Not:</b> İlk kez bu alanı kullanıyorsanız Firestore Rules içinde <code>page_top_mini</code> değerinin izinli olduğundan emin olun.</span>
+
+              <div class="banner-placement-live-guide" id="bannerPlacementGuide">
+                <span class="banner-placement-live-icon" id="bannerPlacementGuideIcon">🔎</span>
+                <div class="banner-placement-live-copy">
+                  <span id="bannerPlacementGuidePage">ANA SAYFA</span>
+                  <strong id="bannerPlacementGuideTitle">Kurum listesindeki 2. kurumdan sonra</strong>
+                  <small id="bannerPlacementGuideDescription">Kullanıcı kurumları incelerken akışın içinde görünür.</small>
+                </div>
+                <div class="banner-placement-live-meta">
+                  <b id="bannerPlacementGuideDevice">Mobil + Masaüstü</b>
+                  <em id="bannerPlacementGuideType">Akış içi reklam</em>
+                </div>
               </div>
             </div>
 
@@ -1081,10 +1116,13 @@
             <section id="externalAdsSection" hidden>
         <div class="section-title external-ad-admin-title">
           <div>
-            <h3>🌐 Harici / Affiliate Reklamlar</h3>
+            <h3>🌐 Reklam Merkezi / Site & Affiliate Reklamları</h3>
             <p id="externalAdAdminCount">Reklamlar yükleniyor...</p>
           </div>
-          <button type="button" class="advanced-primary-btn" id="externalAdNewBtn">+ Harici Reklam Ekle</button>
+          <div class="external-ad-title-actions">
+            <button type="button" class="support-refresh-btn" id="externalAdsBackCenter">← Reklam Merkezi</button>
+            <button type="button" class="advanced-primary-btn" id="externalAdNewBtn">+ Site Reklamı Ekle</button>
+          </div>
         </div>
 
         <div class="external-ad-admin-note">
@@ -1098,7 +1136,7 @@
 
             <div class="external-ad-editor-head">
               <div>
-                <span>HARİCİ REKLAM</span>
+                <span>SİTE / AFFILIATE REKLAMI</span>
                 <strong id="externalAdFormTitle">Yeni Reklam</strong>
               </div>
               <label class="promotion-package-active-toggle">
@@ -1266,8 +1304,8 @@
           <section class="external-ad-list-panel">
             <div class="external-ad-list-head">
               <div>
-                <strong>Harici Reklam Havuzu</strong>
-                <small>Aktif reklamlar ana sayfadaki harici banner alanında sırayla döner.</small>
+                <strong>Site / Affiliate Reklam Havuzu</strong>
+                <small>Her reklam yalnızca seçtiğiniz sayfalarda ve tarih aralığında yayınlanır.</small>
               </div>
               <input id="externalAdSearch" type="search" placeholder="Marka veya başlık ara...">
             </div>
@@ -2128,7 +2166,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=56"></script>
-  <script src="admin-advanced.js?v=36"></script>
+  <script src="admin-advanced.js?v=37"></script>
 
 </body>
 </html>
