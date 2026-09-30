@@ -314,6 +314,9 @@ quoteCardHtml = function(quote,compact=false){
   const offer=institutionOfferMap.get(quote.id);
   const lock=institutionLockMap.get(quote.id);
   const sameDistrict=String(quote.district||"").toLocaleLowerCase("tr-TR") === String(currentInstitution.district||"").toLocaleLowerCase("tr-TR");
+  const routedToThisInstitution=Array.isArray(quote.forwardInstitutionIds)
+    && quote.forwardInstitutionIds.map(String).includes(String(currentAccount.institutionId||""))
+    && String(quote.targetInstitutionId||"")!==String(currentAccount.institutionId||"");
 
   if(compact){
     return `
@@ -379,6 +382,7 @@ quoteCardHtml = function(quote,compact=false){
       <div class="quote-card-head">
         <div>
           <div class="quote-service">${offerSafe(quote.service || "Teklif Talebi")}</div>
+          ${routedToThisInstitution?'<div class="quote-routed-badge">⚡ Dijiyer yönlendirmesi · yeni müşteri fırsatı</div>':""}
           <div class="quote-location">
             📍 ${offerSafe([quote.city,quote.district].filter(Boolean).join(" / "))}
             ${sameDistrict ? '<span class="district-badge">Aynı ilçe</span>' : '<span class="city-badge">Aynı şehir</span>'}
