@@ -30,6 +30,7 @@ const quotesSection = document.getElementById("quotesSection");
 const offerReportSection = document.getElementById("offerReportSection");
 const issuesSection = document.getElementById("issuesSection");
 const accountsSection = document.getElementById("accountsSection");
+const unmatchedSearchesSection = document.getElementById("unmatchedSearchesSection");
 const overviewTabBtn = document.getElementById("overviewTabBtn");
 const dailyStatsVisibilityToggle = document.getElementById("dailyStatsVisibilityToggle");
 const dailyStatsVisibilityState = document.getElementById("dailyStatsVisibilityState");
@@ -53,6 +54,7 @@ const quotesTabBtn = document.getElementById("quotesTabBtn");
 const offerReportTabBtn = document.getElementById("offerReportTabBtn");
 const issuesTabBtn = document.getElementById("issuesTabBtn");
 const accountsTabBtn = document.getElementById("accountsTabBtn");
+const unmatchedSearchesTabBtn = document.getElementById("unmatchedSearchesTabBtn");
 const institutionEditModal = document.getElementById("institutionEditModal");
 const institutionSearch = document.getElementById("institutionSearch");
 const institutionCategoryFilter = document.getElementById("institutionCategoryFilter");
@@ -115,6 +117,17 @@ const quoteActivityTimeline = document.getElementById("quoteActivityTimeline");
 
 const accountsList = document.getElementById("accountsList");
 const accountCount = document.getElementById("accountCount");
+const unmatchedSearchesList = document.getElementById("unmatchedSearchesList");
+const unmatchedSearchesCount = document.getElementById("unmatchedSearchesCount");
+const unmatchedSearchesTabCount = document.getElementById("unmatchedSearchesTabCount");
+const unmatchedSearchQuery = document.getElementById("unmatchedSearchQuery");
+const unmatchedSearchStatusFilter = document.getElementById("unmatchedSearchStatusFilter");
+const unmatchedSearchReasonFilter = document.getElementById("unmatchedSearchReasonFilter");
+const unmatchedSearchesRefreshBtn = document.getElementById("unmatchedSearchesRefreshBtn");
+const unmatchedSearchTotal = document.getElementById("unmatchedSearchTotal");
+const unmatchedSearchNew = document.getElementById("unmatchedSearchNew");
+const unmatchedSearchCategoryMissing = document.getElementById("unmatchedSearchCategoryMissing");
+const unmatchedSearchNoInstitution = document.getElementById("unmatchedSearchNoInstitution");
 
 const overviewInstitutionCount = document.getElementById("overviewInstitutionCount");
 const overviewPendingApplications = document.getElementById("overviewPendingApplications");
@@ -162,6 +175,7 @@ const ADMIN_TAB_META = {
   institutionsTabBtn:["institutions","Kurumlar","Yayındaki kurumları arayın, düzenleyin ve teklif durumlarını yönetin."],
   applicationsTabBtn:["institutions","Kurum Başvuruları","Yeni kurum başvurularını inceleyip onaylayın veya reddedin."],
   accountsTabBtn:["institutions","Kurum Hesapları","Kurum paneline erişim isteyen hesapları yönetin."],
+  unmatchedSearchesTabBtn:["institutions","Bulunamayan Aramalar","Kullanıcıların bulamadığı hizmetleri inceleyin; yeni alt kategori ve kurum ihtiyacını gerçek aramalardan görün."],
   bannerAdsTabBtn:["ads","Reklam Merkezi","Banner ve sponsorlu yayın alanlarını yönetin."],
   opportunitySponsorsTabBtn:["ads","KEŞFET / FIRSAT","Keşfet ve Fırsatlar ekranlarında sponsorlu görünecek kurumları, gösterim yerlerini ve mobil medyalarını yönetin."],
   mediaArchiveTabBtn:["ads","Medya Arşivi","Fırsat ve banner medyalarını, kullanım durumlarını ve temizleme işlemlerini yönetin."],
@@ -266,6 +280,7 @@ let applicationRecords = [];
 let institutionRecords = [];
 let quoteRequestRecords = [];
 let institutionAccountRecords = [];
+let unmatchedSearchRecords = [];
 let institutionOfferReportRecords = [];
 let institutionOfferReportEvents = [];
 const adminQuoteActivityCache = new Map();
@@ -604,6 +619,7 @@ auth.onAuthStateChanged(async (user) => {
     await loadInstitutions();
     await loadQuoteRequests();
     await loadInstitutionAccounts();
+    await loadUnmatchedSearches(true);
     await loadDailyStatsVisibilitySetting();
     await loadHomeBottomVisibilitySettings();
     refreshAdminOverview();
@@ -804,7 +820,7 @@ function escapeHtml(text) {
 }
 
 
-[applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn]
+[applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
   .forEach(button => button?.addEventListener("click", () => {
     overviewSection.hidden = true;
     issuesSection.hidden = true;
@@ -820,8 +836,9 @@ overviewTabBtn?.addEventListener("click", () => {
   offerReportSection.hidden = true;
   issuesSection.hidden = true;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
 
-  [applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn]
+  [applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, issuesTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
     .forEach(button => button?.classList.remove("active"));
   overviewTabBtn.classList.add("active");
   refreshAdminOverview();
@@ -835,8 +852,9 @@ issuesTabBtn?.addEventListener("click", async () => {
   offerReportSection.hidden = true;
   issuesSection.hidden = false;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
 
-  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn]
+  [overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn, offerReportTabBtn, accountsTabBtn, unmatchedSearchesTabBtn]
     .forEach(button => button?.classList.remove("active"));
   issuesTabBtn.classList.add("active");
 
@@ -852,11 +870,13 @@ applicationsTabBtn.addEventListener("click", () => {
   quotesSection.hidden = true;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.add("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
+  unmatchedSearchesTabBtn?.classList.remove("active");
 });
 
 institutionsTabBtn.addEventListener("click", async () => {
@@ -865,11 +885,13 @@ institutionsTabBtn.addEventListener("click", async () => {
   quotesSection.hidden = true;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.add("active");
   quotesTabBtn.classList.remove("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
+  unmatchedSearchesTabBtn?.classList.remove("active");
   await loadInstitutions();
 });
 
@@ -879,11 +901,13 @@ quotesTabBtn.addEventListener("click", async () => {
   quotesSection.hidden = false;
   offerReportSection.hidden = true;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.add("active");
   offerReportTabBtn.classList.remove("active");
   accountsTabBtn.classList.remove("active");
+  unmatchedSearchesTabBtn?.classList.remove("active");
   await loadQuoteRequests();
 });
 
@@ -893,12 +917,14 @@ offerReportTabBtn.addEventListener("click", async () => {
   quotesSection.hidden = true;
   offerReportSection.hidden = false;
   accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
 
   applicationsTabBtn.classList.remove("active");
   institutionsTabBtn.classList.remove("active");
   quotesTabBtn.classList.remove("active");
   offerReportTabBtn.classList.add("active");
   accountsTabBtn.classList.remove("active");
+  unmatchedSearchesTabBtn?.classList.remove("active");
 
   await loadQuoteRequests();
   renderInstitutionOfferReport();
@@ -4032,6 +4058,7 @@ accountsTabBtn.addEventListener("click", async () => {
   institutionsSection.hidden = true;
   quotesSection.hidden = true;
   offerReportSection.hidden = true;
+  unmatchedSearchesSection.hidden = true;
   accountsSection.hidden = false;
 
   applicationsTabBtn.classList.remove("active");
@@ -4863,3 +4890,225 @@ async function quickOfferIssueStatus(quoteId, issueId, status, summary) {
 issueSearch?.addEventListener("input", renderIssueCenter);
 issueStatusFilter?.addEventListener("change", renderIssueCenter);
 issueDecisionFilter?.addEventListener("change", renderIssueCenter);
+
+
+/* =========================================================
+   BULUNAMAYAN ARAMALAR
+   Kullanıcıların sonuç/kategori bulamadığı sorguları yönetir.
+   ========================================================= */
+function unmatchedSearchReasonLabel(reason) {
+  return String(reason || '') === 'no_institution_result'
+    ? 'Kategori var · kurum sonucu yok'
+    : 'Kategori / alt kategori bulunamadı';
+}
+
+function unmatchedSearchStatusLabel(status) {
+  const map = {
+    new:'Yeni',
+    reviewed:'İncelendi',
+    category_added:'Kategoriye Eklendi'
+  };
+  return map[String(status || 'new')] || 'Yeni';
+}
+
+async function loadUnmatchedSearches(silent = false) {
+  if (!unmatchedSearchesList) return;
+
+  if (!silent) {
+    unmatchedSearchesList.innerHTML =
+      '<div class="advanced-empty">Bulunamayan aramalar yükleniyor...</div>';
+  }
+
+  try {
+    const snapshot = await db.collection('unmatchedSearches')
+      .orderBy('createdAt','desc')
+      .limit(250)
+      .get();
+
+    unmatchedSearchRecords = snapshot.docs.map(doc => ({
+      id:doc.id,
+      ...doc.data()
+    }));
+
+    renderUnmatchedSearches();
+  } catch (error) {
+    console.warn('Bulunamayan aramalar yüklenemedi:', error);
+    unmatchedSearchRecords = [];
+
+    if (unmatchedSearchesList && !silent) {
+      unmatchedSearchesList.innerHTML =
+        '<div class="advanced-empty">Kayıtlar okunamadı. Firestore kuralında unmatchedSearches koleksiyonuna yönetici okuma izni eklenmelidir.</div>';
+    }
+
+    if (unmatchedSearchesTabCount) unmatchedSearchesTabCount.textContent = '0';
+  }
+}
+
+function renderUnmatchedSearches() {
+  if (!unmatchedSearchesList) return;
+
+  const total = unmatchedSearchRecords.length;
+  const newCount = unmatchedSearchRecords.filter(item =>
+    String(item.status || 'new') === 'new'
+  ).length;
+  const categoryMissing = unmatchedSearchRecords.filter(item =>
+    String(item.reason || '') === 'category_not_found'
+  ).length;
+  const noInstitution = unmatchedSearchRecords.filter(item =>
+    String(item.reason || '') === 'no_institution_result'
+  ).length;
+
+  if (unmatchedSearchTotal) unmatchedSearchTotal.textContent = total;
+  if (unmatchedSearchNew) unmatchedSearchNew.textContent = newCount;
+  if (unmatchedSearchCategoryMissing) unmatchedSearchCategoryMissing.textContent = categoryMissing;
+  if (unmatchedSearchNoInstitution) unmatchedSearchNoInstitution.textContent = noInstitution;
+  if (unmatchedSearchesTabCount) unmatchedSearchesTabCount.textContent = newCount;
+  if (unmatchedSearchesCount) {
+    unmatchedSearchesCount.textContent =
+      total + ' kayıt · ' + newCount + ' yeni · gerçek kullanıcı aramalarından kategori geliştirme sinyalleri';
+  }
+
+  const query = String(unmatchedSearchQuery?.value || '')
+    .trim()
+    .toLocaleLowerCase('tr-TR');
+  const status = String(unmatchedSearchStatusFilter?.value || '');
+  const reason = String(unmatchedSearchReasonFilter?.value || '');
+
+  const rows = unmatchedSearchRecords.filter(item => {
+    const haystack = [
+      item.query,
+      item.mainCategoryLabel,
+      item.mainCategory,
+      item.city,
+      item.district,
+      ...(Array.isArray(item.suggestionLabels) ? item.suggestionLabels : [])
+    ].join(' ').toLocaleLowerCase('tr-TR');
+
+    return (!query || haystack.includes(query)) &&
+      (!status || String(item.status || 'new') === status) &&
+      (!reason || String(item.reason || '') === reason);
+  });
+
+  if (!rows.length) {
+    unmatchedSearchesList.innerHTML =
+      '<div class="advanced-empty">Bu filtreye uygun bulunamayan arama kaydı yok.</div>';
+    return;
+  }
+
+  unmatchedSearchesList.innerHTML = rows.map(item => {
+    const suggestions = Array.isArray(item.suggestionLabels)
+      ? item.suggestionLabels.filter(Boolean)
+      : [];
+    const location = [item.city,item.district].filter(Boolean).join(' / ') || 'Konum seçilmedi';
+    const recordStatus = String(item.status || 'new');
+
+    return '<article class="unmatched-search-card ' +
+      escapeHtml(recordStatus) +
+      '" data-unmatched-id="' + escapeHtml(item.id) + '">' +
+        '<div class="unmatched-search-main">' +
+          '<div class="unmatched-search-query-row">' +
+            '<div>' +
+              '<span>' + escapeHtml(unmatchedSearchReasonLabel(item.reason)) + '</span>' +
+              '<h4>' + escapeHtml(item.query || 'Arama') + '</h4>' +
+            '</div>' +
+            '<em class="unmatched-status ' + escapeHtml(recordStatus) + '">' +
+              escapeHtml(unmatchedSearchStatusLabel(recordStatus)) +
+            '</em>' +
+          '</div>' +
+          '<div class="unmatched-search-meta">' +
+            '<span>📂 ' + escapeHtml(item.mainCategoryLabel || 'Kategori belirlenemedi') + '</span>' +
+            '<span>📍 ' + escapeHtml(location) + '</span>' +
+            '<span>🕒 ' + escapeHtml(formatDate(item.createdAt)) + '</span>' +
+          '</div>' +
+          (suggestions.length
+            ? '<div class="unmatched-search-suggestions"><small>Yakın öneriler</small>' +
+              suggestions.map(label => '<b>' + escapeHtml(label) + '</b>').join('') +
+              '</div>'
+            : '') +
+        '</div>' +
+        '<div class="unmatched-search-actions">' +
+          (recordStatus !== 'reviewed'
+            ? '<button type="button" data-unmatched-status="reviewed">İncelendi</button>'
+            : '') +
+          (recordStatus !== 'category_added'
+            ? '<button type="button" class="primary" data-unmatched-status="category_added">Kategoriye Eklendi</button>'
+            : '') +
+          '<button type="button" class="danger" data-unmatched-delete>Sil</button>' +
+        '</div>' +
+      '</article>';
+  }).join('');
+}
+
+async function updateUnmatchedSearchStatus(id, status) {
+  try {
+    await db.collection('unmatchedSearches').doc(id).update({
+      status,
+      updatedAt:new Date().toISOString()
+    });
+    const row = unmatchedSearchRecords.find(item => String(item.id) === String(id));
+    if (row) {
+      row.status = status;
+      row.updatedAt = new Date().toISOString();
+    }
+    renderUnmatchedSearches();
+  } catch (error) {
+    console.error('Bulunamayan arama durumu kaydedilemedi:', error);
+    alert('Durum kaydedilemedi. Firestore yönetici yazma iznini kontrol edin.');
+  }
+}
+
+async function deleteUnmatchedSearch(id) {
+  const ok = confirm('Bu arama kaydını silmek istiyor musunuz?');
+  if (!ok) return;
+
+  try {
+    await db.collection('unmatchedSearches').doc(id).delete();
+    unmatchedSearchRecords = unmatchedSearchRecords.filter(item =>
+      String(item.id) !== String(id)
+    );
+    renderUnmatchedSearches();
+  } catch (error) {
+    console.error('Bulunamayan arama silinemedi:', error);
+    alert('Kayıt silinemedi.');
+  }
+}
+
+unmatchedSearchesTabBtn?.addEventListener('click', async () => {
+  overviewSection.hidden = true;
+  applicationsSection.hidden = true;
+  institutionsSection.hidden = true;
+  quotesSection.hidden = true;
+  offerReportSection.hidden = true;
+  issuesSection.hidden = true;
+  accountsSection.hidden = true;
+  unmatchedSearchesSection.hidden = false;
+
+  [
+    overviewTabBtn, applicationsTabBtn, institutionsTabBtn, quotesTabBtn,
+    offerReportTabBtn, issuesTabBtn, accountsTabBtn
+  ].forEach(button => button?.classList.remove('active'));
+
+  unmatchedSearchesTabBtn.classList.add('active');
+  await loadUnmatchedSearches();
+});
+
+unmatchedSearchQuery?.addEventListener('input', renderUnmatchedSearches);
+unmatchedSearchStatusFilter?.addEventListener('change', renderUnmatchedSearches);
+unmatchedSearchReasonFilter?.addEventListener('change', renderUnmatchedSearches);
+unmatchedSearchesRefreshBtn?.addEventListener('click', () => loadUnmatchedSearches());
+
+unmatchedSearchesList?.addEventListener('click', event => {
+  const card = event.target.closest('[data-unmatched-id]');
+  if (!card) return;
+
+  const id = card.dataset.unmatchedId;
+  const statusButton = event.target.closest('[data-unmatched-status]');
+  const deleteButton = event.target.closest('[data-unmatched-delete]');
+
+  if (statusButton) {
+    updateUnmatchedSearchStatus(id, statusButton.dataset.unmatchedStatus);
+    return;
+  }
+
+  if (deleteButton) deleteUnmatchedSearch(id);
+});
