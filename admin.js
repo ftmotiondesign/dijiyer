@@ -4260,9 +4260,9 @@ function quoteRoutingAgeLabel(minutes){
 
 
 function secondOfferFallbackDelayMinutes(offer){
-  const validityHours=Math.max(1,Number(offer?.validityHours||48));
-  const halfValidity=Math.floor(validityHours*60/2);
-  return Math.max(30,Math.min(180,halfValidity||180));
+  // TEST MODU: 2. teklif daveti 1 dakika sonra oluşur.
+  // Test tamamlanınca normal süre aralığına geri alınacak.
+  return 1;
 }
 
 function secondOfferFallbackQuoteClosed(request){
