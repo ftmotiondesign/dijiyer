@@ -4746,7 +4746,7 @@ function showQuoteTrackingSuccess(tracking, matchedCount, quoteId, requestData =
   if (emailStatusEl) {
     const email = String(requestData.email || '').trim();
     emailStatusEl.textContent = email
-      ? '✉ Takip linkiniz ' + email + ' adresine de gönderilecek.'
+      ? '✉ ' + email + ' adresi takip bildirimi için kaydedildi.'
       : '✉ Takip linkini kopyalayarak güvenli bir yerde saklayabilirsiniz.';
   }
 
