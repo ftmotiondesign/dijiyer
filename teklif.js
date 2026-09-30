@@ -197,6 +197,9 @@ function acceptanceTermsHtml(offer){
         <div><span>KDV</span><strong>${safe(offer.vatStatus||"-")}</strong></div>
         <div><span>Ek ücret</span><strong>${safe(offer.extraFee||"Yok")}</strong></div>
       </div>
+      ${offer.extraFee==="Var"
+        ? `<div class="offer-condition"><span>Ek ücret detayı</span><strong>${money(offer.extraFeeAmount||0)} · ${safe(offer.extraFeeRequired||"Zorunlu")}</strong><small style="display:block;margin-top:4px">${safe(offer.extraFeeNote||"")}</small></div>`
+        : ""}
       <div class="offer-acceptance-warning">
         ⏱ Bu fiyat ve özellikler <b>${safe(validity)}</b> boyunca geçerlidir. Teklifi kabul etseniz bile kesin kayıt oluşmaz. Son geçerlilik tarihine kadar kurumla doğrudan görüşüp gerçek kaydınızı tamamlamanız gerekir. Süre dolarsa fiyat ve şartlar garanti edilmez; kurumla yeniden görüşmeniz gerekir.
       </div>
@@ -1132,6 +1135,9 @@ function confirmOfferLock(offer){
             <div><span>KDV</span><strong>${safe(offer.vatStatus||"-")}</strong></div>
             <div><span>Ek ücret</span><strong>${safe(offer.extraFee||"Yok")}</strong></div>
           </div>
+          ${offer.extraFee==="Var"
+            ? `<div class="offer-accept-confirm-scope"><span>Ek ücret detayı</span><strong>${money(offer.extraFeeAmount||0)} · ${safe(offer.extraFeeRequired||"Zorunlu")} · ${safe(offer.extraFeeNote||"")}</strong></div>`
+            : ""}
 
           <div class="offer-accept-confirm-scope">
             <span>Teklif kapsamı</span>
@@ -1239,6 +1245,9 @@ async function lockOffer(quoteId,institutionId,button){
       lockedScope:previewOffer.scope||"",
       conditions:previewOffer.conditions||"",
       extraFee:previewOffer.extraFee||"Yok",
+      extraFeeAmount:Number(previewOffer.extraFeeAmount||0),
+      extraFeeRequired:String(previewOffer.extraFeeRequired||""),
+      extraFeeNote:String(previewOffer.extraFeeNote||""),
       offerCreatedAt:previewOffer.createdAt||"",
       offerUpdatedAt:previewOffer.updatedAt||previewOffer.createdAt||"",
       offerVersion:Math.max(1,Number(previewOffer.offerVersion||1)),
