@@ -7792,3 +7792,86 @@ function positionMobileSponsoredSlotNearJobs(){
 window.addEventListener('resize',positionMobileSponsoredSlotNearJobs);
 document.addEventListener('DOMContentLoaded',positionMobileSponsoredSlotNearJobs);
 window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
+
+
+// =========================================================
+// DIJIYER DESKTOP MARKETPLACE V1
+// Üst arama + konum + hızlı kategori butonlarını mevcut
+// Dijiyer filtre altyapısına bağlar.
+// =========================================================
+(function setupDesktopMarketplace(){
+  const desktopLocationBtn = document.getElementById('desktopLocationBtn');
+  const desktopLocationText = document.getElementById('desktopLocationText');
+  const desktopSearchSubmitBtn = document.getElementById('desktopSearchSubmitBtn');
+  const searchInput = document.getElementById('searchInput');
+  const resultsSection = document.getElementById('resultsSection');
+
+  function syncDesktopLocation(){
+    if(!desktopLocationText)return;
+    const source = document.getElementById('locationBtnText');
+    desktopLocationText.textContent = source?.textContent?.trim() || 'Tüm Türkiye';
+  }
+
+  desktopLocationBtn?.addEventListener('click', event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof setLocationPopover === 'function')setLocationPopover(true);
+  });
+
+  desktopSearchSubmitBtn?.addEventListener('click', ()=>{
+    if(typeof renderList === 'function')renderList();
+    resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+
+  searchInput?.addEventListener('keydown', event=>{
+    if(event.key !== 'Enter')return;
+    event.preventDefault();
+    if(typeof renderList === 'function')renderList();
+    resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+
+  document.querySelectorAll('[data-desktop-category]').forEach(button=>{
+    button.addEventListener('click', ()=>{
+      const key = String(button.dataset.desktopCategory || '').trim();
+
+      if(typeof clearAllCategorySelections === 'function'){
+        clearAllCategorySelections();
+      }else{
+        document.querySelectorAll('.categoryFilter,.subCategoryFilter').forEach(input=>{
+          input.checked=false;
+        });
+      }
+
+      if(key){
+        const target = [...document.querySelectorAll('.categoryFilter')]
+          .find(input=>String(input.value||'')===key);
+        if(target){
+          target.checked=true;
+          target.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+      }
+
+      document.querySelectorAll('[data-desktop-category]').forEach(item=>{
+        item.classList.toggle(
+          'is-active',
+          String(item.dataset.desktopCategory || '').trim()===key
+        );
+      });
+
+      if(typeof renderList === 'function')renderList();
+      if(typeof updateMobileCategoryResult === 'function')updateMobileCategoryResult();
+      resultsSection?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+
+  const source = document.getElementById('locationBtnText');
+  if(source && 'MutationObserver' in window){
+    new MutationObserver(syncDesktopLocation).observe(source,{
+      childList:true,
+      subtree:true,
+      characterData:true
+    });
+  }
+
+  syncDesktopLocation();
+})();
