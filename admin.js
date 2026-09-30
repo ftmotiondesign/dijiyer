@@ -3940,7 +3940,7 @@ function renderQuoteRoutingAdmin(){
 }
 
 
-function makeAdminTestOfferCode(){function makeAdminTestOfferCode(){
+function makeAdminTestOfferCode(){
   const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes=new Uint8Array(8);
   crypto.getRandomValues(bytes);
