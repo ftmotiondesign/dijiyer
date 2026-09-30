@@ -8,6 +8,7 @@
   const myOffersBtn = document.getElementById("myOffersBtn");
   const myOffersCount = document.getElementById("myOffersCount");
   const myOffersList = document.getElementById("myOffersList");
+  const liveOfferWatchers = new Map();
 
   function safe(v){
     return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -55,6 +56,7 @@
       localStorage.setItem(DATA_KEY,JSON.stringify(map));
     }
     refreshMyOffersBadge();
+    syncLiveOfferWatchers();
   };
   window.refreshMyOffersBadge = function(){
     const total=getQuoteIds().length;
@@ -545,6 +547,61 @@
     window.refreshMyOffersBadge();
   }
 
+  function stopLiveOfferWatchers(){
+    liveOfferWatchers.forEach(stop=>{
+      try{ stop(); }catch(_){}
+    });
+    liveOfferWatchers.clear();
+  }
+
+  function syncLiveOfferWatchers(){
+    const ids=getQuoteIds().slice(0,10);
+    const wanted=new Set(ids.map(String));
+
+    liveOfferWatchers.forEach((stop,quoteId)=>{
+      if(wanted.has(String(quoteId)))return;
+      try{ stop(); }catch(_){}
+      liveOfferWatchers.delete(quoteId);
+    });
+
+    ids.forEach(quoteId=>{
+      const id=String(quoteId||"");
+      if(!id || liveOfferWatchers.has(id))return;
+
+      let ready=false;
+      const unsubscribe=db.collection("quoteRequests")
+        .doc(id)
+        .collection("offers")
+        .onSnapshot(async snapshot=>{
+          if(!ready){
+            ready=true;
+            return;
+          }
+
+          const changed=snapshot.docChanges().some(change=>
+            change.type==="added" || change.type==="modified" || change.type==="removed"
+          );
+          if(!changed)return;
+
+          try{
+            await checkQuoteUpdates({notify:true});
+
+            const modal=document.getElementById("myOffersModal");
+            const modalOpen=modal && !modal.classList.contains("hidden");
+            if(modalOpen){
+              await loadMyOffers();
+            }
+          }catch(error){
+            console.warn("Canlı müşteri teklif güncellemesi işlenemedi:",error);
+          }
+        },error=>{
+          console.warn("Müşteri teklifleri canlı izlenemedi:",id,error);
+        });
+
+      liveOfferWatchers.set(id,unsubscribe);
+    });
+  }
+
   function ensureNotificationControls(){
     if(!myOffersList || document.getElementById("myOffersNotifyBar"))return;
 
@@ -626,4 +683,6 @@
   });
 
   refreshMyOffersBadge();
+  syncLiveOfferWatchers();
+  window.addEventListener("beforeunload",stopLiveOfferWatchers);
 })();
