@@ -4680,6 +4680,18 @@
     return opportunitySponsorState(inst).active;
   }
 
+  function opportunitySponsorPlacement(inst){
+    const raw=String(inst?.opportunitySponsorPlacement||"both");
+    return ["discover","opportunity","both"].includes(raw) ? raw : "both";
+  }
+
+  function opportunitySponsorPlacementLabel(inst){
+    const placement=opportunitySponsorPlacement(inst);
+    if(placement==="discover")return "Keşfet";
+    if(placement==="opportunity")return "Fırsatlar";
+    return "Keşfet + Fırsatlar";
+  }
+
   function opportunitySponsorMediaHtml(inst){
     const url=String(inst?.opportunitySponsorMediaUrl||"").trim();
     const type=String(inst?.opportunitySponsorMediaType||"image");
@@ -5313,6 +5325,7 @@
             '<span class="opportunity-sponsor-badge">'+escapeHtml(mediaLabel)+'</span>'+
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">Öncelik '+state.priority+'</span>':"")+
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">'+escapeHtml(scheduleLabel)+'</span>':"")+
+            (state.mediaUrl?'<span class="opportunity-sponsor-badge">📍 '+escapeHtml(opportunitySponsorPlacementLabel(inst))+'</span>':"")+
           '</div>'+
           (state.mediaUrl
             ? '<div class="opportunity-sponsor-stats">'+
@@ -5425,6 +5438,9 @@
     $("opportunitySponsorPriority").value=String(
       Math.max(1,Math.min(99,Number(inst.opportunitySponsorPriority||10)||10))
     );
+    if($("opportunitySponsorPlacement")){
+      $("opportunitySponsorPlacement").value=opportunitySponsorPlacement(inst);
+    }
     $("opportunitySponsorUploadMessage").textContent=
       url
         ? "Mevcut sponsor medyası yüklü. Buradan görsel/video, tarih, öncelik ve yayın durumunu değiştirebilirsiniz."
@@ -5475,6 +5491,7 @@
     $("opportunitySponsorStartAt").value="";
     $("opportunitySponsorEndAt").value="";
     $("opportunitySponsorPriority").value="10";
+    if($("opportunitySponsorPlacement"))$("opportunitySponsorPlacement").value="both";
     $("opportunitySponsorModalTitle").textContent="Yeni Sponsor Ekle";
     $("opportunitySponsorModalMeta").textContent="Önce sponsor olacak kurumu seçin.";
     $("opportunitySponsorUploadMessage").textContent="Kurum seçildikten sonra 1080 × 1350 px görsel veya video yükleyebilirsiniz.";
@@ -5609,11 +5626,11 @@
         if(message){
           message.textContent=
             (isVideo?"Video":"Görsel")+
-            " yüklendi. “Kaydet ve Yayınla” ile Fırsat sayfasında yayınlayın.";
+            " yüklendi. “Kaydet ve Yayınla” ile seçilen gösterim yerlerinde yayınlayın.";
         }
       }
     }catch(error){
-      console.error("Fırsat sponsor medyası yüklenemedi:",error);
+      console.error("Keşfet/Fırsat sponsor medyası yüklenemedi:",error);
       opportunitySponsorProgress(null,"");
       if(message)message.textContent="Medya yüklenemedi: "+String(error?.message||"Bilinmeyen hata");
     }finally{
@@ -5634,13 +5651,17 @@
       1,
       Math.min(99,Number($("opportunitySponsorPriority")?.value||10)||10)
     );
+    const placementRaw=String($("opportunitySponsorPlacement")?.value||"both");
+    const placement=["discover","opportunity","both"].includes(placementRaw)
+      ? placementRaw
+      : "both";
     const message=$("opportunitySponsorUploadMessage");
     const saveBtn=$("opportunitySponsorSaveBtn");
     const existingInst=(institutionRecords||[]).find(item=>String(item.id)===id)||null;
 
     if(!id)return;
     if(active&&!url){
-      if(message)message.textContent="Fırsat Sponsor'u aktif etmek için önce 1080 × 1350 px görsel veya video yükleyin.";
+      if(message)message.textContent="Sponsor'u aktif etmek için önce 1080 × 1350 px görsel veya video yükleyin.";
       return;
     }
     if(startAt&&endAt&&startAt>endAt){
@@ -5683,6 +5704,7 @@
         opportunitySponsorStartAt:startAt,
         opportunitySponsorEndAt:endAt,
         opportunitySponsorPriority:priority,
+        opportunitySponsorPlacement:placement,
         opportunitySponsorCampaignId:campaignId,
         opportunitySponsorHistory:nextHistory,
         opportunitySponsorUpdatedAt:new Date().toISOString(),
@@ -5695,14 +5717,14 @@
       if(inst)Object.assign(inst,updates);
 
       addAudit(
-        active&&url ? "Fırsat sponsoru yayınlandı" : "Fırsat sponsoru pasif yapıldı",
+        active&&url ? "Keşfet/Fırsat sponsoru yayınlandı" : "Keşfet/Fırsat sponsoru pasif yapıldı",
         (inst?.name||id)+" · "+(url ? (type==="video"?"Video":"Görsel") : "Medya yok")
       );
 
       renderOpportunitySponsorsAdmin();
       closeOpportunitySponsorModal();
     }catch(error){
-      console.error("Fırsat sponsor kaydı yapılamadı:",error);
+      console.error("Keşfet/Fırsat sponsor kaydı yapılamadı:",error);
       if(message)message.textContent="Kaydedilemedi. Firestore yazma izinlerini kontrol edin.";
     }finally{
       if(saveBtn){
