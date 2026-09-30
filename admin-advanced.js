@@ -2427,7 +2427,7 @@
     root.querySelectorAll("[data-banner-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteBannerAd(btn.dataset.bannerDelete)));
   }
 
-  window.openBannerAdForInstitution = async institutionId => {
+  window.openBannerAdForInstitution = async (institutionId,options={}) => {
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
     await loadBannerAdsAdmin();
@@ -2436,7 +2436,29 @@
     if(inst){
       selectBannerInstitutionForAd(inst);
     }
+
+    const placement=normalizeBannerPlacement(options?.placement||"search");
+    const price=Math.max(0,Number(options?.price||0));
+    const days=Math.max(1,Number(options?.days||30));
+
+    if($("bannerAdPlacement"))$("bannerAdPlacement").value=placement;
+    if($("bannerAdPrice"))$("bannerAdPrice").value=String(price||"");
+    if($("bannerAdStartAt"))$("bannerAdStartAt").value=bannerTodayInput();
+    if($("bannerAdEndAt"))$("bannerAdEndAt").value=bannerAddDaysInput(days);
+    if($("bannerAdActive"))$("bannerAdActive").checked=true;
+
+    renderBannerPlacementGuide();
+    renderBannerAdminPreview();
+    renderBannerLivePlacementPreview();
+
     await renderBannerAdsAdmin(false);
+
+    const form=$("bannerAdForm");
+    if(form){
+      form.classList.add("banner-ad-editor-attention");
+      form.scrollIntoView({behavior:"smooth",block:"start"});
+      window.setTimeout(()=>form.classList.remove("banner-ad-editor-attention"),1300);
+    }
   };
 
   $("adCenterFocusBanner")?.addEventListener("click",async()=>{
