@@ -520,7 +520,59 @@ service cloud.firestore {
           )
         );
 
-      allow update, delete: if adminMi();
+      // Yönetici normal güncellemeleri yapabilir.
+      // Müşteri tarafı ise yalnızca kabul işlemiyle birlikte talebi "accepted"
+      // durumuna kapatabilir. Kabul edilen kurum/fiyat/kod aynı atomik işlemde
+      // oluşturulan locks/main kaydıyla birebir eşleşmek zorundadır.
+      allow update: if
+        adminMi()
+        ||
+        (
+          request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly([
+              'status',
+              'acceptedInstitutionId',
+              'acceptedInstitutionName',
+              'acceptedOfferCode',
+              'acceptedPrice',
+              'acceptedAt',
+              'acceptedAtTs'
+            ])
+          && request.resource.data.status == 'accepted'
+          && request.resource.data.acceptedInstitutionId is string
+          && request.resource.data.acceptedInstitutionId.size() > 0
+          && request.resource.data.acceptedInstitutionName is string
+          && request.resource.data.acceptedOfferCode is string
+          && request.resource.data.acceptedOfferCode.size() > 0
+          && request.resource.data.acceptedPrice is number
+          && request.resource.data.acceptedPrice > 0
+          && request.resource.data.acceptedAt is string
+          && request.resource.data.acceptedAtTs == request.time
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.status == 'locked'
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.registrationStatus == 'pending'
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.institutionId == request.resource.data.acceptedInstitutionId
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.institutionName == request.resource.data.acceptedInstitutionName
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.offerCode == request.resource.data.acceptedOfferCode
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.price == request.resource.data.acceptedPrice
+          && getAfter(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+          ).data.acceptedAtTs == request.time
+        );
+
+      allow delete: if adminMi();
     }
 
 
