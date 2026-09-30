@@ -767,8 +767,10 @@
           return String(inst.status || 'active') !== 'passive';
         })
         .map(function(inst){
+          var sponsorPlacement = String(inst.opportunitySponsorPlacement || 'both');
           var sponsored =
             inst.opportunitySponsorActive === true &&
+            sponsorPlacement !== 'discover' &&
             Boolean(String(inst.opportunitySponsorMediaUrl || '').trim()) &&
             dateActive(inst.opportunitySponsorStartAt,inst.opportunitySponsorEndAt);
 
