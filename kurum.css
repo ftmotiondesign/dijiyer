@@ -154,3 +154,109 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
   font-size:11px;
   line-height:1.55;
 }
+
+
+/* KURUM TAVSIYE PUANI V1 */
+.kp-review-summary{
+  display:flex;
+  align-items:stretch;
+  gap:7px;
+}
+.kp-recommend-score{
+  min-width:104px;
+  padding:9px;
+  border:1px solid #e4ebf3;
+  border-radius:10px;
+  background:#f8fafc;
+  text-align:center;
+}
+.kp-recommend-score strong{
+  display:block;
+  color:#64748b;
+  font-size:20px;
+  line-height:1.1;
+}
+.kp-recommend-score span{
+  display:block;
+  margin-top:3px;
+  color:#8a97a8;
+  font-size:8px;
+  font-weight:800;
+}
+.kp-recommend-score.has-data{
+  border-color:#ccebd8;
+  background:#eefbf3;
+}
+.kp-recommend-score.has-data strong{
+  color:#16824a;
+}
+.kp-recommend-score.has-data span{
+  color:#4d7a61;
+}
+.kp-recommend-question{
+  margin:5px 0 11px;
+}
+.kp-recommend-question>span{
+  display:block;
+  margin-bottom:6px;
+  color:#42536a;
+  font-size:9px;
+  font-weight:900;
+}
+.kp-recommend-picker{
+  display:grid;
+  grid-template-columns:1fr 110px;
+  gap:7px;
+}
+.kp-recommend-picker button{
+  min-height:38px;
+  padding:7px 10px;
+  border:1px solid #d7e0ea;
+  border-radius:9px;
+  background:#fff;
+  color:#536276;
+  font-size:9px;
+  font-weight:850;
+  cursor:pointer;
+}
+.kp-recommend-picker button:hover{
+  border-color:#9fc4ee;
+  background:#f7fbff;
+}
+.kp-recommend-picker button.active[data-recommend="true"]{
+  border-color:#78c99b;
+  background:#ecfdf3;
+  color:#16824a;
+  box-shadow:0 0 0 2px rgba(22,130,74,.07);
+}
+.kp-recommend-picker button.active[data-recommend="false"]{
+  border-color:#b9c4d0;
+  background:#f1f5f9;
+  color:#475569;
+}
+.kp-review-recommend-row{
+  margin-top:6px;
+}
+.kp-review-recommend{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:0 7px;
+  border-radius:999px;
+  font-size:7.5px;
+  font-weight:900;
+}
+.kp-review-recommend.yes{
+  background:#eaf9f0;
+  color:#16824a;
+}
+.kp-review-recommend.no{
+  background:#f1f5f9;
+  color:#64748b;
+}
+@media(max-width:640px){
+  .kp-review-summary{gap:5px}
+  .kp-review-score,.kp-recommend-score{min-width:0;padding:7px}
+  .kp-recommend-score strong{font-size:17px}
+  .kp-recommend-picker{grid-template-columns:1fr 86px}
+}
