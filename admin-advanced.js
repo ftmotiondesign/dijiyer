@@ -4746,6 +4746,9 @@
     if($("opportunityReportReadyCount")){
       $("opportunityReportReadyCount").textContent=rows.length+" rapor hazır";
     }
+    if($("opportunityReportPanel")){
+      $("opportunityReportPanel").open=rows.length>0;
+    }
 
     if(!rows.length){
       root.innerHTML='<div class="advanced-empty success">Biten sponsor kampanyası bulunmuyor.</div>';
