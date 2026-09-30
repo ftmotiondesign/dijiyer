@@ -1313,10 +1313,13 @@ service cloud.firestore {
 
     match /institutionReviews/{reviewId} {
 
-      // Yayındaki yorumlar ve tavsiye oranları kurum profillerinde gösterilebilir.
-      allow get, list: if true;
+      // Ziyaretçiler yalnızca onaylanmış yorumları görebilir.
+      // Yönetici moderasyon kuyruğundaki tüm kayıtları görebilir.
+      allow get, list: if
+        adminMi()
+        || resource.data.status == 'published';
 
-      // Ziyaretçi yıldız, yorum ve tavsiye oyunu üyelik olmadan gönderebilir.
+      // Yeni yorumlar doğrudan yayınlanmaz; önce moderasyon kuyruğuna düşer.
       allow create: if
         request.resource.data.keys().hasOnly([
           'institutionId',
@@ -1338,7 +1341,7 @@ service cloud.firestore {
         && request.resource.data.text is string
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 1000
-        && request.resource.data.status == 'published'
+        && request.resource.data.status == 'pending'
         && request.resource.data.date is string;
 
       allow update, delete: if adminMi();
