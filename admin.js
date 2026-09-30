@@ -3695,6 +3695,9 @@ function renderQuoteRoutingAdmin(){
       '</div>'+
       '<div class="quote-routing-card-actions">'+
         '<button type="button" data-routing-open="'+escapeHtml(request.id)+'">Talebi Aç</button>'+
+        (totalForwarded>0 && !request.liveLock
+          ? '<button type="button" class="quote-routing-test-offer-btn" data-routing-test-offer="'+escapeHtml(request.id)+'">🧪 Test Teklifi Gönder</button>'
+          : '')+
         '<a href="https://wa.me/'+normalizeWhatsApp(request.phone)+'" target="_blank" rel="noopener">Müşteriye WhatsApp</a>'+
       '</div>'+
     '</article>';
@@ -3704,9 +3707,196 @@ function renderQuoteRoutingAdmin(){
     await forwardQuoteRoutingTier(button.dataset.routingForward,button.dataset.routingTier,button);
   }));
   quoteRoutingList.querySelectorAll("[data-routing-open]").forEach(button=>button.addEventListener("click",()=>openQuoteDetailModal(button.dataset.routingOpen)));
+  quoteRoutingList.querySelectorAll("[data-routing-test-offer]").forEach(button=>button.addEventListener("click",async()=>{
+    await sendAdminTestRoutedOffer(button.dataset.routingTestOffer,button);
+  }));
   quoteRoutingList.querySelectorAll("[data-routing-consent]").forEach(button=>button.addEventListener("click",async()=>{
     await markQuoteRoutingConsent(button.dataset.routingConsent,button);
   }));
+}
+
+
+function makeAdminTestOfferCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes=new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let out="DJY-";
+  for(let i=0;i<bytes.length;i++)out+=chars[bytes[i]%chars.length];
+  return out;
+}
+
+async function sendAdminTestRoutedOffer(requestId,button){
+  const request=quoteRequestRecords.find(item=>String(item.id)===String(requestId));
+  if(!request){
+    alert("Test edilecek teklif talebi bulunamadı.");
+    return;
+  }
+
+  if(request.liveLock){
+    alert("Bu talepte müşteri zaten bir teklifi kabul etmiş. Test teklifi eklenemez.");
+    return;
+  }
+
+  const forwardedIds=Array.isArray(request.forwardInstitutionIds)
+    ? request.forwardInstitutionIds.map(String)
+    : [];
+
+  if(!forwardedIds.length){
+    alert("Önce talebi en az bir kuruma yönlendirin.");
+    return;
+  }
+
+  const existingOfferIds=new Set(
+    (Array.isArray(request.liveOffers)?request.liveOffers:[])
+      .map(offer=>String(offer.institutionId||offer.id||""))
+      .filter(Boolean)
+  );
+
+  const availableInstitutions=forwardedIds
+    .filter(id=>!existingOfferIds.has(id))
+    .map(id=>institutionRecords.find(inst=>String(inst.id)===id))
+    .filter(Boolean);
+
+  if(!availableInstitutions.length){
+    alert("Yönlendirilmiş kurumların tamamı zaten teklif vermiş.");
+    return;
+  }
+
+  let institution=availableInstitutions[0];
+
+  if(availableInstitutions.length>1){
+    const choices=availableInstitutions
+      .map((inst,index)=>{
+        const credit=quoteInstitutionCreditMeta(inst);
+        return (index+1)+". "+String(inst.name||"Kurum")+" · bakiye: "+credit.balance;
+      })
+      .join("\n");
+
+    const selected=prompt(
+      "TEST TEKLİFİ GÖNDERECEK KURUMU SEÇİN\n\n"+
+      choices+
+      "\n\nKurum numarasını yazın:",
+      "1"
+    );
+
+    if(selected===null)return;
+
+    const index=Number(selected)-1;
+    if(!Number.isInteger(index) || index<0 || index>=availableInstitutions.length){
+      alert("Geçerli bir kurum numarası seçmediniz.");
+      return;
+    }
+    institution=availableInstitutions[index];
+  }
+
+  const institutionId=String(institution.id||"");
+  const creditBefore=quoteInstitutionCreditMeta(institution).balance;
+
+  const rawPrice=prompt(
+    String(institution.name||"Kurum")+" için test teklif fiyatını yazın (TL):",
+    "4500"
+  );
+  if(rawPrice===null)return;
+
+  const price=Number(String(rawPrice).replace(",","."));
+  if(!Number.isFinite(price) || price<=0){
+    alert("Geçerli bir fiyat girin.");
+    return;
+  }
+
+  const ok=confirm(
+    "TEST TEKLİFİ OLUŞTURULACAK\n\n"+
+    "Kurum: "+String(institution.name||"Kurum")+"\n"+
+    "Fiyat: "+new Intl.NumberFormat("tr-TR").format(price)+" TL\n"+
+    "Mevcut kredi: "+creditBefore+"\n\n"+
+    "Bu işlem gerçek teklif alt koleksiyonuna test kaydı ekler. "+
+    "Yönlendirilmiş kurum teklif verdiği için 1 kredi kullanımı da işlenecektir."
+  );
+  if(!ok)return;
+
+  const oldText=button?.textContent||"Test Teklifi Gönder";
+  if(button){
+    button.disabled=true;
+    button.textContent="Test teklifi kaydediliyor...";
+  }
+
+  try{
+    const now=new Date();
+    const expiry=new Date(now.getTime()+48*3600000);
+    const offerCode=makeAdminTestOfferCode();
+    const quoteRef=db.collection("quoteRequests").doc(requestId);
+    const offerRef=quoteRef.collection("offers").doc(institutionId);
+    const lookupRef=db.collection("offerLookup").doc(offerCode);
+
+    const existing=await offerRef.get();
+    if(existing.exists){
+      throw new Error("Bu kurum bu talebe zaten teklif vermiş.");
+    }
+
+    const data={
+      institutionId,
+      institutionName:String(institution.name||"Kurum"),
+      offerCode,
+      price,
+      vatStatus:"Dahil",
+      scope:"Yönetim paneli test teklifi · "+String(request.service||"Teklif Talebi"),
+      extraFee:"Yok",
+      conditions:"TEST KAYDI · Kurum paneli kurulmadan teklif ve kredi akışını doğrulamak için oluşturuldu.",
+      expiresAt:expiry.toISOString(),
+      expiresAtTs:firebase.firestore.Timestamp.fromDate(expiry),
+      status:"offered",
+      validityHours:48,
+      registrationRequired:true,
+      platformPayment:false,
+      paymentPolicy:"offline_direct_between_customer_and_institution",
+      adminTestOffer:true,
+      adminTestCreatedAt:now.toISOString(),
+      createdAt:now.toISOString(),
+      updatedAt:now.toISOString()
+    };
+
+    const batch=db.batch();
+    batch.set(offerRef,data);
+    batch.set(lookupRef,{
+      quoteId:String(requestId),
+      institutionId,
+      offerCode,
+      adminTestOffer:true,
+      updatedAt:now.toISOString()
+    },{merge:true});
+    await batch.commit();
+
+    // Yeni teklifi canlı kayıtlara al, ardından kredi kullanımını gerçek akıştaki
+    // aynı mutabakat fonksiyonuyla işle.
+    await loadQuoteRequests();
+    await reconcileLeadCreditUsage();
+    await loadLeadCreditData();
+
+    const refreshedInstitution=institutionRecords.find(inst=>String(inst.id)===institutionId) || institution;
+    const creditAfter=quoteInstitutionCreditMeta(refreshedInstitution).balance;
+
+    renderQuoteRoutingAdmin();
+    renderLeadCreditAdmin();
+
+    alert(
+      "✓ TEST TEKLİFİ BAŞARILI\n\n"+
+      "Kurum: "+String(institution.name||"Kurum")+"\n"+
+      "Teklif: "+new Intl.NumberFormat("tr-TR").format(price)+" TL\n"+
+      "Teklif No: "+offerCode+"\n"+
+      "Kredi: "+creditBefore+" → "+creditAfter+
+      (creditAfter===creditBefore-1
+        ? "\n\n✓ 1 kredi doğru şekilde kullanıldı."
+        : "\n\n⚠ Teklif oluştu fakat kredi düşümü beklenen değerde değil. Kredi hareketlerini kontrol edin.")
+    );
+  }catch(error){
+    console.error("Yönetim test teklifi oluşturulamadı:",error);
+    alert(error?.message || "Test teklifi oluşturulamadı.");
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=oldText;
+    }
+  }
 }
 
 async function markQuoteRoutingConsent(requestId,button){
