@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=29">
+  <link rel="stylesheet" href="admin-advanced.css?v=30">
 </head>
 
 <body>
@@ -812,6 +812,8 @@
               </label>
             </div>
 
+            <div class="banner-existing-ad-alert hidden" id="bannerExistingAdAlert"></div>
+
             <div class="banner-institution-finder">
               <select id="bannerAdInstitution" hidden aria-hidden="true"><option value="">Kurum seçin</option></select>
 
@@ -873,6 +875,7 @@
               </div>
 
               <div class="banner-institution-selected hidden" id="bannerInstitutionSelected"></div>
+              <div class="banner-institution-history hidden" id="bannerInstitutionHistory"></div>
 
               <div class="banner-institution-results-head">
                 <strong id="bannerInstitutionFinderCount">Kurumlar yükleniyor...</strong>
@@ -954,6 +957,18 @@
                   <input id="bannerAdVideoUrlManual" type="url" placeholder="https://...mp4">
                 </label>
               </details>
+            </div>
+
+            <div class="banner-ad-templates">
+              <div class="banner-ad-templates-head">
+                <div><span>HIZLI ŞABLON</span><strong>Tek tıkla yayın planı oluştur</strong></div>
+                <small>Fiyat alanını değiştirmez; gösterim alanı ve tarihleri hazırlar.</small>
+              </div>
+              <div class="banner-ad-template-buttons">
+                <button type="button" data-banner-template="mini7">▰ Mini Banner · 7 Gün</button>
+                <button type="button" data-banner-template="regional15">📣 Bölgesel · 15 Gün</button>
+                <button type="button" data-banner-template="premium30">◆ Premium · 30 Gün</button>
+              </div>
             </div>
 
             <div class="banner-placement-box">
@@ -1040,9 +1055,20 @@
               <span>SPONSORLU</span><strong>Banner önizlemesi</strong><small>Kurum seçildiğinde önizleme güncellenir.</small>
             </div>
 
-            <div class="promotion-package-form-actions">
+            <div class="banner-live-placement-preview">
+              <div class="banner-live-placement-preview-head">
+                <strong>Gerçek Alan Önizlemesi</strong>
+                <small id="bannerLivePlacementPreviewLabel">Ana Sayfa · Kurum listesi</small>
+              </div>
+              <div class="banner-live-placement-stage" id="bannerLivePlacementStage">
+                <div class="banner-live-placement-empty">Kurum ve reklam içeriği seçildiğinde burada görünür.</div>
+              </div>
+            </div>
+
+            <div class="promotion-package-form-actions banner-save-actions">
               <button type="button" id="bannerAdCancelBtn">Temizle</button>
               <button type="submit" class="advanced-primary-btn">Bannerı Kaydet</button>
+              <button type="submit" class="banner-save-next-btn" id="bannerAdSaveNextBtn" data-save-next="1">Kaydet + Sonraki Kurum</button>
             </div>
             <p id="bannerAdMessage" class="advanced-message"></p>
           </form>
@@ -2241,7 +2267,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=48"></script>
-  <script src="admin-advanced.js?v=45"></script>
+  <script src="admin-advanced.js?v=46"></script>
 
 </body>
 </html>
