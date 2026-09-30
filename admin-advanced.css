@@ -5453,3 +5453,16 @@
     width:100%
   }
 }
+
+
+.media-archive-bulk-actions button.active,
+.media-archive-actions button.active{
+  border-color:#bbf7d0;
+  background:#f0fdf4;
+  color:#15803d;
+}
+.media-archive-bulk-actions button.active:hover:not(:disabled),
+.media-archive-actions button.active:hover{
+  border-color:#86efac;
+  background:#dcfce7;
+}
