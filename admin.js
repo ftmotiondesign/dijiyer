@@ -282,8 +282,15 @@ function adminTabFromLocation(){
 function writeAdminRoute(tabId){
   const route=adminRouteForTab(tabId);
   const nextHash="#"+route;
-  if(window.location.hash===nextHash)return;
-  history.pushState({adminTab:tabId},"",nextHash);
+
+  if(window.location.hash!==nextHash){
+    history.pushState({adminTab:tabId},"",nextHash);
+  }
+
+  const brand=document.querySelector(".admin-header-brand");
+  if(brand){
+    brand.href="admin.html"+nextHash;
+  }
 }
 
 function scrollAdminToTop(){
@@ -419,7 +426,17 @@ function initSimpleAdminNavigation(){
   });
 
   adminBackOverview?.addEventListener("click",()=>openSimpleAdminTab("overviewTabBtn"));
-  syncSimpleAdminNavigation("overviewTabBtn");
+
+  const initialTab=
+    adminTabFromLocation() ||
+    (
+      localStorage.getItem("dijiyerAdminLastTab") &&
+      ADMIN_TAB_META[localStorage.getItem("dijiyerAdminLastTab")]
+        ? localStorage.getItem("dijiyerAdminLastTab")
+        : "overviewTabBtn"
+    );
+
+  syncSimpleAdminNavigation(initialTab);
 }
 
 function restoreSimpleAdminNavigation(){
@@ -458,6 +475,29 @@ window.addEventListener("popstate",()=>{
   adminRouteFromHistory=false;
   window.scrollTo({top:0,behavior:"auto"});
 });
+
+const adminHeaderBrand=document.querySelector(".admin-header-brand");
+if(adminHeaderBrand){
+  const syncAdminBrandHref=()=>{
+    const currentTab=
+      adminTabFromLocation() ||
+      localStorage.getItem("dijiyerAdminLastTab") ||
+      "overviewTabBtn";
+    adminHeaderBrand.href=
+      "admin.html#"+adminRouteForTab(currentTab);
+  };
+
+  syncAdminBrandHref();
+
+  adminHeaderBrand.addEventListener("click",(event)=>{
+    if(adminLinkShouldOpenNormally(event))return;
+    event.preventDefault();
+    syncAdminBrandHref();
+    window.location.reload();
+  });
+
+  window.addEventListener("popstate",syncAdminBrandHref);
+}
 
 initSimpleAdminNavigation();
 
