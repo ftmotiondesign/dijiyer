@@ -5218,3 +5218,29 @@
     min-width:112px;
   }
 }
+
+
+/* ===== PAKET SEÇİM TETİKLEYİCİLERİ ===== */
+.promotion-package-choice-hint{
+  margin-top:8px;
+  padding:6px 8px;
+  border:1px solid #fde7b2;
+  border-radius:8px;
+  background:#fffaf0;
+  color:#a16207;
+  font-size:7.8px;
+  font-weight:950;
+  letter-spacing:.03em;
+  text-align:center;
+}
+.promotion-package-choice-hint.selected{
+  border-color:#93c5fd;
+  background:#eff6ff;
+  color:#1d4ed8;
+}
+.promotion-package-select-btn.is-selected{
+  border-color:#1677ff!important;
+  background:#1677ff!important;
+  color:#fff!important;
+  box-shadow:0 7px 16px rgba(22,119,255,.20);
+}
