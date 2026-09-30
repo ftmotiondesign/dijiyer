@@ -1297,7 +1297,10 @@ function renderManagedInstitutions() {
           </div>
         </div>
 
-        <div class="manage-actions compact">
+        <div class="manage-actions compact institution-top-status-actions">
+          <button class="institution-top-active-btn" type="button" ${isInstitutionActive ? "disabled" : ""}>✓ Aktif</button>
+          <button class="institution-top-passive-btn" type="button" ${!isInstitutionActive ? "disabled" : ""}>⏸ Pasif</button>
+          <button class="institution-top-delete-btn" type="button">🗑 Sil</button>
           <button class="banner-ad-institution-btn">🖼️ Banner Reklama Ekle</button>
           <button class="edit-institution-btn">✏ Düzenle</button>
         </div>
@@ -1484,6 +1487,23 @@ function renderManagedInstitutions() {
 
     card.querySelector(".edit-institution-btn").addEventListener("click", () => {
       openInstitutionEdit(data.id, data);
+    });
+
+    card.querySelector(".institution-top-active-btn")?.addEventListener("click", async () => {
+      await updateInstitutionStatus(data.id, true);
+    });
+
+    card.querySelector(".institution-top-passive-btn")?.addEventListener("click", async () => {
+      const ok = confirm(
+        (data.name || "Bu kurum") +
+        " pasif yapılacak. Kullanıcı tarafında kurum listelerinde ve kurum profilinde görünmeyecek. Devam edilsin mi?"
+      );
+      if (!ok) return;
+      await updateInstitutionStatus(data.id, false);
+    });
+
+    card.querySelector(".institution-top-delete-btn")?.addEventListener("click", () => {
+      deleteInstitution(data.id, data.name || "Kurum");
     });
 
     card.querySelector(".delete-institution-btn").addEventListener("click", () => {
