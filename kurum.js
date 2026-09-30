@@ -597,6 +597,9 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   const note=document.getElementById("directQuoteNote").value.trim();
   const email=String(document.getElementById("directQuoteEmail")?.value||"").trim().toLowerCase();
   const normalizedPhone=normalizeTrackingPhone(phone);
+  const allowAlternativeInstitutions=Boolean(
+    document.getElementById("directQuoteAlternativeConsent")?.checked
+  );
 
   if(!name||!service){message.textContent="Adınızı ve talep konusunu seçin.";return}
   if(normalizedPhone.length<10){message.textContent="Geçerli bir telefon numarası yazın.";return}
@@ -624,6 +627,9 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     note,
     status:"new",
     requestType:"direct",
+    allowAlternativeInstitutions,
+    alternativeConsentSource:allowAlternativeInstitutions?"direct_form":"",
+    alternativeConsentAt:allowAlternativeInstitutions?new Date().toISOString():"",
     date:new Date().toISOString(),
     targetInstitutionId:String(institution.id),
     targetInstitutionName:String(institution.name||"Kurum")
