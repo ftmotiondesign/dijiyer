@@ -98,7 +98,7 @@
                 <div><dt>Ek ücret</dt><dd>${safe(o.extraFee||"Yok")}</dd></div>
               </dl>
               <div class="djy-compare-scope">${safe(o.scope||"")}</div>
-              <button type="button" class="lock-btn" data-djy-compare-lock="${safe(o.institutionId)}">🔒 Bu Fiyatı Kilitle</button>
+              <button type="button" class="lock-btn" data-djy-compare-lock="${safe(o.institutionId)}">✓ Bu Teklifi Kabul Et</button>
             </article>`).join("")}
         </div>
       </section>`;
@@ -176,7 +176,15 @@
 
     results.querySelectorAll("[data-djy-compare-lock]").forEach(btn=>{
       btn.onclick=()=>{
-        const target=results.querySelector(`[data-lock][data-institution-id="${CSS.escape(btn.dataset.djyCompareLock)}"]`);
+        const id=btn.dataset.djyCompareLock;
+        const target=results.querySelector(`[data-lock][data-institution-id="${CSS.escape(id)}"]`);
+        const consent=results.querySelector(`[data-lock-consent][data-institution-id="${CSS.escape(id)}"]`);
+        if(consent && !consent.checked){
+          const card=results.querySelector(`[data-offer-institution="${CSS.escape(id)}"]`);
+          card?.scrollIntoView({behavior:"smooth",block:"center"});
+          toast("Teklifi kabul etmek için teklif kartındaki onay kutusunu işaretleyin.");
+          return;
+        }
         if(target)target.click();
       };
     });
