@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=40">
+  <link rel="stylesheet" href="admin.css?v=41">
   <link rel="stylesheet" href="admin-advanced.css?v=33">
 </head>
 
@@ -2309,6 +2309,71 @@
   </div>
 
 
+  <div class="admin-modal hidden" id="institutionQuickEditModal">
+    <div class="admin-modal-card institution-quick-edit-card">
+      <button type="button" class="modal-close" id="closeInstitutionQuickEditModal" aria-label="Kapat">×</button>
+
+      <div class="institution-quick-edit-head">
+        <span>⚡ HIZLI KURUM DÜZENLE</span>
+        <h2 id="quickEditTitle">Kurum</h2>
+        <p>Fotoğraf, telefon, teklif durumu, konum videosu ve 360° turu tek ekrandan yönetin.</p>
+      </div>
+
+      <form id="institutionQuickEditForm">
+        <input type="hidden" id="quickEditInstitutionId">
+        <input type="hidden" id="quickEditCoverStoragePath">
+        <input type="hidden" id="quickEditLogoStoragePath">
+
+        <section class="institution-quick-media">
+          <div class="institution-quick-cover" id="quickEditCoverPreview">
+            <div class="institution-quick-media-empty"><span>🖼️</span><small>Kapak fotoğrafı yok</small></div>
+          </div>
+          <div class="institution-quick-logo" id="quickEditLogoPreview">
+            <div class="institution-quick-logo-empty">🏢</div>
+          </div>
+          <div class="institution-quick-media-actions">
+            <button type="button" id="quickEditCoverUploadBtn">📷 Kapak Fotoğrafı Yükle</button>
+            <button type="button" id="quickEditLogoUploadBtn">🏢 Logo Yükle</button>
+            <small>JPG, PNG veya WebP · en fazla 8 MB</small>
+          </div>
+          <input type="file" id="quickEditCoverFile" accept="image/jpeg,image/png,image/webp" hidden>
+          <input type="file" id="quickEditLogoFile" accept="image/jpeg,image/png,image/webp" hidden>
+        </section>
+
+        <div class="institution-quick-grid">
+          <label>
+            <span>Telefon / WhatsApp</span>
+            <input type="text" id="quickEditPhone" placeholder="05xx xxx xx xx">
+          </label>
+
+          <label class="wide">
+            <span>🎬 Konum Videosu URL</span>
+            <input type="url" id="quickEditLocationVideoUrl" placeholder="YouTube / Shorts veya MP4 bağlantısı">
+          </label>
+
+          <label class="wide">
+            <span>🌐 360° Sanal Tur URL</span>
+            <input type="url" id="quickEditVirtualTourUrl" placeholder="3DVista / Kuula / Matterport bağlantısı">
+          </label>
+        </div>
+
+        <div class="institution-quick-switches">
+          <label><input type="checkbox" id="quickEditActive"><span>Kurum Aktif</span></label>
+          <label><input type="checkbox" id="quickEditOffer"><span>Teklif Açık</span></label>
+          <label><input type="checkbox" id="quickEditVip"><span>VIP</span></label>
+        </div>
+
+        <p class="institution-quick-status" id="institutionQuickEditStatus" aria-live="polite"></p>
+
+        <div class="institution-quick-actions">
+          <button type="button" class="secondary" id="institutionQuickEditCancelBtn">Vazgeç</button>
+          <button type="submit" class="save-btn" id="institutionQuickEditSaveBtn">Değişiklikleri Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
   <div class="admin-modal hidden" id="institutionEditModal">
     <div class="admin-modal-card">
       <button class="modal-close" id="closeInstitutionEditModal">×</button>
@@ -2596,7 +2661,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=39"></script>
+<script src="admin.js?v=40"></script>
   <script src="admin-advanced.js?v=48"></script>
 
 </body>
