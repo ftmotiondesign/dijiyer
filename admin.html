@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=26">
+  <link rel="stylesheet" href="admin-advanced.css?v=20">
 </head>
 
 <body>
@@ -1119,6 +1119,27 @@
               <input id="externalAdTargetUrl" type="url" required placeholder="https://...">
             </label>
 
+            <div class="external-ad-placement-box">
+              <div class="external-ad-placement-head">
+                <div>
+                  <strong>Nerede Gösterilsin?</strong>
+                  <small>Reklamın yayınlanacağı sayfaları seçin. Birden fazla alan seçebilirsiniz.</small>
+                </div>
+                <label class="external-ad-placement-all">
+                  <input type="checkbox" id="externalAdPlacementAll">
+                  <span>Tümü</span>
+                </label>
+              </div>
+              <div class="external-ad-placement-options">
+                <label><input type="checkbox" value="home" data-external-placement checked><span>🏠 Ana Sayfa</span></label>
+                <label><input type="checkbox" value="quote" data-external-placement><span>📝 Teklif Al</span></label>
+                <label><input type="checkbox" value="jobs" data-external-placement><span>💼 İş Fırsatları</span></label>
+                <label><input type="checkbox" value="brands" data-external-placement><span>🏷️ Bayi &amp; Servis</span></label>
+                <label><input type="checkbox" value="opportunities" data-external-placement><span>🎯 Fırsatlar</span></label>
+              </div>
+              <p class="external-ad-placement-note" id="externalAdPlacementNote">Şu anda: Ana Sayfa</p>
+            </div>
+
             <div class="external-ad-media-box">
               <div class="external-ad-media-head">
                 <div>
@@ -2046,7 +2067,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=56"></script>
-  <script src="admin-advanced.js?v=39"></script>
+  <script src="admin-advanced.js?v=35"></script>
 
 </body>
 </html>
