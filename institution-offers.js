@@ -1208,9 +1208,9 @@ async function saveRealOffer(form){
   const quoteId=form.dataset.quoteId;
   const quote=quoteRecords.find(q=>q.id===quoteId);
   let lock=institutionLockMap.get(quoteId);
-  const existing=institutionOfferMap.get(quoteId);
+  let existing=institutionOfferMap.get(quoteId);
   const routedLead=isRoutedLeadForCurrentInstitution(quote);
-  const nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
+  let nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
 
   if(!quote){
     alert("Teklif talebi bulunamadı.");
@@ -1250,6 +1250,27 @@ async function saveRealOffer(form){
     alert(institutionLockBelongsToCurrentInstitution(lock,existing)
       ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
       : "Müşteri başka bir teklifi seçti.");
+    return;
+  }
+
+  // Paneldeki local teklif sürümü eski kalmış olabilir. Kaydetmeden hemen önce
+  // Firestore'daki güncel teklifi esas al; böylece aynı sürüm tekrar yazılmaz.
+  try{
+    const freshOfferSnap=await db.collection("quoteRequests").doc(quoteId)
+      .collection("offers").doc(String(currentAccount.institutionId)).get();
+
+    if(freshOfferSnap.exists){
+      existing={id:freshOfferSnap.id,...freshOfferSnap.data()};
+      institutionOfferMap.set(quoteId,existing);
+    }else{
+      existing=null;
+      institutionOfferMap.delete(quoteId);
+    }
+
+    nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
+  }catch(error){
+    console.error("Teklifin güncel sürümü doğrulanamadı:",error);
+    alert("Teklifin güncel sürümü doğrulanamadı. Lütfen tekrar deneyin.");
     return;
   }
 
@@ -1341,27 +1362,32 @@ async function saveRealOffer(form){
       const historyRef=quoteRef.collection("offerHistory")
         .doc(String(currentAccount.institutionId)+"_v"+String(existingVersion));
 
-      batch.set(historyRef,{
-        quoteId:String(quoteId),
-        institutionId:String(currentAccount.institutionId),
-        institutionName:String(existing.institutionName||currentInstitution.name||"Kurum"),
-        offerCode:String(existing.offerCode||code),
-        version:existingVersion,
-        price:Number(existing.price||0),
-        vatStatus:String(existing.vatStatus||""),
-        scope:String(existing.scope||""),
-        extraFee:String(existing.extraFee||""),
-        extraFeeAmount:Number(existing.extraFeeAmount||0),
-        extraFeeRequired:String(existing.extraFeeRequired||""),
-        extraFeeNote:String(existing.extraFeeNote||""),
-        conditions:String(existing.conditions||""),
-        expiresAt:String(existing.expiresAt||""),
-        sourceType:String(existing.sourceType||source.type||""),
-        sourceLabel:String(existing.sourceLabel||source.label||""),
-        createdAt:String(existing.createdAt||now),
-        updatedAt:String(existing.updatedAt||existing.createdAt||now),
-        archivedAt:now
-      });
+      // Aynı sürüm daha önce arşivlendiyse create-only Firestore kuralına takılmamak için
+      // tekrar yazma. Bu özellikle sayfa eski local state ile açık kaldığında oluşabiliyor.
+      const historySnap=await historyRef.get();
+      if(!historySnap.exists){
+        batch.set(historyRef,{
+          quoteId:String(quoteId),
+          institutionId:String(currentAccount.institutionId),
+          institutionName:String(existing.institutionName||currentInstitution.name||"Kurum"),
+          offerCode:String(existing.offerCode||code),
+          version:existingVersion,
+          price:Number(existing.price||0),
+          vatStatus:String(existing.vatStatus||""),
+          scope:String(existing.scope||""),
+          extraFee:String(existing.extraFee||""),
+          extraFeeAmount:Number(existing.extraFeeAmount||0),
+          extraFeeRequired:String(existing.extraFeeRequired||""),
+          extraFeeNote:String(existing.extraFeeNote||""),
+          conditions:String(existing.conditions||""),
+          expiresAt:String(existing.expiresAt||""),
+          sourceType:String(existing.sourceType||source.type||""),
+          sourceLabel:String(existing.sourceLabel||source.label||""),
+          createdAt:String(existing.createdAt||now),
+          updatedAt:String(existing.updatedAt||existing.createdAt||now),
+          archivedAt:now
+        });
+      }
     }
 
     batch.set(offerRef,data,{merge:true});
