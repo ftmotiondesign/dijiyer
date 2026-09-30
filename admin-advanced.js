@@ -18,6 +18,7 @@
   let promotionPackageRecords = [];
   let bannerAdRecords = [];
   let externalAdRecords = [];
+  let externalAdEditingId = "";
   let adAnalyticsRecords = [];
   let adCalendarCursor = new Date();
   let adCalendarSelectedDate = new Date();
@@ -1788,12 +1789,19 @@
   }
 
   function resetExternalAdForm(){
-    $("externalAdForm")?.reset();
+    externalAdEditingId="";
+    const form=$("externalAdForm");
+    form?.reset();
+    if(form){
+      form.dataset.mode="new";
+      delete form.dataset.editId;
+    }
     if($("externalAdEditId"))$("externalAdEditId").value="";
     if($("externalAdActive"))$("externalAdActive").checked=true;
     if($("externalAdRotationSeconds"))$("externalAdRotationSeconds").value="5";
     if($("externalAdMediaType"))$("externalAdMediaType").value="image";
     if($("externalAdFormTitle"))$("externalAdFormTitle").textContent="Yeni Harici Reklam";
+    if($("externalAdSaveBtn"))$("externalAdSaveBtn").textContent="Yeni Reklamı Kaydet";
     if($("externalAdUploadMessage"))$("externalAdUploadMessage").textContent="";
     renderExternalAdPreview();
   }
@@ -1863,7 +1871,14 @@
   function editExternalAd(id){
     const item=externalAdRecords.find(x=>String(x.id)===String(id));
     if(!item)return;
-    $("externalAdEditId").value=item.id;
+
+    externalAdEditingId=String(item.id);
+    const form=$("externalAdForm");
+    if(form){
+      form.dataset.mode="edit";
+      form.dataset.editId=externalAdEditingId;
+    }
+    $("externalAdEditId").value=externalAdEditingId;
     $("externalAdBrand").value=item.brandName||"";
     $("externalAdHeadline").value=item.headline||"";
     $("externalAdTargetUrl").value=item.targetUrl||"";
@@ -1876,8 +1891,10 @@
     $("externalAdActive").checked=item.active!==false;
     $("externalAdRightsConfirmed").checked=Boolean(item.rightsConfirmed);
     $("externalAdFormTitle").textContent="Reklamı Düzenle";
+    if($("externalAdSaveBtn"))$("externalAdSaveBtn").textContent="Değişiklikleri Kaydet";
+    if($("externalAdUploadMessage"))$("externalAdUploadMessage").textContent="Düzenleme modu: Kaydettiğinizde mevcut reklam güncellenecek.";
     renderExternalAdPreview();
-    $("externalAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+    form?.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
   async function saveExternalAd(event){
@@ -1903,28 +1920,71 @@
       return;
     }
 
-    const id=String($("externalAdEditId")?.value||"").trim();
-    const existing=id ? externalAdRecords.find(x=>String(x.id)===id) : null;
-    const ref=id ? db.collection("externalAds").doc(id) : db.collection("externalAds").doc();
+    const form=$("externalAdForm");
+    const hiddenId=String($("externalAdEditId")?.value||"").trim();
+    const datasetId=String(form?.dataset?.editId||"").trim();
+    const id=String(externalAdEditingId||datasetId||hiddenId).trim();
+    const isEditing=Boolean(id);
+
+    // Düzenleme modunda ID kaybolursa yanlışlıkla yeni kayıt oluşturmaya izin verme.
+    if(form?.dataset?.mode==="edit" && !isEditing){
+      alert("Düzenlenen reklamın kayıt kimliği bulunamadı. Listeyi yenileyip tekrar Düzenle butonuna basın.");
+      return;
+    }
+
+    const existing=isEditing
+      ? externalAdRecords.find(x=>String(x.id)===id)
+      : null;
+
+    if(isEditing && !existing){
+      alert("Düzenlenen reklam listede bulunamadı. Reklam listesini yenileyip tekrar deneyin.");
+      return;
+    }
+
     const data={
       brandName,headline,targetUrl,mediaType,imageUrl,videoUrl,
       rotationSeconds:Math.max(5,Math.min(60,Number($("externalAdRotationSeconds")?.value||5))),
       startAt,endAt,
       active:Boolean($("externalAdActive")?.checked),
       rightsConfirmed:true,
-      updatedAt:new Date().toISOString(),
-      createdAt:existing?.createdAt || new Date().toISOString()
+      updatedAt:new Date().toISOString()
     };
 
+    const saveBtn=$("externalAdSaveBtn");
+    const oldSaveText=saveBtn?.textContent||"Kaydet / Yayınla";
+    if(saveBtn){
+      saveBtn.disabled=true;
+      saveBtn.textContent=isEditing?"Güncelleniyor...":"Kaydediliyor...";
+    }
+
     try{
-      await ref.set(data,{merge:true});
-      addAudit(id?"Harici reklam güncellendi":"Harici reklam eklendi",brandName);
+      if(isEditing){
+        // update() kullanıyoruz: belge yoksa yeni belge oluşturmaz.
+        await db.collection("externalAds").doc(id).update(data);
+        addAudit("Harici reklam güncellendi",brandName);
+      }else{
+        const ref=db.collection("externalAds").doc();
+        await ref.set({...data,createdAt:new Date().toISOString()});
+        addAudit("Harici reklam eklendi",brandName);
+      }
+
       await loadExternalAdsAdmin();
       resetExternalAdForm();
       renderExternalAdList();
     }catch(error){
       console.error("Harici reklam kaydedilemedi:",error);
-      alert("Harici reklam kaydedilemedi. Firestore Rules ayarını kontrol edin.");
+      alert(isEditing
+        ? "Reklam güncellenemedi. Mevcut kayda dokunulmadı; yeni reklam oluşturulmadı."
+        : "Harici reklam kaydedilemedi. Firestore Rules ayarını kontrol edin.");
+    }finally{
+      if(saveBtn){
+        saveBtn.disabled=false;
+        if(form?.dataset?.mode==="edit"){
+          saveBtn.textContent="Değişiklikleri Kaydet";
+        }else{
+          saveBtn.textContent="Yeni Reklamı Kaydet";
+        }
+      }
     }
   }
 
