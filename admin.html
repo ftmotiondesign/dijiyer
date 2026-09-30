@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=27">
+  <link rel="stylesheet" href="admin-advanced.css?v=28">
 </head>
 
 <body>
@@ -822,6 +822,27 @@
                   <small>Kurum adı, şehir, ilçe, sektör, telefon veya adres ile arayın.</small>
                 </div>
                 <button type="button" id="bannerInstitutionFinderClear">Filtreleri Temizle</button>
+              </div>
+
+              <div class="banner-institution-quick-filters" id="bannerInstitutionQuickFilters">
+                <button type="button" class="active" data-banner-quick="all">
+                  <span>🏢</span><strong>Tüm Kurumlar</strong><small id="bannerQuickCountAll">0</small>
+                </button>
+                <button type="button" data-banner-quick="no_ads">
+                  <span>➕</span><strong>Reklamsız</strong><small id="bannerQuickCountNoAds">0</small>
+                </button>
+                <button type="button" data-banner-quick="live_ads">
+                  <span>●</span><strong>Yayında Reklamı Var</strong><small id="bannerQuickCountLive">0</small>
+                </button>
+                <button type="button" data-banner-quick="expiring">
+                  <span>⏳</span><strong>7 Günde Bitecek</strong><small id="bannerQuickCountExpiring">0</small>
+                </button>
+                <button type="button" data-banner-quick="recent">
+                  <span>↻</span><strong>Son Reklam Verenler</strong><small id="bannerQuickCountRecent">0</small>
+                </button>
+                <button type="button" data-banner-quick="passive">
+                  <span>⏸</span><strong>Pasif Kurumlar</strong><small id="bannerQuickCountPassive">0</small>
+                </button>
               </div>
 
               <div class="banner-institution-finder-search">
@@ -2220,7 +2241,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=48"></script>
-  <script src="admin-advanced.js?v=42"></script>
+  <script src="admin-advanced.js?v=43"></script>
 
 </body>
 </html>
