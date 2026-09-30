@@ -19242,3 +19242,84 @@ to{opacity:1;transform:none}
     width:100% !important;
   }
 }
+
+
+/* =========================================================
+   TEKLIF SAYFASI ISLETME UYE AVANTAJ ROZETI V1
+   ========================================================= */
+.standalone-quote-main-btn.business-benefit-action{
+  grid-template-columns:38px minmax(0,1fr) auto;
+  position:relative;
+  overflow:hidden;
+}
+
+.business-benefit-copy{
+  min-width:0;
+}
+
+.business-benefit-copy em{
+  display:block;
+  margin-top:4px;
+  color:#a85b00;
+  font-size:6.6px;
+  line-height:1.25;
+  font-style:normal;
+  font-weight:850;
+}
+
+.business-benefit-badge{
+  min-width:70px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  padding:7px 8px;
+  border:1px solid #ffd58b;
+  border-radius:10px;
+  background:linear-gradient(145deg,#fff8e9,#fff2cf);
+  box-shadow:0 5px 12px rgba(210,139,0,.12);
+}
+
+.business-benefit-badge b{
+  font-size:16px;
+  line-height:1;
+}
+
+.business-benefit-badge span{
+  color:#a85b00;
+  font-size:5.8px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.05em;
+  white-space:nowrap;
+}
+
+.standalone-quote-main-btn.business-benefit-action:hover{
+  border-color:#e8b14d;
+  box-shadow:0 8px 18px rgba(19,44,79,.09);
+}
+
+@media(max-width:820px){
+  .standalone-quote-main-btn.business-benefit-action{
+    grid-template-columns:34px minmax(0,1fr) auto;
+  }
+
+  .business-benefit-badge{
+    min-width:62px;
+    padding:6px 7px;
+    border-radius:9px;
+  }
+
+  .business-benefit-badge b{
+    font-size:14px;
+  }
+
+  .business-benefit-badge span{
+    font-size:5.2px;
+  }
+
+  .business-benefit-copy em{
+    font-size:6px;
+  }
+}
