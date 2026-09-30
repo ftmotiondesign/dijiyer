@@ -781,6 +781,88 @@ homeFooterVisibilityToggle?.addEventListener("change",()=>{
   );
 });
 
+const TOP_MENU_PAGE_DEFAULTS={
+  institutions:true,
+  quotes:true,
+  appointments:true,
+  jobs:true,
+  trade:true,
+  brands:true,
+  discover:true
+};
+
+let topMenuPageVisibility={...TOP_MENU_PAGE_DEFAULTS};
+
+function paintTopMenuPageVisibility(){
+  document.querySelectorAll("[data-top-menu-toggle]").forEach(toggle=>{
+    const key=String(toggle.dataset.topMenuToggle||"");
+    const visible=topMenuPageVisibility[key]!==false;
+    toggle.checked=visible;
+
+    const state=document.querySelector('[data-top-menu-state="'+key+'"]');
+    if(state){
+      state.textContent=visible ? "Aktif · Görünüyor" : "Pasif · Gizli";
+      state.classList.toggle("active",visible);
+      state.classList.toggle("passive",!visible);
+    }
+  });
+}
+
+async function loadTopMenuVisibilitySettings(){
+  try{
+    const snap=await db.collection("siteSettings").doc("home").get();
+    const saved=snap.exists && snap.data()?.topMenuVisibility && typeof snap.data().topMenuVisibility==="object"
+      ? snap.data().topMenuVisibility
+      : {};
+
+    topMenuPageVisibility={
+      ...TOP_MENU_PAGE_DEFAULTS,
+      ...saved
+    };
+  }catch(error){
+    console.error("Üst menü görünürlük ayarları okunamadı:",error);
+    topMenuPageVisibility={...TOP_MENU_PAGE_DEFAULTS};
+  }
+
+  paintTopMenuPageVisibility();
+}
+
+async function saveTopMenuVisibilitySetting(key,visible,toggle){
+  if(!Object.prototype.hasOwnProperty.call(TOP_MENU_PAGE_DEFAULTS,key))return;
+  if(toggle)toggle.disabled=true;
+
+  const previous={...topMenuPageVisibility};
+  topMenuPageVisibility={
+    ...topMenuPageVisibility,
+    [key]:Boolean(visible)
+  };
+  paintTopMenuPageVisibility();
+
+  try{
+    await db.collection("siteSettings").doc("home").set({
+      topMenuVisibility:{...topMenuPageVisibility},
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+  }catch(error){
+    console.error("Üst menü görünürlük ayarı kaydedilemedi:",key,error);
+    topMenuPageVisibility=previous;
+    paintTopMenuPageVisibility();
+    alert("Üst menü görünürlük ayarı kaydedilemedi.");
+  }finally{
+    if(toggle)toggle.disabled=false;
+  }
+}
+
+document.querySelectorAll("[data-top-menu-toggle]").forEach(toggle=>{
+  toggle.addEventListener("change",()=>{
+    saveTopMenuVisibilitySetting(
+      String(toggle.dataset.topMenuToggle||""),
+      toggle.checked,
+      toggle
+    );
+  });
+});
+
 
 const HOME_SECTION_EDITOR_CONFIG = {
   dailyStats:{
@@ -1014,6 +1096,7 @@ auth.onAuthStateChanged(async (user) => {
     await safe("Bulunamayan aramalar",()=>loadUnmatchedSearches(true));
     await safe("Günlük istatistik",loadDailyStatsVisibilitySetting);
     await safe("Ana sayfa ayarları",loadHomeBottomVisibilitySettings);
+    await safe("Üst menü sayfaları",loadTopMenuVisibilitySettings);
 
     try{refreshAdminOverview();}catch(error){console.error(error);}
     try{renderIssueCenter();}catch(error){console.error(error);}
