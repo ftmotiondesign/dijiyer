@@ -1251,28 +1251,84 @@
     return allowed.has(raw)?raw:"search";
   }
 
+  const BANNER_PLACEMENT_GUIDE = {
+    search:{
+      label:"Ana Sayfa · Kurum Listesi",
+      icon:"🔎",page:"ANA SAYFA",
+      title:"Kurum listesindeki 2. kurumdan sonra",
+      description:"Kullanıcı kurumları incelerken sonuç akışının içinde görünür.",
+      device:"Mobil + Masaüstü",type:"Akış içi reklam"
+    },
+    home_sponsor:{
+      label:"Ana Sayfa · Bölgenizde Öne Çıkanlar",
+      icon:"📣",page:"ANA SAYFA",
+      title:"Bölgenizde Öne Çıkanlar sponsor alanı",
+      description:"Ana sayfadaki sponsorlu işletmeler bölümünde kurum kartı olarak görünür.",
+      device:"Mobil + Masaüstü",type:"Sponsor kurum"
+    },
+    premium_home:{
+      label:"Ana Sayfa · Premium Vitrin",
+      icon:"◆",page:"ANA SAYFA",
+      title:"Geniş Premium Vitrin",
+      description:"Ana sayfanın en görünür geniş reklam alanında yayınlanır.",
+      device:"Mobil + Masaüstü",type:"Premium vitrin"
+    },
+    mobile_sponsor:{
+      label:"Ana Sayfa (Mobil) · 2’li Sponsor",
+      icon:"📱",page:"ANA SAYFA",
+      title:"Premium vitrinin altındaki 2’li sponsor alanı",
+      description:"Mobilde iki reklam yan yana ve kaydırmalı biçimde gösterilir.",
+      device:"Sadece Mobil",type:"2’li sponsor"
+    },
+    sidebar_sponsor:{
+      label:"Ana Sayfa (Masaüstü) · Yan Sponsor",
+      icon:"▤",page:"ANA SAYFA",
+      title:"Kurum sonuçlarının yanındaki sponsor alanı",
+      description:"Masaüstünde filtre ve sonuç bölgesinin yanında görünür.",
+      device:"Sadece Masaüstü",type:"Yan reklam"
+    },
+    detail_banner:{
+      label:"Kurum Önizleme · Alt Banner",
+      icon:"🏢",page:"KURUM ÖNİZLEME",
+      title:"Hızlı kurum önizlemesinin altındaki banner",
+      description:"Masaüstünde kullanıcı kurumun hızlı detayını açtığında alt bölümde görünür.",
+      device:"Sadece Masaüstü",type:"Detay bannerı"
+    },
+    page_top_mini:{
+      label:"Teklif / İş / Bayi · Üst Mini Banner",
+      icon:"▰",page:"TEKLİF · İŞ · BAYİ",
+      title:"Ana Sayfa butonunun yanındaki mini banner",
+      description:"Teklif Al, İş Fırsatları ve Bayi & Servis sayfalarının üst kısmında görünür.",
+      device:"Mobil + Masaüstü",type:"Üst mini banner"
+    }
+  };
+
   function bannerPlacementLabel(value){
-    const labels={
-      search:"Arama Sonuçları",
-      home_sponsor:"Bölgenizde Öne Çıkanlar",
-      premium_home:"Ana Sayfa Premium Vitrini",
-      mobile_sponsor:"Mobil 2’li Sponsor Alanı",
-      sidebar_sponsor:"Masaüstü Yan Sponsor",
-      detail_banner:"Kurum Hızlı Önizleme Altı",
-      page_top_mini:"Sayfa Üstü Mini Banner"
-    };
-    return labels[normalizeBannerPlacement(value)]||labels.search;
+    const key=normalizeBannerPlacement(value);
+    return BANNER_PLACEMENT_GUIDE[key]?.label || BANNER_PLACEMENT_GUIDE.search.label;
+  }
+
+  function renderBannerPlacementGuide(){
+    const key=normalizeBannerPlacement($("bannerAdPlacement")?.value);
+    const meta=BANNER_PLACEMENT_GUIDE[key] || BANNER_PLACEMENT_GUIDE.search;
+    if($("bannerPlacementGuideIcon"))$("bannerPlacementGuideIcon").textContent=meta.icon;
+    if($("bannerPlacementGuidePage"))$("bannerPlacementGuidePage").textContent=meta.page;
+    if($("bannerPlacementGuideTitle"))$("bannerPlacementGuideTitle").textContent=meta.title;
+    if($("bannerPlacementGuideDescription"))$("bannerPlacementGuideDescription").textContent=meta.description;
+    if($("bannerPlacementGuideDevice"))$("bannerPlacementGuideDevice").textContent=meta.device;
+    if($("bannerPlacementGuideType"))$("bannerPlacementGuideType").textContent=meta.type;
   }
 
   function resetBannerAdForm(){
     $("bannerAdForm")?.reset();
     if($("bannerAdEditId"))$("bannerAdEditId").value="";
-    if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Banner Reklamı";
+    if($("bannerAdFormTitle"))$("bannerAdFormTitle").textContent="Yeni Kurum Reklamı";
     if($("bannerAdActive"))$("bannerAdActive").checked=true;
     if($("bannerAdDuration"))$("bannerAdDuration").value="7";
     if($("bannerAdPrice"))$("bannerAdPrice").value="0";
     if($("bannerAdPaymentStatus"))$("bannerAdPaymentStatus").value="unpaid";
     if($("bannerAdPlacement"))$("bannerAdPlacement").value="search";
+    renderBannerPlacementGuide();
     if($("bannerAdMediaType"))$("bannerAdMediaType").value="image";
     if($("bannerAdVideoUrl"))$("bannerAdVideoUrl").value="";
     if($("bannerAdVideoUrlManual"))$("bannerAdVideoUrlManual").value="";
@@ -1322,6 +1378,7 @@
     if($("bannerAdPrice"))$("bannerAdPrice").value=String(Math.max(0,Number(item.salePrice||0)));
     if($("bannerAdPaymentStatus"))$("bannerAdPaymentStatus").value=String(item.paymentStatus||"unpaid");
     if($("bannerAdPlacement"))$("bannerAdPlacement").value=normalizeBannerPlacement(item.placement);
+    renderBannerPlacementGuide();
     $("bannerAdStartAt").value=item.startAt||"";
     $("bannerAdEndAt").value=item.endAt||"";
     $("bannerAdActive").checked=item.active!==false;
@@ -1560,8 +1617,9 @@
     const q=normalize($("bannerAdSearch")?.value||"");
     const rows=bannerAdRecords.filter(item=>!q||normalize([item.institutionName,item.headline,item.text,item.city,item.district,item.categoryLabel,item.category,bannerPlacementLabel(item.placement)].join(" ")).includes(q));
     const activeCount=bannerAdRecords.filter(x=>x.active!==false).length;
-    if($("bannerAdAdminCount"))$("bannerAdAdminCount").textContent=bannerAdRecords.length+" reklam · "+activeCount+" yayında · "+(bannerAdRecords.length-activeCount)+" pasif";
+    if($("bannerAdAdminCount"))$("bannerAdAdminCount").textContent=bannerAdRecords.length+" kurum reklamı · "+activeCount+" yayında · "+(bannerAdRecords.length-activeCount)+" pasif";
     if($("bannerAdsTabCount"))$("bannerAdsTabCount").textContent=activeCount;
+    if($("adCenterBannerCount"))$("adCenterBannerCount").textContent=activeCount+" yayında";
 
     root.innerHTML=rows.length?rows.map(item=>{
       const hasVideo=item.mediaType==="video"&&item.videoUrl;
@@ -1619,6 +1677,36 @@
     await renderBannerAdsAdmin(false);
   };
 
+  $("adCenterFocusBanner")?.addEventListener("click",()=>{
+    $("bannerAdForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+    window.setTimeout(()=>$("bannerAdInstitution")?.focus(),350);
+  });
+
+  $("adCenterOpenExternal")?.addEventListener("click",async()=>{
+    showAdvancedSection("externalAdsSection","bannerAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
+    await renderExternalAdsAdmin(true);
+  });
+
+  $("adCenterOpenOpportunity")?.addEventListener("click",async()=>{
+    showAdvancedSection("opportunitySponsorsSection","bannerAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
+    if(typeof loadInstitutions==="function")await loadInstitutions();
+    renderOpportunitySponsorsAdmin();
+  });
+
+  $("externalAdsBackCenter")?.addEventListener("click",async()=>{
+    showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
+    if(typeof syncSimpleAdminNavigation==="function")syncSimpleAdminNavigation("bannerAdsTabBtn");
+    await renderBannerAdsAdmin(true);
+    if(externalAdRecords.length)renderExternalAdList();
+  });
+
+  $("bannerAdPlacement")?.addEventListener("change",()=>{
+    renderBannerPlacementGuide();
+    renderBannerAdminPreview();
+  });
+
   $("cloudinarySaveBtn")?.addEventListener("click",saveCloudinaryBannerSettings);
   fillCloudinaryBannerSettings();
 
@@ -1673,6 +1761,7 @@
     if(id==="bannerAdImageUrl" && String($(id)?.value||"").trim())$("bannerAdMediaType").value="image";
     renderBannerAdminPreview();
   }));
+  renderBannerPlacementGuide();
 
 
   const EXTERNAL_AD_PLACEMENT_OPTIONS = [
@@ -1917,8 +2006,9 @@
 
     const liveCount=externalAdRecords.filter(x=>externalAdStatus(x).key==="active").length;
     if($("externalAdAdminCount"))$("externalAdAdminCount").textContent=
-      externalAdRecords.length+" reklam · "+liveCount+" yayında";
+      externalAdRecords.length+" site reklamı · "+liveCount+" yayında";
     if($("externalAdsTabCount"))$("externalAdsTabCount").textContent=String(liveCount);
+    if($("adCenterExternalCount"))$("adCenterExternalCount").textContent=liveCount+" yayında";
 
     root.innerHTML=rows.length ? rows.map(item=>{
       const status=externalAdStatus(item);
@@ -5352,6 +5442,9 @@
     }
     if($("opportunitySponsorsTabCount")){
       $("opportunitySponsorsTabCount").textContent=String(sponsored);
+    }
+    if($("adCenterOpportunityCount")){
+      $("adCenterOpportunityCount").textContent=String(sponsored)+" yayında";
     }
     if($("opportunityKpiTotal"))$("opportunityKpiTotal").textContent=String(total);
     if($("opportunityKpiSponsored"))$("opportunityKpiSponsored").textContent=String(sponsored);
