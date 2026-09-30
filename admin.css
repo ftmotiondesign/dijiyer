@@ -7350,3 +7350,34 @@ details.matching-institutions .matching-buttons{
     justify-self:start;
   }
 }
+
+
+/* =========================================================
+   Kurum kategori yönetimi
+   ========================================================= */
+.institution-category-editor{
+  margin:10px 0 14px;padding:14px;border:1px solid #cfe0f6;border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff 0%,#ffffff 70%);
+}
+.institution-category-editor-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:11px;
+}
+.institution-category-editor-head>div:first-child{display:grid;gap:3px}
+.institution-category-editor-head span{
+  font-size:10px;font-weight:900;letter-spacing:.08em;color:#1677ff;
+}
+.institution-category-editor-head strong{font-size:14px;color:#1f2937}
+.institution-category-editor-head small{font-size:11px;line-height:1.45;color:#64748b;max-width:600px}
+.institution-category-current{
+  flex:0 0 auto;padding:8px 10px;border:1px solid #b9d5fb;border-radius:999px;
+  background:#eef6ff;color:#1268da;font-size:10px;font-weight:900;
+}
+.institution-category-grid{margin:0}
+.institution-category-grid select{
+  width:100%;min-height:40px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;
+}
+#institutionSubCategoryFilter:disabled{opacity:.55}
+@media(max-width:650px){
+  .institution-category-editor-head{flex-direction:column}
+  .institution-category-current{width:100%;border-radius:9px}
+}
