@@ -1,5 +1,6 @@
 let institutionOfferMap = new Map();
 let institutionLockMap = new Map();
+let institutionSecondOfferInviteMap = new Map();
 let institutionLeadCreditBalance = 0;
 
 function isRoutedLeadForCurrentInstitution(quote){
@@ -103,9 +104,14 @@ function institutionOfferSourceMeta(quote){
 function secondOfferPromptHtml(quote,offer){
   if(!offer || institutionOfferVersion(offer)!==1)return "";
   if(institutionQuoteIsTerminal(quote))return "";
+
   const lock=institutionLockMap.get(quote.id);
   if(lock)return "";
   if(offer.expiresAt && new Date(offer.expiresAt).getTime()<=Date.now())return "";
+
+  const invite=institutionSecondOfferInviteMap.get(String(quote.id));
+  if(!invite || String(invite.status||"")!=="open" || String(invite.decision||""))return "";
+  if(invite.expiresAt && new Date(invite.expiresAt).getTime()<=Date.now())return "";
 
   return `
     <div class="second-offer-prompt">
@@ -113,9 +119,12 @@ function secondOfferPromptHtml(quote,offer){
       <div class="second-offer-prompt-copy">
         <span>2. TEKLİF FIRSATI</span>
         <strong>Teklifiniz henüz kabul edilmedi.</strong>
-        <p>Müşteriye fiyat veya şartları iyileştiren 2. bir teklif göndermek ister misiniz? Bu güncelleme için yeni teklif kredisi kullanılmaz.</p>
+        <p>Müşteri henüz bir teklif seçmedi. Fiyatı veya şartları güncelleyerek 2. teklif vermek ister misiniz? Bu işlem için yeni teklif kredisi kullanılmaz.</p>
       </div>
-      <button type="button" data-second-offer="${offerSafe(quote.id)}">2. Teklif Ver</button>
+      <div class="second-offer-prompt-actions">
+        <button type="button" data-second-offer="${offerSafe(quote.id)}">2. Teklif Ver</button>
+        <button type="button" class="secondary" data-second-offer-dismiss="${offerSafe(quote.id)}">Şimdilik Hayır</button>
+      </div>
     </div>
   `;
 }
@@ -169,6 +178,7 @@ loadMatchedQuotes = async function(){
 
     institutionOfferMap = new Map();
     institutionLockMap = new Map();
+    institutionSecondOfferInviteMap = new Map();
 
     await Promise.all(quoteRecords.map(async quote=>{
       const quoteRef=db.collection("quoteRequests").doc(quote.id);
@@ -176,9 +186,29 @@ loadMatchedQuotes = async function(){
         quoteRef.collection("offers").doc(currentAccount.institutionId).get(),
         quoteRef.collection("locks").doc("main").get()
       ]);
+
+      let inviteSnap=null;
+      try{
+        inviteSnap=await quoteRef
+          .collection("secondOfferInvites")
+          .doc(currentAccount.institutionId)
+          .get();
+      }catch(error){
+        console.warn("2. teklif daveti okunamadı:",quote.id,error);
+      }
+
       if(offerSnap.exists) institutionOfferMap.set(quote.id,{id:offerSnap.id,...offerSnap.data()});
       if(lockSnap.exists) institutionLockMap.set(quote.id,lockSnap.data());
+      if(inviteSnap?.exists){
+        institutionSecondOfferInviteMap.set(String(quote.id),{id:inviteSnap.id,...inviteSnap.data()});
+      }
     }));
+
+    institutionSecondOfferInviteMap.forEach((invite,quoteId)=>{
+      if(String(invite.status||"")!=="open" || String(invite.decision||""))return;
+      const quote=quoteRecords.find(item=>String(item.id)===String(quoteId));
+      if(quote)showSecondOfferInviteNotice(quote,invite);
+    });
 
     renderQuotes();
     renderSummary();
@@ -561,6 +591,87 @@ function showInstitutionTimingNotice(quote,type){
   }catch(_){}
 }
 
+
+function secondOfferInviteNoticeKey(quote,invite){
+  return "dijiyerSecondOfferInvite:"+
+    String(currentAccount?.institutionId||"")+"|"+
+    String(quote?.id||"")+"|"+
+    String(invite?.invitedAt||"");
+}
+
+function showSecondOfferInviteNotice(quote,invite){
+  const key=secondOfferInviteNoticeKey(quote,invite);
+  if(localStorage.getItem(key))return;
+  localStorage.setItem(key,new Date().toISOString());
+
+  const body=(quote?.service||"Teklif talebi")+
+    " · Teklifiniz henüz kabul edilmedi. Yeni bir teklif vermek ister misiniz?";
+
+  const alert=document.getElementById("liveQuoteAlert");
+  const text=document.getElementById("liveQuoteAlertText");
+
+  if(alert && text){
+    text.textContent=body;
+    alert.classList.remove("hidden");
+    if(typeof playNewQuoteSound==="function")playNewQuoteSound();
+  }
+
+  try{
+    if("Notification" in window &&
+       Notification.permission==="granted" &&
+       (document.hidden || !document.hasFocus())){
+      const notification=new Notification("Dijiyer · 2. teklif fırsatı",{
+        body,
+        tag:"dijiyer-second-offer-"+String(quote?.id||"")
+      });
+
+      notification.onclick=()=>{
+        window.focus();
+        if(typeof openFirmDashboardQuotes==="function")openFirmDashboardQuotes("offered");
+        notification.close();
+      };
+    }
+  }catch(_){}
+}
+
+async function dismissSecondOfferInvite(quoteId,button){
+  const invite=institutionSecondOfferInviteMap.get(String(quoteId));
+  if(!invite)return;
+
+  const oldText=button?.textContent||"Şimdilik Hayır";
+  if(button){
+    button.disabled=true;
+    button.textContent="Kaydediliyor...";
+  }
+
+  try{
+    const respondedAt=new Date().toISOString();
+    await db.collection("quoteRequests")
+      .doc(String(quoteId))
+      .collection("secondOfferInvites")
+      .doc(String(currentAccount.institutionId))
+      .update({
+        decision:"no",
+        respondedAt
+      });
+
+    institutionSecondOfferInviteMap.set(String(quoteId),{
+      ...invite,
+      decision:"no",
+      respondedAt
+    });
+    renderQuotes();
+  }catch(error){
+    console.error("2. teklif daveti yanıtlanamadı:",error);
+    alert("Seçiminiz kaydedilemedi.");
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=oldText;
+    }
+  }
+}
+
 function updateInstitutionResponseCountdowns(){
   document.querySelectorAll("[data-institution-response-countdown]").forEach(node=>{
     const deadline=Number(node.dataset.institutionResponseCountdown||0);
@@ -719,6 +830,12 @@ renderQuotes = function(){
     });
   });
 
+  institutionQuotesList.querySelectorAll("[data-second-offer-dismiss]").forEach(btn=>{
+    btn.addEventListener("click",async()=>{
+      await dismissSecondOfferInvite(String(btn.dataset.secondOfferDismiss||""),btn);
+    });
+  });
+
   institutionQuotesList.querySelectorAll('[data-response="not_interested"]').forEach(btn=>{
     btn.addEventListener("click",async()=>{
       await saveQuoteResponse(btn.dataset.quoteId,"not_interested");
@@ -810,6 +927,32 @@ async function saveRealOffer(form){
     const lookupRef=db.collection("offerLookup").doc(code);
 
     const batch=db.batch();
+
+    if(existing){
+      const existingVersion=institutionOfferVersion(existing);
+      const historyRef=quoteRef.collection("offerHistory")
+        .doc(String(currentAccount.institutionId)+"_v"+String(existingVersion));
+
+      batch.set(historyRef,{
+        quoteId:String(quoteId),
+        institutionId:String(currentAccount.institutionId),
+        institutionName:String(existing.institutionName||currentInstitution.name||"Kurum"),
+        offerCode:String(existing.offerCode||code),
+        version:existingVersion,
+        price:Number(existing.price||0),
+        vatStatus:String(existing.vatStatus||""),
+        scope:String(existing.scope||""),
+        extraFee:String(existing.extraFee||""),
+        conditions:String(existing.conditions||""),
+        expiresAt:String(existing.expiresAt||""),
+        sourceType:String(existing.sourceType||source.type||""),
+        sourceLabel:String(existing.sourceLabel||source.label||""),
+        createdAt:String(existing.createdAt||now),
+        updatedAt:String(existing.updatedAt||existing.createdAt||now),
+        archivedAt:now
+      });
+    }
+
     batch.set(offerRef,data,{merge:true});
     batch.set(lookupRef,{
       quoteId,
@@ -821,6 +964,30 @@ async function saveRealOffer(form){
     await recordPublicOfferEvent(quoteId,currentAccount.institutionId,data.createdAt);
 
     institutionOfferMap.set(quoteId,{id:currentAccount.institutionId,...data});
+
+    // 2. teklif daveti üzerinden geldiyse kurumun olumlu kararını kaydet.
+    if(nextVersion===2 && institutionSecondOfferInviteMap.has(String(quoteId))){
+      const invite=institutionSecondOfferInviteMap.get(String(quoteId));
+      if(invite && !String(invite.decision||"")){
+        try{
+          const respondedAt=new Date().toISOString();
+          await quoteRef.collection("secondOfferInvites")
+            .doc(String(currentAccount.institutionId))
+            .update({
+              decision:"yes",
+              respondedAt
+            });
+          institutionSecondOfferInviteMap.set(String(quoteId),{
+            ...invite,
+            decision:"yes",
+            respondedAt
+          });
+        }catch(error){
+          console.warn("2. teklif daveti onay kaydı güncellenemedi:",error);
+        }
+      }
+    }
+
     if(responseMap.get(quoteId)?.status==="not_interested"){
       await saveQuoteResponse(quoteId,"interested");
     }
