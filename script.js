@@ -4954,6 +4954,7 @@ document.getElementById('quoteForm').addEventListener('submit', async e => {
     email: quoteEmail,
     note: document.getElementById('quoteNote').value.trim(),
     status: 'new',
+    requestType: 'bulk',
     date: new Date().toISOString()
   };
 
