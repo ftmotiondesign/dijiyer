@@ -712,84 +712,40 @@ service cloud.firestore {
       // Teklif takip ekranı fiyat tekliflerini okuyabilir.
       allow get, list: if true;
 
-      // Normalde yalnızca talebe erişebilen onaylı kurum kendi teklifini oluşturur.
-      // Yönetici ise kurum paneli kurulmadan teklif/kredi akışını test edebilmek için
-      // yönetim panelinden test teklifi oluşturabilir.
+      // Kurum yalnızca kendi erişebildiği açık talebe teklif verebilir.
+      // Şema kontrolleri bilerek temel alanlarla sınırlı tutulur; yeni teklif
+      // detay alanları eklendiğinde tüm teklif akışının permission-denied ile
+      // kırılmasını önler.
       allow create: if
         adminMi()
         ||
         (
           onayliKurumKullanicisi()
           && bagliKurumId() == institutionId
-        && kurumTalebineErisebilir(quoteId)
-        && teklifTalebiAcik(quoteId)
-        && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
-        && request.resource.data.keys().hasOnly([
-          'institutionId',
-          'institutionName',
-          'offerCode',
-          'price',
-          'vatStatus',
-          'scope',
-          'extraFee',
-          'extraFeeAmount',
-          'extraFeeRequired',
-          'extraFeeNote',
-          'conditions',
-          'expiresAt',
-          'expiresAtTs',
-          'status',
-          'validityHours',
-          'registrationRequired',
-          'platformPayment',
-          'paymentPolicy',
-          'offerVersion',
-          'sourceType',
-          'sourceLabel',
-          'secondOfferSentAt',
-          'createdAt',
-          'updatedAt'
-        ])
-        && request.resource.data.institutionId == institutionId
-        && request.resource.data.offerCode is string
-        && request.resource.data.offerCode.size() > 0
-        && request.resource.data.price is number
-        && request.resource.data.price > 0
-        && request.resource.data.scope is string
-        && request.resource.data.scope.size() > 0
-        && request.resource.data.status == 'offered'
-        && request.resource.data.validityHours is number
-        && request.resource.data.validityHours > 0
-        && request.resource.data.extraFeeAmount is number
-        && request.resource.data.extraFeeAmount >= 0
-        && request.resource.data.extraFeeRequired is string
-        && request.resource.data.extraFeeNote is string
-        && (
-          request.resource.data.extraFee == 'Yok'
-          ||
-          (
-            request.resource.data.extraFee == 'Var'
-            && request.resource.data.extraFeeAmount > 0
-            && (
-              request.resource.data.extraFeeRequired == 'Zorunlu'
-              || request.resource.data.extraFeeRequired == 'Opsiyonel'
-            )
-            && request.resource.data.extraFeeNote.size() > 0
-          )
-        )
-        && request.resource.data.registrationRequired == true
-        && request.resource.data.platformPayment == false
-        && request.resource.data.paymentPolicy
-            == 'offline_direct_between_customer_and_institution'
-        && request.resource.data.offerVersion is number
-        && request.resource.data.offerVersion >= 1
-        && request.resource.data.sourceType is string
-        && request.resource.data.sourceLabel is string
-        && request.resource.data.expiresAtTs is timestamp
-        && request.resource.data.expiresAtTs > request.time
+          && kurumTalebineErisebilir(quoteId)
+          && teklifTalebiAcik(quoteId)
+          && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.offerCode is string
+          && request.resource.data.offerCode.size() > 0
+          && request.resource.data.price is number
+          && request.resource.data.price > 0
+          && request.resource.data.scope is string
+          && request.resource.data.scope.size() > 0
+          && request.resource.data.status == 'offered'
+          && request.resource.data.validityHours is number
+          && request.resource.data.validityHours > 0
+          && request.resource.data.registrationRequired == true
+          && request.resource.data.platformPayment == false
+          && request.resource.data.paymentPolicy
+              == 'offline_direct_between_customer_and_institution'
+          && request.resource.data.offerVersion is number
+          && request.resource.data.offerVersion >= 1
+          && request.resource.data.expiresAtTs is timestamp
+          && request.resource.data.expiresAtTs > request.time
         );
 
-      // Müşteri teklifi kabul ettikten sonra teklif değiştirilemez.
+      // Müşteri kabul ettikten sonra teklif değiştirilemez.
       allow update: if
         onayliKurumKullanicisi()
         && bagliKurumId() == institutionId
@@ -803,56 +759,18 @@ service cloud.firestore {
         && !exists(
           /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
         )
-        && request.resource.data.diff(resource.data)
-            .affectedKeys()
-            .hasOnly([
-              'institutionName',
-              'price',
-              'vatStatus',
-              'scope',
-              'extraFee',
-              'extraFeeAmount',
-              'extraFeeRequired',
-              'extraFeeNote',
-              'conditions',
-              'expiresAt',
-              'expiresAtTs',
-              'status',
-              'validityHours',
-              'registrationRequired',
-              'platformPayment',
-              'paymentPolicy',
-              'offerVersion',
-              'sourceType',
-              'sourceLabel',
-              'secondOfferSentAt',
-              'updatedAt'
-            ])
-        && request.resource.data.extraFeeAmount is number
-        && request.resource.data.extraFeeAmount >= 0
-        && request.resource.data.extraFeeRequired is string
-        && request.resource.data.extraFeeNote is string
-        && (
-          request.resource.data.extraFee == 'Yok'
-          ||
-          (
-            request.resource.data.extraFee == 'Var'
-            && request.resource.data.extraFeeAmount > 0
-            && (
-              request.resource.data.extraFeeRequired == 'Zorunlu'
-              || request.resource.data.extraFeeRequired == 'Opsiyonel'
-            )
-            && request.resource.data.extraFeeNote.size() > 0
-          )
-        )
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.scope is string
+        && request.resource.data.scope.size() > 0
+        && request.resource.data.validityHours is number
+        && request.resource.data.validityHours > 0
         && request.resource.data.registrationRequired == true
         && request.resource.data.platformPayment == false
         && request.resource.data.paymentPolicy
             == 'offline_direct_between_customer_and_institution'
         && request.resource.data.offerVersion is number
-        && request.resource.data.offerVersion >= 1
-        && request.resource.data.sourceType is string
-        && request.resource.data.sourceLabel is string
+        && request.resource.data.offerVersion >= resource.data.offerVersion
         && request.resource.data.expiresAtTs is timestamp
         && request.resource.data.expiresAtTs > request.time;
 
@@ -955,54 +873,16 @@ service cloud.firestore {
         ||
         (
           onayliKurumKullanicisi()
-          && request.resource.data.keys().hasOnly([
-            'quoteId',
-            'institutionId',
-            'institutionName',
-            'offerCode',
-            'version',
-            'price',
-            'vatStatus',
-            'scope',
-            'extraFee',
-            'extraFeeAmount',
-            'extraFeeRequired',
-            'extraFeeNote',
-            'conditions',
-            'expiresAt',
-            'sourceType',
-            'sourceLabel',
-            'createdAt',
-            'updatedAt',
-            'archivedAt'
-          ])
           && request.resource.data.quoteId == quoteId
           && request.resource.data.institutionId == bagliKurumId()
+          && kurumTalebineErisebilir(quoteId)
           && request.resource.data.version is number
           && request.resource.data.version >= 1
           && request.resource.data.price is number
           && request.resource.data.price > 0
-          && request.resource.data.extraFeeAmount is number
-          && request.resource.data.extraFeeRequired is string
-          && request.resource.data.extraFeeNote is string
           && request.resource.data.offerCode is string
           && request.resource.data.offerCode.size() > 0
           && request.resource.data.archivedAt is string
-          && exists(
-            /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
-          )
-          && request.resource.data.offerCode
-              == get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
-              ).data.offerCode
-          && request.resource.data.version
-              == get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
-              ).data.offerVersion
-          && request.resource.data.price
-              == get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)/offers/$(request.resource.data.institutionId)
-              ).data.price
           && !exists(
             /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
           )
