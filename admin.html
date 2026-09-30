@@ -2880,40 +2880,6 @@
 
         </div>
 
-        <div class="lead-credit-modal" id="leadCreditModal" hidden>
-          <div class="lead-credit-modal-card">
-            <div class="lead-credit-modal-head">
-              <div>
-                <span>KREDİ YÖNETİMİ</span>
-                <h4 id="leadCreditModalInstitution">Kurum</h4>
-                <p>Mevcut bakiye: <strong id="leadCreditModalBalance">0</strong> kredi</p>
-              </div>
-              <button type="button" id="leadCreditModalCloseBtn" aria-label="Kapat">×</button>
-            </div>
-            <input type="hidden" id="leadCreditInstitutionId">
-            <div class="lead-credit-form-grid">
-              <label><span>İşlem</span>
-                <select id="leadCreditAction">
-                  <option value="add">Kredi Ekle</option>
-                  <option value="remove">Kredi Çıkar</option>
-                </select>
-              </label>
-              <label><span>Kredi Adedi</span><input type="number" min="1" step="1" id="leadCreditAmount" value="10"></label>
-            </div>
-            <div class="lead-credit-quick">
-              <button type="button" data-lead-credit-quick="1">+1</button>
-              <button type="button" data-lead-credit-quick="10">+10</button>
-              <button type="button" data-lead-credit-quick="25">+25</button>
-              <button type="button" data-lead-credit-quick="50">+50</button>
-            </div>
-            <label class="lead-credit-note"><span>Not / Paket</span><input type="text" id="leadCreditNote" maxlength="180" placeholder="Örn. 10 kredi paketi · fatura ödendi"></label>
-            <p id="leadCreditModalMessage" class="lead-package-message"></p>
-            <div class="lead-credit-modal-actions">
-              <button type="button" id="leadCreditModalCancelBtn">Vazgeç</button>
-              <button type="button" id="leadCreditModalSaveBtn">Kredi İşlemini Kaydet</button>
-            </div>
-          </div>
-        </div>
       </section>
 
       <section id="offerReportSection" hidden>
@@ -3523,6 +3489,41 @@
     </div>
   </div>
 
+  <div class="lead-credit-modal" id="leadCreditModal" hidden>
+    <div class="lead-credit-modal-card">
+      <div class="lead-credit-modal-head">
+        <div>
+          <span>KREDİ YÖNETİMİ</span>
+          <h4 id="leadCreditModalInstitution">Kurum</h4>
+          <p>Mevcut bakiye: <strong id="leadCreditModalBalance">0</strong> kredi</p>
+        </div>
+        <button type="button" id="leadCreditModalCloseBtn" aria-label="Kapat">×</button>
+      </div>
+      <input type="hidden" id="leadCreditInstitutionId">
+      <div class="lead-credit-form-grid">
+        <label><span>İşlem</span>
+          <select id="leadCreditAction">
+            <option value="add">Kredi Ekle</option>
+            <option value="remove">Kredi Çıkar</option>
+          </select>
+        </label>
+        <label><span>Kredi Adedi</span><input type="number" min="1" step="1" id="leadCreditAmount" value="10"></label>
+      </div>
+      <div class="lead-credit-quick">
+        <button type="button" data-lead-credit-quick="1">+1</button>
+        <button type="button" data-lead-credit-quick="10">+10</button>
+        <button type="button" data-lead-credit-quick="25">+25</button>
+        <button type="button" data-lead-credit-quick="50">+50</button>
+      </div>
+      <label class="lead-credit-note"><span>Not / Paket</span><input type="text" id="leadCreditNote" maxlength="180" placeholder="Örn. 10 kredi paketi · fatura ödendi"></label>
+      <p id="leadCreditModalMessage" class="lead-package-message"></p>
+      <div class="lead-credit-modal-actions">
+        <button type="button" id="leadCreditModalCancelBtn">Vazgeç</button>
+        <button type="button" id="leadCreditModalSaveBtn">Kredi İşlemini Kaydet</button>
+      </div>
+    </div>
+  </div>
+
   <button type="button" id="adminBackToTop" class="admin-back-to-top" aria-label="Sayfanın en üstüne çık" title="Yukarı Çık" hidden>
     <span>↑</span>
   </button>
@@ -3535,7 +3536,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=60"></script>
+<script src="admin.js?v=61"></script>
   <script src="admin-advanced.js?v=60"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
