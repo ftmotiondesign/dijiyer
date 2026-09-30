@@ -4832,6 +4832,11 @@
     $("opportunitySponsorMediaUrl").value=url;
     $("opportunitySponsorMediaType").value=type;
     $("opportunitySponsorActive").checked=Boolean(inst.opportunitySponsorActive);
+    $("opportunitySponsorStartAt").value=String(inst.opportunitySponsorStartAt||"").slice(0,10);
+    $("opportunitySponsorEndAt").value=String(inst.opportunitySponsorEndAt||"").slice(0,10);
+    $("opportunitySponsorPriority").value=String(
+      Math.max(1,Math.min(99,Number(inst.opportunitySponsorPriority||10)||10))
+    );
     $("opportunitySponsorUploadMessage").textContent=
       url
         ? "Mevcut sponsor medyası yüklü. Değiştirmek için yeni görsel veya video seçebilirsiniz."
