@@ -557,11 +557,11 @@ function render(bundle){
         <span class="status">${safe(access.trackingCode)}</span>
       </div>
       <div class="tracking-actions">
-        <button class="secondary" id="refreshTrackingBtn">↻ Teklifleri Yenile</button>
-        <button class="secondary" id="copyTrackingLinkBtn">🔗 Talep Linkini Kopyala</button>
-        <button class="secondary" id="shareTrackingWhatsappBtn">WhatsApp'tan Paylaş</button>
-        <button class="secondary" id="copyTrackingCodeBtn">Takip Kodunu Kopyala</button>
-        <a class="secondary" href="index.html">Yeni Talep Oluştur</a>
+        <button class="secondary tracking-action-btn refresh-action" id="refreshTrackingBtn"><span class="tracking-action-icon">↻</span><span>Teklifleri Yenile</span></button>
+        <button class="secondary tracking-action-btn copy-action" id="copyTrackingLinkBtn"><span class="tracking-action-icon">🔗</span><span>Talep Linkini Kopyala</span></button>
+        <button class="secondary tracking-action-btn whatsapp-action" id="shareTrackingWhatsappBtn"><span class="tracking-action-icon">◉</span><span>WhatsApp'tan Paylaş</span></button>
+        <button class="secondary tracking-action-btn copy-action" id="copyTrackingCodeBtn"><span class="tracking-action-icon">⧉</span><span>Takip Kodunu Kopyala</span></button>
+        <a class="secondary tracking-action-btn new-request-action" href="index.html"><span class="tracking-action-icon">＋</span><span>Yeni Talep Oluştur</span></a>
       </div>
 
       ${requestDetailHtml(access)}
@@ -582,17 +582,50 @@ function render(bundle){
     };
   }
 
+  function setTrackingButtonFeedback(button,text,success=true){
+    if(!button)return;
+    const label=button.querySelector("span:last-child");
+    const original=button.dataset.originalLabel || label?.textContent || "";
+    if(!button.dataset.originalLabel)button.dataset.originalLabel=original;
+
+    button.classList.remove("is-success","is-error");
+    button.classList.add(success?"is-success":"is-error");
+    if(label)label.textContent=text;
+
+    clearTimeout(button._feedbackTimer);
+    button._feedbackTimer=setTimeout(()=>{
+      button.classList.remove("is-success","is-error");
+      if(label)label.textContent=button.dataset.originalLabel||original;
+    },1600);
+  }
+
   const refreshBtn=document.getElementById("refreshTrackingBtn");
-  if(refreshBtn)refreshBtn.onclick=refreshTracking;
+  if(refreshBtn)refreshBtn.onclick=async()=>{
+    if(refreshBtn.classList.contains("is-loading"))return;
+    refreshBtn.classList.add("is-loading");
+    refreshBtn.disabled=true;
+    try{
+      await refreshTracking();
+      setTrackingButtonFeedback(refreshBtn,"Yenilendi ✓",true);
+    }catch(error){
+      console.error(error);
+      setTrackingButtonFeedback(refreshBtn,"Tekrar Dene",false);
+    }finally{
+      refreshBtn.classList.remove("is-loading");
+      refreshBtn.disabled=false;
+    }
+  };
 
   const copyLinkBtn=document.getElementById("copyTrackingLinkBtn");
   if(copyLinkBtn)copyLinkBtn.onclick=async()=>{
     const url=currentTrackingUrl(access);
     try{
       await navigator.clipboard.writeText(url);
+      setTrackingButtonFeedback(copyLinkBtn,"Kopyalandı ✓",true);
       toast("Bu talebin linki kopyalandı.");
     }catch(error){
       console.error(error);
+      setTrackingButtonFeedback(copyLinkBtn,"Kopyalanamadı",false);
       toast("Link kopyalanamadı.");
     }
   };
@@ -603,11 +636,23 @@ function render(bundle){
     const message=encodeURIComponent(
       "Dijiyer teklif talebim\n\nTakip Kodu: "+access.trackingCode+"\n"+url
     );
+    shareWhatsappBtn.classList.add("is-pressed");
+    setTimeout(()=>shareWhatsappBtn.classList.remove("is-pressed"),350);
     window.open("https://wa.me/?text="+message,"_blank","noopener");
   };
 
   const copyBtn=document.getElementById("copyTrackingCodeBtn");
-  if(copyBtn)copyBtn.onclick=async()=>{await navigator.clipboard.writeText(access.trackingCode);toast("Takip kodu kopyalandı.");};
+  if(copyBtn)copyBtn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(access.trackingCode);
+      setTrackingButtonFeedback(copyBtn,"Kopyalandı ✓",true);
+      toast("Takip kodu kopyalandı.");
+    }catch(error){
+      console.error(error);
+      setTrackingButtonFeedback(copyBtn,"Kopyalanamadı",false);
+      toast("Takip kodu kopyalanamadı.");
+    }
+  };
 
   results.querySelectorAll("[data-lock]").forEach(btn=>{
     btn.addEventListener("click",()=>lockOffer(access.quoteId,btn.dataset.institutionId,btn));
