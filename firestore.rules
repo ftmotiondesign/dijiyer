@@ -50,7 +50,8 @@ service cloud.firestore {
           )
           ||
           (
-            talep.category == bagliKurum().category
+            !talep.keys().hasAny(['targetInstitutionId'])
+            && talep.category == bagliKurum().category
             && talep.city == bagliKurum().city
             && (
               talep.district == ''
@@ -213,7 +214,8 @@ service cloud.firestore {
             )
             ||
             (
-              resource.data.category == bagliKurum().category
+              !resource.data.keys().hasAny(['targetInstitutionId'])
+              && resource.data.category == bagliKurum().category
               && resource.data.city == bagliKurum().city
               && (
                 resource.data.district == ''
