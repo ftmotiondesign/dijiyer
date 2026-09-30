@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","vipInstitutionsSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection","quoteRoutingSection",
     "offerReportSection","issuesSection","accountsSection","unmatchedSearchesSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","vipInstitutionsTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn","quoteRoutingTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn","unmatchedSearchesTabBtn"
@@ -18,6 +18,8 @@
   let promotionPackageRecords = [];
   let promotionPackageInstitutionRecords = [];
   const selectedPromotionPackageIds = new Set();
+  let vipPlanRecords = [];
+  let vipInstitutionRecords = [];
   let bannerAdRecords = [];
   let bannerInstitutionQuickMode = "all";
   let externalAdRecords = [];
@@ -167,6 +169,7 @@
   $("adSideCalendarBtn")?.addEventListener("click",()=>$("adCalendarTabBtn")?.click());
   $("adSideRevenueBtn")?.addEventListener("click",()=>$("adRevenueTabBtn")?.click());
   $("adSidePackagesBtn")?.addEventListener("click",()=>$("promotionPackagesTabBtn")?.click());
+  $("adSideVipBtn")?.addEventListener("click",()=>$("vipInstitutionsTabBtn")?.click());
   $("adSideMediaBtn")?.addEventListener("click",()=>$("mediaArchiveTabBtn")?.click());
 
   $("bannerAdsTabBtn")?.addEventListener("click", async () => {
@@ -210,6 +213,13 @@
     showAdvancedSection("promotionPackagesSection","promotionPackagesTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("promotionPackagesTabBtn");
     await renderPromotionPackageAdmin(true);
+  });
+
+  $("vipInstitutionsTabBtn")?.addEventListener("click", async () => {
+    setAdCenterHubActive("");
+    showAdvancedSection("vipInstitutionsSection","vipInstitutionsTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("vipInstitutionsTabBtn");
+    await renderVipAdmin(true);
   });
 
   $("promotionOrdersTabBtn")?.addEventListener("click", async () => {
@@ -3872,6 +3882,447 @@
   $("promotionPackageClearSelectionBtn")?.addEventListener("click",()=>clearPromotionPackageSelection(true));
   $("promotionPackageInstitutionSelect")?.addEventListener("change",loadAssignedPackagesForInstitution);
   $("promotionPackageAssignBtn")?.addEventListener("click",savePromotionPackageAssignment);
+
+
+  // =========================================================
+  // VIP KURUM YÖNETİMİ
+  // siteSettings/vipPlans + institutions/{id}.vip*
+  // =========================================================
+  const DEFAULT_VIP_PLANS = [
+    {
+      key:"vip", name:"VIP", badge:"VIP",
+      description:"Kurumun Dijiyer'de daha profesyonel ve görünür olması için başlangıç seviyesi.",
+      price:0, durationDays:30, priority:1, active:true,
+      features:[
+        "VIP kurum rozeti",
+        "Arama sonuçlarında öncelik",
+        "Keşfet / Fırsat görünürlüğü",
+        "Gelişmiş kurum profili",
+        "Kampanya / fırsat yayınlama",
+        "Detaylı temel istatistikler"
+      ]
+    },
+    {
+      key:"vip_plus", name:"VIP Plus", badge:"EN ÇOK TERCİH EDİLEN",
+      description:"Daha güçlü sıralama, teklif bildirimi ve sponsor görünürlüğü isteyen kurumlar için.",
+      price:0, durationDays:30, priority:2, active:true,
+      features:[
+        "VIP'teki tüm ayrıcalıklar",
+        "Arama ve Keşfet'te daha yüksek öncelik",
+        "Teklif taleplerinde öncelikli bildirim",
+        "Bölgesinde öne çıkan kurum alanı",
+        "Sponsorlu gösterim hakkı",
+        "Reklam paketlerinde özel avantaj",
+        "Öncelikli destek"
+      ]
+    },
+    {
+      key:"vip_premium", name:"VIP Premium", badge:"PREMIUM",
+      description:"Dijiyer görünürlüğü ile profesyonel tanıtım hizmetlerini bir araya getiren üst seviye paket.",
+      price:0, durationDays:30, priority:3, active:true,
+      features:[
+        "VIP Plus'taki tüm ayrıcalıklar",
+        "En yüksek arama / keşfet önceliği",
+        "Ana sayfa vitrini",
+        "Premium kurum kartı",
+        "Konum Tanıtım Videosu",
+        "360° Sanal Tur",
+        "Daha güçlü sponsorlu gösterim",
+        "Öncelikli destek ve tanıtım planlaması"
+      ]
+    }
+  ];
+
+  function cloneVipDefaults(){
+    return DEFAULT_VIP_PLANS.map(item=>({...item,features:[...item.features]}));
+  }
+
+  function vipDateValue(date){
+    const d=date instanceof Date?date:new Date(date);
+    if(Number.isNaN(d.getTime()))return "";
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const day=String(d.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+day;
+  }
+
+  function vipToday(){
+    return vipDateValue(new Date());
+  }
+
+  function vipAddDays(dateText,days){
+    const parts=String(dateText||"").split("-").map(Number);
+    const d=parts.length===3 && parts.every(Number.isFinite)
+      ? new Date(parts[0],parts[1]-1,parts[2],12,0,0)
+      : new Date();
+    d.setDate(d.getDate()+Math.max(1,Number(days||30)));
+    return vipDateValue(d);
+  }
+
+  function vipDaysLeft(endAt){
+    const parts=String(endAt||"").slice(0,10).split("-").map(Number);
+    if(parts.length!==3 || !parts.every(Number.isFinite))return null;
+    const end=new Date(parts[0],parts[1]-1,parts[2],12,0,0);
+    const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12,0,0);
+    return Math.ceil((end-today)/86400000);
+  }
+
+  function vipPlanByKey(key){
+    return vipPlanRecords.find(item=>item.key===key) || vipPlanRecords[0] || null;
+  }
+
+  async function loadVipPlans(){
+    try{
+      const snap=await db.collection("siteSettings").doc("vipPlans").get();
+      const data=snap.exists?snap.data():{};
+      vipPlanRecords=Array.isArray(data.plans)&&data.plans.length
+        ? data.plans.map((item,index)=>({
+            key:String(item.key||["vip","vip_plus","vip_premium"][index]||("vip_"+index)),
+            name:String(item.name||"VIP"),
+            badge:String(item.badge||"VIP"),
+            description:String(item.description||""),
+            price:Math.max(0,Number(item.price||0)),
+            durationDays:Math.max(1,Number(item.durationDays||30)),
+            priority:Math.max(1,Number(item.priority||index+1)),
+            active:item.active!==false,
+            features:Array.isArray(item.features)?item.features.map(String):[]
+          }))
+        : cloneVipDefaults();
+    }catch(error){
+      console.error("VIP paketleri yüklenemedi:",error);
+      vipPlanRecords=cloneVipDefaults();
+    }
+    return vipPlanRecords;
+  }
+
+  function renderVipPlanEditor(){
+    const root=$("vipPlanAdminGrid");
+    if(!root)return;
+
+    root.innerHTML=vipPlanRecords.map(plan=>`
+      <article class="vip-plan-card vip-plan-card-${escapeHtml(plan.key)}" data-vip-plan-card="${escapeHtml(plan.key)}">
+        <div class="vip-plan-card-head">
+          <div>
+            <span>${escapeHtml(plan.badge||"VIP")}</span>
+            <strong>${escapeHtml(plan.name||"VIP")}</strong>
+          </div>
+          <label class="vip-plan-active"><input type="checkbox" data-vip-active ${plan.active!==false?"checked":""}> Aktif</label>
+        </div>
+        <label>Paket Adı
+          <input type="text" data-vip-name maxlength="60" value="${escapeHtml(plan.name||"")}">
+        </label>
+        <label>Kısa Açıklama
+          <textarea data-vip-description rows="2" maxlength="300">${escapeHtml(plan.description||"")}</textarea>
+        </label>
+        <div class="vip-plan-price-grid">
+          <label>Aylık / Dönem Ücreti
+            <input type="number" data-vip-price min="0" step="1" value="${Number(plan.price||0)}">
+          </label>
+          <label>Süre (gün)
+            <input type="number" data-vip-days min="1" step="1" value="${Number(plan.durationDays||30)}">
+          </label>
+        </div>
+        <label>Ayrıcalıklar
+          <textarea data-vip-features rows="8" placeholder="Her satıra bir ayrıcalık yazın.">${escapeHtml((plan.features||[]).join("\n"))}</textarea>
+        </label>
+      </article>
+    `).join("");
+  }
+
+  async function saveVipPlans(){
+    const button=$("vipPlanSaveBtn");
+    const message=$("vipPlanMessage");
+    const cards=[...document.querySelectorAll("[data-vip-plan-card]")];
+    if(!cards.length)return;
+
+    const next=cards.map((card,index)=>{
+      const previous=vipPlanByKey(card.dataset.vipPlanCard)||DEFAULT_VIP_PLANS[index]||{};
+      return {
+        key:String(card.dataset.vipPlanCard||previous.key||("vip_"+index)),
+        name:String(card.querySelector("[data-vip-name]")?.value||previous.name||"VIP").trim(),
+        badge:String(previous.badge||"VIP"),
+        description:String(card.querySelector("[data-vip-description]")?.value||"").trim(),
+        price:Math.max(0,Number(card.querySelector("[data-vip-price]")?.value||0)),
+        durationDays:Math.max(1,Number(card.querySelector("[data-vip-days]")?.value||30)),
+        priority:Math.max(1,Number(previous.priority||index+1)),
+        active:Boolean(card.querySelector("[data-vip-active]")?.checked),
+        features:String(card.querySelector("[data-vip-features]")?.value||"")
+          .split(/\n+/).map(x=>x.trim()).filter(Boolean)
+      };
+    });
+
+    try{
+      if(button){button.disabled=true;button.textContent="Kaydediliyor...";}
+      await db.collection("siteSettings").doc("vipPlans").set({
+        plans:next,
+        updatedAt:new Date().toISOString()
+      },{merge:true});
+      vipPlanRecords=next;
+      if(message)message.textContent="VIP paketleri kaydedildi.";
+      addAudit("VIP paketleri güncellendi",next.map(x=>x.name).join(", "));
+      renderVipPlanEditor();
+      populateVipPlanSelect();
+      updateVipAssignmentPreview();
+    }catch(error){
+      console.error("VIP paketleri kaydedilemedi:",error);
+      if(message)message.textContent="VIP paketleri kaydedilemedi. Yönetici yetkisini kontrol edin.";
+    }finally{
+      if(button){button.disabled=false;button.textContent="Paketleri Kaydet";}
+    }
+  }
+
+  async function loadVipInstitutions(){
+    try{
+      const snapshot=await db.collection("institutions").get();
+      vipInstitutionRecords=snapshot.docs
+        .map(doc=>({id:doc.id,...doc.data()}))
+        .sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"tr"));
+    }catch(error){
+      console.error("VIP kurumları yüklenemedi:",error);
+      vipInstitutionRecords=[];
+    }
+    return vipInstitutionRecords;
+  }
+
+  function populateVipInstitutionSelect(){
+    const select=$("vipInstitutionSelect");
+    if(!select)return;
+    const keep=String(select.value||"");
+    select.innerHTML='<option value="">Kurum seçin...</option>'+
+      vipInstitutionRecords.map(inst=>{
+        const place=[inst.city,inst.district].filter(Boolean).join(" / ");
+        return '<option value="'+escapeHtml(inst.id)+'">'+escapeHtml(inst.name||"Kurum")+
+          (place?' · '+escapeHtml(place):'')+'</option>';
+      }).join("");
+    if(keep&&vipInstitutionRecords.some(x=>x.id===keep))select.value=keep;
+  }
+
+  function populateVipPlanSelect(){
+    const select=$("vipPlanSelect");
+    if(!select)return;
+    const keep=String(select.value||"");
+    const activePlans=vipPlanRecords.filter(x=>x.active!==false);
+    select.innerHTML=activePlans.map(plan=>
+      '<option value="'+escapeHtml(plan.key)+'">'+escapeHtml(plan.name)+
+      ' · '+(Number(plan.price||0)>0?money(plan.price):"Ücret belirlenmedi")+
+      ' · '+Number(plan.durationDays||30)+' gün</option>'
+    ).join("");
+    if(keep&&activePlans.some(x=>x.key===keep))select.value=keep;
+  }
+
+  function selectedVipInstitution(){
+    const id=String($("vipInstitutionSelect")?.value||"");
+    return vipInstitutionRecords.find(x=>x.id===id)||null;
+  }
+
+  function updateVipAssignmentPreview(){
+    const root=$("vipAssignmentPreview");
+    if(!root)return;
+    const plan=vipPlanByKey(String($("vipPlanSelect")?.value||""));
+    const start=String($("vipStartDate")?.value||vipToday());
+    if(!plan){
+      root.innerHTML="<span>Aktif VIP paketi bulunmuyor.</span>";
+      return;
+    }
+    const end=vipAddDays(start,plan.durationDays);
+    root.innerHTML=
+      '<div><span>Seviye</span><strong>'+escapeHtml(plan.name)+'</strong></div>'+
+      '<div><span>Ücret</span><strong>'+(Number(plan.price||0)>0?money(plan.price):"Ücret belirlenmedi")+'</strong></div>'+
+      '<div><span>Süre</span><strong>'+Number(plan.durationDays||30)+' gün</strong></div>'+
+      '<div><span>Bitiş</span><strong>'+escapeHtml(end)+'</strong></div>';
+  }
+
+  function syncVipInstitutionSelection(){
+    const inst=selectedVipInstitution();
+    const status=$("vipCurrentStatus");
+    const remove=$("vipRemoveBtn");
+
+    if(!inst){
+      if(status)status.innerHTML="<span>Kurum seçildiğinde mevcut VIP durumu burada görünür.</span>";
+      if(remove)remove.disabled=true;
+      return;
+    }
+
+    const days=vipDaysLeft(inst.vipEndAt);
+    const currentlyActive=inst.vipActive===true && (days===null || days>=0);
+    if(currentlyActive && inst.vipPlanKey && $("vipPlanSelect")){
+      const option=[...$("vipPlanSelect").options].some(o=>o.value===String(inst.vipPlanKey));
+      if(option)$("vipPlanSelect").value=String(inst.vipPlanKey);
+    }
+    if(inst.vipStartAt && $("vipStartDate"))$("vipStartDate").value=String(inst.vipStartAt).slice(0,10);
+
+    if(status){
+      status.innerHTML=inst.vipPlanKey
+        ? '<div><strong>'+escapeHtml(inst.vipPlanName||inst.vipPlanKey)+'</strong>'+
+          '<span>'+(currentlyActive?"Aktif VIP":"VIP süresi dolmuş / pasif")+'</span>'+
+          '<small>'+escapeHtml(String(inst.vipStartAt||"-").slice(0,10))+' → '+escapeHtml(String(inst.vipEndAt||"-").slice(0,10))+
+          (days!==null?' · '+(days>=0?days+" gün kaldı":Math.abs(days)+" gün önce bitti"):'')+'</small></div>'
+        : "<span>Bu kurum için daha önce VIP üyelik atanmamış.</span>";
+    }
+    if(remove)remove.disabled=!inst.vipPlanKey || inst.vipActive!==true;
+    updateVipAssignmentPreview();
+  }
+
+  async function assignVipToInstitution(){
+    const inst=selectedVipInstitution();
+    const plan=vipPlanByKey(String($("vipPlanSelect")?.value||""));
+    const message=$("vipAssignmentMessage");
+    const button=$("vipAssignBtn");
+
+    if(!inst){if(message)message.textContent="Önce kurum seçin.";return;}
+    if(!plan){if(message)message.textContent="Önce aktif bir VIP seviyesi seçin.";return;}
+
+    const start=String($("vipStartDate")?.value||vipToday());
+    const end=vipAddDays(start,plan.durationDays);
+    const now=new Date().toISOString();
+    const data={
+      vipActive:true,
+      vipPlanKey:plan.key,
+      vipPlanName:plan.name,
+      vipBadge:plan.badge,
+      vipPriority:Number(plan.priority||1),
+      vipPrice:Number(plan.price||0),
+      vipDurationDays:Number(plan.durationDays||30),
+      vipFeatures:[...(plan.features||[])],
+      vipStartAt:start,
+      vipEndAt:end,
+      vipAssignedAt:inst.vipAssignedAt||now,
+      vipUpdatedAt:now
+    };
+
+    try{
+      if(button){button.disabled=true;button.textContent="Kaydediliyor...";}
+      await db.collection("institutions").doc(inst.id).update(data);
+      const index=vipInstitutionRecords.findIndex(x=>x.id===inst.id);
+      if(index>=0)vipInstitutionRecords[index]={...vipInstitutionRecords[index],...data};
+      if(message)message.textContent=plan.name+" üyeliği "+(inst.name||"kurum")+" için kaydedildi.";
+      addAudit("VIP üyelik atandı",(inst.name||inst.id)+" · "+plan.name+" · "+start+" → "+end);
+      syncVipInstitutionSelection();
+      renderVipInstitutionList();
+    }catch(error){
+      console.error("VIP üyeliği kaydedilemedi:",error);
+      if(message)message.textContent="VIP üyeliği kaydedilemedi. Firestore kurum güncelleme yetkisini kontrol edin.";
+    }finally{
+      if(button){button.disabled=false;button.textContent="VIP Ata / Güncelle";}
+    }
+  }
+
+  async function removeVipFromInstitution(){
+    const inst=selectedVipInstitution();
+    const message=$("vipAssignmentMessage");
+    if(!inst)return;
+
+    const now=new Date().toISOString();
+    try{
+      await db.collection("institutions").doc(inst.id).update({
+        vipActive:false,
+        vipRemovedAt:now,
+        vipUpdatedAt:now
+      });
+      const index=vipInstitutionRecords.findIndex(x=>x.id===inst.id);
+      if(index>=0)vipInstitutionRecords[index]={...vipInstitutionRecords[index],vipActive:false,vipRemovedAt:now,vipUpdatedAt:now};
+      if(message)message.textContent=(inst.name||"Kurum")+" VIP üyeliğinden çıkarıldı.";
+      addAudit("VIP üyelik kaldırıldı",inst.name||inst.id);
+      syncVipInstitutionSelection();
+      renderVipInstitutionList();
+    }catch(error){
+      console.error("VIP üyeliği kaldırılamadı:",error);
+      if(message)message.textContent="VIP üyeliği kaldırılamadı.";
+    }
+  }
+
+  function renderVipInstitutionList(){
+    const root=$("vipInstitutionList");
+    if(!root)return;
+    const query=normalize($("vipInstitutionSearch")?.value||"");
+    const vipRows=vipInstitutionRecords
+      .filter(inst=>Boolean(inst.vipPlanKey))
+      .filter(inst=>!query || normalize([
+        inst.name,inst.city,inst.district,inst.vipPlanName,inst.vipPlanKey
+      ].join(" ")).includes(query))
+      .sort((a,b)=>{
+        const aa=(a.vipActive===true && (vipDaysLeft(a.vipEndAt)??0)>=0)?1:0;
+        const bb=(b.vipActive===true && (vipDaysLeft(b.vipEndAt)??0)>=0)?1:0;
+        return bb-aa || Number(b.vipPriority||0)-Number(a.vipPriority||0) ||
+          String(a.name||"").localeCompare(String(b.name||""),"tr");
+      });
+
+    const allVip=vipInstitutionRecords.filter(inst=>Boolean(inst.vipPlanKey));
+    const activeCount=allVip.filter(inst=>{
+      const days=vipDaysLeft(inst.vipEndAt);
+      return inst.vipActive===true && (days===null || days>=0);
+    }).length;
+    const expiredCount=allVip.filter(inst=>{
+      const days=vipDaysLeft(inst.vipEndAt);
+      return inst.vipActive===true && days!==null && days<0;
+    }).length;
+
+    if($("vipActiveCount"))$("vipActiveCount").textContent=String(activeCount);
+    if($("vipExpiredCount"))$("vipExpiredCount").textContent=String(expiredCount);
+
+    root.innerHTML=vipRows.length?vipRows.map(inst=>{
+      const days=vipDaysLeft(inst.vipEndAt);
+      const active=inst.vipActive===true && (days===null || days>=0);
+      const expired=inst.vipActive===true && days!==null && days<0;
+      const status=active?"Aktif":expired?"Süresi Doldu":"Pasif";
+      const statusClass=active?"active":expired?"expired":"passive";
+      return `
+        <article class="vip-institution-card">
+          <div class="vip-institution-main">
+            <span class="vip-level-badge vip-level-${escapeHtml(inst.vipPlanKey||"vip")}">👑 ${escapeHtml(inst.vipPlanName||"VIP")}</span>
+            <strong>${escapeHtml(inst.name||"Kurum")}</strong>
+            <small>${escapeHtml([inst.city,inst.district].filter(Boolean).join(" / ")||"Konum bilgisi yok")}</small>
+          </div>
+          <div class="vip-institution-period">
+            <span>Üyelik Dönemi</span>
+            <strong>${escapeHtml(String(inst.vipStartAt||"-").slice(0,10))} → ${escapeHtml(String(inst.vipEndAt||"-").slice(0,10))}</strong>
+            <small>${days===null?"Süre bilgisi yok":days>=0?days+" gün kaldı":Math.abs(days)+" gün önce sona erdi"}</small>
+          </div>
+          <div class="vip-institution-price">
+            <span>Paket Değeri</span>
+            <strong>${Number(inst.vipPrice||0)>0?money(inst.vipPrice):"Ücret girilmedi"}</strong>
+          </div>
+          <div class="vip-institution-state ${statusClass}">${status}</div>
+          <button type="button" data-vip-edit-inst="${escapeHtml(inst.id)}">Yönet</button>
+        </article>
+      `;
+    }).join(""):'<div class="advanced-empty">Henüz VIP kurum bulunmuyor.</div>';
+
+    root.querySelectorAll("[data-vip-edit-inst]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        if($("vipInstitutionSelect")){
+          $("vipInstitutionSelect").value=button.dataset.vipEditInst;
+          syncVipInstitutionSelection();
+          $("vipAssignBtn")?.scrollIntoView({behavior:"smooth",block:"center"});
+        }
+      });
+    });
+  }
+
+  async function renderVipAdmin(reload=false){
+    if(!$("vipInstitutionsSection"))return;
+    if(reload || !vipPlanRecords.length)await loadVipPlans();
+    if(reload || !vipInstitutionRecords.length)await loadVipInstitutions();
+
+    renderVipPlanEditor();
+    populateVipPlanSelect();
+    populateVipInstitutionSelect();
+
+    if($("vipStartDate") && !$("vipStartDate").value)$("vipStartDate").value=vipToday();
+
+    syncVipInstitutionSelection();
+    updateVipAssignmentPreview();
+    renderVipInstitutionList();
+  }
+
+  $("vipPlanSaveBtn")?.addEventListener("click",saveVipPlans);
+  $("vipInstitutionSelect")?.addEventListener("change",syncVipInstitutionSelection);
+  $("vipPlanSelect")?.addEventListener("change",updateVipAssignmentPreview);
+  $("vipStartDate")?.addEventListener("change",updateVipAssignmentPreview);
+  $("vipAssignBtn")?.addEventListener("click",assignVipToInstitution);
+  $("vipRemoveBtn")?.addEventListener("click",removeVipFromInstitution);
+  $("vipInstitutionSearch")?.addEventListener("input",renderVipInstitutionList);
 
   function promotionOrderStatusLabel(status) {
     return {
