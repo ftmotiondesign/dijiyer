@@ -508,54 +508,23 @@ function rememberVerifiedQuoteOnDevice(access){
 async function loadBundle(access){
   const quoteRef=db.collection("quoteRequests").doc(access.quoteId);
 
-  let offersSnap;
-  let lockSnap;
-  let engagementSnap;
-  let publicStatusSnap;
-
   try{
-    offersSnap=await quoteRef.collection("offers").get();
+    const [offersSnap,lockSnap]=await Promise.all([
+      quoteRef.collection("offers").get(),
+      quoteRef.collection("locks").doc("main").get()
+    ]);
+
+    return {
+      access,
+      offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
+      lock:lockSnap.exists?lockSnap.data():null,
+      engagement:[],
+      publicStatus:null
+    };
   }catch(error){
-    console.error("OFFERS okunamadı:",error);
-    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
-      throw new Error("AŞAMA 2A: offers koleksiyonu okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/offers/{institutionId} için get,list izni gerekli.");
-    }
+    console.error("Teklif takip verileri okunamadı:",error);
     throw error;
   }
-
-  try{
-    lockSnap=await quoteRef.collection("locks").doc("main").get();
-  }catch(error){
-    console.error("LOCK okunamadı:",error);
-    if(/missing or insufficient permissions/i.test(String(error?.message||""))){
-      throw new Error("AŞAMA 2B: locks/main belgesi okunamıyor. Firestore Rules içinde quoteRequests/{quoteId}/locks/{lockId} için get izni gerekli.");
-    }
-    throw error;
-  }
-
-  let engagementRows=[];
-  try{
-    engagementSnap=await quoteRef.collection("engagement").get();
-    engagementRows=engagementSnap.docs.map(d=>({id:d.id,...d.data()}));
-  }catch(error){
-    console.warn("Kurum yanıt durumları okunamadı; teklif takip ekranı bu özet olmadan açılıyor:",error);
-    engagementRows=[];
-  }
-
-  try{
-    publicStatusSnap=await quoteRef.collection("publicStatus").doc("main").get();
-  }catch(error){
-    console.warn("Teklif yönlendirme durumu okunamadı:",error);
-    publicStatusSnap=null;
-  }
-
-  return {
-    access,
-    offers:offersSnap.docs.map(d=>({id:d.id,...d.data()})),
-    lock:lockSnap.exists?lockSnap.data():null,
-    engagement:engagementRows,
-    publicStatus:publicStatusSnap?.exists?publicStatusSnap.data():null
-  };
 }
 
 function stopLiveTracking(){
@@ -599,9 +568,7 @@ function startLiveTracking(access){
   stopLiveTracking();
 
   offerListenerInitialized=false;
-  engagementListenerInitialized=false;
   offerUpdateVersions.clear();
-  engagementResponseVersions.clear();
   newlyArrivedOfferIds.clear();
   latestNewOfferNotice=null;
 
@@ -722,79 +689,21 @@ function startLiveTracking(access){
     }
   );
 
-  stopPublicStatusListener=quoteRef.collection("publicStatus").doc("main").onSnapshot(
-    snapshot=>{
-      const previous=livePublicStatus;
-      livePublicStatus=snapshot.exists?snapshot.data():null;
-
-      if(previous?.lastForwardedAt!==livePublicStatus?.lastForwardedAt && livePublicStatus?.status==="forwarded"){
-        const text=livePublicStatus.message || "Talebiniz uygun diğer kurumlara iletildi.";
-        toast("↗ "+text);
-        try{
-          if("Notification" in window && Notification.permission==="granted" && document.hidden){
-            new Notification("Dijiyer · Talebiniz diğer kurumlara iletildi",{
-              body:text,
-              tag:"dijiyer-forwarded-"+access.quoteId
-            });
-          }
-        }catch(_){}
-      }
-      renderLiveTracking();
-    },
-    error=>console.warn("Yönlendirme durumu canlı izlenemedi:",error)
-  );
-
-  stopEngagementListener=quoteRef.collection("engagement").onSnapshot(
-    snapshot=>{
-      const nextRows=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
-
-      if(engagementListenerInitialized){
-        snapshot.docChanges().forEach(change=>{
-          if(change.type!=="added" && change.type!=="modified")return;
-          const row={id:change.doc.id,...change.doc.data()};
-          const previous=engagementResponseVersions.get(change.doc.id)||"";
-          const next=String(row.institutionResponseAt||"");
-
-          if(next && next!==previous){
-            notifyInstitutionResponseChange(access,row);
-          }
-        });
-      }
-
-      nextRows.forEach(row=>{
-        engagementResponseVersions.set(String(row.id),String(row.institutionResponseAt||""));
-      });
-
-      engagementListenerInitialized=true;
-      liveEngagement=nextRows;
-      renderLiveTracking();
-    },
-    error=>{
-      console.error("Kurum yanıtları canlı izlenemedi:",error);
-    }
-  );
-}
 
 async function refreshTracking(){
   if(!currentAccess)return;
   try{
-    // Talep kabul edildiyse sadece kilit belgesini yenile; tüm alt koleksiyonları tekrar okuma.
-    if(liveLock || localAcceptedQuote(currentAccess.quoteId)){
-      const lockSnap=await db.collection("quoteRequests").doc(currentAccess.quoteId).collection("locks").doc("main").get();
-      if(lockSnap.exists){
-        liveLock=lockSnap.data();
-        markQuoteAcceptedLocally(currentAccess.quoteId,liveLock);
-      }
-      renderLiveTracking();
-      toast("Teklif durumu güncellendi.");
-      return;
-    }
+    const quoteRef=db.collection("quoteRequests").doc(currentAccess.quoteId);
+    const [offersSnap,lockSnap]=await Promise.all([
+      quoteRef.collection("offers").get(),
+      quoteRef.collection("locks").doc("main").get()
+    ]);
 
-    const bundle=await loadBundle(currentAccess);
-    liveOffers=bundle.offers;
-    liveLock=bundle.lock;
-    liveEngagement=bundle.engagement||[];
-    livePublicStatus=bundle.publicStatus||null;
+    liveOffers=offersSnap.docs.map(doc=>({id:doc.id,...doc.data()}));
+    liveLock=lockSnap.exists?lockSnap.data():null;
+
+    if(liveLock)markQuoteAcceptedLocally(currentAccess.quoteId,liveLock);
+
     renderLiveTracking();
     toast("Teklifler güncellendi.");
   }catch(error){
@@ -1309,25 +1218,24 @@ async function lockOffer(quoteId,institutionId,button){
   }catch(error){
     console.error(error);
 
-    try{
-      const freshLockSnap=await lockRef.get();
-      if(freshLockSnap.exists){
-        liveLock=freshLockSnap.data();
-        markQuoteAcceptedLocally(quoteId,liveLock);
-        renderLiveTracking();
-        if(currentAccess?.quoteId===quoteId)startAcceptedLockTracking(currentAccess);
-        toast("Bu talep için teklif zaten kabul edildi.");
-        return;
-      }
-    }catch(_){}
-
     acceptanceControls.forEach(control=>{ control.disabled=false; });
     const code=String(error?.code||"");
 
-    if(code.includes("resource-exhausted")){
-      toast("Firestore geçici olarak yoğun. Birkaç saniye sonra tekrar deneyin.");
-    }else if(code.includes("permission-denied")){
+    if(code.includes("permission-denied")){
+      try{
+        const freshLockSnap=await lockRef.get();
+        if(freshLockSnap.exists){
+          liveLock=freshLockSnap.data();
+          markQuoteAcceptedLocally(quoteId,liveLock);
+          renderLiveTracking();
+          if(currentAccess?.quoteId===quoteId)startAcceptedLockTracking(currentAccess);
+          toast("Bu talep için teklif zaten kabul edildi.");
+          return;
+        }
+      }catch(_){}
       toast("Teklif kabul edilemedi. Teklif güncellenmiş, süresi dolmuş veya talep kapanmış olabilir.");
+    }else if(code.includes("resource-exhausted")){
+      toast("Firestore geçici olarak yoğun. Birkaç saniye sonra tekrar deneyin.");
     }else{
       toast(error.message||"Teklif kabul edilemedi.");
     }
@@ -1534,10 +1442,8 @@ form.addEventListener("submit",async e=>{
     liveEngagement=initialBundle.engagement||[];
     livePublicStatus=initialBundle.publicStatus||null;
     offerListenerInitialized=false;
-    engagementListenerInitialized=false;
-    offerUpdateVersions.clear();
-    engagementResponseVersions.clear();
-    renderLiveTracking();
+      offerUpdateVersions.clear();
+      renderLiveTracking();
     if(initialBundle.lock){
       startAcceptedLockTracking(currentAccess);
     }else{
