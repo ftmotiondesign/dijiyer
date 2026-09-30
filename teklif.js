@@ -799,14 +799,37 @@ function render(bundle){
         <a class="secondary tracking-action-btn new-request-action" href="index.html"><span class="tracking-action-icon">＋</span><span>Yeni Talep Oluştur</span></a>
       </div>
 
-      ${requestDetailHtml(access)}
+      ${requestDetailHtml(access,engagementRows,offers,bundle.lock)}
     </article>
 
     ${directStatus}
     ${bulkSummary}
+    ${newOfferAlertHtml()}
 
     ${bundle.lock?lockedHtml(bundle):`<h2 class="offers-title">Gelen Teklifler (${offers.length})</h2>${offerFairnessToolbarHtml(offers.length)}${offers.length?offers.map(o=>offerHtml(bundle,o)).join(""):'<div class="empty">Henüz teklif gelmedi. Kurumlar fiyat gönderdiğinde burada görünecek.</div>'}`}
   `;
+
+  newlyArrivedOfferIds.forEach(id=>{
+    const card=results.querySelector('[data-offer-institution="'+CSS.escape(String(id))+'"]');
+    if(!card)return;
+    card.classList.add("is-new-offer");
+    if(!card.querySelector(".new-offer-card-badge")){
+      card.insertAdjacentHTML("afterbegin",'<div class="new-offer-card-badge">🔔 YENİ GELEN TEKLİF</div>');
+    }
+  });
+
+  const newOfferJump=results.querySelector("[data-jump-new-offer]");
+  if(newOfferJump){
+    newOfferJump.addEventListener("click",()=>{
+      const id=String(newOfferJump.dataset.jumpNewOffer||"");
+      const target=results.querySelector('[data-offer-institution="'+CSS.escape(id)+'"]');
+      if(target){
+        target.scrollIntoView({behavior:"smooth",block:"center"});
+        target.classList.add("is-new-offer-focus");
+        setTimeout(()=>target.classList.remove("is-new-offer-focus"),1800);
+      }
+    });
+  }
 
   const sortSelect=document.getElementById("offerSortSelect");
   if(sortSelect){
