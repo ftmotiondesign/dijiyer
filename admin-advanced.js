@@ -1351,6 +1351,8 @@
 
 
   const MEDIA_ARCHIVE_LOCAL_KEY="dijiyer_media_archive_v1";
+  const mediaArchiveSelection=new Set();
+  let mediaArchiveLastVisibleRows=[];
 
   function cloudinaryPublicIdFromUrl(value){
     const raw=String(value||"").trim();
@@ -1568,34 +1570,67 @@
     return '<img src="'+escapeHtml(url)+'" alt="">';
   }
 
+  function mediaArchiveRowStatus(item){
+    if(item?.activeUse)return "active";
+    if(item?.inUse)return "passive";
+    return "unused";
+  }
+
+  function syncMediaArchiveBulkState(rows=mediaArchiveLastVisibleRows){
+    const selectedCount=mediaArchiveSelection.size;
+    const selectedRows=buildMediaArchiveRows().filter(row=>mediaArchiveSelection.has(String(row.url||"")));
+    const activeSelected=selectedRows.some(row=>row.activeUse);
+
+    if($("mediaArchiveSelectedCount"))$("mediaArchiveSelectedCount").textContent=String(selectedCount);
+    if($("mediaArchiveBulkPassive"))$("mediaArchiveBulkPassive").disabled=!selectedCount||!activeSelected;
+    if($("mediaArchiveBulkDelete"))$("mediaArchiveBulkDelete").disabled=!selectedCount;
+    if($("mediaArchiveBulkClear"))$("mediaArchiveBulkClear").disabled=!selectedCount;
+
+    const selectAll=$("mediaArchiveSelectAll");
+    if(selectAll){
+      const visibleUrls=(rows||[]).map(row=>String(row.url||"")).filter(Boolean);
+      const selectedVisible=visibleUrls.filter(url=>mediaArchiveSelection.has(url)).length;
+      selectAll.checked=visibleUrls.length>0&&selectedVisible===visibleUrls.length;
+      selectAll.indeterminate=selectedVisible>0&&selectedVisible<visibleUrls.length;
+      selectAll.disabled=!visibleUrls.length;
+    }
+  }
+
   function renderMediaArchive(){
     const root=$("mediaArchiveList");
     if(!root)return;
 
     const allRows=buildMediaArchiveRows();
+    const knownUrls=new Set(allRows.map(row=>String(row.url||"")));
+    [...mediaArchiveSelection].forEach(url=>{
+      if(!knownUrls.has(url))mediaArchiveSelection.delete(url);
+    });
+
     const query=normalize($("mediaArchiveSearch")?.value||"");
     const sourceFilter=String($("mediaArchiveSourceFilter")?.value||"all");
     const usageFilter=String($("mediaArchiveUsageFilter")?.value||"all");
     const typeFilter=String($("mediaArchiveTypeFilter")?.value||"all");
 
-    const inUseCount=allRows.filter(row=>row.inUse).length;
-    const unusedCount=allRows.length-inUseCount;
+    const activeCount=allRows.filter(row=>row.activeUse).length;
+    const passiveCount=allRows.filter(row=>row.inUse&&!row.activeUse).length;
+    const unusedCount=allRows.filter(row=>!row.inUse).length;
     const videoCount=allRows.filter(row=>row.mediaType==="video").length;
 
     if($("mediaArchiveCount")){
       $("mediaArchiveCount").textContent=
-        allRows.length+" medya · "+inUseCount+" kullanımda · "+unusedCount+" kullanılmıyor";
+        allRows.length+" medya · "+activeCount+" aktif · "+passiveCount+" pasif · "+unusedCount+" silinmeye hazır";
     }
-    if($("mediaArchiveTabCount"))$("mediaArchiveTabCount").textContent=String(unusedCount);
+    if($("mediaArchiveTabCount"))$("mediaArchiveTabCount").textContent=String(passiveCount+unusedCount);
     if($("mediaArchiveTotal"))$("mediaArchiveTotal").textContent=String(allRows.length);
-    if($("mediaArchiveInUse"))$("mediaArchiveInUse").textContent=String(inUseCount);
+    if($("mediaArchiveInUse"))$("mediaArchiveInUse").textContent=String(activeCount);
+    if($("mediaArchivePassive"))$("mediaArchivePassive").textContent=String(passiveCount);
     if($("mediaArchiveUnused"))$("mediaArchiveUnused").textContent=String(unusedCount);
     if($("mediaArchiveVideo"))$("mediaArchiveVideo").textContent=String(videoCount);
 
     const rows=allRows.filter(row=>{
+      const status=mediaArchiveRowStatus(row);
       if(sourceFilter!=="all" && row.source!==sourceFilter)return false;
-      if(usageFilter==="in_use" && !row.inUse)return false;
-      if(usageFilter==="unused" && row.inUse)return false;
+      if(usageFilter!=="all" && status!==usageFilter)return false;
       if(typeFilter!=="all" && row.mediaType!==typeFilter)return false;
       if(!query)return true;
       return normalize([
@@ -1603,9 +1638,13 @@
         row.publicId,
         row.source,
         mediaArchiveSourceLabel(row.source),
-        row.url
+        row.url,
+        status==="active"?"aktif yayında":status==="passive"?"pasif":"silinmeye hazır"
       ].filter(Boolean).join(" ")).includes(query);
     });
+
+    mediaArchiveLastVisibleRows=rows;
+    syncMediaArchiveBulkState(rows);
 
     if(!rows.length){
       root.innerHTML='<div class="advanced-empty">Bu filtreye uygun medya kaydı bulunamadı.</div>';
@@ -1614,12 +1653,19 @@
 
     root.innerHTML=rows.map(item=>{
       const publicId=String(item.publicId||cloudinaryPublicIdFromUrl(item.url)||"");
+      const status=mediaArchiveRowStatus(item);
+      const statusText=status==="active"?"Aktif Yayında":status==="passive"?"Pasif":"Silinmeye Hazır";
       const usageText=item.inUse
-        ? item.usages.map(use=>use.label+(use.active===false?" · Pasif":"")).join(" · ")
-        : "Dijiyer içinde kullanılmıyor";
+        ? item.usages.map(use=>use.label+(use.active===false?" · Pasif":" · Aktif")).join(" · ")
+        : "Dijiyer içinde hiçbir yayın alanına bağlı değil";
       const sourceLabel=mediaArchiveSourceLabel(item.source);
+      const selected=mediaArchiveSelection.has(String(item.url||""));
 
-      return '<article class="media-archive-card '+(item.inUse?"is-in-use":"is-unused")+'">'+
+      return '<article class="media-archive-card status-'+status+(selected?" is-selected":"")+'">'+
+        '<label class="media-archive-card-select" title="Bu medyayı seç">'+
+          '<input type="checkbox" data-media-select="'+escapeHtml(item.url)+'" '+(selected?"checked":"")+'>'+
+          '<span></span>'+
+        '</label>'+
         '<div class="media-archive-preview">'+mediaArchivePreviewHtml(item)+'</div>'+
         '<div class="media-archive-copy">'+
           '<div class="media-archive-title-row">'+
@@ -1627,7 +1673,7 @@
               '<span>'+escapeHtml(sourceLabel)+'</span>'+
               '<strong>'+escapeHtml(item.institutionName||"Kurum / Medya")+'</strong>'+
             '</div>'+
-            '<b class="'+(item.inUse?"active":"unused")+'">'+(item.inUse?"Kullanımda":"Kullanılmıyor")+'</b>'+
+            '<b class="'+status+'">'+statusText+'</b>'+
           '</div>'+
           '<small>'+escapeHtml(item.mediaType==="video"?"🎬 Video":"🖼 Görsel")+
             ' · '+escapeHtml(mediaArchiveSizeLabel(item))+
@@ -1641,13 +1687,25 @@
           '<div class="media-archive-actions">'+
             '<a href="'+escapeHtml(item.url)+'" target="_blank" rel="noopener">Dosyayı Aç</a>'+
             (publicId?'<button type="button" data-media-copy-id="'+escapeHtml(publicId)+'">ID Kopyala</button>':"")+
-            (item.inUse
-              ? '<button type="button" class="danger" data-media-detach="'+escapeHtml(item.url)+'">Kullanımdan Kaldır</button>'
-              : '<span class="ready-delete">Cloudinary’de kalıcı silmeye hazır</span>')+
+            (status==="active"
+              ? '<button type="button" class="passive" data-media-passive="'+escapeHtml(item.url)+'">Pasif Yap</button>'
+              : "")+
+            '<button type="button" class="danger" data-media-delete="'+escapeHtml(item.url)+'">Arşivden Sil</button>'+
           '</div>'+
         '</div>'+
       '</article>';
     }).join("");
+
+    root.querySelectorAll("[data-media-select]").forEach(input=>{
+      input.addEventListener("change",()=>{
+        const url=String(input.dataset.mediaSelect||"");
+        if(!url)return;
+        if(input.checked)mediaArchiveSelection.add(url);
+        else mediaArchiveSelection.delete(url);
+        input.closest(".media-archive-card")?.classList.toggle("is-selected",input.checked);
+        syncMediaArchiveBulkState(rows);
+      });
+    });
 
     root.querySelectorAll("[data-media-copy-id]").forEach(button=>{
       button.addEventListener("click",async()=>{
@@ -1663,12 +1721,155 @@
       });
     });
 
-    root.querySelectorAll("[data-media-detach]").forEach(button=>{
+    root.querySelectorAll("[data-media-passive]").forEach(button=>{
       button.addEventListener("click",()=>{
-        detachMediaFromDijiyer(button.dataset.mediaDetach);
+        setMediaArchiveItemsPassive([button.dataset.mediaPassive]);
+      });
+    });
+
+    root.querySelectorAll("[data-media-delete]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        deleteMediaArchiveItems([button.dataset.mediaDelete]);
       });
     });
   }
+
+  function mediaArchiveGroupedReferenceUpdates(urls,{remove=false}={}){
+    const selected=new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean));
+    const refs=currentMediaReferences().filter(ref=>selected.has(String(ref.url||"")));
+    const updates=new Map();
+    const now=new Date().toISOString();
+
+    refs.forEach(ref=>{
+      const key=ref.source+":"+String(ref.sourceId||"");
+      if(!ref.sourceId)return;
+
+      if(ref.source==="opportunity"){
+        updates.set(key,{
+          ref:db.collection("institutions").doc(String(ref.sourceId)),
+          data:remove
+            ? {
+                opportunitySponsorActive:false,
+                opportunitySponsorMediaUrl:"",
+                opportunitySponsorMediaType:"image",
+                opportunitySponsorUpdatedAt:now,
+                updatedAt:now
+              }
+            : {
+                opportunitySponsorActive:false,
+                opportunitySponsorUpdatedAt:now,
+                updatedAt:now
+              }
+        });
+        return;
+      }
+
+      if(ref.source==="banner"){
+        const existing=updates.get(key) || {
+          ref:db.collection("bannerAds").doc(String(ref.sourceId)),
+          data:{active:false,updatedAt:now}
+        };
+        existing.data.active=false;
+        existing.data.updatedAt=now;
+
+        if(remove){
+          if(ref.mediaType==="video"){
+            existing.data.videoUrl="";
+            existing.data.mediaType="image";
+          }else{
+            existing.data.imageUrl="";
+          }
+        }
+        updates.set(key,existing);
+      }
+    });
+
+    return [...updates.values()];
+  }
+
+  async function refreshMediaArchiveDependencies(){
+    if(typeof loadInstitutions==="function")await loadInstitutions();
+    await loadBannerAdsAdmin();
+    renderMediaArchive();
+    renderOpportunitySponsorsAdmin();
+    renderBannerAdsAdmin(false);
+  }
+
+  async function setMediaArchiveItemsPassive(urls){
+    const targets=[...new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean))];
+    if(!targets.length)return;
+
+    const rows=buildMediaArchiveRows().filter(row=>targets.includes(String(row.url||"")));
+    const activeRows=rows.filter(row=>row.activeUse);
+    if(!activeRows.length){
+      alert("Seçilen medyalar zaten pasif veya kullanım dışı.");
+      return;
+    }
+
+    const ok=confirm(
+      activeRows.length+
+      " medya yayından pasif duruma alınacak. Dosyalar silinmeyecek ve medya bağlantıları korunacak. Devam edilsin mi?"
+    );
+    if(!ok)return;
+
+    const writes=mediaArchiveGroupedReferenceUpdates(activeRows.map(row=>row.url),{remove:false});
+    if(!writes.length){
+      alert("Pasif yapılabilecek aktif yayın bağlantısı bulunamadı.");
+      return;
+    }
+
+    const batch=db.batch();
+    writes.forEach(item=>batch.update(item.ref,item.data));
+
+    try{
+      await batch.commit();
+      activeRows.forEach(row=>mediaArchiveSelection.delete(String(row.url||"")));
+      addAudit("Medya pasif yapıldı",activeRows.length+" medya");
+      await refreshMediaArchiveDependencies();
+    }catch(error){
+      console.error("Medya pasif yapılamadı:",error);
+      alert("Medya pasif yapılamadı. Firestore izinlerini kontrol edin.");
+    }
+  }
+
+  async function deleteMediaArchiveItems(urls){
+    const targets=[...new Set((urls||[]).map(value=>String(value||"").trim()).filter(Boolean))];
+    if(!targets.length)return;
+
+    const rows=buildMediaArchiveRows().filter(row=>targets.includes(String(row.url||"")));
+    if(!rows.length)return;
+
+    const linkedCount=rows.filter(row=>row.inUse).length;
+    const ok=confirm(
+      rows.length+" medya Dijiyer Medya Arşivi'nden silinecek."+
+      (linkedCount
+        ? " "+linkedCount+" medya bağlı yayın alanlarından da kaldırılacak."
+        : "")+
+      "\n\nCloudinary'deki fiziksel dosyalar bu işlemle silinmez. Devam edilsin mi?"
+    );
+    if(!ok)return;
+
+    try{
+      const writes=mediaArchiveGroupedReferenceUpdates(rows.map(row=>row.url),{remove:true});
+      if(writes.length){
+        const batch=db.batch();
+        writes.forEach(item=>batch.update(item.ref,item.data));
+        await batch.commit();
+      }
+
+      const targetSet=new Set(rows.map(row=>String(row.url||"")));
+      const localRows=loadMediaArchiveLocal().filter(item=>!targetSet.has(String(item.url||"")));
+      saveMediaArchiveLocal(localRows);
+
+      rows.forEach(row=>mediaArchiveSelection.delete(String(row.url||"")));
+      addAudit("Medya arşivden silindi",rows.length+" medya · Cloudinary dosyası korunuyor");
+      await refreshMediaArchiveDependencies();
+    }catch(error){
+      console.error("Medya arşivden silinemedi:",error);
+      alert("Medya arşivden silinemedi. Firestore izinlerini kontrol edin.");
+    }
+  }
+
 
   async function detachMediaFromDijiyer(url){
     const target=String(url||"").trim();
@@ -1737,6 +1938,30 @@
     .forEach(id=>{
       $(id)?.addEventListener(id==="mediaArchiveSearch"?"input":"change",renderMediaArchive);
     });
+
+  $("mediaArchiveSelectAll")?.addEventListener("change",event=>{
+    const checked=Boolean(event.target.checked);
+    (mediaArchiveLastVisibleRows||[]).forEach(row=>{
+      const url=String(row.url||"");
+      if(!url)return;
+      if(checked)mediaArchiveSelection.add(url);
+      else mediaArchiveSelection.delete(url);
+    });
+    renderMediaArchive();
+  });
+
+  $("mediaArchiveBulkClear")?.addEventListener("click",()=>{
+    mediaArchiveSelection.clear();
+    renderMediaArchive();
+  });
+
+  $("mediaArchiveBulkPassive")?.addEventListener("click",()=>{
+    setMediaArchiveItemsPassive([...mediaArchiveSelection]);
+  });
+
+  $("mediaArchiveBulkDelete")?.addEventListener("click",()=>{
+    deleteMediaArchiveItems([...mediaArchiveSelection]);
+  });
 
 
   const CLOUDINARY_BANNER_SETTINGS_KEY="dijiyer_cloudinary_banner";
