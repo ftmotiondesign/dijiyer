@@ -475,7 +475,7 @@
     </div>
 
     <div class="quote-seo-services" aria-label="Teklif alınabilen hizmet kategorileri">
-      <button type="button" class="quote-seo-service-card" data-seo-query="sürücü kursu anaokulu dershane">
+      <button type="button" class="quote-seo-service-card" data-seo-main="egitim" data-seo-query="sürücü kursu anaokulu dershane">
         <span class="quote-seo-service-icon">📚</span>
         <div>
           <h3>Eğitim ve Kurs</h3>
@@ -485,7 +485,7 @@
         <b>→</b>
       </button>
 
-      <button type="button" class="quote-seo-service-card" data-seo-query="oto servis lastik ekspertiz">
+      <button type="button" class="quote-seo-service-card" data-seo-main="otomotiv" data-seo-query="oto servis lastik ekspertiz">
         <span class="quote-seo-service-icon">🚗</span>
         <div>
           <h3>Otomotiv</h3>
@@ -495,7 +495,7 @@
         <b>→</b>
       </button>
 
-      <button type="button" class="quote-seo-service-card" data-seo-query="tadilat elektrik tesisat klima">
+      <button type="button" class="quote-seo-service-card" data-seo-main="evyapi" data-seo-query="tadilat elektrik tesisat klima">
         <span class="quote-seo-service-icon">🏠</span>
         <div>
           <h3>Ev ve Teknik Servis</h3>
@@ -505,7 +505,7 @@
         <b>→</b>
       </button>
 
-      <button type="button" class="quote-seo-service-card" data-seo-query="restoran catering organizasyon">
+      <button type="button" class="quote-seo-service-card" data-seo-main="yemeicme" data-seo-query="restoran catering organizasyon">
         <span class="quote-seo-service-icon">🍽️</span>
         <div>
           <h3>Yeme İçme ve Organizasyon</h3>
@@ -515,7 +515,7 @@
         <b>→</b>
       </button>
 
-      <button type="button" class="quote-seo-service-card" data-seo-query="web tasarım sosyal medya reklam">
+      <button type="button" class="quote-seo-service-card" data-seo-main="profesyonel" data-seo-query="web tasarım sosyal medya reklam">
         <span class="quote-seo-service-icon">💼</span>
         <div>
           <h3>Profesyonel Hizmetler</h3>
@@ -525,7 +525,7 @@
         <b>→</b>
       </button>
 
-      <button type="button" class="quote-seo-service-card" data-seo-query="emlak otel konaklama">
+      <button type="button" class="quote-seo-service-card" data-seo-main="emlak" data-seo-query="emlak otel konaklama">
         <span class="quote-seo-service-icon">🏢</span>
         <div>
           <h3>Emlak ve Turizm</h3>
@@ -1586,7 +1586,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=64"></script>
+<script src="script.js?v=65"></script>
 <script src="offers.js?v=2"></script>
 
 <script>
@@ -1746,7 +1746,36 @@
     document.getElementById('institutionAddBtn')?.click();
   });
 
-  document.querySelectorAll('[data-seo-query]').forEach(link=>{
+  document.querySelectorAll('.quote-seo-service-card[data-seo-main]').forEach(card=>{
+    card.addEventListener('click',event=>{
+      event.preventDefault();
+
+      const mainCategory=String(card.dataset.seoMain||'').trim();
+      if(!mainCategory)return;
+
+      try{
+        if(typeof clearDiscoveryKeywordForCategorySelection==='function'){
+          clearDiscoveryKeywordForCategorySelection();
+        }
+        if(typeof clearAllCategorySelections==='function'){
+          clearAllCategorySelections();
+        }
+
+        const target=[...document.querySelectorAll('.categoryFilter')]
+          .find(input=>String(input.value||'')===mainCategory);
+
+        if(target)target.checked=true;
+
+        if(typeof renderMobileCategories==='function')renderMobileCategories();
+        if(typeof renderList==='function')renderList();
+        if(typeof updateMobileCategoryResult==='function')updateMobileCategoryResult();
+
+        scrollToElement(discovery);
+      }catch(_){}
+    });
+  });
+
+  document.querySelectorAll('.quote-seo-popular [data-seo-query]').forEach(link=>{
     link.addEventListener('click',event=>{
       event.preventDefault();
       const value=String(link.dataset.seoQuery||'').trim();
@@ -1754,11 +1783,11 @@
       if(input && value){
         input.value=value;
         try{
-          if(typeof setMobileDiscoverySearch==='function') setMobileDiscoverySearch(value);
+          if(typeof setMobileDiscoverySearch==='function')setMobileDiscoverySearch(value);
         }catch(_){}
         setTimeout(()=>{
           try{
-            if(typeof showMobileInstitutionResults==='function') showMobileInstitutionResults(true);
+            if(typeof showMobileInstitutionResults==='function')showMobileInstitutionResults(true);
           }catch(_){}
         },80);
       }
