@@ -81,6 +81,45 @@ function offerRemainingLabel(expiresAt){
   return minutes+" dk";
 }
 
+function institutionQuoteIsTerminal(quote){
+  const status=String(quote?.status||"").trim().toLowerCase();
+  return ["done","archived","closed","cancelled","canceled","completed","used"].includes(status);
+}
+
+function institutionOfferVersion(offer){
+  return Math.max(1,Number(offer?.offerVersion||1));
+}
+
+function institutionOfferSourceMeta(quote){
+  if(isRoutedLeadForCurrentInstitution(quote)){
+    return {type:"alternative",label:"Alternatif kurum teklifi"};
+  }
+  if(String(quote?.targetInstitutionId||"")===String(currentAccount?.institutionId||"")){
+    return {type:"direct",label:"Seçilen kurum teklifi"};
+  }
+  return {type:"bulk",label:"Toplu teklif talebi"};
+}
+
+function secondOfferPromptHtml(quote,offer){
+  if(!offer || institutionOfferVersion(offer)!==1)return "";
+  if(institutionQuoteIsTerminal(quote))return "";
+  const lock=institutionLockMap.get(quote.id);
+  if(lock)return "";
+  if(offer.expiresAt && new Date(offer.expiresAt).getTime()<=Date.now())return "";
+
+  return `
+    <div class="second-offer-prompt">
+      <div class="second-offer-prompt-icon">↻</div>
+      <div class="second-offer-prompt-copy">
+        <span>2. TEKLİF FIRSATI</span>
+        <strong>Teklifiniz henüz kabul edilmedi.</strong>
+        <p>Müşteriye fiyat veya şartları iyileştiren 2. bir teklif göndermek ister misiniz? Bu güncelleme için yeni teklif kredisi kullanılmaz.</p>
+      </div>
+      <button type="button" data-second-offer="${offerSafe(quote.id)}">2. Teklif Ver</button>
+    </div>
+  `;
+}
+
 function sellerOfferState(quote){
   const offer=institutionOfferMap.get(quote.id);
   const lock=institutionLockMap.get(quote.id);
@@ -94,6 +133,7 @@ function sellerOfferState(quote){
     }
     return "closed";
   }
+  if(institutionQuoteIsTerminal(quote)) return "closed";
   if(offer){
     return offer.expiresAt && new Date(offer.expiresAt).getTime() <= Date.now()
       ? "expired"
@@ -290,6 +330,8 @@ renderSummary = function(){
 
 function sellerOfferFormHtml(quote,offer){
   const routedLead=isRoutedLeadForCurrentInstitution(quote);
+  const version=institutionOfferVersion(offer);
+  const nextVersion=offer ? version+1 : 1;
 
   if(!offer && routedLead && institutionLeadCreditBalance<=0){
     return `
@@ -352,9 +394,9 @@ function sellerOfferFormHtml(quote,offer){
         <strong>⏱ Geçerlilik ve gerçek kayıt:</strong>
         Seçtiğiniz süre fiyat ve özelliklerin son geçerlilik süresidir. Müşteri teklifi kabul ettikten sonra bu süre içinde kurumunuza gelerek veya sizinle doğrudan görüşerek gerçek kaydını tamamlamazsa teklif süresi dolar ve güncel koşullar yeniden görüşülür.
         <br><strong>🛡️ Ödeme politikası:</strong> Dijiyer üzerinden ödeme alınmaz. Ücret, kapora veya kayıt bedeli yalnızca kurum ile müşteri arasında doğrudan yapılır.
-        ${offer?`<br><strong>🔔 Güncelleme:</strong> Teklifi değiştirdiğinizde müşteriye otomatik bildirim gider ve yeni geçerlilik süresi başlar.`:""}
+        ${offer?`<br><strong>🔔 ${nextVersion===2?"2. teklif":"Güncelleme"}:</strong> Kaydettiğinizde müşteriye yeniden bildirim gider ve yeni geçerlilik süresi başlar.`:""}
       </div>
-      <button class="send-real-offer-btn full" type="submit">${offer ? "Teklifi Güncelle" : "Teklif Gönder"}</button>
+      <button class="send-real-offer-btn full" type="submit">${offer ? (nextVersion===2 ? "2. Teklifi Gönder" : "Teklifi Güncelle") : "Teklif Gönder"}</button>
     </form>
   `;
 }
@@ -591,8 +633,9 @@ quoteCardHtml = function(quote,compact=false){
           <span class="quote-status status-interested">Teklif Aktif</span>
         </div>
         <div class="quote-note">${offerSafe(offer.scope || "")}</div>
-        <details style="margin-top:10px">
-          <summary style="cursor:pointer;font-weight:800;color:#1677ff">Teklifi düzenle</summary>
+        ${secondOfferPromptHtml(quote,offer)}
+        <details class="offer-edit-details" data-offer-edit-details="${offerSafe(quote.id)}" style="margin-top:10px">
+          <summary style="cursor:pointer;font-weight:800;color:#1677ff">${institutionOfferVersion(offer)===1?"2. teklif / düzenle":"Teklifi düzenle"}</summary>
           ${sellerOfferFormHtml(quote,offer)}
         </details>
       </div>`;
@@ -664,6 +707,18 @@ renderQuotes = function(){
     });
   });
 
+  institutionQuotesList.querySelectorAll("[data-second-offer]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const quoteId=String(btn.dataset.secondOffer||"");
+      const details=institutionQuotesList.querySelector('[data-offer-edit-details="'+CSS.escape(quoteId)+'"]');
+      if(details){
+        details.open=true;
+        details.scrollIntoView({behavior:"smooth",block:"center"});
+        setTimeout(()=>details.querySelector('input[name="price"]')?.focus(),250);
+      }
+    });
+  });
+
   institutionQuotesList.querySelectorAll('[data-response="not_interested"]').forEach(btn=>{
     btn.addEventListener("click",async()=>{
       await saveQuoteResponse(btn.dataset.quoteId,"not_interested");
@@ -679,6 +734,13 @@ async function saveRealOffer(form){
   const lock=institutionLockMap.get(quoteId);
   const existing=institutionOfferMap.get(quoteId);
   const routedLead=isRoutedLeadForCurrentInstitution(quote);
+  const nextVersion=existing ? institutionOfferVersion(existing)+1 : 1;
+
+  if(!quote || institutionQuoteIsTerminal(quote)){
+    alert("Bu teklif talebi kapalı olduğu için yeni teklif gönderilemez.");
+    renderQuotes();
+    return;
+  }
 
   if(lock){
     alert(lock.institutionId===currentAccount.institutionId
@@ -699,7 +761,9 @@ async function saveRealOffer(form){
 
   if(existing){
     const ok=window.confirm(
-      "Teklifi güncellemek üzeresiniz. Yeni fiyat/şartlar müşteriye bildirilecek ve yeni geçerlilik süresi şimdi başlayacak. Devam edilsin mi?"
+      nextVersion===2
+        ? "Müşteriye 2. teklifinizi göndermek üzeresiniz. Yeni fiyat/şartlar müşteriye tekrar bildirilecek. Bu işlem için yeni kredi kullanılmaz. Devam edilsin mi?"
+        : "Teklifi güncellemek üzeresiniz. Yeni fiyat/şartlar müşteriye bildirilecek ve yeni geçerlilik süresi şimdi başlayacak. Devam edilsin mi?"
     );
     if(!ok)return;
   }
@@ -714,6 +778,8 @@ async function saveRealOffer(form){
   const oldText=submit.textContent;
   submit.disabled=true; submit.textContent="Kaydediliyor...";
 
+  const now=new Date().toISOString();
+  const source=institutionOfferSourceMeta(quote);
   const data={
     institutionId:currentAccount.institutionId,
     institutionName:currentInstitution.name || currentAccount.institutionName || "Kurum",
@@ -730,8 +796,12 @@ async function saveRealOffer(form){
     registrationRequired:true,
     platformPayment:false,
     paymentPolicy:"offline_direct_between_customer_and_institution",
-    createdAt:existing?.createdAt || new Date().toISOString(),
-    updatedAt:new Date().toISOString()
+    offerVersion:nextVersion,
+    sourceType:source.type,
+    sourceLabel:source.label,
+    secondOfferSentAt:nextVersion===2 ? now : (existing?.secondOfferSentAt || ""),
+    createdAt:existing?.createdAt || now,
+    updatedAt:now
   };
 
   try{
@@ -755,6 +825,9 @@ async function saveRealOffer(form){
       await saveQuoteResponse(quoteId,"interested");
     }
     renderQuotes(); renderSummary();
+    if(nextVersion===2){
+      alert("2. teklif müşteriye iletildi. Müşteriye yeniden bildirim gönderilecek.");
+    }
   }catch(error){
     console.error("Gerçek teklif kaydedilemedi:",error);
     alert("Teklif kaydedilemedi. Firestore kurallarını kontrol edin.");
