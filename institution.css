@@ -6127,3 +6127,18 @@ body[data-panel-current="showcase"] .panel-heading-action{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Yönetim tarafından yönlendirilen yeni müşteri fırsatı */
+.quote-routed-badge{
+  display:inline-flex;
+  align-items:center;
+  margin:5px 0 2px;
+  padding:5px 8px;
+  border:1px solid #f5d67a;
+  border-radius:999px;
+  background:#fff8df;
+  color:#8a5b00;
+  font-size:9px;
+  font-weight:850;
+}
