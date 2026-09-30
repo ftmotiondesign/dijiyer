@@ -6932,23 +6932,6 @@ button{
   font-size:8.5px;
   font-weight:850;
 }
-.lead-credit-row-actions{
-  display:flex;
-  gap:5px;
-  align-items:center;
-  justify-content:flex-end;
-  white-space:nowrap;
-}
-.lead-credit-usage-btn{
-  min-height:31px;
-  border:1px solid #bbf7d0;
-  border-radius:8px;
-  background:#ecfdf5;
-  color:#15803d;
-  padding:0 9px;
-  font-size:8.5px;
-  font-weight:850;
-}
 
 .lead-credit-empty-cell{
   text-align:center;
@@ -7012,38 +6995,6 @@ button{
 }
 .lead-credit-no-quote{
   color:#cbd5e1 !important;
-}
-.lead-credit-ledger-filter{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:9px 10px;
-  border:1px solid #bfdbfe;
-  border-radius:9px;
-  background:#f8fbff;
-}
-.lead-credit-ledger-filter>div{
-  display:grid;
-  gap:2px;
-}
-.lead-credit-ledger-filter strong{
-  color:#1d4ed8;
-  font-size:9.5px;
-}
-.lead-credit-ledger-filter small{
-  color:#64748b;
-  font-size:8.5px;
-}
-.lead-credit-ledger-filter button{
-  min-height:29px;
-  border:1px solid #bfdbfe;
-  border-radius:7px;
-  background:#fff;
-  color:#1d4ed8;
-  padding:0 8px;
-  font-size:8px;
-  font-weight:850;
 }
 .lead-credit-ledger-row>div strong,
 .lead-credit-ledger-row>div small{
@@ -7229,7 +7180,6 @@ button{
   .lead-credit-ledger-row>small{grid-column:1/-1}
   .lead-credit-open-quote,
   .lead-credit-no-quote{grid-column:1/-1}
-  .lead-credit-row-actions{justify-content:flex-start;flex-wrap:wrap}
 }
 
 
