@@ -3346,15 +3346,18 @@ function renderCompareBar() {
     .filter(Boolean);
 
   const trackingButton = document.getElementById('trackingMainBtn');
+  const opportunitiesButton = document.getElementById('opportunitiesMainBtn');
 
   if (!selected.length) {
     bar.classList.add('hidden');
     bar.innerHTML = '';
     trackingButton?.classList.remove('compare-active');
+    opportunitiesButton?.classList.remove('compare-active');
     return;
   }
 
   trackingButton?.classList.add('compare-active');
+  opportunitiesButton?.classList.add('compare-active');
   bar.classList.remove('hidden');
   bar.innerHTML = `
     <div class="compare-bar-copy">
