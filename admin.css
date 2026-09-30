@@ -8878,3 +8878,284 @@ details.matching-institutions .matching-buttons{
     grid-template-columns:repeat(8,minmax(0,1fr));
   }
 }
+
+/* =========================================================
+   KATEGORİ YÖNETİMİ · KOMPAKT ANA / ALT YAPI
+   ========================================================= */
+.categories-admin-title-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.category-add-btn{
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #d8e2ee;
+  border-radius:9px;
+  background:#fff;
+  color:#42546b;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+.category-add-btn.primary{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+.categories-admin-summary{
+  gap:6px;
+  margin-bottom:8px;
+}
+.categories-admin-summary article{
+  padding:8px 10px;
+  border-radius:9px;
+}
+.categories-admin-summary strong{
+  margin-top:2px;
+  font-size:16px;
+}
+.categories-admin-toolbar{
+  grid-template-columns:minmax(220px,1fr) 155px;
+  gap:6px;
+  margin-bottom:7px;
+}
+.categories-admin-toolbar input,
+.categories-admin-toolbar select{
+  min-height:34px;
+  border-radius:8px;
+  font-size:9px;
+}
+.categories-admin-message{
+  min-height:14px;
+  margin-bottom:3px;
+}
+.categories-admin-list{
+  grid-template-columns:1fr;
+  gap:6px;
+}
+.category-main-card{
+  border-radius:10px;
+}
+.category-main-card>summary{
+  list-style:none;
+}
+.category-main-card>summary::-webkit-details-marker{
+  display:none;
+}
+.category-main-head{
+  min-height:54px;
+  align-items:center;
+  padding:7px 9px;
+  border-bottom:0;
+  cursor:pointer;
+}
+.category-main-card[open] .category-main-head{
+  border-bottom:1px solid #edf1f6;
+}
+.category-main-summary-copy{
+  min-width:0;
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr);
+  align-items:center;
+  gap:6px;
+}
+.category-main-chevron{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:6px;
+  background:#eef3f8;
+  color:#64748b;
+  font-size:17px;
+  font-weight:800;
+  transition:transform .15s ease;
+}
+.category-main-card[open] .category-main-chevron{
+  transform:rotate(90deg);
+}
+.category-main-head h4{
+  margin:1px 0;
+  font-size:11px;
+}
+.category-main-head small{
+  font-size:7.5px;
+}
+.category-main-head>div:first-child>span,
+.category-main-summary-copy>div>span{
+  font-size:6.5px;
+}
+.category-main-actions{
+  gap:6px;
+}
+.category-inline-add-sub{
+  min-height:27px;
+  padding:0 7px;
+  border:1px solid #d7e4f2;
+  border-radius:7px;
+  background:#fff;
+  color:#1677ff;
+  font-size:7.5px;
+  font-weight:900;
+  cursor:pointer;
+}
+.category-admin-state{
+  min-height:21px;
+  padding:0 6px;
+  font-size:7px;
+}
+.category-main-card .overview-visibility-switch b{
+  display:none;
+}
+.category-sub-list{
+  background:#fcfdff;
+}
+.category-sub-row{
+  min-height:42px;
+  padding:6px 9px 6px 36px;
+  gap:7px;
+}
+.category-sub-row strong{
+  font-size:9px;
+}
+.category-sub-row small{
+  margin-top:1px;
+  font-size:6.5px;
+}
+.category-empty-subs{
+  padding:10px 12px 10px 36px;
+  color:#8491a2;
+  font-size:8px;
+}
+.category-empty-subs button{
+  margin-left:5px;
+  border:0;
+  background:transparent;
+  color:#1677ff;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* Yeni kategori penceresi */
+.category-add-modal{
+  position:fixed;
+  inset:0;
+  z-index:1500;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(15,23,42,.46);
+}
+.category-add-modal.hidden{
+  display:none!important;
+}
+.category-add-card{
+  position:relative;
+  width:min(440px,100%);
+  padding:18px;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(15,23,42,.22);
+}
+.category-add-card h3{
+  margin:4px 0 4px;
+  color:#172033;
+  font-size:17px;
+}
+.category-add-card>p{
+  margin:0 0 13px;
+  color:#748196;
+  font-size:9px;
+  line-height:1.5;
+}
+.category-add-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:30px;
+  height:30px;
+  border:0;
+  border-radius:8px;
+  background:#f1f5f9;
+  color:#64748b;
+  font-size:18px;
+  cursor:pointer;
+}
+#categoryAddForm{
+  display:grid;
+  gap:9px;
+}
+#categoryAddForm label{
+  display:grid;
+  gap:5px;
+  color:#526175;
+  font-size:9px;
+  font-weight:850;
+}
+#categoryAddForm input,
+#categoryAddForm select{
+  width:100%;
+  min-height:38px;
+  padding:0 10px;
+  border:1px solid #d9e2ec;
+  border-radius:9px;
+  background:#fff;
+  color:#27364a;
+}
+#categoryAddForm label small{
+  color:#94a3b8;
+  font-size:7px;
+  font-weight:600;
+}
+.category-add-message{
+  min-height:15px;
+  color:#b45309;
+  font-size:8px;
+  font-weight:800;
+}
+.category-add-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+}
+.category-add-actions button{
+  min-height:34px;
+  padding:0 12px;
+  border:1px solid #d9e2ec;
+  border-radius:8px;
+  background:#fff;
+  color:#526175;
+  font-size:8.5px;
+  font-weight:900;
+  cursor:pointer;
+}
+.category-add-actions button[type="submit"]{
+  border-color:#1677ff;
+  background:#1677ff;
+  color:#fff;
+}
+
+@media(max-width:720px){
+  .categories-admin-title{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .categories-admin-title-actions{
+    justify-content:flex-start;
+  }
+  .category-main-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .category-main-actions{
+    width:100%;
+    justify-content:flex-end;
+  }
+  .category-sub-row{
+    padding-left:12px;
+  }
+}
