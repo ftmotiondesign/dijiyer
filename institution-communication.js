@@ -532,7 +532,14 @@
     const price=new Intl.NumberFormat("tr-TR").format(Number(offer?.price||0))+" TL";
     const oldPrice=beforeOffer ? Number(beforeOffer.price||0) : 0;
     const newPrice=Number(offer?.price||0);
-    const parts=[revisionPending ? "Revizyon talebinize göre teklif güncellendi." : "Teklif güncellendi."];
+    const version=Math.max(1,Number(offer?.offerVersion||1));
+    const parts=[
+      revisionPending
+        ? "Revizyon talebinize göre teklif güncellendi."
+        : version===2
+          ? "Kurum size 2. teklifini gönderdi."
+          : "Teklif güncellendi."
+    ];
     if(beforeOffer && oldPrice!==newPrice){
       parts.push("Önceki fiyat: "+new Intl.NumberFormat("tr-TR").format(oldPrice)+" TL.");
       parts.push("Yeni fiyat: "+price+".");
