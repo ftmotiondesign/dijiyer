@@ -518,3 +518,44 @@
     display:none!important;
   }
 }
+
+
+/* Ortak yasal bağlantılar */
+.dijiyer-global-legal-footer{
+  width:min(1560px,calc(100% - 28px));
+  margin:28px auto 18px;
+  padding:18px 4px;
+  border-top:1px solid #e2e8f0;
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+  color:#64748b;
+  font-size:12px;
+}
+.dijiyer-global-legal-footer nav,
+.dijiyer-global-legal-links{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.dijiyer-global-legal-footer a,
+.dijiyer-global-legal-links a,
+.dijiyer-form-legal-note a{
+  color:#1677ff;
+  font-weight:800;
+  text-decoration:none;
+}
+.dijiyer-form-legal-note{
+  margin:12px 0 0;
+  color:#64748b;
+  font-size:11px;
+  line-height:1.55;
+}
+.dijiyer-legal-footer .dijiyer-global-legal-links{
+  margin-top:10px;
+}
+@media(max-width:820px){
+  .dijiyer-global-legal-footer{margin-bottom:86px}
+}
