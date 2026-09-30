@@ -4182,6 +4182,33 @@ function quoteSecondOfferShouldInvite(request,offer){
   return eligibleAt>0 && Date.now()>=eligibleAt;
 }
 
+async function quoteSecondOfferHasCustomerReply(request,offer){
+  const institutionId=String(offer?.institutionId||offer?.id||"");
+  if(!request?.id || !institutionId)return false;
+
+  const offerAt=new Date(offer.updatedAt||offer.createdAt||0).getTime();
+  if(!Number.isFinite(offerAt)||offerAt<=0)return false;
+
+  try{
+    const snapshot=await db.collection("quoteRequests")
+      .doc(String(request.id))
+      .collection("conversations")
+      .doc(institutionId)
+      .collection("messages")
+      .get();
+
+    return snapshot.docs.some(doc=>{
+      const message=doc.data()||{};
+      if(String(message.sender||"")!=="customer")return false;
+      const messageAt=new Date(message.date||0).getTime();
+      return Number.isFinite(messageAt) && messageAt>offerAt;
+    });
+  }catch(error){
+    console.warn("2. teklif için müşteri mesajları kontrol edilemedi:",request.id,institutionId,error);
+    return false;
+  }
+}
+
 async function syncSecondOfferInvites(){
   let created=0;
 
@@ -4194,6 +4221,10 @@ async function syncSecondOfferInvites(){
 
       const institutionId=String(offer.institutionId||offer.id||"");
       if(!institutionId)continue;
+
+      // Müşteri ilk tekliften sonra kuruma mesaj attıysa ikinci teklif baskısı yapma.
+      // Kabul zaten liveLock ile, revizyon ise quoteSecondOfferShouldInvite içinde kontrol edilir.
+      if(await quoteSecondOfferHasCustomerReply(request,offer))continue;
 
       const inviteRef=db.collection("quoteRequests")
         .doc(String(request.id))
