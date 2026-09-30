@@ -370,6 +370,7 @@
 
   function buildNav(){
     let nav=document.querySelector(".desktop-market-nav");
+    const globalHeader=document.querySelector(".dijiyer-global-topbar");
 
     if(nav){
       nav.classList.add("dijiyer-global-market-nav");
@@ -379,6 +380,13 @@
         const found=links.find(([,label])=>label===text);
         if(found)a.dataset.marketKey=found[2];
       });
+
+      /* Ana sayfada menü eski header'ın altında statik duruyordu.
+         Ortak üst bar oluşturulduktan sonra menüyü her sayfada aynı yere taşı. */
+      if(globalHeader && globalHeader.nextElementSibling!==nav){
+        globalHeader.insertAdjacentElement("afterend",nav);
+      }
+
       markActive(nav);
       watchMenuVisibility(nav);
       return;
@@ -393,7 +401,6 @@
       ).join("")+
       '</div>';
 
-    const globalHeader=document.querySelector(".dijiyer-global-topbar");
     const main=document.querySelector("body > main");
 
     if(globalHeader)globalHeader.insertAdjacentElement("afterend",nav);
