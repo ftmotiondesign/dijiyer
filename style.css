@@ -19734,3 +19734,94 @@ to{opacity:1;transform:none}
     justify-content:flex-end;
   }
 }
+
+
+/* =========================================================
+   DESKTOP KATEGORI SECIM VURGUSU V1
+   ========================================================= */
+@media(min-width:821px){
+  .desktop-category-grid button{
+    position:relative;
+  }
+
+  .desktop-category-grid button.is-active{
+    border-color:#1677ff!important;
+    background:#edf5ff!important;
+    box-shadow:
+      inset 0 0 0 2px rgba(22,119,255,.48),
+      0 7px 16px rgba(22,119,255,.08)!important;
+  }
+
+  .desktop-category-grid button.is-active::after{
+    content:"✓";
+    position:absolute;
+    top:7px;
+    right:7px;
+    width:18px;
+    height:18px;
+    display:grid;
+    place-items:center;
+    border-radius:999px;
+    background:#1677ff;
+    color:#fff;
+    font-size:9px;
+    font-weight:950;
+    box-shadow:0 3px 8px rgba(22,119,255,.22);
+  }
+
+  .desktop-category-preview{
+    position:relative;
+    overflow:visible;
+  }
+
+  .desktop-category-preview::before{
+    content:"";
+    position:absolute;
+    top:-7px;
+    left:26px;
+    width:12px;
+    height:12px;
+    transform:rotate(45deg);
+    border-left:1px solid #cfe0f4;
+    border-top:1px solid #cfe0f4;
+    background:#f8fbff;
+  }
+
+  .desktop-category-preview.attention{
+    animation:desktopCategoryPreviewIn .42s cubic-bezier(.2,.8,.2,1),
+              desktopCategoryPreviewGlow 1.05s ease-out;
+  }
+
+  @keyframes desktopCategoryPreviewIn{
+    from{
+      opacity:0;
+      transform:translateY(-8px) scale(.992);
+    }
+    to{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+  }
+
+  @keyframes desktopCategoryPreviewGlow{
+    0%{
+      box-shadow:0 0 0 0 rgba(22,119,255,.22),0 6px 18px rgba(24,61,105,.055);
+    }
+    45%{
+      box-shadow:0 0 0 5px rgba(22,119,255,.09),0 10px 24px rgba(22,119,255,.10);
+    }
+    100%{
+      box-shadow:0 0 0 0 rgba(22,119,255,0),0 6px 18px rgba(24,61,105,.055);
+    }
+  }
+
+  .desktop-category-preview-head span{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:3px 7px;
+    border-radius:999px;
+    background:#eaf4ff;
+    color:#1268cd!important;
+  }
+}
