@@ -627,7 +627,10 @@
       if(!dateActive(inst.opportunitySponsorStartAt,inst.opportunitySponsorEndAt)) return;
 
       var isImpression = action === 'impression';
-      var type = isImpression ? 'opportunity_ad_impression' : 'opportunity_ad_click';
+      var safeAction = String(action || 'click').replace(/[^a-z_]/g,'');
+      var type = isImpression
+        ? 'opportunity_ad_impression'
+        : 'opportunity_' + safeAction + '_ad_click';
       var day = localDay();
       var campaignId = opportunityCampaignId(inst);
 
@@ -641,11 +644,6 @@
         await db.collection('institutionAnalytics').add({
           institutionId:String(inst.id),
           type:type,
-          action:String(action || ''),
-          source:'firsatlar',
-          campaignId:campaignId,
-          campaignStartAt:String(inst.opportunitySponsorStartAt || '').slice(0,10),
-          campaignEndAt:String(inst.opportunitySponsorEndAt || '').slice(0,10),
           day:day,
           date:new Date().toISOString()
         });
