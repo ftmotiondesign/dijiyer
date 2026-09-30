@@ -37,6 +37,36 @@ service cloud.firestore {
       ).data;
     }
 
+    function yonlendirilmisFirsatMi(quoteId, institutionId) {
+      let talep = get(
+        /databases/$(database)/documents/quoteRequests/$(quoteId)
+      ).data;
+
+      return talep.keys().hasAny(['forwardInstitutionIds'])
+        && talep.forwardInstitutionIds is list
+        && talep.forwardInstitutionIds.hasAny([institutionId])
+        && (
+          !talep.keys().hasAny(['targetInstitutionId'])
+          || talep.targetInstitutionId != institutionId
+        );
+    }
+
+    function yonlendirilmisFirsatKredisiVar(quoteId, institutionId) {
+      return !yonlendirilmisFirsatMi(quoteId, institutionId)
+        ||
+        (
+          exists(
+            /databases/$(database)/documents/leadCreditAccounts/$(institutionId)
+          )
+          && get(
+            /databases/$(database)/documents/leadCreditAccounts/$(institutionId)
+          ).data.balance is number
+          && get(
+            /databases/$(database)/documents/leadCreditAccounts/$(institutionId)
+          ).data.balance > 0
+        );
+    }
+
     function kurumTalebineErisebilir(quoteId) {
       let talep = get(
         /databases/$(database)/documents/quoteRequests/$(quoteId)
@@ -515,6 +545,7 @@ service cloud.firestore {
           onayliKurumKullanicisi()
           && bagliKurumId() == institutionId
         && kurumTalebineErisebilir(quoteId)
+        && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
         && request.resource.data.keys().hasOnly([
           'institutionId',
           'institutionName',
