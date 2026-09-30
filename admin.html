@@ -170,8 +170,8 @@
         <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions">
           <span>Kurumlar</span>
         </a>
-        <a href="admin.html#kategoriler" class="admin-main-nav-btn" data-admin-main="categories">
-          <span>Kategoriler</span>
+        <a href="admin.html#ust-menu" class="admin-main-nav-btn" data-admin-main="categories">
+          <span>ÜST MENÜ</span>
         </a>
         <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business">
           <span>İş &amp; Ticaret</span>
@@ -197,7 +197,7 @@
         <a href="admin.html#hesaplar" class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</a>
         <a href="admin.html#bulunamayan-aramalar" class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></a>
 
-        <a href="admin.html#kategoriler" class="admin-tab" id="categoriesTabBtn" data-admin-group="categories">Kategoriler</a>
+        <a href="admin.html#ust-menu" class="admin-tab" id="categoriesTabBtn" data-admin-group="categories">ÜST MENÜ</a>
 
         <a href="admin.html#is-ticaret" class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></a>
 
@@ -410,81 +410,7 @@
           </div>
         </section>
 
-        <section class="top-menu-pages-admin" id="topMenuPagesAdmin">
-          <div class="top-menu-pages-head">
-            <div>
-              <span>ÜST MENÜ YÖNETİMİ</span>
-              <h4>Üst Menü Sayfaları</h4>
-              <p>Ana sayfanın üst menüsünde hangi sayfaların görüneceğini tek tek yönetin.</p>
-            </div>
-            <small>Değişiklikler siteye otomatik yansır</small>
-          </div>
 
-          <div class="top-menu-pages-grid">
-            <article class="top-menu-page-row">
-              <div><strong>Kurumlar</strong><small>Ana sayfadaki kurum listesi</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="institutions">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="institutions" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>Teklif Al</strong><small>Teklif oluşturma sayfası</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="quotes">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="quotes" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>Randevu Al</strong><small>Randevu sayfası</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="appointments">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="appointments" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>İş Fırsatları</strong><small>İş ilanları ve fırsatlar</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="jobs">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="jobs" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>İş &amp; Ticaret</strong><small>Ticari fırsatlar ve talepler</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="trade">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="trade" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>Bayi &amp; Servis</strong><small>Yetkili bayi ve servis sayfası</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="brands">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="brands" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-
-            <article class="top-menu-page-row">
-              <div><strong>Keşfet / Fırsat</strong><small>Sponsor ve fırsat sayfası</small></div>
-              <span class="overview-visibility-state active" data-top-menu-state="discover">Aktif · Görünüyor</span>
-              <label class="overview-visibility-switch">
-                <input type="checkbox" data-top-menu-toggle="discover" checked>
-                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
-              </label>
-            </article>
-          </div>
-        </section>
 
         <details class="overview-extra-stats">
           <summary>Diğer teklif istatistiklerini göster</summary>
@@ -570,17 +496,103 @@
         </div>
       </section>
 
-      <section id="categoriesSection" class="categories-admin-section" hidden>
-        <div class="section-title categories-admin-title">
+      <section id="categoriesSection" class="categories-admin-section top-menu-admin-page" hidden>
+        <div class="section-title categories-admin-title top-menu-admin-title">
           <div>
-            <span class="categories-admin-eyebrow">SEKTÖR & KATEGORİ YÖNETİMİ</span>
-            <h3>Kategoriler</h3>
-            <p>Ana kategorileri kompakt görünümde yönetin. Bir ana kategoriye tıklayınca alt kategoriler açılır.</p>
+            <span class="categories-admin-eyebrow">ANA SAYFA ÜST MENÜ YÖNETİMİ</span>
+            <h3>ÜST MENÜ</h3>
+            <p>Ana sayfanın üst menüsündeki sayfaları tek yerden aktif / pasif yönetin. Sektör ve alt kategori yönetimi de aynı sayfanın altında kalır.</p>
+          </div>
+          <div class="categories-admin-title-actions">
+            <button type="button" id="categoriesRefreshBtn" class="overview-refresh-btn">Yenile</button>
+          </div>
+        </div>
+
+        <section class="top-menu-pages-admin" id="topMenuPagesAdmin">
+          <div class="top-menu-pages-head">
+            <div>
+              <span>ÜST MENÜ YÖNETİMİ</span>
+              <h4>Üst Menü Sayfaları</h4>
+              <p>Ana sayfanın üst menüsünde hangi sayfaların görüneceğini tek tek yönetin.</p>
+            </div>
+            <small>Değişiklikler siteye otomatik yansır</small>
+          </div>
+
+          <div class="top-menu-pages-grid">
+            <article class="top-menu-page-row">
+              <div><strong>Kurumlar</strong><small>Ana sayfadaki kurum listesi</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="institutions">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="institutions" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>Teklif Al</strong><small>Teklif oluşturma sayfası</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="quotes">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="quotes" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>Randevu Al</strong><small>Randevu sayfası</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="appointments">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="appointments" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>İş Fırsatları</strong><small>İş ilanları ve fırsatlar</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="jobs">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="jobs" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>İş &amp; Ticaret</strong><small>Ticari fırsatlar ve talepler</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="trade">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="trade" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>Bayi &amp; Servis</strong><small>Yetkili bayi ve servis sayfası</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="brands">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="brands" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+
+            <article class="top-menu-page-row">
+              <div><strong>Keşfet / Fırsat</strong><small>Sponsor ve fırsat sayfası</small></div>
+              <span class="overview-visibility-state active" data-top-menu-state="discover">Aktif · Görünüyor</span>
+              <label class="overview-visibility-switch">
+                <input type="checkbox" data-top-menu-toggle="discover" checked>
+                <span aria-hidden="true"></span><b>Aktif / Pasif</b>
+              </label>
+            </article>
+          </div>
+        </section>
+
+        <div class="top-menu-category-divider">
+          <div>
+            <span>SEKTÖR &amp; KATEGORİ YÖNETİMİ</span>
+            <strong>Kurum kategorileri</strong>
+            <small>Ana kategori ve alt kategorileri burada yönetmeye devam edin.</small>
           </div>
           <div class="categories-admin-title-actions">
             <button type="button" id="addMainCategoryBtn" class="category-add-btn primary">＋ Ana Kategori</button>
             <button type="button" id="addSubCategoryBtn" class="category-add-btn">＋ Alt Kategori</button>
-            <button type="button" id="categoriesRefreshBtn" class="overview-refresh-btn">Yenile</button>
           </div>
         </div>
 
@@ -3468,7 +3480,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=63"></script>
+<script src="admin.js?v=52"></script>
   <script src="admin-advanced.js?v=57"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
