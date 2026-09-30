@@ -93,6 +93,8 @@ const quoteKpiLocked = document.getElementById("quoteKpiLocked");
 const quoteKpiDone = document.getElementById("quoteKpiDone");
 const quoteKpiIssue = document.getElementById("quoteKpiIssue");
 const quoteRoutingTabCount = document.getElementById("quoteRoutingTabCount");
+const quoteRoutingMainCount = document.getElementById("quoteRoutingMainCount");
+const quoteRoutingMainBtn = document.querySelector('[data-admin-main="unanswered"]');
 const quoteRoutingWaitingCount = document.getElementById("quoteRoutingWaitingCount");
 const quoteRoutingVipCount = document.getElementById("quoteRoutingVipCount");
 const quoteRoutingAdCount = document.getElementById("quoteRoutingAdCount");
@@ -210,7 +212,7 @@ const quickSupportCount = document.getElementById("quickSupportCount");
 const ADMIN_TAB_META = {
   overviewTabBtn:["overview","Genel Bakış","Bugün ilgilenmeniz gereken konuları ve temel rakamları görün."],
   quotesTabBtn:["quotes","Teklif Talepleri","Müşteri taleplerini, gelen teklifleri ve tüm teklif hareketlerini yönetin."],
-  quoteRoutingTabBtn:["quotes","Teklif Dağıtım","Yanıtsız özel teklifleri VIP, reklam veren ve diğer kurumlara öncelik sırasıyla yönlendirin."],
+  quoteRoutingTabBtn:["unanswered","Yanıtsız Teklifler","Cevapsız kalan özel talepleri uygun kurumlara yönlendirerek teklif kredisi ve kurum öncelik modeliyle gelir fırsatına dönüştürün."],
   issuesTabBtn:["quotes","Sorun Çözüm Merkezi","Müşteri ve firma beyanlarını kilitli teklif kayıtlarıyla birlikte tarafsız inceleyin."],
   offerReportTabBtn:["quotes","Teklif Raporu","Kurumların teklif performansını ve teklif sonuçlarını inceleyin."],
   institutionsTabBtn:["institutions","Kurumlar","Yayındaki kurumları arayın, düzenleyin ve teklif durumlarını yönetin."],
@@ -273,6 +275,7 @@ function initSimpleAdminNavigation(){
       const map={
         overview:"overviewTabBtn",
         quotes:"quotesTabBtn",
+        unanswered:"quoteRoutingTabBtn",
         institutions:"institutionsTabBtn",
         ads:"bannerAdsTabBtn",
         support:"supportTabBtn",
@@ -292,6 +295,7 @@ function initSimpleAdminNavigation(){
     button.addEventListener("click",()=>{
       const map={
         quotes:"quotesTabBtn",
+        unanswered:"quoteRoutingTabBtn",
         applications:"applicationsTabBtn",
         issues:"issuesTabBtn",
         promotionOrders:"promotionOrdersTabBtn",
@@ -3225,7 +3229,22 @@ function quoteRoutingTierCard(tier,label,rows,requestId,canForward){
 
 function updateQuoteRoutingBadge(){
   const waiting=quoteRequestRecords.filter(quoteRoutingIsWaiting).length;
-  if(quoteRoutingTabCount)quoteRoutingTabCount.textContent=String(waiting);
+
+  if(quoteRoutingTabCount){
+    quoteRoutingTabCount.textContent=String(waiting);
+  }
+
+  if(quoteRoutingMainCount){
+    quoteRoutingMainCount.textContent=String(waiting);
+    quoteRoutingMainCount.hidden=waiting<=0;
+  }
+
+  if(quoteRoutingMainBtn){
+    quoteRoutingMainBtn.classList.toggle("has-opportunity",waiting>0);
+    quoteRoutingMainBtn.title=waiting>0
+      ? waiting+" yanıtsız teklif gelir fırsatı bekliyor"
+      : "Yanıtsız teklif gelir fırsatlarını yönet";
+  }
 }
 
 function renderQuoteRoutingAdmin(){
