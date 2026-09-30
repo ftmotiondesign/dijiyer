@@ -7,7 +7,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=35">
+  <link rel="stylesheet" href="admin.css?v=36">
   <link rel="stylesheet" href="admin-advanced.css?v=30">
 </head>
 
@@ -122,6 +122,7 @@
         <button class="admin-tab" id="institutionsTabBtn" data-admin-group="institutions">Kurumlar</button>
         <button class="admin-tab" id="applicationsTabBtn" data-admin-group="institutions">Başvurular</button>
         <button class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</button>
+        <button class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></button>
 
         <button class="admin-tab" id="bannerAdsTabBtn" data-admin-group="ads">📣 Reklam Merkezi <span id="bannerAdsTabCount" class="admin-tab-count">0</span></button>
         <button class="admin-tab" id="opportunitySponsorsTabBtn" data-admin-group="ads">🎯 KEŞFET / FIRSAT <span id="opportunitySponsorsTabCount" class="admin-tab-count">0</span></button>
@@ -619,6 +620,66 @@
         </div>
 
         <div id="accountsList"></div>
+      </section>
+
+      <section id="unmatchedSearchesSection" hidden>
+        <div class="section-title unmatched-search-title">
+          <div>
+            <h3>🔎 Bulunamayan Aramalar</h3>
+            <p id="unmatchedSearchesCount">Kullanıcıların kategori veya kurum bulamadığı aramalar burada görünür.</p>
+          </div>
+          <button type="button" id="unmatchedSearchesRefreshBtn">↻ Yenile</button>
+        </div>
+
+        <div class="unmatched-search-summary">
+          <article>
+            <span>Toplam Kayıt</span>
+            <strong id="unmatchedSearchTotal">0</strong>
+            <small>Tüm bulunamayan aramalar</small>
+          </article>
+          <article class="warning">
+            <span>Yeni</span>
+            <strong id="unmatchedSearchNew">0</strong>
+            <small>Henüz incelenmemiş</small>
+          </article>
+          <article>
+            <span>Kategori Bulunamadı</span>
+            <strong id="unmatchedSearchCategoryMissing">0</strong>
+            <small>Yeni alt kategori fırsatı</small>
+          </article>
+          <article class="info">
+            <span>Kurum Sonucu Yok</span>
+            <strong id="unmatchedSearchNoInstitution">0</strong>
+            <small>Kategori var, kurum eksik</small>
+          </article>
+        </div>
+
+        <div class="unmatched-search-toolbar">
+          <div class="toolbar-search">
+            <span>⌕</span>
+            <input type="search" id="unmatchedSearchQuery" placeholder="Arama kelimesi, kategori, şehir veya ilçe ara...">
+          </div>
+          <select id="unmatchedSearchStatusFilter">
+            <option value="">Tüm durumlar</option>
+            <option value="new">Yeni</option>
+            <option value="reviewed">İncelendi</option>
+            <option value="category_added">Kategoriye Eklendi</option>
+          </select>
+          <select id="unmatchedSearchReasonFilter">
+            <option value="">Tüm nedenler</option>
+            <option value="category_not_found">Kategori bulunamadı</option>
+            <option value="no_institution_result">Kurum sonucu yok</option>
+          </select>
+        </div>
+
+        <div class="unmatched-search-note">
+          <strong>Nasıl kullanılır?</strong>
+          <span>Aynı veya benzer aramalar sıklaşıyorsa yeni alt kategori eklemek ya da o hizmette yeni kurum kazanmak için sinyal olarak değerlendirin.</span>
+        </div>
+
+        <div id="unmatchedSearchesList" class="unmatched-search-list">
+          <div class="advanced-empty">Bulunamayan aramalar yükleniyor...</div>
+        </div>
       </section>
 
 
@@ -2266,8 +2327,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=48"></script>
-  <script src="admin-advanced.js?v=46"></script>
+<script src="admin.js?v=36"></script>
+  <script src="admin-advanced.js?v=30"></script>
 
 </body>
 </html>
