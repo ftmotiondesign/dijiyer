@@ -97,8 +97,9 @@
               <dl>
                 <div><dt>KDV</dt><dd>${safe(o.vatStatus||"-")}</dd></div>
                 <div><dt>Geçerlilik</dt><dd>${fmtDate(o.expiresAt)}</dd></div>
-                <div><dt>Ek ücret</dt><dd>${safe(o.extraFee||"Yok")}</dd></div>
+                <div><dt>Ek ücret</dt><dd>${o.extraFee==="Var" ? money(o.extraFeeAmount||0)+" · "+safe(o.extraFeeRequired||"Zorunlu") : "Yok"}</dd></div>
               </dl>
+              ${o.extraFee==="Var" && o.extraFeeNote ? `<div class="djy-compare-scope"><b>Ek ücret:</b> ${safe(o.extraFeeNote)}</div>` : ""}
               <div class="djy-compare-scope">${safe(o.scope||"")}</div>
               <button type="button" class="lock-btn" data-djy-compare-lock="${safe(o.institutionId)}">✓ Bu Teklifi Kabul Et</button>
             </article>`).join("")}
