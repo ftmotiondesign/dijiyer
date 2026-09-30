@@ -62,9 +62,14 @@ function syncInstitutionOfferStateWatchers(){
     );
 
     unsubscribers.push(
-      quoteRef.collection("offers").doc(currentInstitutionId).onSnapshot(snapshot=>{
+      quoteRef.collection("offers").onSnapshot(snapshot=>{
         const before=institutionOfferMap.get(quoteId)||null;
-        const after=snapshot.exists ? {id:snapshot.id,...snapshot.data()} : null;
+        const ownDoc=snapshot.docs.find(doc=>{
+          const data=doc.data()||{};
+          return institutionOfferBelongsToCurrentInstitution(data,doc.id);
+        })||null;
+        const after=ownDoc ? {id:ownDoc.id,...ownDoc.data()} : null;
+
         if(after)institutionOfferMap.set(quoteId,after);
         else institutionOfferMap.delete(quoteId);
 
@@ -73,7 +78,7 @@ function syncInstitutionOfferStateWatchers(){
           renderSummary();
         }
       },error=>{
-        console.warn("Kurum teklifi canlı izlenemedi:",quoteId,error);
+        console.warn("Kurum teklifleri canlı izlenemedi:",quoteId,error);
       })
     );
 
@@ -187,6 +192,25 @@ function institutionQuoteIsTerminal(quote){
   return ["done","archived","closed","cancelled","canceled","completed","used"].includes(status);
 }
 
+function institutionOfferBelongsToCurrentInstitution(offer,docId=""){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId)return false;
+  return String(docId||"")===institutionId
+    || String(offer?.institutionId||"")===institutionId;
+}
+
+function institutionLockBelongsToCurrentInstitution(lock,offer=null){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!lock||!institutionId)return false;
+  if(String(lock.institutionId||"")===institutionId)return true;
+
+  // Eski kayıt uyumluluğu: kabul kaydındaki kurum id eski formatta olsa bile
+  // aynı teklif kodu bu kurumun teklifine aitse kilidi bu kuruma bağla.
+  const lockCode=String(lock.offerCode||"");
+  const offerCode=String(offer?.offerCode||"");
+  return Boolean(lockCode && offerCode && lockCode===offerCode);
+}
+
 function institutionOfferVersion(offer){
   return Math.max(1,Number(offer?.offerVersion||1));
 }
@@ -235,7 +259,7 @@ function sellerOfferState(quote){
   const legacy=responseMap.get(quote.id);
 
   if(lock){
-    if(lock.institutionId === currentAccount.institutionId){
+    if(institutionLockBelongsToCurrentInstitution(lock,offer)){
       if(lock.status === "used") return "used";
       if(lock.expiresAt && new Date(lock.expiresAt).getTime() <= Date.now()) return "expired";
       return "locked";
@@ -282,10 +306,15 @@ loadMatchedQuotes = async function(){
 
     await Promise.all(quoteRecords.map(async quote=>{
       const quoteRef=db.collection("quoteRequests").doc(quote.id);
-      const [offerSnap,lockSnap]=await Promise.all([
-        quoteRef.collection("offers").doc(currentAccount.institutionId).get(),
+      const [offersSnap,lockSnap]=await Promise.all([
+        quoteRef.collection("offers").get(),
         quoteRef.collection("locks").doc("main").get()
       ]);
+
+      const ownOfferDoc=offersSnap.docs.find(doc=>{
+        const data=doc.data()||{};
+        return institutionOfferBelongsToCurrentInstitution(data,doc.id);
+      })||null;
 
       let inviteSnap=null;
       try{
@@ -297,7 +326,7 @@ loadMatchedQuotes = async function(){
         console.warn("2. teklif daveti okunamadı:",quote.id,error);
       }
 
-      if(offerSnap.exists) institutionOfferMap.set(quote.id,{id:offerSnap.id,...offerSnap.data()});
+      if(ownOfferDoc) institutionOfferMap.set(quote.id,{id:ownOfferDoc.id,...ownOfferDoc.data()});
       if(lockSnap.exists) institutionLockMap.set(quote.id,lockSnap.data());
       if(inviteSnap?.exists){
         institutionSecondOfferInviteMap.set(String(quote.id),{id:inviteSnap.id,...inviteSnap.data()});
@@ -961,7 +990,7 @@ async function saveRealOffer(form){
   }
 
   if(lock){
-    alert(lock.institutionId===currentAccount.institutionId
+    alert(institutionLockBelongsToCurrentInstitution(lock,existing)
       ? "Müşteri bu teklifi kabul etti. Fiyat ve şartlar artık değiştirilemez."
       : "Müşteri başka bir teklifi seçti.");
     return;
@@ -1024,7 +1053,7 @@ async function saveRealOffer(form){
 
   try{
     const quoteRef=db.collection("quoteRequests").doc(quoteId);
-    const offerRef=quoteRef.collection("offers").doc(currentAccount.institutionId);
+    const offerRef=quoteRef.collection("offers").doc(existing?.id || currentAccount.institutionId);
     const lookupRef=db.collection("offerLookup").doc(code);
 
     const batch=db.batch();
