@@ -9284,3 +9284,27 @@ details.matching-institutions .matching-buttons{
   .review-moderation-actions{display:grid;grid-template-columns:1fr auto}
   .review-moderation-buttons{justify-content:flex-start}
 }
+
+
+.institution-credit-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  border:1px solid #cbd5e1;
+  border-radius:999px;
+  padding:5px 9px;
+  background:#fff;
+  color:#334155;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.institution-credit-badge strong{font-size:12px}
+.institution-credit-badge.positive{background:#ecfdf5;border-color:#bbf7d0;color:#15803d}
+.institution-credit-badge.zero{background:#f8fafc;border-color:#cbd5e1;color:#64748b}
+.institution-credit-badge.negative{background:#fff1f2;border-color:#fecdd3;color:#be123c}
+.institution-credit-manage-btn{
+  border-color:#c7d2fe !important;
+  background:#eef2ff !important;
+  color:#4338ca !important;
+}
