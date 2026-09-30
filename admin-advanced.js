@@ -5263,6 +5263,7 @@
     );
     const message=$("opportunitySponsorUploadMessage");
     const saveBtn=$("opportunitySponsorSaveBtn");
+    const existingInst=(institutionRecords||[]).find(item=>String(item.id)===id)||null;
 
     if(!id)return;
     if(active&&!url){
@@ -5281,6 +5282,17 @@
     }
 
     try{
+      const previousCampaignId=String(existingInst?.opportunitySponsorCampaignId||"").trim();
+      const previousStartAt=String(existingInst?.opportunitySponsorStartAt||"").slice(0,10);
+      const previousEndAt=String(existingInst?.opportunitySponsorEndAt||"").slice(0,10);
+      const campaignChanged=
+        !previousCampaignId ||
+        previousStartAt!==startAt ||
+        previousEndAt!==endAt;
+      const campaignId=(url && (active||existingInst?.opportunitySponsorActive||existingInst?.opportunitySponsorMediaUrl))
+        ? (campaignChanged ? uid("FSP") : previousCampaignId)
+        : previousCampaignId;
+
       const updates={
         opportunitySponsorActive:active&&Boolean(url),
         opportunitySponsorMediaUrl:url,
@@ -5288,6 +5300,7 @@
         opportunitySponsorStartAt:startAt,
         opportunitySponsorEndAt:endAt,
         opportunitySponsorPriority:priority,
+        opportunitySponsorCampaignId:campaignId,
         opportunitySponsorUpdatedAt:new Date().toISOString(),
         updatedAt:new Date().toISOString()
       };
