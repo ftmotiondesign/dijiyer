@@ -928,7 +928,7 @@ async function saveRealOffer(form){
 
     const batch=db.batch();
 
-    if(existing){
+    if(existing && Number(existing.offerVersion||0)>=1){
       const existingVersion=institutionOfferVersion(existing);
       const historyRef=quoteRef.collection("offerHistory")
         .doc(String(currentAccount.institutionId)+"_v"+String(existingVersion));
