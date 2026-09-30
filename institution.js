@@ -836,6 +836,7 @@ function getInstitutionQuoteQueries() {
     districts.forEach(value => {
       queries.push(
         collection
+          .where("requestType", "==", "bulk")
           .where("category", "==", currentInstitution.category)
           .where("city", "==", currentInstitution.city)
           .where("district", "==", value)
