@@ -505,10 +505,15 @@ service cloud.firestore {
       // Teklif takip ekranı fiyat tekliflerini okuyabilir.
       allow get, list: if true;
 
-      // Yalnızca talebe erişebilen onaylı kurum kendi teklifini oluşturabilir.
+      // Normalde yalnızca talebe erişebilen onaylı kurum kendi teklifini oluşturur.
+      // Yönetici ise kurum paneli kurulmadan teklif/kredi akışını test edebilmek için
+      // yönetim panelinden test teklifi oluşturabilir.
       allow create: if
-        onayliKurumKullanicisi()
-        && bagliKurumId() == institutionId
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
         && kurumTalebineErisebilir(quoteId)
         && request.resource.data.keys().hasOnly([
           'institutionId',
@@ -544,7 +549,8 @@ service cloud.firestore {
         && request.resource.data.paymentPolicy
             == 'offline_direct_between_customer_and_institution'
         && request.resource.data.expiresAtTs is timestamp
-        && request.resource.data.expiresAtTs > request.time;
+        && request.resource.data.expiresAtTs > request.time
+        );
 
       // Müşteri teklifi kabul ettikten sonra teklif değiştirilemez.
       allow update: if
@@ -597,8 +603,11 @@ service cloud.firestore {
       allow list: if false;
 
       allow create: if
-        onayliKurumKullanicisi()
-        && request.resource.data.keys().hasOnly([
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && request.resource.data.keys().hasOnly([
           'quoteId',
           'institutionId',
           'offerCode',
@@ -606,7 +615,8 @@ service cloud.firestore {
         ])
         && request.resource.data.institutionId == bagliKurumId()
         && request.resource.data.offerCode == offerCode
-        && kurumTalebineErisebilir(request.resource.data.quoteId);
+        && kurumTalebineErisebilir(request.resource.data.quoteId)
+        );
 
       allow update: if
         onayliKurumKullanicisi()
