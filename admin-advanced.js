@@ -1,11 +1,11 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","vipInstitutionsSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
+  const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","vipInstitutionsSection","promotionOrdersSection","adCalendarSection","adRevenueSection","businessOpportunitiesSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
     "overviewSection","applicationsSection","institutionsSection","quotesSection","quoteRoutingSection",
     "offerReportSection","issuesSection","accountsSection","unmatchedSearchesSection"
   ];
-  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","vipInstitutionsTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
+  const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","vipInstitutionsTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","businessOpportunitiesTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
     "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn","quoteRoutingTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn","unmatchedSearchesTabBtn"
@@ -241,6 +241,14 @@
     showAdvancedSection("adRevenueSection","adRevenueTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("adRevenueTabBtn");
     await renderAdRevenueCenter(true);
+  });
+
+  $("businessOpportunitiesTabBtn")?.addEventListener("click", async () => {
+    showAdvancedSection("businessOpportunitiesSection","businessOpportunitiesTabBtn");
+    if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("businessOpportunitiesTabBtn");
+    if (typeof window.renderBusinessOpportunitiesAdmin === "function") {
+      await window.renderBusinessOpportunitiesAdmin(true);
+    }
   });
 
   $("supportTabBtn")?.addEventListener("click", async () => {
