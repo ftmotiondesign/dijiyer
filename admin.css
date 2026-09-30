@@ -8279,6 +8279,7 @@ details.matching-institutions .matching-buttons{
   display:none !important;
 }
 .quote-routing-settings-panel{
+  position:relative;
   margin:16px 0;
   padding:15px;
   border:1px solid #cdd9e8;
