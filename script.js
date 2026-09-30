@@ -769,7 +769,7 @@ function renderMobileSubcategories(mainKey) {
   }).join('') +
     '<button type="button" class="mobile-subcategory-btn mobile-subcategory-missing" data-mobile-subcategory-missing="' +
     mainKey +
-    '">＋ Aradığım hizmet listede yok</button>';
+    '"><span class="missing-service-icon" aria-hidden="true">✦</span><span class="missing-service-copy"><strong>Aradığın hizmeti bulamadın mı?</strong><small>Hizmeti yaz, sana uygun kurumları bulalım.</small></span><span class="missing-service-action">Hizmeti Yaz <span aria-hidden="true">→</span></span></button>';
 
   root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
     button.addEventListener('click', () => {
