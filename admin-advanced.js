@@ -20,6 +20,7 @@
   const selectedPromotionPackageIds = new Set();
   let vipPlanRecords = [];
   let vipInstitutionRecords = [];
+  let creditVipRuleSettings = null;
   let bannerAdRecords = [];
   let bannerInstitutionQuickMode = "all";
   let externalAdRecords = [];
@@ -3972,6 +3973,161 @@
     }
   ];
 
+
+  function defaultCreditVipRuleSettings(){
+    return {
+      enabled:true,
+      extendExisting:true,
+      rules:[
+        {planKey:"vip",minCredits:10,durationDays:30},
+        {planKey:"vip_plus",minCredits:25,durationDays:30},
+        {planKey:"vip_premium",minCredits:50,durationDays:30}
+      ]
+    };
+  }
+
+  function normalizeCreditVipRuleSettings(data){
+    const defaults=defaultCreditVipRuleSettings();
+    const source=data&&typeof data==="object"?data:{};
+    const inputRules=Array.isArray(source.rules)?source.rules:defaults.rules;
+
+    const byKey=new Map(
+      inputRules.map(item=>[String(item?.planKey||""),item||{}])
+    );
+
+    return {
+      enabled:source.enabled!==false,
+      extendExisting:source.extendExisting!==false,
+      rules:defaults.rules.map(def=>{
+        const raw=byKey.get(def.planKey)||def;
+        return {
+          planKey:def.planKey,
+          minCredits:Math.max(1,Math.floor(Number(raw.minCredits||def.minCredits)||def.minCredits)),
+          durationDays:Math.max(1,Math.floor(Number(raw.durationDays||def.durationDays)||def.durationDays))
+        };
+      })
+    };
+  }
+
+  async function loadCreditVipRules(){
+    try{
+      const snap=await db.collection("siteSettings").doc("creditVipRules").get();
+      creditVipRuleSettings=normalizeCreditVipRuleSettings(
+        snap.exists?snap.data():defaultCreditVipRuleSettings()
+      );
+    }catch(error){
+      console.error("Kredi ile otomatik VIP kuralları yüklenemedi:",error);
+      creditVipRuleSettings=defaultCreditVipRuleSettings();
+    }
+    return creditVipRuleSettings;
+  }
+
+  function creditVipRuleByKey(key){
+    const rules=creditVipRuleSettings?.rules||[];
+    return rules.find(item=>item.planKey===key)||null;
+  }
+
+  function renderCreditVipRules(){
+    if(!creditVipRuleSettings){
+      creditVipRuleSettings=defaultCreditVipRuleSettings();
+    }
+
+    const setValue=(id,value)=>{
+      const el=$(id);
+      if(el)el.value=String(value);
+    };
+
+    if($("creditVipEnabled"))$("creditVipEnabled").checked=creditVipRuleSettings.enabled!==false;
+    if($("creditVipExtendExisting"))$("creditVipExtendExisting").checked=creditVipRuleSettings.extendExisting!==false;
+
+    const vip=creditVipRuleByKey("vip")||{minCredits:10,durationDays:30};
+    const plus=creditVipRuleByKey("vip_plus")||{minCredits:25,durationDays:30};
+    const premium=creditVipRuleByKey("vip_premium")||{minCredits:50,durationDays:30};
+
+    setValue("creditVipMinVip",vip.minCredits);
+    setValue("creditVipDaysVip",vip.durationDays);
+    setValue("creditVipMinPlus",plus.minCredits);
+    setValue("creditVipDaysPlus",plus.durationDays);
+    setValue("creditVipMinPremium",premium.minCredits);
+    setValue("creditVipDaysPremium",premium.durationDays);
+  }
+
+  async function saveCreditVipRules(){
+    const button=$("creditVipRulesSaveBtn");
+    const message=$("creditVipRulesMessage");
+
+    const numberValue=(id,fallback)=>Math.max(
+      1,
+      Math.floor(Number($(id)?.value||fallback)||fallback)
+    );
+
+    const next=normalizeCreditVipRuleSettings({
+      enabled:Boolean($("creditVipEnabled")?.checked),
+      extendExisting:Boolean($("creditVipExtendExisting")?.checked),
+      rules:[
+        {
+          planKey:"vip",
+          minCredits:numberValue("creditVipMinVip",10),
+          durationDays:numberValue("creditVipDaysVip",30)
+        },
+        {
+          planKey:"vip_plus",
+          minCredits:numberValue("creditVipMinPlus",25),
+          durationDays:numberValue("creditVipDaysPlus",30)
+        },
+        {
+          planKey:"vip_premium",
+          minCredits:numberValue("creditVipMinPremium",50),
+          durationDays:numberValue("creditVipDaysPremium",30)
+        }
+      ]
+    });
+
+    const mins=next.rules.map(item=>item.minCredits);
+    if(!(mins[0]<mins[1]&&mins[1]<mins[2])){
+      if(message){
+        message.textContent=
+          "Kredi eşikleri küçükten büyüğe olmalı. Örnek: VIP 10 · VIP Plus 25 · VIP Premium 50.";
+      }
+      return;
+    }
+
+    try{
+      if(button){
+        button.disabled=true;
+        button.textContent="Kaydediliyor...";
+      }
+
+      await db.collection("siteSettings").doc("creditVipRules").set({
+        ...next,
+        updatedAt:new Date().toISOString()
+      },{merge:true});
+
+      creditVipRuleSettings=next;
+      renderCreditVipRules();
+
+      if(message){
+        message.textContent=
+          next.enabled
+            ? "Otomatik VIP aktif. Yeni kredi yüklemelerinde kurallar otomatik uygulanacak."
+            : "Otomatik VIP pasif. Kredi yüklemeleri VIP durumunu değiştirmeyecek.";
+      }
+
+      addAudit(
+        "Kredi ile otomatik VIP kuralları güncellendi",
+        next.rules.map(item=>item.minCredits+" kredi → "+item.planKey).join(" · ")
+      );
+    }catch(error){
+      console.error("Kredi ile otomatik VIP kuralları kaydedilemedi:",error);
+      if(message)message.textContent="Kurallar kaydedilemedi. Firestore yönetici yetkisini kontrol edin.";
+    }finally{
+      if(button){
+        button.disabled=false;
+        button.textContent="Otomatik VIP Kurallarını Kaydet";
+      }
+    }
+  }
+
   function cloneVipDefaults(){
     return DEFAULT_VIP_PLANS.map(item=>({...item,features:[...item.features]}));
   }
@@ -4343,10 +4499,12 @@
     if(!$("vipInstitutionsSection"))return;
     if(reload || !vipPlanRecords.length)await loadVipPlans();
     if(reload || !vipInstitutionRecords.length)await loadVipInstitutions();
+    if(reload || !creditVipRuleSettings)await loadCreditVipRules();
 
     renderVipPlanEditor();
     populateVipPlanSelect();
     populateVipInstitutionSelect();
+    renderCreditVipRules();
 
     if($("vipStartDate") && !$("vipStartDate").value)$("vipStartDate").value=vipToday();
 
@@ -4356,6 +4514,7 @@
   }
 
   $("vipPlanSaveBtn")?.addEventListener("click",saveVipPlans);
+  $("creditVipRulesSaveBtn")?.addEventListener("click",saveCreditVipRules);
   $("vipInstitutionSelect")?.addEventListener("change",syncVipInstitutionSelection);
   $("vipPlanSelect")?.addEventListener("change",updateVipAssignmentPreview);
   $("vipStartDate")?.addEventListener("change",updateVipAssignmentPreview);
