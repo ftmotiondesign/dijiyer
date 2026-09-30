@@ -3196,3 +3196,125 @@
 @media(max-width:620px){
   .opportunity-kpis{grid-template-columns:1fr 1fr}
 }
+
+
+/* =========================================================
+   HARİCİ REKLAM · YAYIN ALANI SEÇİMİ
+   ========================================================= */
+.external-ad-placement-box{
+  padding:12px;
+  border:1px solid #dbe6f2;
+  border-radius:12px;
+  background:linear-gradient(180deg,#f9fbfe,#fff);
+}
+.external-ad-placement-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:9px;
+}
+.external-ad-placement-head>div strong,
+.external-ad-placement-head>div small{
+  display:block;
+}
+.external-ad-placement-head>div strong{
+  color:#203753;
+  font-size:10px;
+  font-weight:900;
+}
+.external-ad-placement-head>div small{
+  margin-top:3px;
+  color:#7a8797;
+  font-size:8px;
+  line-height:1.4;
+}
+.external-ad-placement-all{
+  min-width:max-content;
+  display:flex!important;
+  grid-template-columns:auto auto!important;
+  align-items:center;
+  gap:6px!important;
+  padding:6px 8px;
+  border:1px solid #cfe0f6;
+  border-radius:8px;
+  background:#f5f9ff;
+  color:#1677ff!important;
+}
+.external-ad-placement-all input{
+  width:14px!important;
+  min-height:14px!important;
+  height:14px!important;
+  margin:0;
+}
+.external-ad-placement-options{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+.external-ad-placement-options label{
+  min-height:38px;
+  display:flex!important;
+  grid-template-columns:auto 1fr!important;
+  align-items:center;
+  gap:8px!important;
+  padding:0 9px;
+  border:1px solid #e1e8f0;
+  border-radius:9px;
+  background:#fff;
+  cursor:pointer;
+}
+.external-ad-placement-options label:has(input:checked){
+  border-color:#a8cdfc;
+  background:#f3f8ff;
+  color:#1268d7;
+}
+.external-ad-placement-options input{
+  width:15px!important;
+  min-height:15px!important;
+  height:15px!important;
+  margin:0;
+}
+.external-ad-placement-options span{
+  font-size:9px;
+  font-weight:850;
+}
+.external-ad-placement-note{
+  margin:8px 0 0;
+  color:#1677ff;
+  font-size:8px;
+  font-weight:850;
+}
+.external-ad-placement-note.warning{color:#b91c1c}
+.external-ad-preview-copy em{
+  display:block;
+  margin-top:5px;
+  color:#1677ff;
+  font-size:7px;
+  font-style:normal;
+  font-weight:850;
+}
+.external-ad-admin-placements{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.external-ad-admin-placements b{
+  color:#52657c;
+  font-size:6.5px;
+}
+.external-ad-admin-placements span{
+  padding:3px 6px;
+  border-radius:999px;
+  background:#eef6ff;
+  color:#1268d7;
+  font-size:6.2px;
+  font-weight:850;
+}
+@media(max-width:640px){
+  .external-ad-placement-options{grid-template-columns:1fr}
+  .external-ad-placement-head{align-items:stretch;flex-direction:column}
+  .external-ad-placement-all{align-self:flex-start}
+}
