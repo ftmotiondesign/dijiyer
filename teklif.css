@@ -1040,3 +1040,86 @@ button,input{font:inherit}.hidden{display:none!important}
     grid-column:auto;
   }
 }
+
+
+/* Teklif kabulü, gerçek kayıt ve ödeme güvenliği */
+.offer-payment-warning,
+.tracking-payment-note{
+  margin-top:12px;
+  padding:12px 14px;
+  border:1px solid #f1c75b;
+  border-radius:14px;
+  background:#fff9e8;
+  color:#6a5200;
+  font-size:12px;
+  line-height:1.55;
+}
+.offer-payment-warning b,
+.tracking-payment-note strong{
+  display:block;
+  margin-bottom:3px;
+  color:#493800;
+}
+.offer-payment-warning span{display:block}
+.offer-consent-row{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  margin:14px 0 4px;
+  padding:11px 12px;
+  border:1px solid #dbe6f2;
+  border-radius:12px;
+  background:#f8fbff;
+  color:#42536a;
+  font-size:12px;
+  line-height:1.45;
+  cursor:pointer;
+}
+.offer-consent-row input{
+  margin-top:2px;
+  width:17px;
+  height:17px;
+  accent-color:#1677ff;
+}
+.accept-lock-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  filter:grayscale(.2);
+}
+.registration-status-note,
+.registration-expired-note,
+.registration-completed-note{
+  margin-top:14px;
+  padding:13px 14px;
+  border-radius:14px;
+  font-size:12px;
+  line-height:1.5;
+}
+.registration-status-note{
+  background:#eef6ff;
+  border:1px solid #bcd9fb;
+  color:#174b80;
+}
+.registration-expired-note{
+  background:#fff1f2;
+  border:1px solid #fecdd3;
+  color:#9f1239;
+}
+.registration-completed-note{
+  background:#edf9f1;
+  border:1px solid #bfe7cb;
+  color:#17613a;
+}
+.registration-status-note strong,
+.registration-expired-note strong,
+.registration-completed-note strong{
+  display:block;
+  margin-bottom:3px;
+}
+.locked-main-actions{
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:9px;
+  margin-top:14px;
+}
+.locked-main-actions a{text-decoration:none}
