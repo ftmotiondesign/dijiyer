@@ -1640,8 +1640,26 @@ function watchHomeBottomSectionVisibility(){
 
 watchHomeBottomSectionVisibility();
 
-let activeLocationCity = 'Çanakkale';
-let activeLocationDistrict = 'Merkez';
+function dijiyerInitialGlobalValue(paramName,storageKey,fallback){
+  const params=new URLSearchParams(window.location.search);
+  if(params.has(paramName))return String(params.get(paramName)||"");
+  try{
+    const stored=localStorage.getItem(storageKey);
+    if(stored!==null)return String(stored);
+  }catch(_){}
+  return fallback;
+}
+
+let activeLocationCity = dijiyerInitialGlobalValue('city','dijiyerGlobalCity','Çanakkale');
+let activeLocationDistrict = dijiyerInitialGlobalValue('district','dijiyerGlobalDistrict','Merkez');
+
+const dijiyerInitialSearchQuery=String(
+  new URLSearchParams(window.location.search).get('q')||''
+).trim();
+if(dijiyerInitialSearchQuery){
+  const initialSearchInput=document.getElementById('searchInput');
+  if(initialSearchInput)initialSearchInput.value=dijiyerInitialSearchQuery;
+}
 
 /* =========================================================
    DİJİYER İŞ FIRSATLARI · MOBİL PİLOT
