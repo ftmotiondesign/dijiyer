@@ -3790,6 +3790,39 @@ function renderQuoteRoutingAdmin(){
       ? '<div class="quote-routing-response"><strong>✓ '+routedOffers.length+' yönlendirilmiş kurum teklif verdi</strong><span>'+offerNames+'</span></div>'
       : '';
 
+    const acceptedLock=request.liveLock||null;
+    const acceptedOffer=acceptedLock
+      ? offers.find(offer=>String(offer.institutionId||offer.id||"")===String(acceptedLock.institutionId||""))
+      : null;
+    const acceptedPrice=Number(acceptedLock?.price||acceptedOffer?.price||0);
+    const acceptedInstitution=String(
+      acceptedLock?.institutionName||
+      acceptedOffer?.institutionName||
+      institutionRecords.find(inst=>String(inst.id)===String(acceptedLock?.institutionId||""))?.name||
+      "Kurum"
+    );
+    const acceptedCompleted=Boolean(
+      acceptedLock &&
+      (acceptedLock.status==="used" || acceptedLock.registrationStatus==="completed")
+    );
+    const acceptedHtml=acceptedLock
+      ? '<div class="quote-routing-accepted">'+
+          '<div class="quote-routing-accepted-icon">✓</div>'+
+          '<div class="quote-routing-accepted-copy">'+
+            '<span>'+(acceptedCompleted?'KAYIT TAMAMLANDI':'TEKLİF KABUL EDİLDİ')+'</span>'+
+            '<strong>'+escapeHtml(acceptedInstitution)+
+              (acceptedPrice>0?' · '+quoteMoney(acceptedPrice):'')+
+            '</strong>'+
+            '<small>'+
+              (acceptedLock.acceptedAt||acceptedLock.lockedAt
+                ? 'Kabul: '+escapeHtml(formatDate(acceptedLock.acceptedAt||acceptedLock.lockedAt))
+                : 'Müşteri bu teklifi kabul etti')+
+            '</small>'+
+          '</div>'+
+          '<em>'+(acceptedCompleted?'Tamamlandı':'Kabul Edildi')+'</em>'+
+        '</div>'
+      : '';
+
     return '<article class="quote-routing-card flow-'+meta[1]+'" data-routing-quote="'+escapeHtml(request.id)+'">'+
       '<div class="quote-routing-card-head">'+
         '<div><span class="quote-routing-code">#'+escapeHtml(String(request.id||"").slice(0,9).toUpperCase())+'</span>'+
@@ -3805,6 +3838,7 @@ function renderQuoteRoutingAdmin(){
         '<div><span>Teklif</span><strong>'+offers.length+' adet</strong></div>'+
         '<div><span>Son dağıtım</span><strong>'+(last?formatDate(last.date):"-")+'</strong></div>'+
       '</div>'+
+      acceptedHtml+
       responseHtml+
       '<div class="quote-routing-customer-note"><span>Müşteri notu</span><strong>'+escapeHtml(request.note||"Not eklenmemiş.")+'</strong></div>'+
       consentHtml+
