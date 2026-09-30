@@ -389,6 +389,13 @@
           <input id="quotePhone" required type="tel" placeholder="05xx xxx xx xx">
         </label>
 
+        <label>E-posta
+          <input id="quoteEmail" required type="email" autocomplete="email" placeholder="ornek@email.com">
+          <small style="display:block;margin-top:5px;color:#68758a;font-weight:normal;">
+            Takip linkiniz bu adrese de gönderilir.
+          </small>
+        </label>
+
         <label>Not
           <textarea id="quoteNote" rows="3" placeholder="Örn. otomatik vites, hafta sonu ders, bütçe aralığı..."></textarea>
         </label>
@@ -1259,6 +1266,10 @@
         🔐 Takip kodunuzu saklayın. Başka bir cihazdan açarken talepte kullandığınız telefon numarasıyla birlikte kullanabilirsiniz.
       </div>
 
+      <div class="quote-success-email-status" id="quoteSuccessEmailStatus">
+        ✉ Takip linkiniz e-posta adresinize de gönderilecek.
+      </div>
+
       <div class="quote-success-actions">
         <button type="button" class="btn btn-primary" id="quoteOpenTrackingBtn">Tekliflerimi Takip Et →</button>
         <button type="button" class="btn btn-light" id="quoteCopyTrackingBtn">Takip Linkini Kopyala</button>
@@ -1620,7 +1631,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="script.js?v=69"></script>
-<script src="offers.js?v=2"></script>
+<script src="offers.js?v=3"></script>
 
 <script>
 (function(){
