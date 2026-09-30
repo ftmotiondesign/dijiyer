@@ -1452,3 +1452,33 @@ button,input{font:inherit}.hidden{display:none!important}
   .offer-accept-confirm-actions{flex-direction:column-reverse}
   .offer-accept-confirm-actions button{width:100%}
 }
+
+/* Takip formu etkileşim güvenliği */
+#trackingLoginCard{
+  position:relative;
+  z-index:30;
+}
+#trackingForm,
+#trackingForm label{
+  position:relative;
+  z-index:31;
+  pointer-events:auto!important;
+}
+#trackingForm input{
+  position:relative;
+  z-index:32;
+  pointer-events:auto!important;
+  user-select:text!important;
+  -webkit-user-select:text!important;
+  touch-action:manipulation;
+  cursor:text;
+  color:#172033!important;
+  background:#fff!important;
+  caret-color:#1677ff!important;
+}
+#trackingSubmitBtn{
+  position:relative;
+  z-index:32;
+  pointer-events:auto!important;
+  cursor:pointer;
+}
