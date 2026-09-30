@@ -4740,6 +4740,11 @@ function showQuoteTrackingSuccess(tracking, matchedCount, quoteId, requestData =
   sessionStorage.setItem('dijiyerTrackingCode', tracking.trackingCode);
   sessionStorage.setItem('dijiyerTrackingPhone', tracking.normalizedPhone);
   localStorage.setItem('dijiyerLastTrackingCode', tracking.trackingCode);
+  try{
+    const phoneMap=JSON.parse(localStorage.getItem('dijiyerTrackingPhoneByCode')||'{}');
+    phoneMap[tracking.trackingCode]=tracking.normalizedPhone;
+    localStorage.setItem('dijiyerTrackingPhoneByCode',JSON.stringify(phoneMap));
+  }catch(_){}
 
   document.getElementById('quoteSuccessCode').textContent = tracking.trackingCode;
   document.getElementById('quoteSuccessLink').value = tracking.trackingUrl;
