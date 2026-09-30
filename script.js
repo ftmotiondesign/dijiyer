@@ -8162,6 +8162,35 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
     desktopLocationText.textContent = source?.textContent?.trim() || 'Tüm Türkiye';
   }
 
+  function desktopSubcategoryInstitutionCount(mainKey,subKey){
+    if(!mainKey || !subKey || !Array.isArray(institutions))return 0;
+
+    const normalizedActiveCity = normalizeQuoteSearch(activeLocationCity || '');
+    const normalizedActiveDistrict = normalizeQuoteSearch(activeLocationDistrict || '');
+
+    return institutions.filter(inst=>{
+      const [instMain,instSub] = resolveTaxonomy(inst);
+      if(String(instMain)!==String(mainKey) || String(instSub)!==String(subKey))return false;
+
+      const locationParts = String(inst.location || '')
+        .split(',')
+        .map(part=>part.trim());
+
+      const institutionCity = String(inst.city || locationParts[0] || '').trim();
+      const institutionDistrict = String(inst.district || locationParts[1] || '').trim();
+
+      const cityMatches =
+        !normalizedActiveCity ||
+        normalizeQuoteSearch(institutionCity)===normalizedActiveCity;
+
+      const districtMatches =
+        !normalizedActiveDistrict ||
+        normalizeQuoteSearch(institutionDistrict)===normalizedActiveDistrict;
+
+      return cityMatches && districtMatches;
+    }).length;
+  }
+
   function renderDesktopCategoryPreview(key){
     if(!categoryPreview)return;
 
@@ -8205,7 +8234,14 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           button.type = 'button';
           button.dataset.desktopPreviewSub = subKey;
           button.dataset.desktopPreviewMain = key;
-          button.textContent = label;
+
+          const institutionCount = desktopSubcategoryInstitutionCount(key,subKey);
+          button.innerHTML =
+            '<span class="desktop-preview-sub-count">' +
+              (institutionCount > 0 ? institutionCount + ' kurum' : 'Yakında') +
+            '</span>' +
+            '<strong class="desktop-preview-sub-label">' + escapeHtml(label) + '</strong>';
+
           const selected = document.querySelector(
             '.subCategoryFilter[data-main-category="' + key + '"][value="' + subKey + '"]'
           )?.checked;
