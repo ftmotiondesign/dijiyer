@@ -307,7 +307,7 @@ function secondOfferDelayMinutes(offer){
 }
 
 function isTerminalQuoteStatus(value){
-  return new Set(["done","archived","closed","cancelled","canceled","completed","used"])
+  return new Set(["done","archived","closed","accepted","cancelled","canceled","completed","used"])
     .has(String(value||"").trim().toLowerCase());
 }
 
