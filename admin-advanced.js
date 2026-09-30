@@ -2,12 +2,12 @@
   const $ = (id) => document.getElementById(id);
   const advancedSectionIds = ["bannerAdsSection","opportunitySponsorsSection","mediaArchiveSection","externalAdsSection","promotionPackagesSection","promotionOrdersSection","adCalendarSection","adRevenueSection","supportSection","announcementsSection","systemSection"];
   const baseSectionIds = [
-    "overviewSection","applicationsSection","institutionsSection","quotesSection",
+    "overviewSection","applicationsSection","institutionsSection","quotesSection","quoteRoutingSection",
     "offerReportSection","issuesSection","accountsSection","unmatchedSearchesSection"
   ];
   const advancedTabIds = ["bannerAdsTabBtn","opportunitySponsorsTabBtn","mediaArchiveTabBtn","externalAdsTabBtn","promotionPackagesTabBtn","promotionOrdersTabBtn","adCalendarTabBtn","adRevenueTabBtn","supportTabBtn","announcementsTabBtn","systemTabBtn"];
   const baseTabIds = [
-    "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn",
+    "overviewTabBtn","applicationsTabBtn","institutionsTabBtn","quotesTabBtn","quoteRoutingTabBtn",
     "offerReportTabBtn","issuesTabBtn","accountsTabBtn","unmatchedSearchesTabBtn"
   ];
 
