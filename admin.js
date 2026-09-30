@@ -4318,6 +4318,169 @@ function closeLeadCreditModal(){
   if(leadCreditModal)leadCreditModal.hidden=true;
 }
 
+
+function leadCreditVipDefaultRules(){
+  return {
+    enabled:true,
+    extendExisting:true,
+    rules:[
+      {planKey:"vip",minCredits:10,durationDays:30},
+      {planKey:"vip_plus",minCredits:25,durationDays:30},
+      {planKey:"vip_premium",minCredits:50,durationDays:30}
+    ]
+  };
+}
+
+function leadCreditVipDefaultPlans(){
+  return [
+    {
+      key:"vip",name:"VIP",badge:"VIP",priority:1,price:0,durationDays:30,active:true,
+      features:["VIP kurum rozeti","Arama sonuçlarında öncelik","Keşfet / Fırsat görünürlüğü"]
+    },
+    {
+      key:"vip_plus",name:"VIP Plus",badge:"EN ÇOK TERCİH EDİLEN",priority:2,price:0,durationDays:30,active:true,
+      features:["VIP ayrıcalıkları","Daha yüksek görünürlük","Sponsorlu gösterim hakkı"]
+    },
+    {
+      key:"vip_premium",name:"VIP Premium",badge:"PREMIUM",priority:3,price:0,durationDays:30,active:true,
+      features:["VIP Plus ayrıcalıkları","En yüksek görünürlük","Premium kurum kartı"]
+    }
+  ];
+}
+
+function leadCreditVipNormalizeRules(data){
+  const defaults=leadCreditVipDefaultRules();
+  const source=data&&typeof data==="object"?data:{};
+  const rawRules=Array.isArray(source.rules)?source.rules:defaults.rules;
+  const map=new Map(rawRules.map(item=>[String(item?.planKey||""),item||{}]));
+  return {
+    enabled:source.enabled!==false,
+    extendExisting:source.extendExisting!==false,
+    rules:defaults.rules.map(def=>{
+      const raw=map.get(def.planKey)||def;
+      return {
+        planKey:def.planKey,
+        minCredits:Math.max(1,Math.floor(Number(raw.minCredits||def.minCredits)||def.minCredits)),
+        durationDays:Math.max(1,Math.floor(Number(raw.durationDays||def.durationDays)||def.durationDays))
+      };
+    })
+  };
+}
+
+function leadCreditVipNormalizePlans(data){
+  const defaults=leadCreditVipDefaultPlans();
+  const rows=Array.isArray(data?.plans)&&data.plans.length?data.plans:defaults;
+  return rows.map((item,index)=>({
+    key:String(item?.key||defaults[index]?.key||("vip_"+index)),
+    name:String(item?.name||defaults[index]?.name||"VIP"),
+    badge:String(item?.badge||defaults[index]?.badge||"VIP"),
+    priority:Math.max(1,Number(item?.priority||defaults[index]?.priority||index+1)),
+    price:Math.max(0,Number(item?.price||0)),
+    durationDays:Math.max(1,Number(item?.durationDays||30)),
+    active:item?.active!==false,
+    features:Array.isArray(item?.features)?item.features.map(String):[]
+  }));
+}
+
+function leadCreditVipDateValue(value){
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime()))return "";
+  return date.getFullYear()+"-"+
+    String(date.getMonth()+1).padStart(2,"0")+"-"+
+    String(date.getDate()).padStart(2,"0");
+}
+
+function leadCreditVipToday(){
+  return leadCreditVipDateValue(new Date());
+}
+
+function leadCreditVipAddDays(dateText,days){
+  const parts=String(dateText||"").slice(0,10).split("-").map(Number);
+  const date=parts.length===3&&parts.every(Number.isFinite)
+    ? new Date(parts[0],parts[1]-1,parts[2],12,0,0)
+    : new Date();
+  date.setDate(date.getDate()+Math.max(1,Math.floor(Number(days||30))));
+  return leadCreditVipDateValue(date);
+}
+
+function leadCreditVipPlanFromInstitution(data){
+  if(!data?.vipPlanKey)return null;
+  return {
+    key:String(data.vipPlanKey),
+    name:String(data.vipPlanName||data.vipPlanKey||"VIP"),
+    badge:String(data.vipBadge||"VIP"),
+    priority:Math.max(1,Number(data.vipPriority||1)),
+    price:Math.max(0,Number(data.vipPrice||0)),
+    durationDays:Math.max(1,Number(data.vipDurationDays||30)),
+    active:true,
+    features:Array.isArray(data.vipFeatures)?data.vipFeatures.map(String):[]
+  };
+}
+
+function leadCreditVipResolveGrant(amount,rules,plans,institutionData){
+  if(!rules?.enabled || !(amount>0))return null;
+
+  const planMap=new Map((plans||[]).map(plan=>[String(plan.key),plan]));
+  const qualifying=[...(rules.rules||[])]
+    .filter(rule=>Number(amount)>=Number(rule.minCredits||0))
+    .sort((a,b)=>Number(b.minCredits||0)-Number(a.minCredits||0));
+
+  let matchedRule=null;
+  let targetPlan=null;
+
+  for(const rule of qualifying){
+    const plan=planMap.get(String(rule.planKey||""));
+    if(plan&&plan.active!==false){
+      matchedRule=rule;
+      targetPlan=plan;
+      break;
+    }
+  }
+
+  if(!matchedRule||!targetPlan)return null;
+
+  const today=leadCreditVipToday();
+  const currentEnd=String(institutionData?.vipEndAt||"").slice(0,10);
+  const currentActive=
+    institutionData?.vipActive===true &&
+    (!currentEnd || currentEnd>=today);
+  const currentPlan=leadCreditVipPlanFromInstitution(institutionData);
+  const currentPriority=currentPlan?Number(currentPlan.priority||0):0;
+  const targetPriority=Number(targetPlan.priority||0);
+
+  const keepHigher=
+    currentActive &&
+    currentPlan &&
+    currentPriority>targetPriority;
+
+  const chosenPlan=keepHigher?currentPlan:targetPlan;
+  const durationDays=Math.max(1,Number(matchedRule.durationDays||chosenPlan.durationDays||30));
+
+  const extendBase=
+    rules.extendExisting!==false &&
+    currentActive &&
+    currentEnd
+      ? currentEnd
+      : today;
+
+  const startAt=
+    rules.extendExisting!==false && currentActive
+      ? String(institutionData?.vipStartAt||today).slice(0,10)
+      : today;
+
+  const endAt=leadCreditVipAddDays(extendBase,durationDays);
+
+  return {
+    plan:chosenPlan,
+    sourceRule:matchedRule,
+    durationDays,
+    startAt,
+    endAt,
+    keptHigherPlan:keepHigher,
+    extended:Boolean(rules.extendExisting!==false&&currentActive)
+  };
+}
+
 async function saveLeadCreditAdjustment(){
   const institutionId=String(leadCreditInstitutionId?.value||"");
   const inst=institutionRecords.find(x=>String(x.id)===institutionId);
@@ -4329,24 +4492,95 @@ async function saveLeadCreditAdjustment(){
   const delta=action==="remove"?-amount:amount;
   const accountRef=db.collection("leadCreditAccounts").doc(institutionId);
   const ledgerRef=db.collection("leadCreditLedger").doc();
+  const institutionRef=db.collection("institutions").doc(institutionId);
+  const creditVipRulesRef=db.collection("siteSettings").doc("creditVipRules");
+  const vipPlansRef=db.collection("siteSettings").doc("vipPlans");
   const oldText=leadCreditModalSaveBtn?.textContent||"Kaydet";
-  if(leadCreditModalSaveBtn){leadCreditModalSaveBtn.disabled=true;leadCreditModalSaveBtn.textContent="Kaydediliyor...";}
+
+  if(leadCreditModalSaveBtn){
+    leadCreditModalSaveBtn.disabled=true;
+    leadCreditModalSaveBtn.textContent="Kaydediliyor...";
+  }
 
   try{
-    await db.runTransaction(async tx=>{
-      const snap=await tx.get(accountRef);
-      const current=snap.exists?snap.data():{};
+    const vipResult=await db.runTransaction(async tx=>{
+      const accountSnap=await tx.get(accountRef);
+
+      let institutionSnap=null;
+      let rulesSnap=null;
+      let plansSnap=null;
+
+      if(delta>0){
+        institutionSnap=await tx.get(institutionRef);
+        rulesSnap=await tx.get(creditVipRulesRef);
+        plansSnap=await tx.get(vipPlansRef);
+      }
+
+      const current=accountSnap.exists?accountSnap.data():{};
       const before=Number(current.balance||0);
       const after=before+delta;
       const now=new Date().toISOString();
+
+      let autoVip=null;
+      let vipData=null;
+
+      if(delta>0&&institutionSnap?.exists){
+        const institutionData=institutionSnap.data()||{};
+        const rules=leadCreditVipNormalizeRules(
+          rulesSnap?.exists?rulesSnap.data():leadCreditVipDefaultRules()
+        );
+        const plans=leadCreditVipNormalizePlans(
+          plansSnap?.exists?plansSnap.data():{plans:leadCreditVipDefaultPlans()}
+        );
+
+        autoVip=leadCreditVipResolveGrant(
+          amount,
+          rules,
+          plans,
+          institutionData
+        );
+
+        if(autoVip){
+          const plan=autoVip.plan;
+          vipData={
+            vipActive:true,
+            vipPlanKey:String(plan.key||"vip"),
+            vipPlanName:String(plan.name||"VIP"),
+            vipBadge:String(plan.badge||"VIP"),
+            vipPriority:Math.max(1,Number(plan.priority||1)),
+            vipPrice:Math.max(0,Number(plan.price||0)),
+            vipDurationDays:Math.max(1,Number(autoVip.durationDays||30)),
+            vipFeatures:Array.isArray(plan.features)?[...plan.features]:[],
+            vipStartAt:autoVip.startAt,
+            vipEndAt:autoVip.endAt,
+            vipAssignedAt:institutionData.vipAssignedAt||now,
+            vipUpdatedAt:now,
+            vipSource:"credit_load",
+            vipAutoCredit:true,
+            vipCreditAmount:amount,
+            vipCreditLedgerId:ledgerRef.id,
+            vipAutoGrantedAt:now
+          };
+
+          tx.update(institutionRef,vipData);
+        }
+      }
+
       tx.set(accountRef,{
         institutionId,
         institutionName:String(inst.name||"Kurum"),
         balance:after,
         totalLoaded:Number(current.totalLoaded||0)+(delta>0?delta:0),
         totalUsed:Number(current.totalUsed||0),
+        ...(autoVip?{
+          lastVipGrantAt:now,
+          lastVipGrantPlanKey:String(autoVip.plan.key||"vip"),
+          lastVipGrantCredits:amount,
+          lastVipEndAt:autoVip.endAt
+        }:{}),
         updatedAt:now
       },{merge:true});
+
       tx.set(ledgerRef,{
         institutionId,
         institutionName:String(inst.name||"Kurum"),
@@ -4355,18 +4589,60 @@ async function saveLeadCreditAdjustment(){
         balanceBefore:before,
         balanceAfter:after,
         note:note||(delta>0?"Yönetim panelinden kredi yüklendi":"Yönetim panelinden kredi çıkarıldı"),
+        ...(autoVip?{
+          vipGranted:true,
+          vipPlanKey:String(autoVip.plan.key||"vip"),
+          vipPlanName:String(autoVip.plan.name||"VIP"),
+          vipStartAt:autoVip.startAt,
+          vipEndAt:autoVip.endAt,
+          vipDurationDays:autoVip.durationDays,
+          vipKeptHigherPlan:autoVip.keptHigherPlan===true,
+          vipExtended:autoVip.extended===true
+        }:{
+          vipGranted:false
+        }),
         createdAt:now
       });
+
+      return autoVip?{...autoVip,data:vipData}:null;
     });
-    if(leadCreditModalMessage)leadCreditModalMessage.textContent="✓ Kredi işlemi kaydedildi.";
+
+    if(vipResult?.data){
+      Object.assign(inst,vipResult.data);
+    }
+
+    if(leadCreditModalMessage){
+      if(delta>0&&vipResult){
+        const extra=vipResult.keptHigherPlan
+          ? " · Mevcut daha yüksek VIP seviyesi korundu"
+          : vipResult.extended
+            ? " · Mevcut VIP süresine eklendi"
+            : "";
+        leadCreditModalMessage.textContent=
+          "✓ "+amount+" kredi yüklendi · Otomatik VIP: "+
+          String(vipResult.plan.name||"VIP")+
+          " · "+vipResult.endAt+" tarihine kadar"+extra;
+      }else{
+        leadCreditModalMessage.textContent=
+          delta>0
+            ? "✓ Kredi işlemi kaydedildi."
+            : "✓ Kredi çıkarma işlemi kaydedildi. VIP durumu değiştirilmedi.";
+      }
+    }
+
     await loadLeadCreditData();
     renderLeadCreditAdmin();
-    setTimeout(closeLeadCreditModal,450);
+    setTimeout(closeLeadCreditModal,delta>0&&vipResult?1400:650);
   }catch(error){
     console.error("Kredi işlemi kaydedilemedi:",error);
-    if(leadCreditModalMessage)leadCreditModalMessage.textContent="Kredi işlemi kaydedilemedi.";
+    if(leadCreditModalMessage){
+      leadCreditModalMessage.textContent="Kredi işlemi kaydedilemedi.";
+    }
   }finally{
-    if(leadCreditModalSaveBtn){leadCreditModalSaveBtn.disabled=false;leadCreditModalSaveBtn.textContent=oldText;}
+    if(leadCreditModalSaveBtn){
+      leadCreditModalSaveBtn.disabled=false;
+      leadCreditModalSaveBtn.textContent=oldText;
+    }
   }
 }
 
