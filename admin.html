@@ -8,7 +8,7 @@
   <title>Dijiyer Admin Paneli</title>
 
   <link rel="stylesheet" href="admin.css?v=35">
-  <link rel="stylesheet" href="admin-advanced.css?v=24">
+  <link rel="stylesheet" href="admin-advanced.css?v=25">
 </head>
 
 <body>
@@ -596,10 +596,9 @@
           </div>
           <div class="opportunity-title-actions">
             <button type="button" class="opportunity-add-sponsor-btn" id="opportunitySponsorNewBtn">＋ Yeni Sponsor Ekle</button>
-            <div class="opportunity-title-actions">
             <button type="button" class="opportunity-stats-refresh" id="opportunityStatsRefreshBtn">↻ İstatistikleri Yenile</button>
+            <button type="button" class="opportunity-stats-refresh" id="opportunityCsvExportBtn">⇩ CSV Dışa Aktar</button>
             <a class="opportunity-page-preview-link" href="firsatlar.html" target="_blank" rel="noopener">Fırsat Sayfasını Gör</a>
-          </div>
           </div>
         </div>
 
@@ -631,6 +630,9 @@
           <button type="button" data-opportunity-kpi="expiring">
             <span>Süresi Dolacak</span><strong id="opportunityKpiExpiring">0</strong>
           </button>
+          <button type="button" data-opportunity-kpi="unlimited">
+            <span>Süresiz Sponsor</span><strong id="opportunityKpiUnlimited">0</strong>
+          </button>
         </div>
 
         <div class="opportunity-admin-toolbar">
@@ -642,6 +644,7 @@
             <option value="scheduled">Planlanmış</option>
             <option value="expiring">Süresi dolacak</option>
             <option value="expired">Süresi dolmuş</option>
+            <option value="unlimited">Süresiz sponsor</option>
             <option value="missing">Medya eksik</option>
             <option value="normal">Sponsor olmayanlar</option>
           </select>
@@ -657,6 +660,21 @@
           </summary>
           <div id="opportunityReportList" class="opportunity-report-list">
             <div class="advanced-empty">Biten sponsor kampanyası bulunmuyor.</div>
+          </div>
+        </details>
+
+
+
+        <details class="opportunity-report-panel" id="opportunityHistoryPanel">
+          <summary>
+            <span>
+              <b>🗃 Sponsor Geçmişi</b>
+              <small>Yenilenen veya kapatılan kampanyaların eski performans raporları burada korunur.</small>
+            </span>
+            <strong id="opportunityHistoryCount">0 geçmiş kampanya</strong>
+          </summary>
+          <div id="opportunityHistoryList" class="opportunity-report-list">
+            <div class="advanced-empty">Henüz geçmiş sponsor kampanyası yok.</div>
           </div>
         </details>
 
@@ -2019,7 +2037,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="admin.js?v=55"></script>
-  <script src="admin-advanced.js?v=34"></script>
+  <script src="admin-advanced.js?v=37"></script>
 
 </body>
 </html>
