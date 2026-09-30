@@ -4655,6 +4655,7 @@
     const scheduled=enabled&&Boolean(mediaUrl)&&Boolean(startAt)&&startAt>today;
     const expired=enabled&&Boolean(mediaUrl)&&Boolean(endAt)&&endAt<today;
     const reportReady=Boolean(mediaUrl)&&Boolean(endAt)&&endAt<today;
+    const unlimited=enabled&&Boolean(mediaUrl)&&!endAt;
     const active=enabled&&Boolean(mediaUrl)&&!scheduled&&!expired;
     const paused=!enabled&&Boolean(mediaUrl);
     const normal=!enabled&&!mediaUrl;
@@ -4669,7 +4670,7 @@
     }
 
     return {
-      mediaUrl,enabled,startAt,endAt,missing,scheduled,expired,reportReady,active,paused,normal,
+      mediaUrl,enabled,startAt,endAt,missing,scheduled,expired,reportReady,unlimited,active,paused,normal,
       expiring,daysLeft,
       priority:Math.max(1,Math.min(99,Number(inst?.opportunitySponsorPriority||10)||10))
     };
@@ -4713,20 +4714,17 @@
     ].join("_");
   }
 
-  function opportunitySponsorStats(inst){
-    const campaignId=opportunityCampaignIdForAdmin(inst);
+  function opportunityStatsForPeriod(inst,startAt,endAt){
     const institutionId=String(inst?.id||"");
+    const start=String(startAt||"").slice(0,10);
+    const end=String(endAt||"").slice(0,10);
+
     const events=(adAnalyticsRecords||[]).filter(item=>{
       if(String(item.institutionId||"")!==institutionId)return false;
       if(!String(item.type||"").startsWith("opportunity_"))return false;
-      const itemCampaign=String(item.campaignId||"").trim();
-      if(itemCampaign)return itemCampaign===campaignId;
-
       const day=String(item.day||item.date||"").slice(0,10);
-      const startAt=String(inst?.opportunitySponsorStartAt||"").slice(0,10);
-      const endAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10);
-      if(startAt&&day&&day<startAt)return false;
-      if(endAt&&day&&day>endAt)return false;
+      if(start&&day&&day<start)return false;
+      if(end&&day&&day>end)return false;
       return true;
     });
 
@@ -4758,6 +4756,50 @@
     };
   }
 
+  function opportunitySponsorStats(inst){
+    return opportunityStatsForPeriod(
+      inst,
+      String(inst?.opportunitySponsorStartAt||"").slice(0,10),
+      String(inst?.opportunitySponsorEndAt||"").slice(0,10)
+    );
+  }
+
+  function opportunitySponsorHistory(inst){
+    const rows=Array.isArray(inst?.opportunitySponsorHistory)
+      ? inst.opportunitySponsorHistory
+      : [];
+    return rows.filter(item=>item&&typeof item==="object").slice(0,20);
+  }
+
+  function opportunityArchiveEntry(inst,reason){
+    const mediaUrl=String(inst?.opportunitySponsorMediaUrl||"").trim();
+    if(!mediaUrl)return null;
+
+    return {
+      campaignId:String(inst?.opportunitySponsorCampaignId||uid("FSP")),
+      startAt:String(inst?.opportunitySponsorStartAt||"").slice(0,10),
+      endAt:String(inst?.opportunitySponsorEndAt||"").slice(0,10),
+      mediaUrl:mediaUrl,
+      mediaType:String(inst?.opportunitySponsorMediaType||"image")==="video"?"video":"image",
+      priority:Math.max(1,Math.min(99,Number(inst?.opportunitySponsorPriority||10)||10)),
+      reason:String(reason||"completed"),
+      archivedAt:new Date().toISOString()
+    };
+  }
+
+  function opportunityHistoryWithArchive(inst,reason){
+    const history=opportunitySponsorHistory(inst);
+    const entry=opportunityArchiveEntry(inst,reason);
+    if(!entry)return history;
+
+    const duplicate=history.some(item=>
+      String(item.campaignId||"")===String(entry.campaignId||"") &&
+      String(item.startAt||"")===String(entry.startAt||"") &&
+      String(item.endAt||"")===String(entry.endAt||"")
+    );
+    return duplicate ? history : [entry,...history].slice(0,20);
+  }
+
   function opportunityReportEmail(inst){
     const direct=String(inst?.email||"").trim();
     if(direct)return direct;
@@ -4774,14 +4816,14 @@
     return phone;
   }
 
-  function opportunityReportText(inst,stats){
-    const startAt=String(inst?.opportunitySponsorStartAt||"").slice(0,10)||"Başlangıç belirtilmedi";
-    const endAt=String(inst?.opportunitySponsorEndAt||"").slice(0,10)||"Bitiş belirtilmedi";
+  function opportunityReportTextForPeriod(inst,stats,startAt,endAt){
+    const start=String(startAt||"").slice(0,10)||"Başlangıç belirtilmedi";
+    const end=String(endAt||"").slice(0,10)||"Bitiş belirtilmedi";
     return [
       "Dijiyer Fırsat Sponsor Performans Raporu",
       "",
       String(inst?.name||"Kurum"),
-      "Yayın dönemi: "+startAt+" - "+endAt,
+      "Yayın dönemi: "+start+" - "+end,
       "",
       "Gösterim: "+stats.impressions,
       "Kurum detayına tıklama: "+stats.details,
@@ -4793,6 +4835,15 @@
       "Dijiyer üzerinden sponsorlu yayınınız tamamlandı.",
       "Yeni dönem sponsorluğu için bizimle iletişime geçebilirsiniz."
     ].join("\n");
+  }
+
+  function opportunityReportText(inst,stats){
+    return opportunityReportTextForPeriod(
+      inst,
+      stats,
+      inst?.opportunitySponsorStartAt,
+      inst?.opportunitySponsorEndAt
+    );
   }
 
   function renderOpportunityExpiredReports(states){
