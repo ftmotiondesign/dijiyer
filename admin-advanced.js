@@ -142,6 +142,19 @@
     showAdvancedSection("bannerAdsSection","bannerAdsTabBtn");
     if (typeof syncSimpleAdminNavigation === "function") syncSimpleAdminNavigation("bannerAdsTabBtn");
     await renderBannerAdsAdmin(true);
+
+    // Reklam Merkezi özet kartlarını gerçek verilerle doldur.
+    try{
+      await loadExternalAdsAdmin();
+      renderExternalAdList();
+    }catch(error){
+      console.warn("Site reklam özeti yüklenemedi:",error);
+    }
+    try{
+      renderOpportunitySponsorsAdmin();
+    }catch(error){
+      console.warn("Fırsat sponsor özeti yüklenemedi:",error);
+    }
   });
 
   $("mediaArchiveTabBtn")?.addEventListener("click", async () => {
