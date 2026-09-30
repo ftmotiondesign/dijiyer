@@ -934,17 +934,28 @@ function startLiveQuoteWatcher() {
         return;
       }
 
-      const added = snapshot.docChanges()
+      const changes = snapshot.docChanges();
+
+      const added = changes
         .filter(change => change.type === "added")
         .map(change => ({ id: change.doc.id, ...change.doc.data() }));
 
-      if (!added.length) return;
+      const modified = changes.some(change => change.type === "modified");
 
-      const newest = added
-        .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+      if (added.length) {
+        const newest = added
+          .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
 
-      showLiveQuoteAlert(newest);
-      await loadMatchedQuotes();
+        showLiveQuoteAlert(newest);
+      }
+
+      if (added.length || modified) {
+        await loadMatchedQuotes();
+
+        if (typeof updateInstitutionResponseCountdowns === "function") {
+          updateInstitutionResponseCountdowns();
+        }
+      }
     }, error => {
       console.error("Canlı teklif takibi başlatılamadı:", error);
     });
