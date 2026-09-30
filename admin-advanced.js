@@ -4861,6 +4861,8 @@
     if($("opportunityKpiMissing"))$("opportunityKpiMissing").textContent=String(missing);
     if($("opportunityKpiExpiring"))$("opportunityKpiExpiring").textContent=String(expiring);
 
+    renderOpportunityExpiredReports(states);
+
     const rows=states
       .filter(({inst,state})=>{
         if(filter==="sponsored"&&!state.active)return false;
@@ -4914,6 +4916,7 @@
       const scheduleLabel=state.startAt||state.endAt
         ? [state.startAt||"Hemen",state.endAt||"Süresiz"].join(" → ")
         : "Süresiz";
+      const stats=opportunitySponsorStats(inst);
       const primaryAction=state.mediaUrl
         ? '<button type="button" class="primary" data-opportunity-edit="'+escapeHtml(inst.id)+'">Düzenle</button>'
         : '<button type="button" class="primary" data-opportunity-sponsor="'+escapeHtml(inst.id)+'">Fırsat Sponsor Yap</button>';
@@ -4938,7 +4941,16 @@
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">Öncelik '+state.priority+'</span>':"")+
             (state.mediaUrl?'<span class="opportunity-sponsor-badge">'+escapeHtml(scheduleLabel)+'</span>':"")+
           '</div>'+
-        '</div>'+
+          (state.mediaUrl
+            ? '<div class="opportunity-sponsor-stats">'+
+                '<span><b>'+stats.impressions+'</b> Gösterim</span>'+
+                '<span><b>'+stats.clicks+'</b> Tıklama</span>'+
+                '<span><b>'+stats.whatsapp+'</b> WhatsApp</span>'+
+                '<span><b>'+stats.directions+'</b> Yol Tarifi</span>'+
+                '<span><b>%'+stats.ctr.toFixed(1)+'</b> CTR</span>'+
+              '</div>'
+            : '')+
+        '</div'>
         '<div class="opportunity-sponsor-row-actions">'+
           primaryAction+
           toggleAction+
