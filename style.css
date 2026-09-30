@@ -20296,3 +20296,39 @@ to{opacity:1;transform:none}
     animation:none!important;
   }
 }
+
+
+/* KURUM TAVSIYE PUANI - ANA SAYFA V1 */
+@media(min-width:821px){
+  .desktop-inline-institution-copy>div{
+    flex-wrap:wrap;
+  }
+
+  .desktop-inline-rating{
+    color:#9a6a00!important;
+    font-weight:900!important;
+  }
+
+  .desktop-inline-recommend{
+    padding:2px 5px;
+    border-radius:999px;
+    background:#eaf9f0;
+    color:#16824a!important;
+    font-weight:900!important;
+  }
+}
+
+.institution-card .rating .institution-recommendation{
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  margin-left:7px;
+  padding:0 7px;
+  border-radius:999px;
+  background:#eaf9f0;
+  color:#16824a;
+  font-size:9px;
+  font-style:normal;
+  font-weight:900;
+  vertical-align:middle;
+}
