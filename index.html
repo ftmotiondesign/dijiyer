@@ -45,7 +45,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=78" />
+  <link rel="stylesheet" href="style.css?v=79" />
   <link rel="stylesheet" href="offers.css?v=3" />
 </head>
 <body class="home-page">
@@ -1186,7 +1186,17 @@
           <button type="button" data-star="5">☆</button>
         </div>
         <input type="hidden" id="ratingValue" value="0">
-        <label>Yorum<textarea required rows="4" placeholder="Deneyiminizi kısaca paylaşın..."></textarea></label>
+
+        <div class="review-recommend-question">
+          <span>Bu kurumu tavsiye eder misiniz? <small>(isteğe bağlı)</small></span>
+          <div id="reviewRecommendPicker" class="review-recommend-picker">
+            <button type="button" data-review-recommend="true">👍 Evet</button>
+            <button type="button" data-review-recommend="false">Hayır</button>
+          </div>
+        </div>
+
+        <label>Yorum<textarea required rows="4" maxlength="1000" placeholder="Deneyiminizi kısaca paylaşın..."></textarea></label>
+        <div class="review-safety-note">🛡️ Küfür, hakaret, tehdit ve tehlikeli içerik içeren yorumlar yayınlanmaz.</div>
         <button class="btn btn-primary full" type="submit">Yorumu Kaydet</button>
       </form>
     </div>
@@ -1329,7 +1339,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="script.js?v=76"></script>
+<script src="script.js?v=77"></script>
 <script src="offers.js?v=4"></script>
 </body>
 </html>
