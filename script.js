@@ -4689,6 +4689,12 @@ async function createQuoteTrackingAccess(quoteId, request) {
       district: request.district,
       note: request.note || '',
       date: request.date,
+      requestType: request.requestType || '',
+      targetInstitutionId: request.targetInstitutionId || '',
+      targetInstitutionName: request.targetInstitutionName || '',
+      responseWaitMinutes: Number(request.responseWaitMinutes || 0),
+      responseDeadlineAt: request.responseDeadlineAt || '',
+      allowAlternativeInstitutions: request.allowAlternativeInstitutions === true,
       status: 'active',
       createdAt: new Date().toISOString()
     });
