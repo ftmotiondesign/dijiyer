@@ -16,7 +16,6 @@ const phoneInput=document.getElementById("trackingPhone");
 const submitBtn=document.getElementById("trackingSubmitBtn");
 const message=document.getElementById("trackingMessage");
 const results=document.getElementById("trackingResults");
-const TRACKING_REFRESH_MS=15000;
 let currentAccess=null;
 let stopOffersListener=null;
 let stopLockListener=null;
@@ -33,6 +32,7 @@ let engagementListenerInitialized=false;
 const newlyArrivedOfferIds=new Set();
 let latestNewOfferNotice=null;
 let offerSortMode=localStorage.getItem("dijiyerOfferSortMode")||"arrival";
+let acceptInProgress=false;
 
 function safe(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -580,6 +580,21 @@ function renderLiveTracking(){
   });
 }
 
+function startAcceptedLockTracking(access){
+  stopLiveTracking();
+  const lockRef=db.collection("quoteRequests").doc(access.quoteId).collection("locks").doc("main");
+  stopLockListener=lockRef.onSnapshot(
+    snapshot=>{
+      liveLock=snapshot.exists?snapshot.data():liveLock;
+      if(liveLock)markQuoteAcceptedLocally(access.quoteId,liveLock);
+      renderLiveTracking();
+    },
+    error=>{
+      console.error("Kabul edilen teklif durumu canlı izlenemedi:",error);
+    }
+  );
+}
+
 function startLiveTracking(access){
   stopLiveTracking();
 
@@ -763,6 +778,18 @@ function startLiveTracking(access){
 async function refreshTracking(){
   if(!currentAccess)return;
   try{
+    // Talep kabul edildiyse sadece kilit belgesini yenile; tüm alt koleksiyonları tekrar okuma.
+    if(liveLock || localAcceptedQuote(currentAccess.quoteId)){
+      const lockSnap=await db.collection("quoteRequests").doc(currentAccess.quoteId).collection("locks").doc("main").get();
+      if(lockSnap.exists){
+        liveLock=lockSnap.data();
+        markQuoteAcceptedLocally(currentAccess.quoteId,liveLock);
+      }
+      renderLiveTracking();
+      toast("Teklif durumu güncellendi.");
+      return;
+    }
+
     const bundle=await loadBundle(currentAccess);
     liveOffers=bundle.offers;
     liveLock=bundle.lock;
@@ -1097,13 +1124,12 @@ function render(bundle){
 
 async function recordPublicAcceptedEvent(quoteId,date){
   try{
+    // quoteId belge anahtarı olduğu için bu yazma idempotenttir; ekstra get() gerekmez.
     const ref=db.collection("publicAcceptedEvents").doc(String(quoteId));
-    const existing=await ref.get();
-    if(existing.exists)return;
     await ref.set({
       quoteId:String(quoteId),
       date:String(date||"")
-    });
+    },{merge:true});
   }catch(error){
     console.warn("Günlük kabul istatistiği kaydedilemedi:",error);
   }
@@ -1186,31 +1212,42 @@ function confirmOfferLock(offer){
   });
 }
 async function lockOffer(quoteId,institutionId,button){
+  if(acceptInProgress){
+    toast("Teklif kabul işlemi devam ediyor.");
+    return;
+  }
+
   const quoteRef=db.collection("quoteRequests").doc(quoteId);
   const offerRef=quoteRef.collection("offers").doc(institutionId);
   const lockRef=quoteRef.collection("locks").doc("main");
   let acceptanceControls=[];
+  let transactionStarted=false;
+
+  acceptInProgress=true;
   try{
-    // Ekran eski kalmış olsa bile ikinci kez kabul akışını hiç açma.
-    const existingLockSnap=await lockRef.get();
-    if(existingLockSnap.exists){
-      liveLock=existingLockSnap.data();
-      renderLiveTracking();
+    // Canlı dinleyici zaten bir kabul kaydı gördüyse Firestore'a tekrar istek gönderme.
+    if(liveLock || localAcceptedQuote(quoteId)){
       toast("Bu talep için teklif zaten kabul edildi.");
+      renderLiveTracking();
       return;
     }
 
-    const previewSnap=await offerRef.get();
-    if(!previewSnap.exists){ toast("Teklif bulunamadı."); return; }
-    const previewOffer=previewSnap.data();
+    // Önce canlı bellekteki teklifi kullan. Sadece bulunamazsa tek belge okuması yap.
+    let previewOffer=liveOffers.find(offer=>String(offer.institutionId||offer.id||"")===String(institutionId))||null;
+    if(!previewOffer){
+      const previewSnap=await offerRef.get();
+      if(!previewSnap.exists){ toast("Teklif bulunamadı."); return; }
+      previewOffer={id:previewSnap.id,...previewSnap.data()};
+    }
+
     if(!(await confirmOfferLock(previewOffer)))return;
 
-    // Son onaydan sonra ekrandaki tüm kabul kontrollerini anında kilitle.
     acceptanceControls=[...results.querySelectorAll("[data-lock], [data-lock-consent], [data-djy-compare-lock]")];
     acceptanceControls.forEach(control=>{ control.disabled=true; });
     button.disabled=true;
     button.textContent="Kabul ediliyor...";
     const publicLockedAt=new Date().toISOString();
+    transactionStarted=true;
 
     await db.runTransaction(async tx=>{
       const [offerSnap,lockSnap,quoteSnap]=await Promise.all([
@@ -1218,13 +1255,16 @@ async function lockOffer(quoteId,institutionId,button){
         tx.get(lockRef),
         tx.get(quoteRef)
       ]);
+
       if(lockSnap.exists)throw new Error("Bu talep için daha önce bir teklif kabul edildi.");
       if(!offerSnap.exists)throw new Error("Teklif bulunamadı.");
       if(!quoteSnap.exists)throw new Error("Talep bulunamadı.");
+
       const quoteData=quoteSnap.data()||{};
       if(["accepted","closed","completed","used","cancelled","canceled"].includes(String(quoteData.status||"").toLowerCase())){
         throw new Error("Bu talep daha önce kapatıldı.");
       }
+
       const offer=offerSnap.data();
       if(!offer.expiresAtTs||offer.expiresAtTs.toMillis()<=Date.now())throw new Error("Teklifin süresi dolmuş.");
 
@@ -1233,8 +1273,6 @@ async function lockOffer(quoteId,institutionId,button){
         institutionId:offer.institutionId,
         institutionName:offer.institutionName||"Kurum",
         offerCode:offer.offerCode,
-
-        // Kabul anındaki teklif kopyası
         price:Number(offer.price),
         lockedPrice:Number(offer.price),
         vatStatus:offer.vatStatus||"",
@@ -1246,31 +1284,23 @@ async function lockOffer(quoteId,institutionId,button){
         offerUpdatedAt:offer.updatedAt||offer.createdAt||"",
         offerVersion:Math.max(1,Number(offer.offerVersion||1)),
         offerSnapshotVersion:1,
-
-        // Takip kodu + telefon özeti bu kabul kaydına bağlanır
         trackingCode:String(currentAccess?.trackingCode||""),
         phoneHash:String(currentAccess?.phoneHash||""),
         acceptanceConsent:true,
-
-        // Teklif kabul edildi; gerçek kayıt kurumda ayrıca tamamlanır
         status:"locked",
         registrationStatus:"pending",
         acceptedAt:publicLockedAt,
         acceptedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
         lockedAt:publicLockedAt,
         lockedAtTs:firebase.firestore.FieldValue.serverTimestamp(),
-
         expiresAt:offer.expiresAt,
         expiresAtTs:offer.expiresAtTs,
         registrationDeadlineAt:offer.expiresAt,
         registrationDeadlineAtTs:offer.expiresAtTs,
-
-        // Dijiyer ödeme aracısı değildir
         platformPayment:false,
         paymentPolicy:"offline_direct_between_customer_and_institution"
       });
 
-      // Talebin kendisini de aynı atomik işlem içinde kapat.
       tx.update(quoteRef,{
         status:"accepted",
         acceptedInstitutionId:String(offer.institutionId||institutionId),
@@ -1282,10 +1312,9 @@ async function lockOffer(quoteId,institutionId,button){
       });
     });
 
-    // Firestore dinleyicisini beklemeden ekranı anında kapat.
     liveLock={
       quoteId,
-      institutionId:previewOffer.institutionId,
+      institutionId:previewOffer.institutionId||institutionId,
       institutionName:previewOffer.institutionName||"Kurum",
       offerCode:previewOffer.offerCode,
       price:Number(previewOffer.price),
@@ -1313,28 +1342,43 @@ async function lockOffer(quoteId,institutionId,button){
       platformPayment:false,
       paymentPolicy:"offline_direct_between_customer_and_institution"
     };
+
     markQuoteAcceptedLocally(quoteId,liveLock);
     renderLiveTracking();
 
-    await recordPublicAcceptedEvent(quoteId,publicLockedAt);
+    if(currentAccess?.quoteId===quoteId){
+      startAcceptedLockTracking(currentAccess);
+    }
+
+    recordPublicAcceptedEvent(quoteId,publicLockedAt);
     toast("✓ Teklif kabul edildi ve kapatıldı.");
-    await refreshTracking();
   }catch(error){
     console.error(error);
-    // Başka sekmede daha önce kabul edildiyse güncel kilidi ekrana taşı.
-    try{
-      const freshLockSnap=await lockRef.get();
-      if(freshLockSnap.exists){
-        liveLock=freshLockSnap.data();
-        renderLiveTracking();
-        toast("Bu talep için teklif zaten kabul edildi.");
-        return;
-      }
-    }catch(_){}
+
+    if(transactionStarted){
+      try{
+        const freshLockSnap=await lockRef.get();
+        if(freshLockSnap.exists){
+          liveLock=freshLockSnap.data();
+          markQuoteAcceptedLocally(quoteId,liveLock);
+          renderLiveTracking();
+          if(currentAccess?.quoteId===quoteId)startAcceptedLockTracking(currentAccess);
+          toast("Bu talep için teklif zaten kabul edildi.");
+          return;
+        }
+      }catch(_){}
+    }
+
     acceptanceControls.forEach(control=>{ control.disabled=false; });
-    toast(error.message||"Teklif kabul edilemedi.");
+    const code=String(error?.code||"");
+    if(code.includes("resource-exhausted")){
+      toast("Firestore geçici olarak yoğun. Birkaç saniye sonra tekrar deneyin.");
+    }else{
+      toast(error.message||"Teklif kabul edilemedi.");
+    }
   }finally{
-    if(document.body.contains(button)){
+    acceptInProgress=false;
+    if(document.body.contains(button) && !liveLock){
       button.disabled=false;
       button.textContent="✓ Teklifi Kabul Et";
     }
@@ -1539,7 +1583,11 @@ form.addEventListener("submit",async e=>{
     offerUpdateVersions.clear();
     engagementResponseVersions.clear();
     renderLiveTracking();
-    startLiveTracking(currentAccess);
+    if(initialBundle.lock){
+      startAcceptedLockTracking(currentAccess);
+    }else{
+      startLiveTracking(currentAccess);
+    }
 
     document.getElementById("trackingLoginCard").classList.add("hidden");
   }catch(error){
@@ -1557,14 +1605,6 @@ const rememberedPhone=sessionStorage.getItem("dijiyerTrackingPhone");
 if(rememberedPhone)phoneInput.value=rememberedPhone;
 setInterval(updateCountdowns,60000);
 
-setInterval(()=>{
-  if(currentAccess && !document.hidden){
-    refreshTracking();
-  }
-},TRACKING_REFRESH_MS);
-
-document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden && currentAccess){
-    refreshTracking();
-  }
-});
+// Canlı onSnapshot dinleyicileri güncellemeleri zaten anında getirir.
+// 15 saniyelik ek polling ve sekmeye dönünce otomatik toplu okuma kaldırıldı.
+window.addEventListener("beforeunload",stopLiveTracking);
