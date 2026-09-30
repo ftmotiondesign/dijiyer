@@ -511,6 +511,7 @@ async function loadReviews(){
 
     const recommendationVotes=reviews.filter(r=>typeof r.recommend==="boolean");
     const recommendationYes=recommendationVotes.filter(r=>r.recommend===true).length;
+    institution.recommendationYes=recommendationYes;
     institution.recommendationCount=recommendationVotes.length;
     institution.recommendationRate=recommendationVotes.length
       ? Math.round((recommendationYes/recommendationVotes.length)*100)
@@ -534,16 +535,17 @@ function renderReviews(){
   if(count)count.textContent=Number(institution.reviewCount||reviews.length||0)+" değerlendirme";
 
   const recommendationCount=Number(institution.recommendationCount||0);
+  const recommendationYes=Number(institution.recommendationYes||0);
   const recommendationRate=Number(institution.recommendationRate);
 
   if(recommendRate){
-    recommendRate.textContent=recommendationCount>0 && Number.isFinite(recommendationRate)
-      ? "%"+Math.round(recommendationRate)
+    recommendRate.textContent=recommendationCount>0
+      ? "👍 "+recommendationYes+" kişi"
       : "-";
   }
   if(recommendCount){
-    recommendCount.textContent=recommendationCount>0
-      ? recommendationCount+" tavsiye oyu"
+    recommendCount.textContent=recommendationCount>0 && Number.isFinite(recommendationRate)
+      ? "%"+Math.round(recommendationRate)+" tavsiye · "+recommendationCount+" oy"
       : "Tavsiye oyu yok";
   }
   if(recommendBox){
@@ -698,6 +700,53 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   }
 });
 
+function moderateReviewText(raw){
+  const original=String(raw||"").trim();
+  if(!original)return {ok:false,message:"Lütfen yorumunuzu yazın."};
+
+  const leetMap={"0":"o","1":"i","3":"e","4":"a","5":"s","7":"t"};
+  const normalized=original
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[013457]/g,ch=>leetMap[ch]||ch)
+    .replace(/(.)\1{2,}/gu,"$1$1")
+    .replace(/[^\p{L}\p{N}\s]/gu," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const compact=normalized.replace(/\s+/g,"");
+
+  const profanityPatterns=[
+    /\b(amk|siktir|sikeyim|sikerim|sikik|orospu|yarrak|yarak|piç|pic|pezevenk|kahpe|şerefsiz|serefsiz|gerizekalı|gerizekali)\b/u,
+    /\borospu\s+çocuğu\b/u,
+    /\bananı\s+sikeyim\b/u,
+    /\banneni\s+sikeyim\b/u
+  ];
+
+  const dangerousPatterns=[
+    /\b(öldüreceğim|öldürecem|oldurecegim|gebertirim|vuracağım|vurucam|vuracagim|bıçaklayacağım|bicaklayacagim|yakacağım|yakacagim)\b/u,
+    /\b(seni|sizi|onu|onları)\b.{0,28}\b(öldür|oldur|gebert|vur|bıçakla|bicakla|yak)\b/u,
+    /\b(bomba|patlayıcı|patlayici)\b.{0,24}\b(koy|yerleştir|yerlestir|patlat)\b/u,
+    /\b(kendini\s+öldür|kendini\s+oldur|intihar\s+et)\b/u,
+    /\b(tecavüz|tecavuz)\b/u
+  ];
+
+  const compactBlocked=[
+    "siktir","orospuçocuğu","orospucocugu","ananısikeyim","ananisikeyim",
+    "annenisikeyim","öldüreceğim","oldurecegim","gebertirim","vuracağım",
+    "vuracagim","bıçaklayacağım","bicaklayacagim","kendiniöldür","kendinioldur"
+  ];
+
+  if(profanityPatterns.some(pattern=>pattern.test(normalized)) || compactBlocked.some(term=>compact.includes(term))){
+    return {ok:false,message:"Yorum gönderilemedi: küfür veya hakaret içeren ifadeler kullanılamaz."};
+  }
+
+  if(dangerousPatterns.some(pattern=>pattern.test(normalized))){
+    return {ok:false,message:"Yorum gönderilemedi: tehdit, şiddet veya tehlikeli içerik kullanılamaz."};
+  }
+
+  return {ok:true};
+}
+
 function closeReviewModal(){document.getElementById("reviewModal").classList.add("hidden")}
 document.getElementById("reviewModalClose").addEventListener("click",closeReviewModal);
 document.getElementById("reviewModal").addEventListener("click",event=>{if(event.target.id==="reviewModal")closeReviewModal()});
@@ -721,6 +770,13 @@ document.getElementById("reviewForm").addEventListener("submit",async event=>{
   if(institution.isDemo){msg.textContent="Demo kurum için yorum kaydı oluşturulamaz.";return}
   if(!currentRating){msg.textContent="Lütfen 1-5 yıldız seçin.";return}
   if(!text){msg.textContent="Lütfen yorumunuzu yazın.";return}
+
+  const moderation=moderateReviewText(text);
+  if(!moderation.ok){
+    msg.textContent=moderation.message;
+    showToast(moderation.message);
+    return;
+  }
 
   const old=button?.textContent||"Yorumu Gönder";
   if(button){button.disabled=true;button.textContent="Gönderiliyor...";}
