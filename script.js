@@ -5230,7 +5230,12 @@ document.getElementById('institutionForm').addEventListener('submit', e => {
   })
   .catch(error => {
   console.error('Başvuru kaydedilemedi:', error);
-  showToast('Başvuru gönderilemedi. Lütfen tekrar deneyin.');
+  const errorCode = String(error?.code || 'unknown');
+  showToast(
+    errorCode.includes('permission-denied')
+      ? 'Kurum kaydı gönderilemedi (permission-denied). Firestore kuralını kontrol edin.'
+      : 'Kurum kaydı gönderilemedi (' + errorCode + ').'
+  );
 });
 
 });
