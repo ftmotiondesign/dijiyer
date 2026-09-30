@@ -811,11 +811,32 @@ form.addEventListener("submit",async e=>{
 
   submitBtn.disabled=true;submitBtn.textContent="Kontrol ediliyor...";message.textContent="";
   try{
-    currentAccess=await verifyAccess(code,phone);
+    try{
+      currentAccess=await verifyAccess(code,phone);
+    }catch(error){
+      console.error("Takip erişim belgesi okunamadı:",error);
+      const rawMessage=String(error?.message||"");
+      if(/missing or insufficient permissions/i.test(rawMessage)){
+        throw new Error("AŞAMA 1: Takip kodu doğrulama belgesi okunamıyor. Firestore Rules içinde quoteAccess/{phoneHash}/codes/{trackingCode} için get izni eksik.");
+      }
+      throw error;
+    }
+
     sessionStorage.setItem("dijiyerTrackingCode",code);
     sessionStorage.setItem("dijiyerTrackingPhone",normalizePhone(phone));
 
-    const initialBundle=await loadBundle(currentAccess);
+    let initialBundle;
+    try{
+      initialBundle=await loadBundle(currentAccess);
+    }catch(error){
+      console.error("Teklif takip alt verileri okunamadı:",error);
+      const rawMessage=String(error?.message||"");
+      if(/missing or insufficient permissions/i.test(rawMessage)){
+        throw new Error("AŞAMA 2: Takip kodu doğrulandı fakat teklif/kurum durumu verileri okunamıyor. offers, locks veya engagement Rules iznini kontrol edin.");
+      }
+      throw error;
+    }
+
     liveOffers=initialBundle.offers;
     liveLock=initialBundle.lock;
     liveEngagement=initialBundle.engagement||[];
@@ -829,12 +850,7 @@ form.addEventListener("submit",async e=>{
     document.getElementById("trackingLoginCard").classList.add("hidden");
   }catch(error){
     console.error(error);
-    const rawMessage=String(error?.message||"");
-    if(/missing or insufficient permissions/i.test(rawMessage)){
-      message.textContent="Teklif takip erişimi henüz Firebase güvenlik kuralında açılmamış. Yönetici Firestore Rules ayarını güncelledikten sonra tekrar deneyin.";
-    }else{
-      message.textContent=rawMessage||"Teklifler açılamadı.";
-    }
+    message.textContent=String(error?.message||"Teklifler açılamadı.");
   }finally{
     submitBtn.disabled=false;submitBtn.textContent="Tekliflerimi Göster";
   }
