@@ -17,6 +17,7 @@ match /quoteRequests/{documentId} {
       'district',
       'name',
       'phone',
+      'email',
       'note',
       'status',
       'date',
@@ -31,6 +32,9 @@ match /quoteRequests/{documentId} {
     && request.resource.data.district is string
     && request.resource.data.name is string
     && request.resource.data.phone is string
+    && request.resource.data.email is string
+    && request.resource.data.email.size() >= 5
+    && request.resource.data.email.size() <= 160
     && request.resource.data.note is string
     && request.resource.data.status == 'new'
     && request.resource.data.date is string
