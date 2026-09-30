@@ -68,3 +68,374 @@
     display:none!important;
   }
 }
+
+
+/* =========================================================
+   DIJIYER ORTAK ÜST BAR · ARAMA / KONUM / TEKLİFLER / KURUM
+   ========================================================= */
+.dijiyer-global-topbar{
+  display:none;
+}
+
+@media(min-width:821px){
+  body > header:not(.dijiyer-global-topbar){
+    display:none!important;
+  }
+
+  .dijiyer-global-topbar{
+    position:relative;
+    z-index:2100;
+    display:block;
+    width:100%;
+    background:#fff;
+    border-bottom:1px solid #e2e7ed;
+    box-shadow:0 2px 9px rgba(25,42,62,.03);
+    font-family:Inter,Arial,sans-serif;
+  }
+
+  .dijiyer-global-topbar-inner{
+    position:relative;
+    width:min(1400px,calc(100% - 32px));
+    min-height:72px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 150px 192px;
+    align-items:center;
+    gap:12px;
+  }
+
+  .dijiyer-global-search{
+    min-width:0;
+    height:46px;
+    display:grid;
+    grid-template-columns:28px minmax(180px,1fr) auto 76px;
+    align-items:center;
+    gap:6px;
+    padding:0 5px 0 11px;
+    border:1px solid #b9c6d5;
+    border-radius:8px;
+    background:#fff;
+    box-shadow:inset 0 1px 2px rgba(15,31,49,.035);
+  }
+
+  .dijiyer-global-search-icon{
+    color:#607187;
+    font-size:22px;
+    line-height:1;
+  }
+
+  .dijiyer-global-search input{
+    min-width:0;
+    height:42px;
+    padding:0 8px;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:#1c2c40;
+    font:500 14px/1.2 Inter,Arial,sans-serif;
+  }
+
+  .dijiyer-global-search input::placeholder{
+    color:#8c96a3;
+  }
+
+  .dijiyer-global-location{
+    height:34px;
+    max-width:210px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:0 10px;
+    border:0;
+    border-left:1px solid #e1e6ec;
+    background:transparent;
+    color:#40536a;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  .dijiyer-global-location strong{
+    max-width:158px;
+    overflow:hidden;
+    font-size:11px;
+    font-weight:800;
+    text-overflow:ellipsis;
+  }
+
+  .dijiyer-global-search-submit{
+    height:36px;
+    padding:0 15px;
+    border:0;
+    border-radius:6px;
+    background:#1677ff;
+    color:#fff;
+    font:900 12px/1 Inter,Arial,sans-serif;
+    cursor:pointer;
+  }
+
+  .dijiyer-global-search-submit:hover{
+    background:#0d65dd;
+  }
+
+  .dijiyer-global-offers{
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    padding:0 12px;
+    border:1px solid #d9e0e8;
+    border-radius:8px;
+    background:#fff;
+    color:#34465d;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+
+  .dijiyer-global-offers strong{
+    font-size:11px;
+    font-weight:850;
+  }
+
+  .dijiyer-global-offers b{
+    min-width:22px;
+    height:22px;
+    display:grid;
+    place-items:center;
+    padding:0 5px;
+    border-radius:999px;
+    background:#e8f1ff;
+    color:#1677ff;
+    font-size:9px;
+    font-weight:950;
+  }
+
+  .dijiyer-global-offers b.hidden{
+    display:none;
+  }
+
+  .dijiyer-global-institution{
+    position:relative;
+    min-width:0;
+  }
+
+  .dijiyer-global-institution-btn{
+    width:100%;
+    height:44px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 13px;
+    border:1px solid #d9e0e8;
+    border-radius:8px;
+    background:#fff;
+    color:#34465d;
+    cursor:pointer;
+  }
+
+  .dijiyer-global-institution-btn strong{
+    min-width:0;
+    flex:1;
+    text-align:left;
+    font-size:11px;
+    font-weight:850;
+  }
+
+  .dijiyer-global-institution-btn i{
+    font-size:10px;
+    font-style:normal;
+    color:#607187;
+  }
+
+  .dijiyer-global-institution-menu{
+    position:absolute;
+    top:50px;
+    right:0;
+    z-index:2150;
+    width:270px;
+    overflow:hidden;
+    border:1px solid #d9e2ec;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 18px 40px rgba(24,43,66,.14);
+  }
+
+  .dijiyer-global-institution-menu.hidden{
+    display:none;
+  }
+
+  .dijiyer-global-institution-menu a{
+    min-height:64px;
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr);
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-bottom:1px solid #edf1f5;
+    color:#33475f;
+    text-decoration:none;
+  }
+
+  .dijiyer-global-institution-menu a:last-child{
+    border-bottom:0;
+  }
+
+  .dijiyer-global-institution-menu a:hover{
+    background:#f7faff;
+  }
+
+  .dijiyer-global-institution-menu a>span{
+    width:36px;
+    height:36px;
+    display:grid;
+    place-items:center;
+    border-radius:10px;
+    background:#edf5ff;
+    color:#1677ff;
+    font-size:17px;
+  }
+
+  .dijiyer-global-institution-menu a>div{
+    display:grid;
+    gap:3px;
+  }
+
+  .dijiyer-global-institution-menu strong{
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .dijiyer-global-institution-menu small{
+    color:#7c8999;
+    font-size:8.5px;
+  }
+
+  .dijiyer-global-location-popover{
+    position:absolute;
+    top:62px;
+    right:342px;
+    z-index:2160;
+    width:320px;
+    padding:13px;
+    border:1px solid #d7e1ec;
+    border-radius:13px;
+    background:#fff;
+    box-shadow:0 18px 42px rgba(24,43,66,.16);
+  }
+
+  .dijiyer-global-location-popover.hidden{
+    display:none;
+  }
+
+  .dijiyer-global-location-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+  }
+
+  .dijiyer-global-location-head>div{
+    display:grid;
+    gap:2px;
+  }
+
+  .dijiyer-global-location-head strong{
+    color:#24364c;
+    font-size:13px;
+  }
+
+  .dijiyer-global-location-head small{
+    color:#7b8999;
+    font-size:9px;
+  }
+
+  .dijiyer-global-location-head button{
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:8px;
+    background:#f0f3f7;
+    color:#617085;
+    cursor:pointer;
+  }
+
+  .dijiyer-global-location-popover label{
+    display:grid;
+    gap:5px;
+    margin-top:9px;
+    color:#64748b;
+    font-size:8.5px;
+    font-weight:850;
+  }
+
+  .dijiyer-global-location-popover select{
+    width:100%;
+    height:38px;
+    border:1px solid #d9e1ea;
+    border-radius:8px;
+    background:#fff;
+    color:#33475f;
+    padding:0 9px;
+    font-size:10px;
+  }
+
+  .dijiyer-global-location-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .dijiyer-global-location-actions button{
+    height:38px;
+    border:1px solid #d9e1ea;
+    border-radius:8px;
+    background:#fff;
+    color:#455a73;
+    font-size:9px;
+    font-weight:850;
+    cursor:pointer;
+  }
+
+  .dijiyer-global-location-actions button.primary{
+    border-color:#1677ff;
+    background:#1677ff;
+    color:#fff;
+  }
+}
+
+@media(min-width:821px) and (max-width:1050px){
+  .dijiyer-global-topbar-inner{
+    grid-template-columns:minmax(0,1fr) 132px 160px;
+    gap:8px;
+  }
+
+  .dijiyer-global-search{
+    grid-template-columns:24px minmax(120px,1fr) 150px 64px;
+  }
+
+  .dijiyer-global-location{
+    max-width:150px;
+    padding:0 7px;
+  }
+
+  .dijiyer-global-location strong{
+    max-width:118px;
+  }
+
+  .dijiyer-global-institution-btn strong,
+  .dijiyer-global-offers strong{
+    font-size:10px;
+  }
+
+  .dijiyer-global-location-popover{
+    right:300px;
+  }
+}
+
+@media(max-width:820px){
+  .dijiyer-global-topbar{
+    display:none!important;
+  }
+}
