@@ -6723,3 +6723,74 @@
     display:none !important;
   }
 }
+
+
+/* =========================================================
+   YANITSIZ TEKLİFLER · KOMPAKT 4 ADIM ÖZETİ
+   ========================================================= */
+#quoteRoutingSection .quote-routing-note-bottom{
+  display:none !important;
+}
+
+#quoteRoutingSection .quote-routing-stage-strip{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr) !important;
+  align-items:center !important;
+  gap:5px !important;
+  min-height:0 !important;
+  margin:0 0 12px !important;
+  padding:8px !important;
+  border:1px solid #dfe7f1 !important;
+  border-radius:12px !important;
+  background:#fff !important;
+  box-shadow:none !important;
+}
+
+#quoteRoutingSection .quote-routing-stage-strip span{
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  min-height:34px !important;
+  padding:7px 9px !important;
+  border-radius:9px !important;
+  background:#f8fafc !important;
+  color:#475569 !important;
+  font-size:8.5px !important;
+  font-weight:850 !important;
+  line-height:1.3 !important;
+}
+
+#quoteRoutingSection .quote-routing-stage-strip i{
+  width:22px !important;
+  height:22px !important;
+  display:grid !important;
+  place-items:center !important;
+  color:#94a3b8 !important;
+  font-size:11px !important;
+  font-style:normal !important;
+  font-weight:900 !important;
+}
+
+@media(min-width:1151px){
+  #quoteRoutingSection.quote-routing-v2>.quote-routing-stage-strip{
+    grid-column:1 !important;
+    grid-row:2 !important;
+  }
+
+  #quoteRoutingSection.quote-routing-v2>#quoteRoutingFlowBlock{
+    grid-column:1 !important;
+    grid-row:3 !important;
+    margin-top:0 !important;
+  }
+}
+
+@media(max-width:760px){
+  #quoteRoutingSection .quote-routing-stage-strip{
+    grid-template-columns:1fr !important;
+    gap:5px !important;
+  }
+
+  #quoteRoutingSection .quote-routing-stage-strip i{
+    display:none !important;
+  }
+}
