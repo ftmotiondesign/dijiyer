@@ -20779,3 +20779,17 @@ to{opacity:1;transform:none}
 @media(max-width:1150px){
   .top-all-requests-btn{display:none}
 }
+
+
+/* Ana menü · Tüm Taleplerim görünür bağlantı */
+.desktop-market-nav .nav-all-requests-link{
+  color:#0f6fdc !important;
+  font-weight:950 !important;
+  background:#eef6ff !important;
+  border-left:1px solid #d7e8fb !important;
+  border-right:1px solid #d7e8fb !important;
+}
+.desktop-market-nav .nav-all-requests-link:hover{
+  background:#e3f0ff !important;
+  color:#095ebf !important;
+}
