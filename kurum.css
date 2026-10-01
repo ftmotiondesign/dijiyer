@@ -328,3 +328,22 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
   border-color:#bfd7f3;
   font-weight:800;
 }
+
+
+/* KURUM KARAR ÖZETİ */
+.kp-decision-card{border-color:#d7e5f7;background:linear-gradient(180deg,#fbfdff,#fff)}
+.kp-decision-block{margin-top:14px}
+.kp-decision-block>strong{display:block;margin-bottom:8px;font-size:11px;color:#30425a}
+.kp-decision-tags,.kp-highlight-list{display:flex;flex-wrap:wrap;gap:7px}
+.kp-decision-tags span,.kp-highlight-list span{padding:8px 10px;border:1px solid #dfebf8;border-radius:10px;background:#f7fbff;color:#35506d;font-size:9.5px;font-weight:750}
+.kp-highlight-list span{background:#f7faf8;border-color:#dcebe2;color:#38624b}
+.kp-fact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.kp-fact-grid article{min-height:92px;padding:11px;border:1px solid #e1e8f0;border-radius:12px;background:#fff;display:grid;align-content:start;gap:4px}
+.kp-fact-grid article>span{font-size:18px}
+.kp-fact-grid article small{color:#8a97a8;font-size:8px;font-weight:850;text-transform:uppercase}
+.kp-fact-grid article strong{color:#2c3f57;font-size:10.5px;line-height:1.35}
+.kp-campaign-box{margin-top:14px;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:center;border:1px solid #f1d27b;border-radius:12px;background:#fff9e7}
+.kp-campaign-box>span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#fff0b5}
+.kp-campaign-box small{display:block;color:#957000;font-size:7.5px;font-weight:900}
+.kp-campaign-box strong{display:block;margin-top:2px;color:#5c4700;font-size:10.5px}
+@media(max-width:700px){.kp-fact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
