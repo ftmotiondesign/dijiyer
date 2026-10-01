@@ -9547,3 +9547,96 @@ details.matching-institutions .matching-buttons{
 @media (max-width:900px){
   .institution-discovery-grid-3{grid-template-columns:1fr}
 }
+
+
+/* Karşılaştırma sponsorlu kampanya reklam ürünü */
+.admin-sponsored-campaign-box{
+  margin-top:12px;
+  padding:15px;
+  border:1px solid #f0d08a;
+  border-radius:14px;
+  background:#fffaf0;
+}
+.admin-sponsored-campaign-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+.admin-sponsored-campaign-head>div>span{
+  display:block;
+  color:#a96900;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.06em;
+}
+.admin-sponsored-campaign-head>div>strong{
+  display:block;
+  margin-top:3px;
+  color:#6f4b00;
+  font-size:14px;
+}
+.admin-sponsored-campaign-head>div>small{
+  display:block;
+  max-width:650px;
+  margin-top:4px;
+  color:#7a6a4a;
+  font-size:10px;
+  line-height:1.4;
+}
+.admin-sponsored-campaign-switch{
+  min-width:92px;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 10px;
+  border:1px solid #e5c06b;
+  border-radius:999px;
+  background:#fff;
+  color:#7b5700;
+  font-weight:900;
+}
+.admin-sponsored-campaign-switch input{
+  width:auto!important;
+}
+.admin-sponsored-campaign-grid{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:9px;
+}
+.admin-sponsored-campaign-grid-2{
+  grid-template-columns:1fr 2fr;
+}
+.admin-sponsored-money{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  overflow:hidden;
+  border:1px solid #dfe4ee;
+  border-radius:8px;
+  background:#fff;
+}
+.admin-sponsored-money input{
+  border:0!important;
+  border-radius:0!important;
+}
+.admin-sponsored-money span{
+  padding:0 10px;
+  color:#7a6641;
+  font-size:11px;
+  font-weight:900;
+}
+.admin-sponsored-campaign-note{
+  margin:10px 0 0;
+  color:#75633f;
+  font-size:9px;
+  line-height:1.4;
+}
+@media(max-width:760px){
+  .admin-sponsored-campaign-grid,
+  .admin-sponsored-campaign-grid-2{
+    grid-template-columns:1fr;
+  }
+}
