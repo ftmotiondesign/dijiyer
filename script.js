@@ -8804,22 +8804,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           '<small>Başka bir alt hizmet seçebilir veya ücretsiz teklif oluşturabilirsin.</small></div>' +
           '<button type="button" class="desktop-inline-empty-quote" data-desktop-inline-empty-quote>Teklif Al →</button>' +
         '</div>';
-      categoryInlineResults.querySelector('[data-desktop-inline-empty-quote]')?.addEventListener('click',()=>{
-        const categorySelect = document.getElementById('quoteCategory');
-        const serviceSelect = document.getElementById('quoteService');
 
-        if(categorySelect && mainKey){
-          categorySelect.value = mainKey;
-          if(typeof fillQuoteServices === 'function') fillQuoteServices(mainKey);
-          else if(typeof fillSubCategorySelect === 'function') fillSubCategorySelect(mainKey,'quoteService','Alt kategori seçin');
-        }
-        if(serviceSelect && subKey && [...serviceSelect.options].some(option=>option.value===subKey)){
-          serviceSelect.value = subKey;
-        }
-
-        if(typeof openModal === 'function') openModal('quoteModal');
-        else document.getElementById('quoteModal')?.classList.remove('hidden');
-      });
 
       categoryInlineResults.classList.remove('hidden');
       categoryInlineResults.classList.remove('is-revealed');
@@ -8837,9 +8822,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           '<strong>' + escapeHtml(selectionLabel) + ' için ' + realRows.length + ' aktif kurum</strong>' +
           '<small>Seçtiğin hizmete uygun kurumlar aşağıda listelendi.</small>' +
         '</div>' +
-        '<button type="button" class="desktop-inline-results-quote-btn" data-desktop-inline-quote data-main-category="' + escapeHtml(mainKey) + '" data-sub-category="' + escapeHtml(subKey) + '">' +
-          '<span>Ücretsiz</span><strong>Teklif Al</strong><b>→</b>' +
-        '</button>' +
+        '<div class="desktop-inline-results-guide"><span>⚖️</span><strong>Kurum seç, karşılaştır</strong><small>Kararını kendi önceliklerine göre ver.</small></div>' +
       '</div>' +
       '<div class="desktop-inline-institution-grid">' +
         visibleRows.map((inst,index)=>{
@@ -8850,7 +8833,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
           const recommendationCount = Number(inst.recommendationCount || 0);
           const recommendationYes = Number(inst.recommendationYes || 0);
           const recommendationRate = Number(inst.recommendationRate);
-          const offerText = inst.offer ? '<span class="desktop-inline-offer">Teklif veriyor</span>' : '';
+          const offerText = inst.offer ? '<span class="desktop-inline-offer">Bilgi / fiyat alınabilir</span>' : '';
           const ratingText = reviewCount > 0 ? '<span class="desktop-inline-rating">⭐ ' + rating.toFixed(1) + '</span>' : '';
           const recommendText = recommendationCount > 0 && Number.isFinite(recommendationRate)
             ? '<span class="desktop-inline-recommend">👍 ' + recommendationYes + ' kişi · %' + Math.round(recommendationRate) + '</span>'
@@ -8868,10 +8851,8 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
               '</div>' +
             '</a>' +
             '<div class="desktop-inline-card-actions">' +
-              (inst.offer
-                ? '<button type="button" class="desktop-inline-card-quote" data-desktop-inline-offer="' + escapeHtml(String(inst.id)) + '">Teklif Al</button>'
-                : '') +
-              '<a class="desktop-inline-card-arrow" href="kurum.html?id=' + encodeURIComponent(inst.id) + '" aria-label="' + escapeHtml(inst.name || 'Kurum') + ' kurum sayfasını aç">→</a>' +
+              '<a class="desktop-inline-card-view" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">İncele</a>' +
+              '<button type="button" class="desktop-inline-card-compare" data-compare-toggle="' + escapeHtml(String(inst.id)) + '">+ Karşılaştır</button>' +
             '</div>' +
           '</article>';
         }).join('') +
@@ -8880,43 +8861,15 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
         ? '<div class="desktop-inline-more">+' + (realRows.length-visibleRows.length) + ' kurum daha</div>'
         : '');
 
-    categoryInlineResults.querySelectorAll('[data-desktop-inline-offer]').forEach(button=>{
+    categoryInlineResults.querySelectorAll('[data-compare-toggle]').forEach(button=>{
       button.addEventListener('click',event=>{
         event.preventDefault();
         event.stopPropagation();
-        const institutionId=String(button.dataset.desktopInlineOffer||'').trim();
-        if(institutionId)openInstitutionDirectQuote(institutionId);
+        toggleInstitutionComparison(button.dataset.compareToggle);
       });
     });
 
-    const inlineQuoteBtn = categoryInlineResults.querySelector('[data-desktop-inline-quote]');
-    inlineQuoteBtn?.addEventListener('click',()=>{
-      const selectedMain = String(inlineQuoteBtn.dataset.mainCategory || '').trim();
-      const selectedSub = String(inlineQuoteBtn.dataset.subCategory || '').trim();
 
-      const categorySelect = document.getElementById('quoteCategory');
-      const serviceSelect = document.getElementById('quoteService');
-
-      if(categorySelect && selectedMain){
-        categorySelect.value = selectedMain;
-        if(typeof fillQuoteServices === 'function'){
-          fillQuoteServices(selectedMain);
-        }else if(typeof fillSubCategorySelect === 'function'){
-          fillSubCategorySelect(selectedMain,'quoteService','Alt kategori seçin');
-        }
-      }
-
-      if(serviceSelect && selectedSub){
-        const hasOption=[...serviceSelect.options].some(option=>option.value===selectedSub);
-        if(hasOption)serviceSelect.value=selectedSub;
-      }
-
-      if(typeof openModal === 'function'){
-        openModal('quoteModal');
-      }else{
-        document.getElementById('quoteModal')?.classList.remove('hidden');
-      }
-    });
 
     categoryInlineResults.classList.remove('hidden');
     categoryInlineResults.classList.remove('is-revealed');
