@@ -9,6 +9,8 @@ let selectedIds=loadIds();
 let institutions=[];
 let allInstitutions=[];
 let filteredInstitutions=[];
+let compareProvinceCache=null;
+const compareDistrictCache=new Map();
 const COMPARE_PAGE_SIZE=6;
 let visibleInstitutionCount=COMPARE_PAGE_SIZE;
 
@@ -226,7 +228,7 @@ async function loadAllInstitutions(){
       String(a.name||"").localeCompare(String(b.name||""),"tr")
     );
 
-    setupPickerOptions();
+    await setupPickerOptions();
     hydrateSelectedInstitutions();
     applyFilters();
   }catch(error){
@@ -247,7 +249,57 @@ function hydrateSelectedInstitutions(){
   render();
 }
 
-function setupPickerOptions(){
+async function fetchCompareProvinces(){
+  if(compareProvinceCache)return compareProvinceCache;
+
+  try{
+    const response=await fetch("https://api.turkiyeapi.dev/v2/provinces?fields=id,name&limit=81");
+    if(!response.ok)throw new Error("İl verisi alınamadı");
+    const data=await response.json();
+    compareProvinceCache=Array.isArray(data.data)?data.data:[];
+  }catch(error){
+    console.warn("Karşılaştırma il listesi alınamadı:",error);
+    compareProvinceCache=[...new Set(allInstitutions.map(inst=>inst.city).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,"tr"))
+      .map((name,index)=>({id:"local-"+index,name}));
+  }
+
+  return compareProvinceCache;
+}
+
+async function fetchCompareDistricts(provinceId,cityName){
+  const cacheKey=String(provinceId||cityName||"");
+  if(compareDistrictCache.has(cacheKey))return compareDistrictCache.get(cacheKey);
+
+  try{
+    if(String(provinceId||"").startsWith("local-"))throw new Error("Yerel yedek veri");
+    const response=await fetch(
+      "https://api.turkiyeapi.dev/v2/provinces/"+
+      encodeURIComponent(provinceId)+
+      "?fields=districts"
+    );
+    if(!response.ok)throw new Error("İlçe verisi alınamadı");
+    const data=await response.json();
+    const rows=(data.data?.districts||[])
+      .map(item=>String(item?.name||"").trim())
+      .filter(Boolean)
+      .sort((a,b)=>a.localeCompare(b,"tr"));
+    compareDistrictCache.set(cacheKey,rows);
+    return rows;
+  }catch(error){
+    console.warn("Karşılaştırma ilçe listesi alınamadı, kurum verisi kullanılacak:",error);
+    const rows=[...new Set(
+      allInstitutions
+        .filter(inst=>inst.city===cityName)
+        .map(inst=>inst.district)
+        .filter(Boolean)
+    )].sort((a,b)=>a.localeCompare(b,"tr"));
+    compareDistrictCache.set(cacheKey,rows);
+    return rows;
+  }
+}
+
+async function setupPickerOptions(){
   const city=document.getElementById("compareCityFilter");
   const district=document.getElementById("compareDistrictFilter");
   const category=document.getElementById("compareCategoryFilter");
@@ -261,11 +313,20 @@ function setupPickerOptions(){
     : null;
   const wantedCity=selectedInstitution?.city || preferred.city || currentCity || "";
 
-  const cities=[...new Set(allInstitutions.map(inst=>inst.city).filter(Boolean))]
-    .sort((a,b)=>a.localeCompare(b,"tr"));
+  city.disabled=true;
+  city.innerHTML='<option value="">İller yükleniyor...</option>';
+
+  const provinces=await fetchCompareProvinces();
   city.innerHTML='<option value="">İl seçin</option>'+
-    cities.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
-  if(cities.includes(wantedCity))city.value=wantedCity;
+    provinces.map(item=>
+      '<option value="'+esc(item.name)+'" data-id="'+esc(item.id)+'">'+esc(item.name)+'</option>'
+    ).join("");
+  city.disabled=false;
+
+  const matchedCity=[...city.options].find(
+    option=>normalize(option.value)===normalize(wantedCity)
+  );
+  if(matchedCity)city.value=matchedCity.value;
 
   const categoriesMap=new Map();
   allInstitutions.forEach(inst=>{
@@ -273,35 +334,46 @@ function setupPickerOptions(){
     if(!key)return;
     if(!categoriesMap.has(key))categoriesMap.set(key,categoryLabel(inst));
   });
-  const categories=[...categoriesMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"tr"));
+
+  const categories=[...categoriesMap.entries()]
+    .sort((a,b)=>a[1].localeCompare(b[1],"tr"));
+
   category.innerHTML='<option value="">Tüm Kategoriler</option>'+
-    categories.map(([key,label])=>'<option value="'+esc(key)+'">'+esc(label)+'</option>').join("");
+    categories.map(([key,label])=>
+      '<option value="'+esc(key)+'">'+esc(label)+'</option>'
+    ).join("");
+
   if(categoriesMap.has(currentCategory))category.value=currentCategory;
 
-  refreshDistrictOptions();
+  await refreshDistrictOptions();
 }
 
-function refreshDistrictOptions(){
-  const cityValue=String(document.getElementById("compareCityFilter")?.value||"").trim();
+async function refreshDistrictOptions(){
+  const city=document.getElementById("compareCityFilter");
   const district=document.getElementById("compareDistrictFilter");
-  if(!district)return;
+  if(!city||!district)return;
 
-  const current=district.value;
+  const cityValue=String(city.value||"").trim();
+  const current=String(district.value||"").trim();
+
   if(!cityValue){
-    district.innerHTML='<option value="">Tüm İlçeler</option>';
+    district.innerHTML='<option value="">Önce il seçin</option>';
     district.disabled=true;
     return;
   }
 
-  const districts=[...new Set(
-    allInstitutions
-      .filter(inst=>inst.city===cityValue)
-      .map(inst=>inst.district)
-      .filter(Boolean)
-  )].sort((a,b)=>a.localeCompare(b,"tr"));
+  const selectedCityOption=city.options[city.selectedIndex];
+  const provinceId=selectedCityOption?.dataset?.id||"";
+
+  district.disabled=true;
+  district.innerHTML='<option value="">İlçeler yükleniyor...</option>';
+
+  const districts=await fetchCompareDistricts(provinceId,cityValue);
 
   district.innerHTML='<option value="">İl geneli</option>'+
-    districts.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
+    districts.map(item=>
+      '<option value="'+esc(item)+'">'+esc(item)+'</option>'
+    ).join("");
   district.disabled=false;
 
   const preferred=preferredLocation();
@@ -309,7 +381,11 @@ function refreshDistrictOptions(){
     ? allInstitutions.find(inst=>String(inst.id)===String(selectedIds[0]))
     : null;
   const wantedDistrict=selectedInstitution?.district || preferred.district || current || "";
-  if(districts.includes(wantedDistrict))district.value=wantedDistrict;
+
+  const matchedDistrict=[...district.options].find(
+    option=>normalize(option.value)===normalize(wantedDistrict)
+  );
+  if(matchedDistrict)district.value=matchedDistrict.value;
 }
 
 function institutionSearchText(inst){
@@ -595,10 +671,10 @@ function render(){
 }
 
 document.getElementById("compareClearAllBtn")?.addEventListener("click",clearAll);
-document.getElementById("compareCityFilter")?.addEventListener("change",()=>{
+document.getElementById("compareCityFilter")?.addEventListener("change",async ()=>{
   const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
   persistPreferredLocation(city,"");
-  refreshDistrictOptions();
+  await refreshDistrictOptions();
   applyFilters();
 });
 document.getElementById("compareDistrictFilter")?.addEventListener("change",()=>{
