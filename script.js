@@ -7644,6 +7644,13 @@ institutionRegisterForm.addEventListener('submit', async e => {
   let createdUser = null;
 
   try {
+    // Aynı tarayıcıda daha önce başka bir kurum açık kaldıysa,
+    // yeni kurum hesabı oluşturulurken eski kurum oturumunu mutlaka kapat.
+    if (institutionAuth.currentUser) {
+      await institutionAuth.signOut();
+      institutionSessionUser = null;
+    }
+
     const credential =
       await institutionRegistrationAuth.createUserWithEmailAndPassword(email, password);
 
@@ -7661,7 +7668,7 @@ institutionRegisterForm.addEventListener('submit', async e => {
 
     institutionRegisterForm.reset();
     institutionRegisterMessage.textContent =
-      'Başvurunuz alındı. Yönetici onayından sonra giriş yapabilirsiniz.';
+      'Başvurunuz alındı. Eski kurum oturumu kapatıldı. Yönetici onayından sonra bu yeni hesapla giriş yapabilirsiniz.';
   } catch (error) {
     console.error('Kurum hesabı oluşturulamadı:', error);
 
