@@ -303,7 +303,7 @@ function requestDetailHtml(access,engagementRows=[],offers=[],lock=null){
              <div><span>Konum</span><strong>${safe([city,district].filter(Boolean).join(" / ")||"-")}</strong></div>`}
         <div><span>İletim Kapsamı</span><strong>${safe(deliveryText)}</strong></div>
         <div><span>Talep Tarihi</span><strong>${fmtDate(date)}</strong></div>
-        <div class="request-detail-note"><span>Talep Notu</span><strong>${safe(note)}</strong></div>
+        <div class="request-detail-note"><span>Talebinizi Kısaca Anlatın</span><strong>${safe(note)}</strong></div>
       </div>
     </details>`;
 }
