@@ -142,7 +142,10 @@
             </span>
           </label>
 
-          <button type="submit" class="kp-submit" id="directQuoteSubmit">Bu Kurumdan Teklif İste</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button type="submit" class="kp-submit" id="directQuoteSubmit">Bu Kurumdan Teklif İste</button>
+            <button type="submit" class="kp-submit" id="directQuoteWhatsappSubmit" data-submit-mode="whatsapp" style="background:#16a34a">WhatsApp'a Gönder</button>
+          </div>
           <p id="directQuoteMessage" class="kp-form-message"></p>
         </form>
       </div>
