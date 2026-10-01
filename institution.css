@@ -6378,3 +6378,53 @@ body[data-panel-current="showcase"] .panel-heading-action{
   color:#1e293b;
   border:1px solid #cbd5e1;
 }
+
+.panel-auth-recovery{
+  margin:18px 0 28px;
+  padding:16px 18px;
+  border:1px solid #dbe3ef;
+  border-radius:14px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.panel-auth-recovery>div:first-child{
+  display:grid;
+  gap:4px;
+}
+.panel-auth-recovery strong{
+  color:#0f172a;
+  font-size:15px;
+}
+.panel-auth-recovery span{
+  color:#64748b;
+  font-size:13px;
+}
+.panel-auth-recovery-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.panel-auth-recovery-actions a{
+  text-decoration:none;
+  font-weight:800;
+  border-radius:10px;
+  padding:10px 14px;
+  white-space:nowrap;
+}
+.panel-auth-login{
+  background:#2563eb;
+  color:#fff;
+}
+.panel-auth-register{
+  background:#f8fafc;
+  color:#0f172a;
+  border:1px solid #cbd5e1;
+}
+@media(max-width:700px){
+  .panel-auth-recovery{align-items:stretch;flex-direction:column}
+  .panel-auth-recovery-actions{display:grid;grid-template-columns:1fr}
+  .panel-auth-recovery-actions a{text-align:center}
+}
