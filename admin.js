@@ -3828,6 +3828,16 @@ function openInstitutionEdit(id, data) {
   document.getElementById("editAddress").value = data.address || "";
   document.getElementById("editPhone").value = data.phone || "";
   document.getElementById("editWebsite").value = data.website || "";
+  document.getElementById("editDescription").value = data.description || "";
+  document.getElementById("editPrograms").value = Array.isArray(data.programs) ? data.programs.join(", ") : (data.programs || "");
+  document.getElementById("editHighlights").value = Array.isArray(data.highlights) ? data.highlights.join(", ") : (data.highlights || "");
+  document.getElementById("editClassSize").value = data.classSize || data.classCapacity || "";
+  document.getElementById("editTrialExam").value = data.trialExam || data.examFrequency || "";
+  document.getElementById("editGuidance").value = data.guidance || data.counseling || "";
+  document.getElementById("editStudySupport").value = data.studySupport || data.etut || "";
+  document.getElementById("editInstallment").value = data.installment || data.installmentInfo || "";
+  document.getElementById("editPriceLevel").value = data.priceLevel || data.priceRange || "";
+  document.getElementById("editCampaign").value = data.campaign || data.campaignTitle || "";
   document.getElementById("editLocationVideoUrl").value =
     data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
   document.getElementById("editLocationVideoStoragePath").value =
@@ -3937,6 +3947,14 @@ document.getElementById("editVirtualTourClearBtn")?.addEventListener("click", ()
   input.focus();
 });
 
+function parseInstitutionListField(value){
+  return String(value||"")
+    .split(",")
+    .map(item=>item.trim())
+    .filter(Boolean)
+    .slice(0,12);
+}
+
 document.getElementById("institutionEditForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -3955,6 +3973,16 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const locationVideoStoragePath=String(document.getElementById("editLocationVideoStoragePath").value||"").trim();
   const virtualTourUrl=String(document.getElementById("editVirtualTourUrl").value||"").trim();
   const campaignVideoUrl=String(document.getElementById("editCampaignVideoUrl").value||"").trim();
+  const description=String(document.getElementById("editDescription")?.value||"").trim();
+  const programs=parseInstitutionListField(document.getElementById("editPrograms")?.value);
+  const highlights=parseInstitutionListField(document.getElementById("editHighlights")?.value);
+  const classSize=String(document.getElementById("editClassSize")?.value||"").trim();
+  const trialExam=String(document.getElementById("editTrialExam")?.value||"").trim();
+  const guidance=String(document.getElementById("editGuidance")?.value||"").trim();
+  const studySupport=String(document.getElementById("editStudySupport")?.value||"").trim();
+  const installment=String(document.getElementById("editInstallment")?.value||"").trim();
+  const priceLevel=String(document.getElementById("editPriceLevel")?.value||"").trim();
+  const campaign=String(document.getElementById("editCampaign")?.value||"").trim();
 
   const showSaveMessage=(text,state="")=>{
     if(!saveMessage)return;
@@ -4035,6 +4063,16 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     address:String(document.getElementById("editAddress").value||"").trim(),
     phone:String(document.getElementById("editPhone").value||"").trim(),
     website:String(document.getElementById("editWebsite").value||"").trim(),
+    description,
+    programs,
+    highlights,
+    classSize,
+    trialExam,
+    guidance,
+    studySupport,
+    installment,
+    priceLevel,
+    campaign,
     locationVideoUrl,
     locationVideoStoragePath,
     virtualTourUrl,
