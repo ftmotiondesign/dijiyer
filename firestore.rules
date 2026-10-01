@@ -441,6 +441,87 @@ service cloud.firestore {
     }
 
 
+
+    // =====================================================
+    // DİJİYER - ÖN KAYITLAR
+    // =====================================================
+    match /preRegistrations/{registrationId} {
+      // Ziyaretçi üyelik olmadan ön kayıt bırakabilir.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'institutionId',
+          'institutionName',
+          'customerName',
+          'customerPhone',
+          'customerEmail',
+          'applicationType',
+          'studentName',
+          'grade',
+          'note',
+          'registrationCode',
+          'consent',
+          'status',
+          'source',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.institutionId is string
+        && request.resource.data.institutionId.size() > 0
+        && request.resource.data.institutionName is string
+        && request.resource.data.institutionName.size() > 0
+        && request.resource.data.institutionName.size() <= 180
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() >= 2
+        && request.resource.data.customerName.size() <= 80
+        && request.resource.data.customerPhone is string
+        && request.resource.data.customerPhone.size() >= 10
+        && request.resource.data.customerPhone.size() <= 20
+        && request.resource.data.customerEmail is string
+        && request.resource.data.customerEmail.size() <= 160
+        && request.resource.data.applicationType is string
+        && request.resource.data.applicationType.size() > 0
+        && request.resource.data.applicationType.size() <= 120
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 80
+        && request.resource.data.grade is string
+        && request.resource.data.grade.size() <= 80
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 500
+        && request.resource.data.registrationCode is string
+        && request.resource.data.registrationCode.size() >= 8
+        && request.resource.data.registrationCode.size() <= 24
+        && request.resource.data.consent == true
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'institution_profile'
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string;
+
+      // Kişisel başvuru bilgileri yalnız yönetici ve ilgili kurum tarafından okunur.
+      allow get, list: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+        );
+
+      // Kurum yalnızca başvuru durumunu güncelleyebilir.
+      allow update: if
+        adminMi()
+        ||
+        (
+          onayliKurumKullanicisi()
+          && resource.data.institutionId == bagliKurumId()
+          && request.resource.data.institutionId == resource.data.institutionId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+          && request.resource.data.status in ['new','contacted','registered','cancelled']
+          && request.resource.data.updatedAt is string
+        );
+
+      allow delete: if adminMi();
+    }
+
+
     // =====================================================
     // DİJİYER - KURUM BAŞVURULARI
     // =====================================================
