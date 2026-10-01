@@ -7,6 +7,8 @@ let selectedIds=loadIds();
 let institutions=[];
 let allInstitutions=[];
 let filteredInstitutions=[];
+const COMPARE_PAGE_SIZE=6;
+let visibleInstitutionCount=COMPARE_PAGE_SIZE;
 
 function loadIds(){
   try{
@@ -295,6 +297,7 @@ function institutionSearchText(inst){
 }
 
 function applyFilters(){
+  visibleInstitutionCount=COMPARE_PAGE_SIZE;
   const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
   const district=String(document.getElementById("compareDistrictFilter")?.value||"").trim();
   const category=String(document.getElementById("compareCategoryFilter")?.value||"").trim();
@@ -324,10 +327,13 @@ function renderSearchResults(){
 
   if(!filteredInstitutions.length){
     root.innerHTML='<div class="compare-search-empty">Filtrelere uygun aktif kurum bulunamadı.</div>';
+    document.getElementById("compareLoadMoreWrap")?.classList.add("hidden");
     return;
   }
 
-  root.innerHTML=filteredInstitutions.slice(0,24).map(inst=>{
+  const visibleRows=filteredInstitutions.slice(0,visibleInstitutionCount);
+
+  root.innerHTML=visibleRows.map(inst=>{
     const selected=selectedIds.includes(String(inst.id));
     const wrongSector=!selected && !isSameSector(inst);
     const disabled=!selected && (selectedIds.length>=3 || wrongSector);
@@ -358,6 +364,16 @@ function renderSearchResults(){
   root.querySelectorAll("[data-picker-toggle]").forEach(button=>{
     button.addEventListener("click",()=>toggleSelectedInstitution(button.dataset.pickerToggle));
   });
+
+  const loadMoreWrap=document.getElementById("compareLoadMoreWrap");
+  const loadMoreInfo=document.getElementById("compareLoadMoreInfo");
+  const hasMore=visibleInstitutionCount<filteredInstitutions.length;
+
+  loadMoreWrap?.classList.toggle("hidden",!hasMore);
+  if(loadMoreInfo){
+    const remaining=Math.max(0,filteredInstitutions.length-visibleInstitutionCount);
+    loadMoreInfo.textContent=remaining>0 ? remaining+" kurum daha var" : "";
+  }
 }
 
 function toggleSelectedInstitution(id){
@@ -552,6 +568,11 @@ document.getElementById("compareFilterClearBtn")?.addEventListener("click",()=>{
   if(category)category.value="";
   if(search)search.value="";
   applyFilters();
+});
+
+document.getElementById("compareLoadMoreBtn")?.addEventListener("click",()=>{
+  visibleInstitutionCount+=COMPARE_PAGE_SIZE;
+  renderSearchResults();
 });
 
 loadAllInstitutions();
