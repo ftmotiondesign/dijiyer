@@ -52,6 +52,14 @@
         <button id="trackingSubmitBtn" type="submit">Tekliflerimi Göster</button>
       </form>
 
+      <div class="all-requests-entry">
+        <div>
+          <strong>Takip kodunu hatırlamıyor musunuz?</strong>
+          <span>Bu cihazda daha önce oluşturduğunuz farklı sektörlerdeki talepleri telefon numaranızla listeleyin.</span>
+        </div>
+        <button type="button" id="showAllRequestsBtn">Tüm Taleplerim</button>
+      </div>
+
       <div class="privacy-note">
         🔐 Telefon numaranız bu takip sayfasında açık olarak saklanmaz. Erişim kontrolü için özetlenmiş bir doğrulama değeri kullanılır.
       </div>
@@ -62,6 +70,29 @@
       </div>
 
       <p class="tracking-message" id="trackingMessage"></p>
+    </section>
+
+    <section id="allRequestsCard" class="all-requests-card hidden">
+      <div class="all-requests-head">
+        <div>
+          <span class="eyebrow">TÜM TALEPLERİM</span>
+          <h2>Bu cihazdaki teklif talepleriniz</h2>
+          <p>Telefon numaranızla eşleşen kayıtlar listelenir. Bir talebi seçerek o talebe gelen tüm teklifleri açabilirsiniz.</p>
+        </div>
+        <button type="button" id="closeAllRequestsBtn" aria-label="Kapat">×</button>
+      </div>
+
+      <form id="allRequestsForm" class="all-requests-form">
+        <input id="allRequestsPhone" type="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required>
+        <button type="submit">Taleplerimi Listele</button>
+      </form>
+
+      <p class="all-requests-message" id="allRequestsMessage"></p>
+      <div id="allRequestsList" class="all-requests-list"></div>
+
+      <div class="all-requests-security-note">
+        🔐 Güvenlik nedeniyle yalnızca bu cihazda daha önce oluşturulan veya doğrulanan talepler burada listelenir.
+      </div>
     </section>
 
     <section id="trackingResults" class="tracking-results hidden"></section>
