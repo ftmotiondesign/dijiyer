@@ -1574,7 +1574,7 @@ button,input{font:inherit}.hidden{display:none!important}
 .all-requests-head>button{
   width:36px;height:36px;border:0;border-radius:10px;background:#f1f5f9;color:#334155;font-size:23px;cursor:pointer
 }
-.all-requests-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:16px}
+.all-requests-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:10px;margin-top:16px}
 .all-requests-form input{
   min-width:0;padding:12px;border:1px solid #d5deeb;border-radius:11px;outline:none;font:inherit
 }
