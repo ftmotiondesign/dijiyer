@@ -945,6 +945,39 @@ function getInstitutionQuoteQueries() {
   return queries;
 }
 
+function institutionQuoteVisibilityStartMs(){
+  const raw=
+    currentAccount?.approvedAt ||
+    currentAccount?.updatedAt ||
+    currentAccount?.date ||
+    currentInstitution?.createdAt ||
+    currentInstitution?.date ||
+    "";
+  const ms=new Date(raw||0).getTime();
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function institutionMaySeeHistoricalQuote(quote){
+  const institutionId=String(currentAccount?.institutionId||"");
+  if(!institutionId)return false;
+
+  // Kuruma özel veya kuruma sonradan yönlendirilmiş/kabul edilmiş talepler
+  // kurum hesabından eski olsa bile bu kuruma aittir.
+  if(String(quote?.targetInstitutionId||"")===institutionId)return true;
+  if(String(quote?.acceptedInstitutionId||"")===institutionId)return true;
+  if(Array.isArray(quote?.forwardInstitutionIds) &&
+     quote.forwardInstitutionIds.map(String).includes(institutionId))return true;
+
+  // Toplu taleplerde yeni kayıt olan kurum geçmişe dönük eski talepleri görmez.
+  if(String(quote?.requestType||"")==="bulk"){
+    const quoteMs=new Date(quote?.date||quote?.createdAt||0).getTime();
+    const startMs=institutionQuoteVisibilityStartMs();
+    if(startMs>0 && Number.isFinite(quoteMs) && quoteMs<startMs)return false;
+  }
+
+  return true;
+}
+
 async function fetchInstitutionMatchedQuotes() {
   const queries = getInstitutionQuoteQueries();
   if (!queries.length) return [];
@@ -971,6 +1004,7 @@ async function fetchInstitutionMatchedQuotes() {
   });
 
   return [...unique.values()]
+    .filter(institutionMaySeeHistoricalQuote)
     .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
