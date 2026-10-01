@@ -620,8 +620,11 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
   event.preventDefault();
   if(!institution||institution.isDemo)return;
 
+  const submitMode=String(event.submitter?.dataset?.submitMode||"dijiyer");
   const message=document.getElementById("directQuoteMessage");
   const submit=document.getElementById("directQuoteSubmit");
+  const whatsappSubmit=document.getElementById("directQuoteWhatsappSubmit");
+  const activeSubmit=submitMode==="whatsapp" ? whatsappSubmit : submit;
   const name=document.getElementById("directQuoteName").value.trim();
   const phone=document.getElementById("directQuotePhone").value.trim();
   const service=document.getElementById("directQuoteService").value.trim();
@@ -679,9 +682,10 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     targetInstitutionName:String(institution.name||"Kurum")
   };
 
-  const oldText=submit.textContent;
-  submit.disabled=true;
-  submit.textContent="Gönderiliyor...";
+  const oldText=activeSubmit?.textContent||"Gönder";
+  if(submit)submit.disabled=true;
+  if(whatsappSubmit)whatsappSubmit.disabled=true;
+  if(activeSubmit)activeSubmit.textContent=submitMode==="whatsapp"?"WhatsApp hazırlanıyor...":"Gönderiliyor...";
   message.textContent="";
 
   try{
@@ -787,10 +791,15 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
         whatsappBtn.disabled=false;
         whatsappBtn.textContent="WhatsApp'tan Kuruma Haber Ver";
         if(whatsappNote)whatsappNote.textContent="Talep Dijiyer'de kayıtlı kalır; WhatsApp yalnızca kuruma bildirim gönderir.";
-        whatsappBtn.onclick=()=>{
+        const openInstitutionWhatsapp=()=>{
           const message=encodeURIComponent(directWhatsappMessage(tracking,request,quoteRef.id));
           window.open("https://wa.me/"+institutionWhatsapp+"?text="+message,"_blank","noopener");
         };
+        whatsappBtn.onclick=openInstitutionWhatsapp;
+
+        if(submitMode==="whatsapp"){
+          openInstitutionWhatsapp();
+        }
       }else if(!institutionWhatsapp){
         whatsappBtn.disabled=true;
         whatsappBtn.textContent="WhatsApp numarası kayıtlı değil";
@@ -814,8 +823,9 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     message.textContent=errorText;
     showToast(errorText);
   }finally{
-    submit.disabled=false;
-    submit.textContent=oldText;
+    if(submit)submit.disabled=false;
+    if(whatsappSubmit)whatsappSubmit.disabled=false;
+    if(activeSubmit)activeSubmit.textContent=oldText;
   }
 });
 
