@@ -9456,3 +9456,36 @@ details.matching-institutions .matching-buttons{
     flex-direction:column;
   }
 }
+
+
+/* ===== TEKLİF KARTLARI 2 SÜTUN v1 ===== */
+#quoteRequestsList{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  align-items:start;
+}
+
+/* İki sütunda kart içeriğini daha dengeli tut */
+#quoteRequestsList .quote-request-card{
+  min-width:0;
+}
+#quoteRequestsList .quote-request-side{
+  min-width:0;
+}
+#quoteRequestsList .quote-request-top{
+  gap:12px;
+}
+#quoteRequestsList .quote-actions{
+  align-items:stretch;
+}
+#quoteRequestsList .quote-actions button,
+#quoteRequestsList .customer-whatsapp{
+  flex:0 1 auto;
+}
+
+/* Orta ekranlarda tek sütuna dön */
+@media(max-width:1100px){
+  #quoteRequestsList{
+    grid-template-columns:1fr;
+  }
+}
