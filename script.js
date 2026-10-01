@@ -3516,6 +3516,38 @@ function renderList() {
   renderDetail();
   updateMobileCategoryResult();
 }
+function syncCompareSelectionUi(){
+  document.querySelectorAll('[data-compare-toggle]').forEach(button=>{
+    const key=String(button.dataset.compareToggle||'');
+    const selected=compareInstitutionIds.has(key);
+
+    button.classList.toggle('selected',selected);
+    button.classList.toggle('is-selected',selected);
+    button.setAttribute('aria-pressed',selected?'true':'false');
+
+    if(button.classList.contains('desktop-inline-card-compare')){
+      button.textContent=selected ? '✓ Seçildi' : '+ Karşılaştır';
+    }else if(button.classList.contains('compare-mini-btn')){
+      button.textContent=selected ? '✓ Karşılaştırmada' : '＋ Karşılaştır';
+    }
+  });
+
+  document.querySelectorAll('[data-alt-compare]').forEach(button=>{
+    const key=String(button.dataset.altCompare||'');
+    const selected=compareInstitutionIds.has(key);
+    button.classList.toggle('selected',selected);
+    button.textContent=selected ? '✓' : '＋';
+  });
+
+  const detailButton=document.getElementById('detailCompareBtn');
+  if(detailButton){
+    const key=String(selectedId||'');
+    const selected=compareInstitutionIds.has(key);
+    detailButton.classList.toggle('selected',selected);
+    detailButton.textContent=selected ? '✓ Karşılaştırmada' : '＋ Karşılaştır';
+  }
+}
+
 function toggleCompareInstitution(id) {
   const key = String(id || '');
   if (!key) return;
@@ -3530,7 +3562,12 @@ function toggleCompareInstitution(id) {
     compareInstitutionIds.add(key);
   }
 
-  renderList();
+  syncCompareSelectionUi();
+  renderCompareBar();
+
+  // Açık kategori sonuçlarını yeniden çizme.
+  // Böylece kullanıcı 2. ve 3. kurumu arka arkaya seçebilir.
+  renderDecisionAlternatives();
 }
 
 function ensureCompareUi() {
@@ -3605,7 +3642,9 @@ function renderCompareBar() {
 
   document.getElementById('compareClearBtn')?.addEventListener('click', () => {
     compareInstitutionIds.clear();
-    renderList();
+    syncCompareSelectionUi();
+    renderCompareBar();
+    renderDecisionAlternatives();
   });
 
   document.getElementById('compareOpenBtn')?.addEventListener('click', () => {
@@ -8851,7 +8890,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
             '</a>' +
             '<div class="desktop-inline-card-actions">' +
               '<a class="desktop-inline-card-view" href="kurum.html?id=' + encodeURIComponent(inst.id) + '">İncele</a>' +
-              '<button type="button" class="desktop-inline-card-compare" data-compare-toggle="' + escapeHtml(String(inst.id)) + '">+ Karşılaştır</button>' +
+              '<button type="button" class="desktop-inline-card-compare ' + (compareInstitutionIds.has(String(inst.id)) ? 'is-selected' : '') + '" data-compare-toggle="' + escapeHtml(String(inst.id)) + '" aria-pressed="' + (compareInstitutionIds.has(String(inst.id)) ? 'true' : 'false') + '">' + (compareInstitutionIds.has(String(inst.id)) ? '✓ Seçildi' : '+ Karşılaştır') + '</button>' +
             '</div>' +
           '</article>';
         }).join('') +
