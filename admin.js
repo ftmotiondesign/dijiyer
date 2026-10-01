@@ -2410,6 +2410,14 @@ const ADMIN_AD_PLACEMENTS = {
     size:"1400 × 240 px",
     device:"Mobil + Masaüstü",
     description:"Filtrelerin altında, kurum sonuçlarının hemen üstünde gösterilen yüksek görünürlüklü sponsor banner alanı."
+  },
+  compare_howto_sponsor:{
+    icon:"★",
+    name:"Karşılaştırma 3 Adım Sponsor Kartı",
+    page:"Karşılaştırma",
+    size:"Kart / CTA",
+    device:"Mobil + Masaüstü",
+    description:"3 adımlık kullanım yönlendirmesinin yanında gösterilen sponsorlu kampanya veya marka kartı."
   }
 };
 
