@@ -8801,8 +8801,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
         '<div class="desktop-inline-empty">' +
           '<span class="desktop-inline-empty-icon">⌕</span>' +
           '<div><strong>' + escapeHtml(selectionLabel) + ' için aktif kurum bulunamadı.</strong>' +
-          '<small>Başka bir alt hizmet seçebilir veya ücretsiz teklif oluşturabilirsin.</small></div>' +
-          '<button type="button" class="desktop-inline-empty-quote" data-desktop-inline-empty-quote>Teklif Al →</button>' +
+          '<small>Başka bir alt hizmet veya konum seçerek diğer kurumları inceleyebilirsin.</small></div>' +
         '</div>';
 
 
@@ -8865,7 +8864,7 @@ window.setTimeout(positionMobileSponsoredSlotNearJobs,120);
       button.addEventListener('click',event=>{
         event.preventDefault();
         event.stopPropagation();
-        toggleInstitutionComparison(button.dataset.compareToggle);
+        toggleCompareInstitution(button.dataset.compareToggle);
       });
     });
 
