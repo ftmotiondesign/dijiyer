@@ -3606,5 +3606,5 @@ document.getElementById("institutionLogoutBtn").addEventListener("click", async 
   }
 
   await auth.signOut();
-  window.location.replace("index.html");
+  window.location.replace("index.html?kurumgiris=1");
 });
