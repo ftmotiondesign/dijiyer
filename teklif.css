@@ -1661,3 +1661,53 @@ button,input{font:inherit}.hidden{display:none!important}
     width:100%;
   }
 }
+
+
+/* Talep kartı içinde açılan teklif detayları */
+.all-request-row{
+  display:block;
+}
+.all-request-row-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+.all-request-row-top>button{
+  flex:0 0 auto;
+  border:0;
+  border-radius:10px;
+  padding:10px 12px;
+  background:#16a34a;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+.all-request-row.is-open{
+  border-color:#93c5fd;
+  background:#f8fbff;
+  box-shadow:0 8px 24px rgba(37,99,235,.08);
+}
+.all-request-inline-slot{
+  margin-top:13px;
+  padding-top:13px;
+  border-top:1px solid #dbeafe;
+}
+.all-request-inline-slot.hidden{
+  display:none!important;
+}
+.all-request-inline-slot .inline-tracking-header{
+  margin-top:0;
+}
+.all-request-inline-slot .tracking-results{
+  margin-top:12px;
+}
+@media(max-width:640px){
+  .all-request-row-top{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .all-request-row-top>button{
+    width:100%;
+  }
+}
