@@ -9489,3 +9489,61 @@ details.matching-institutions .matching-buttons{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Kurum keşif bilgileri editörü */
+.institution-discovery-editor{
+  margin:18px 0;
+  padding:18px;
+  border:1px solid #dfe8f5;
+  border-radius:18px;
+  background:linear-gradient(180deg,#f9fbff 0%,#fff 100%);
+}
+.institution-discovery-editor-head{
+  margin-bottom:15px;
+  padding-bottom:13px;
+  border-bottom:1px solid #e8eef7;
+}
+.institution-discovery-editor-head span{
+  display:block;
+  margin-bottom:4px;
+  color:#1769d2;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.09em;
+}
+.institution-discovery-editor-head strong{
+  display:block;
+  color:#18263a;
+  font-size:17px;
+}
+.institution-discovery-editor-head small,
+.institution-discovery-subhead small,
+.institution-discovery-editor label small{
+  display:block;
+  margin-top:4px;
+  color:#758197;
+  font-size:11px;
+  line-height:1.4;
+}
+.institution-discovery-subhead{
+  margin:16px 0 10px;
+  padding:11px 12px;
+  border-radius:12px;
+  background:#eef6ff;
+}
+.institution-discovery-subhead strong{
+  display:block;
+  color:#174f93;
+  font-size:13px;
+}
+.institution-discovery-grid-3{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.institution-discovery-editor input,
+.institution-discovery-editor textarea{
+  width:100%;
+}
+@media (max-width:900px){
+  .institution-discovery-grid-3{grid-template-columns:1fr}
+}
