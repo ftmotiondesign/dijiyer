@@ -3247,6 +3247,36 @@ function institutionListSponsorHtml(){
   `;
 }
 
+
+function institutionCategoryLabel(inst){
+  const main=categoryTaxonomy[String(inst?.mainCategory||'')];
+  const sub=main?.subs?.[String(inst?.subCategory||inst?.category||'')];
+  return sub || main?.label || 'Kurum';
+}
+
+function institutionCardFacts(inst){
+  const facts=[];
+  const add=(icon,text)=>{
+    const value=String(text||'').trim();
+    if(value && !facts.some(item=>item.text===value)) facts.push({icon,text:value});
+  };
+
+  const programs=Array.isArray(inst.programs) ? inst.programs.filter(Boolean) : [];
+  if(programs.length) add('📚', programs.slice(0,3).join(' · '));
+  else if(inst.classes && String(inst.classes)!=='Bilgi eklenecek') add('📚',inst.classes);
+
+  if(inst.classSize) add('👥','Sınıf: '+inst.classSize);
+  if(inst.trialExam) add('📝',inst.trialExam);
+  if(inst.guidance) add('🎯',String(inst.guidance).toLowerCase()==='true' ? 'Rehberlik var' : inst.guidance);
+  if(inst.studySupport) add('📖',String(inst.studySupport).toLowerCase()==='true' ? 'Etüt desteği var' : inst.studySupport);
+  if(inst.installment) add('💳',String(inst.installment).toLowerCase()==='true' ? 'Taksit var' : inst.installment);
+  if(inst.priceLevel) add('₺',inst.priceLevel);
+  if(inst.campaign) add('📣',inst.campaign);
+
+  (Array.isArray(inst.highlights)?inst.highlights:[]).slice(0,3).forEach(item=>add('✓',item));
+  return facts.slice(0,4);
+}
+
 function renderList() {
   const list = document.getElementById('institutionList');
   const data = getFilteredInstitutions();
@@ -3285,20 +3315,26 @@ function renderList() {
         </div>
         ${inst.vip ? '<div class="vip">VIP</div>' : ''}
         <div class="card-body">
+          <div class="institution-card-topline">
+            <span class="institution-card-category">${escapeHtml(institutionCategoryLabel(inst))}</span>
+            ${inst.vip ? '<span class="institution-card-sponsored">Öne Çıkan</span>' : ''}
+          </div>
           <h3>${escapeHtml(inst.name)}</h3>
-          <div class="rating" id="detailRating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 '+Number(inst.recommendationYes||0)+' kişi · %'+Math.round(Number(inst.recommendationRate))+'</em>' : ''}</div>
-          <div class="meta">📍 ${escapeHtml(inst.location || '')}<br>${escapeHtml(inst.address || '')}</div>
-          <div class="card-actions">
-            ${inst.offer ? '<span class="chip positive">Teklif veriyor</span>' : ''}
-            ${inst.video ? '<span class="chip">Videolu profil</span>' : ''}
+          <div class="institution-card-location">📍 ${escapeHtml(inst.location || [inst.city,inst.district].filter(Boolean).join(', ') || 'Konum bilgisi')}</div>
+          ${inst.address ? '<div class="institution-card-address">'+escapeHtml(inst.address)+'</div>' : ''}
+          <div class="rating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 '+Number(inst.recommendationYes||0)+' kişi · %'+Math.round(Number(inst.recommendationRate))+'</em>' : ''}</div>
+          ${institutionCardFacts(inst).length ? '<div class="institution-card-facts">'+institutionCardFacts(inst).map(f=>'<span><b>'+f.icon+'</b>'+escapeHtml(f.text)+'</span>').join('')+'</div>' : ''}
+          ${inst.description ? '<p class="institution-card-description">'+escapeHtml(String(inst.description).slice(0,110))+(String(inst.description).length>110?'…':'')+'</p>' : ''}
+          <div class="card-actions institution-card-actions-new">
+            <button type="button" class="institution-view-btn" data-view-institution="${escapeHtml(String(inst.id))}">Kurumu İncele</button>
             <button
               type="button"
               class="compare-mini-btn ${compared ? 'selected' : ''}"
               data-compare-toggle="${escapeHtml(String(inst.id))}"
               aria-pressed="${compared ? 'true' : 'false'}"
-            >${compared ? '✓ Seçildi' : '＋ Karşılaştır'}</button>
-            <button class="small-btn" data-quick-offer="${escapeHtml(String(inst.id))}">Fiyat Al</button>
+            >${compared ? '✓ Karşılaştırmada' : '＋ Karşılaştır'}</button>
           </div>
+          ${inst.offer ? '<button class="institution-secondary-offer" data-quick-offer="'+escapeHtml(String(inst.id))+'">Bu kurumdan bilgi / fiyat iste</button>' : ''}
         </div>
       </article>
     `;
@@ -3319,7 +3355,8 @@ function renderList() {
     card.addEventListener('click', e => {
       if (
         e.target.closest('[data-quick-offer]') ||
-        e.target.closest('[data-compare-toggle]')
+        e.target.closest('[data-compare-toggle]') ||
+        e.target.closest('[data-view-institution]')
       ) return;
 
       const id = card.dataset.id;
@@ -3339,6 +3376,13 @@ function renderList() {
         document.getElementById('detailPanel')
           ?.scrollIntoView({ behavior:'smooth', block:'start' });
       });
+    });
+  });
+
+  document.querySelectorAll('[data-view-institution]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      window.location.href='kurum.html?id='+encodeURIComponent(btn.dataset.viewInstitution);
     });
   });
 
@@ -6496,6 +6540,15 @@ async function loadApprovedInstitutions() {
         website: data.website || '',
         instagram: data.instagram || '',
         description: data.description || '',
+        highlights: Array.isArray(data.highlights) ? data.highlights : [],
+        programs: Array.isArray(data.programs) ? data.programs : (data.programs ? [data.programs] : []),
+        classSize: data.classSize || data.classCapacity || '',
+        trialExam: data.trialExam || data.examFrequency || '',
+        guidance: data.guidance || data.counseling || '',
+        studySupport: data.studySupport || data.etut || '',
+        installment: data.installment || data.installmentInfo || '',
+        priceLevel: data.priceLevel || data.priceRange || '',
+        campaign: data.campaign || data.campaignTitle || '',
         logoUrl: safePublicProfileUrl(data.logoUrl || ''),
         coverUrl: safePublicProfileUrl(data.coverUrl || ''),
         serviceAreas: data.serviceAreas || '',
