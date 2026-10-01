@@ -5,6 +5,8 @@ const db=compareApp.firestore();
 const STORAGE_KEY="dijiyerCompareInstitutionIdsV1";
 let selectedIds=loadIds();
 let institutions=[];
+let allInstitutions=[];
+let filteredInstitutions=[];
 
 function loadIds(){
   try{
@@ -48,14 +50,53 @@ function value(value,fallback="Belirtilmedi"){
   return text||fallback;
 }
 
+function normalize(value){
+  return String(value||"")
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ı/g,"i")
+    .replace(/ş/g,"s")
+    .replace(/ğ/g,"g")
+    .replace(/ü/g,"u")
+    .replace(/ö/g,"o")
+    .replace(/ç/g,"c")
+    .trim();
+}
+
 function categoryLabel(inst){
   const map={
     kres:"Kreş & Anaokulu",dershane:"Dershane / Kurs Merkezi",surucu:"Sürücü Kursu",
     ozel_ders:"Özel Ders",dil_kursu:"Dil Kursu",etut:"Etüt Merkezi",ozel_okul:"Özel Okul",
-    yurt:"Öğrenci Yurdu",oto_servis:"Oto Servis",restoran:"Restoran",kafe:"Kafe",
-    emlak_ofisi:"Emlak Ofisi",otel:"Otel",reklam:"Reklam / Tasarım",diger:"Diğer Hizmet"
+    yurt:"Öğrenci Yurdu",oto_servis:"Oto Servis",kaporta_boya:"Kaporta / Boya",
+    oto_elektrik:"Oto Elektrik",lastik_jant:"Lastik / Jant",oto_yikama:"Oto Yıkama",
+    ekspertiz:"Oto Ekspertiz",galeri:"Oto Galeri",rentacar:"Rent a Car",
+    yedek_parca:"Yedek Parça",motosiklet:"Motosiklet Servisi",restoran:"Restoran",
+    kafe:"Kafe",fastfood:"Fast Food",pastane:"Pastane",pizza:"Pizza",doner:"Döner",
+    pide_lahmacun:"Pide / Lahmacun",catering:"Catering",ev_yemekleri:"Ev Yemekleri",
+    dis_klinigi:"Diş Kliniği",klinik:"Sağlık Kliniği",psikolog:"Psikolog",
+    diyetisyen:"Diyetisyen",fizyoterapi:"Fizyoterapi",guzellik:"Güzellik Merkezi",
+    kuafor:"Kuaför",berber:"Berber",spor:"Pilates / Fitness",mobilya:"Mobilya",
+    dekorasyon:"Dekorasyon",insaat:"İnşaat / Tadilat",elektrikci:"Elektrikçi",
+    tesisatci:"Tesisatçı",teknik_servis:"Teknik Servis",klima:"Klima Servisi",
+    cam_balkon:"Cam Balkon / PVC",temizlik:"Temizlik",emlak_ofisi:"Emlak Ofisi",
+    konut:"Konut",arsa:"Arsa / Tarla",ticari:"Ticari Gayrimenkul",gunluk_kiralik:"Günlük Kiralık",
+    otel:"Otel",pansiyon:"Pansiyon",apart:"Apart",bungalov:"Bungalov",seyahat:"Seyahat / Tur",
+    kamp:"Kamp / Karavan",dugun_salonu:"Düğün Salonu",organizasyon:"Organizasyon",
+    fotograf:"Fotoğrafçı",video:"Video Çekimi",drone:"Drone Çekimi",gelinlik:"Gelinlik",
+    cicekci:"Çiçekçi",reklam:"Reklam / Tasarım",nakliyat:"Nakliyat",kurye:"Kurye",
+    sehirici:"Şehir İçi Taşımacılık",depolama:"Depolama",hukuk:"Avukat / Hukuk",
+    muhasebe:"Muhasebe",web:"Web Tasarım",sosyal_medya:"Sosyal Medya / Ajans",
+    bilgisayar:"Bilgisayar / Teknoloji",danismanlik:"Danışmanlık",veteriner:"Veteriner",
+    tarim:"Tarım / Hayvancılık",giyim:"Giyim",ayakkabi:"Ayakkabı",market:"Market",
+    elektronik:"Elektronik / Telefon",kirtasiye:"Kırtasiye",petshop:"Pet Shop",
+    zuccaciye:"Züccaciye",esnaf:"Yerel Esnaf",diger:"Diğer Hizmet"
   };
   return map[inst.subCategory||inst.category]||inst.subCategoryLabel||inst.mainCategoryLabel||"Kurum";
+}
+
+function locationText(inst){
+  return [inst.district,inst.city].filter(Boolean).join(" / ")||inst.location||"Konum belirtilmedi";
 }
 
 function showToast(message){
@@ -67,42 +108,223 @@ function showToast(message){
   showToast.timer=setTimeout(()=>root.classList.remove("show"),1800);
 }
 
-async function loadInstitutions(){
-  if(!selectedIds.length){
+function normalizeInstitutionData(id,data={}){
+  return {
+    id:String(id),
+    ...data,
+    city:String(data.city||"").trim(),
+    district:String(data.district||"").trim(),
+    name:String(data.name||"Kurum").trim(),
+    programs:Array.isArray(data.programs)?data.programs:listValue(data.programs),
+    highlights:Array.isArray(data.highlights)?data.highlights:listValue(data.highlights),
+    classSize:data.classSize||data.classCapacity||"",
+    trialExam:data.trialExam||data.examFrequency||"",
+    guidance:data.guidance||data.counseling||"",
+    studySupport:data.studySupport||data.etut||"",
+    installment:data.installment||data.installmentInfo||"",
+    priceLevel:data.priceLevel||data.priceRange||"",
+    campaign:data.campaign||data.campaignTitle||""
+  };
+}
+
+async function loadAllInstitutions(){
+  try{
+    const snap=await db.collection("institutions").get();
+    allInstitutions=snap.docs
+      .map(doc=>normalizeInstitutionData(doc.id,doc.data()||{}))
+      .filter(inst=>String(inst.status||"active")!=="passive");
+
+    allInstitutions.sort((a,b)=>
+      Number(Boolean(b.vip))-Number(Boolean(a.vip)) ||
+      Number(b.rating||0)-Number(a.rating||0) ||
+      String(a.name||"").localeCompare(String(b.name||""),"tr")
+    );
+
+    setupPickerOptions();
+    hydrateSelectedInstitutions();
+    applyFilters();
+  }catch(error){
+    console.error("Kurumlar yüklenemedi:",error);
+    allInstitutions=[];
     institutions=[];
     render();
-    return;
+    renderSearchResults();
   }
+}
 
-  const rows=await Promise.all(selectedIds.map(async id=>{
-    try{
-      const snap=await db.collection("institutions").doc(id).get();
-      if(!snap.exists)return null;
-      const data=snap.data()||{};
-      if(String(data.status||"active")==="passive")return null;
-      return {
-        id:snap.id,
-        ...data,
-        programs:Array.isArray(data.programs)?data.programs:listValue(data.programs),
-        highlights:Array.isArray(data.highlights)?data.highlights:listValue(data.highlights),
-        classSize:data.classSize||data.classCapacity||"",
-        trialExam:data.trialExam||data.examFrequency||"",
-        guidance:data.guidance||data.counseling||"",
-        studySupport:data.studySupport||data.etut||"",
-        installment:data.installment||data.installmentInfo||"",
-        priceLevel:data.priceLevel||data.priceRange||"",
-        campaign:data.campaign||data.campaignTitle||""
-      };
-    }catch(error){
-      console.warn("Kurum karşılaştırma verisi alınamadı:",id,error);
-      return null;
-    }
-  }));
-
-  institutions=rows.filter(Boolean);
+function hydrateSelectedInstitutions(){
+  institutions=selectedIds
+    .map(id=>allInstitutions.find(inst=>String(inst.id)===String(id)))
+    .filter(Boolean);
   selectedIds=institutions.map(inst=>String(inst.id)).slice(0,3);
   saveIds();
   render();
+}
+
+function setupPickerOptions(){
+  const city=document.getElementById("compareCityFilter");
+  const district=document.getElementById("compareDistrictFilter");
+  const category=document.getElementById("compareCategoryFilter");
+  if(!city||!district||!category)return;
+
+  const currentCity=city.value;
+  const currentCategory=category.value;
+
+  const cities=[...new Set(allInstitutions.map(inst=>inst.city).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"tr"));
+  city.innerHTML='<option value="">Tüm İller</option>'+
+    cities.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
+  if(cities.includes(currentCity))city.value=currentCity;
+
+  const categoriesMap=new Map();
+  allInstitutions.forEach(inst=>{
+    const key=String(inst.subCategory||inst.category||inst.mainCategory||"").trim();
+    if(!key)return;
+    if(!categoriesMap.has(key))categoriesMap.set(key,categoryLabel(inst));
+  });
+  const categories=[...categoriesMap.entries()].sort((a,b)=>a[1].localeCompare(b[1],"tr"));
+  category.innerHTML='<option value="">Tüm Kategoriler</option>'+
+    categories.map(([key,label])=>'<option value="'+esc(key)+'">'+esc(label)+'</option>').join("");
+  if(categoriesMap.has(currentCategory))category.value=currentCategory;
+
+  refreshDistrictOptions();
+}
+
+function refreshDistrictOptions(){
+  const cityValue=String(document.getElementById("compareCityFilter")?.value||"").trim();
+  const district=document.getElementById("compareDistrictFilter");
+  if(!district)return;
+
+  const current=district.value;
+  if(!cityValue){
+    district.innerHTML='<option value="">Tüm İlçeler</option>';
+    district.disabled=true;
+    return;
+  }
+
+  const districts=[...new Set(
+    allInstitutions
+      .filter(inst=>inst.city===cityValue)
+      .map(inst=>inst.district)
+      .filter(Boolean)
+  )].sort((a,b)=>a.localeCompare(b,"tr"));
+
+  district.innerHTML='<option value="">Tüm İlçeler</option>'+
+    districts.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
+  district.disabled=false;
+  if(districts.includes(current))district.value=current;
+}
+
+function institutionSearchText(inst){
+  return normalize([
+    inst.name,
+    inst.description,
+    inst.city,
+    inst.district,
+    categoryLabel(inst),
+    ...(inst.programs||[]),
+    ...(inst.highlights||[]),
+    inst.classes,
+    inst.classSize,
+    inst.trialExam,
+    inst.guidance,
+    inst.studySupport,
+    inst.installment,
+    inst.priceLevel,
+    inst.campaign
+  ].filter(Boolean).join(" "));
+}
+
+function applyFilters(){
+  const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
+  const district=String(document.getElementById("compareDistrictFilter")?.value||"").trim();
+  const category=String(document.getElementById("compareCategoryFilter")?.value||"").trim();
+  const query=normalize(document.getElementById("compareSearchInput")?.value||"");
+
+  filteredInstitutions=allInstitutions.filter(inst=>{
+    const categoryKey=String(inst.subCategory||inst.category||inst.mainCategory||"").trim();
+    return (!city||inst.city===city) &&
+      (!district||inst.district===district) &&
+      (!category||categoryKey===category) &&
+      (!query||institutionSearchText(inst).includes(query));
+  });
+
+  renderSearchResults();
+}
+
+function renderSearchResults(){
+  const root=document.getElementById("compareSearchResults");
+  const count=document.getElementById("compareSearchResultCount");
+  if(!root)return;
+
+  if(count){
+    count.textContent=filteredInstitutions.length
+      ? filteredInstitutions.length+" kurum bulundu"
+      : "Sonuç bulunamadı";
+  }
+
+  if(!filteredInstitutions.length){
+    root.innerHTML='<div class="compare-search-empty">Filtrelere uygun aktif kurum bulunamadı.</div>';
+    return;
+  }
+
+  root.innerHTML=filteredInstitutions.slice(0,24).map(inst=>{
+    const selected=selectedIds.includes(String(inst.id));
+    const disabled=!selected && selectedIds.length>=3;
+    const logo=safeUrl(inst.logoUrl||inst.coverUrl);
+    const programs=listValue(inst.programs).slice(0,3);
+    const tags=[
+      ...programs,
+      inst.classSize ? "Sınıf "+inst.classSize : "",
+      inst.campaign ? "Kampanya var" : ""
+    ].filter(Boolean).slice(0,3);
+
+    return '<article class="compare-search-card '+(selected?'is-selected':'')+'">'+
+      '<div class="compare-search-logo">'+(logo?'<img src="'+esc(logo)+'" alt="">':'🏢')+'</div>'+
+      '<div class="compare-search-copy">'+
+        '<strong>'+esc(inst.name)+'</strong>'+
+        '<small>'+esc(categoryLabel(inst))+' · 📍 '+esc(locationText(inst))+'</small>'+
+        '<div class="compare-search-tags">'+tags.map(tag=>'<span>'+esc(tag)+'</span>').join("")+'</div>'+
+      '</div>'+
+      '<div class="compare-search-actions">'+
+        '<button type="button" class="'+(selected?'is-selected':'')+'" data-picker-toggle="'+esc(inst.id)+'" '+(disabled?'disabled':'')+'>'+
+          (selected?'✓ Karşılaştırmada':'+ Karşılaştırmaya Ekle')+
+        '</button>'+
+        '<a href="kurum.html?id='+encodeURIComponent(inst.id)+'">İncele</a>'+
+      '</div>'+
+    '</article>';
+  }).join("");
+
+  root.querySelectorAll("[data-picker-toggle]").forEach(button=>{
+    button.addEventListener("click",()=>toggleSelectedInstitution(button.dataset.pickerToggle));
+  });
+}
+
+function toggleSelectedInstitution(id){
+  const key=String(id||"");
+  if(!key)return;
+
+  if(selectedIds.includes(key)){
+    selectedIds=selectedIds.filter(item=>item!==key);
+  }else{
+    if(selectedIds.length>=3){
+      showToast("En fazla 3 kurum karşılaştırabilirsiniz.");
+      return;
+    }
+    selectedIds.push(key);
+  }
+
+  saveIds();
+  institutions=selectedIds
+    .map(item=>allInstitutions.find(inst=>String(inst.id)===String(item)))
+    .filter(Boolean);
+
+  render();
+  renderSearchResults();
+
+  if(institutions.length===2){
+    showToast("2 kurum seçildi. Karşılaştırma tablosu hazır.");
+  }
 }
 
 function removeInstitution(id){
@@ -110,6 +332,7 @@ function removeInstitution(id){
   saveIds();
   institutions=institutions.filter(item=>String(item.id)!==String(id));
   render();
+  renderSearchResults();
 }
 
 function clearAll(){
@@ -117,12 +340,20 @@ function clearAll(){
   institutions=[];
   saveIds();
   render();
+  renderSearchResults();
 }
 
 function renderSummary(){
   const count=document.getElementById("compareSelectedCount");
   const chips=document.getElementById("compareSelectedChips");
+  const remaining=document.getElementById("compareRemainingSlot");
   if(count)count.textContent=institutions.length+" kurum seçildi";
+  if(remaining){
+    const left=Math.max(0,3-institutions.length);
+    remaining.textContent=left
+      ? left+" kurum daha ekleyebilirsiniz"
+      : "Maksimum 3 kurum seçildi";
+  }
   if(chips){
     chips.innerHTML=institutions.map(inst=>
       '<div class="compare-chip"><span>'+esc(inst.name||"Kurum")+'</span><button type="button" data-remove="'+esc(inst.id)+'" aria-label="Kaldır">×</button></div>'
@@ -135,12 +366,11 @@ function renderSummary(){
 
 function headCell(inst){
   const logo=safeUrl(inst.logoUrl||inst.coverUrl);
-  const locationText=[inst.district,inst.city].filter(Boolean).join(" / ")||inst.location||"Konum belirtilmedi";
   return '<div class="compare-cell compare-head">'+
     '<div class="compare-head-logo">'+(logo?'<img src="'+esc(logo)+'" alt="">':'🏢')+'</div>'+
     '<h3>'+esc(inst.name||"Kurum")+'</h3>'+
     '<small>'+esc(categoryLabel(inst))+'</small>'+
-    '<small>📍 '+esc(locationText)+'</small>'+
+    '<small>📍 '+esc(locationText(inst))+'</small>'+
     '<small class="compare-head-rating">⭐ '+Number(inst.rating||0).toFixed(1)+' · '+Number(inst.reviewCount||0)+' değerlendirme</small>'+
     '<div class="compare-head-actions">'+
       '<a href="kurum.html?id='+encodeURIComponent(inst.id)+'">Profili İncele</a>'+
@@ -184,7 +414,7 @@ function renderTable(){
         ? '<span class="yes">👍 %'+Math.round(rate)+'</span><small>'+Number(inst.recommendationYes||0)+' kişi tavsiye etti</small>'
         : '<span>Henüz veri yok</span>';
     })+
-    row("Konum",inst=>'<strong>📍 '+esc(value([inst.district,inst.city].filter(Boolean).join(" / ")||inst.location))+'</strong><small>'+esc(value(inst.address,""))+'</small>')+
+    row("Konum",inst=>'<strong>📍 '+esc(value(locationText(inst)))+'</strong><small>'+esc(value(inst.address,""))+'</small>')+
     row("Çalışma Saatleri",inst=>'<strong>'+esc(value(inst.weekdayHours))+'</strong>')+
     row("Tanıtım İçeriği",inst=>{
       const items=[];
@@ -211,11 +441,30 @@ function render(){
   if(clear)clear.disabled=!has;
 
   if(has)renderTable();
-
-  if(institutions.length===1){
-    showToast("Karşılaştırma için bir kurum daha ekleyin.");
-  }
 }
 
 document.getElementById("compareClearAllBtn")?.addEventListener("click",clearAll);
-loadInstitutions();
+document.getElementById("compareCityFilter")?.addEventListener("change",()=>{
+  refreshDistrictOptions();
+  applyFilters();
+});
+document.getElementById("compareDistrictFilter")?.addEventListener("change",applyFilters);
+document.getElementById("compareCategoryFilter")?.addEventListener("change",applyFilters);
+document.getElementById("compareSearchInput")?.addEventListener("input",applyFilters);
+document.getElementById("compareFilterClearBtn")?.addEventListener("click",()=>{
+  const city=document.getElementById("compareCityFilter");
+  const district=document.getElementById("compareDistrictFilter");
+  const category=document.getElementById("compareCategoryFilter");
+  const search=document.getElementById("compareSearchInput");
+  if(city)city.value="";
+  if(district){
+    district.value="";
+    district.disabled=true;
+    district.innerHTML='<option value="">Tüm İlçeler</option>';
+  }
+  if(category)category.value="";
+  if(search)search.value="";
+  applyFilters();
+});
+
+loadAllInstitutions();
