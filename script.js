@@ -7555,6 +7555,12 @@ institutionLoginBtn.addEventListener('click', async () => {
 institutionLoginTab.addEventListener('click', () => setInstitutionAccessMode('login'));
 institutionRegisterTab.addEventListener('click', () => setInstitutionAccessMode('register'));
 
+document.getElementById('institutionRegisterAddInstitutionBtn')?.addEventListener('click', () => {
+  closeModal('institutionAccessModal');
+  openModal('institutionModal');
+  setTimeout(() => initInstitutionMap(), 150);
+});
+
 (function openInstitutionLoginFromUrl(){
   const params=new URLSearchParams(window.location.search);
   const wantsLogin=params.get('kurumgiris')==='1';
