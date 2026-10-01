@@ -3458,7 +3458,7 @@ let authResolved = false;
 
 const authRestoreTimer = setTimeout(() => {
   if (!authResolved && !auth.currentUser) {
-    showPanelError("Oturum bilgisi yüklenemedi. Ana sayfadan tekrar kurum girişi yapın.");
+    window.location.replace("index.html?kurumgiris=1");
   }
 }, 5000);
 
@@ -3467,7 +3467,7 @@ auth.onAuthStateChanged(async user => {
   clearTimeout(authRestoreTimer);
 
   if (!user) {
-    showPanelError("Kurum oturumu bulunamadı. Lütfen ana sayfadan tekrar giriş yapın.");
+    window.location.replace("index.html?kurumgiris=1");
     return;
   }
 
