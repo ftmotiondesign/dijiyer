@@ -1520,7 +1520,10 @@ function applyHomeEditableContent(data={}){
     setManagedText(primary,managedContentValue(quoteSaved,quoteDefaults,'primaryLabel'));
     setManagedText(secondary,managedContentValue(quoteSaved,quoteDefaults,'secondaryLabel'));
     setManagedButtonLink(primary,managedContentValue(quoteSaved,quoteDefaults,'primaryUrl'));
-    setManagedButtonLink(secondary,managedContentValue(quoteSaved,quoteDefaults,'secondaryUrl'));
+    if(secondary){
+      delete secondary.dataset.customSectionLink;
+      secondary.removeAttribute('data-custom-section-link');
+    }
 
     setManagedText(quoteRoot.querySelector('.business-card-label'),managedContentValue(quoteSaved,quoteDefaults,'cardLabel'));
     setManagedText(quoteRoot.querySelector('.business-cta-card > strong'),managedContentValue(quoteSaved,quoteDefaults,'cardValue'));
@@ -7795,8 +7798,12 @@ document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
 });
 
 document.getElementById('businessPanelBtn')?.addEventListener('click', event => {
+  event.preventDefault();
+  event.stopPropagation();
+
   const button=event.currentTarget;
-  if(followManagedSectionLink(button))return;
+  if(button?.dataset) delete button.dataset.customSectionLink;
+
   document.getElementById('institutionLoginBtn')?.click();
 });
 
