@@ -99,6 +99,25 @@ function locationText(inst){
   return [inst.district,inst.city].filter(Boolean).join(" / ")||inst.location||"Konum belirtilmedi";
 }
 
+function sectorKey(inst){
+  return String(inst?.subCategory||inst?.category||inst?.mainCategory||"").trim();
+}
+
+function selectedSectorKey(){
+  return institutions.length ? sectorKey(institutions[0]) : "";
+}
+
+function isSameSector(inst){
+  const key=selectedSectorKey();
+  return !key || sectorKey(inst)===key;
+}
+
+const educationSectorKeys=new Set(["kres","dershane","surucu","ozel_ders","dil_kursu","etut","ozel_okul","yurt"]);
+
+function isEducationSector(inst){
+  return educationSectorKeys.has(sectorKey(inst)) || String(inst?.mainCategory||"")==="egitim";
+}
+
 function showToast(message){
   const root=document.getElementById("compareToast");
   if(!root)return;
@@ -270,7 +289,8 @@ function renderSearchResults(){
 
   root.innerHTML=filteredInstitutions.slice(0,24).map(inst=>{
     const selected=selectedIds.includes(String(inst.id));
-    const disabled=!selected && selectedIds.length>=3;
+    const wrongSector=!selected && !isSameSector(inst);
+    const disabled=!selected && (selectedIds.length>=3 || wrongSector);
     const logo=safeUrl(inst.logoUrl||inst.coverUrl);
     const programs=listValue(inst.programs).slice(0,3);
     const tags=[
@@ -287,8 +307,8 @@ function renderSearchResults(){
         '<div class="compare-search-tags">'+tags.map(tag=>'<span>'+esc(tag)+'</span>').join("")+'</div>'+
       '</div>'+
       '<div class="compare-search-actions">'+
-        '<button type="button" class="'+(selected?'is-selected':'')+'" data-picker-toggle="'+esc(inst.id)+'" '+(disabled?'disabled':'')+'>'+
-          (selected?'✓ Karşılaştırmada':'+ Karşılaştırmaya Ekle')+
+        '<button type="button" class="'+(selected?'is-selected':'')+'" data-picker-toggle="'+esc(inst.id)+'" '+(disabled?'disabled':'')+' title="'+(wrongSector?'Sadece aynı sektördeki kurumlar karşılaştırılabilir':'')+'">'+
+          (selected?'✓ Karşılaştırmada':(wrongSector?'Farklı sektör':'+ Karşılaştırmaya Ekle'))+
         '</button>'+
         '<a href="kurum.html?id='+encodeURIComponent(inst.id)+'">İncele</a>'+
       '</div>'+
@@ -309,6 +329,11 @@ function toggleSelectedInstitution(id){
   }else{
     if(selectedIds.length>=3){
       showToast("En fazla 3 kurum karşılaştırabilirsiniz.");
+      return;
+    }
+    const candidate=allInstitutions.find(inst=>String(inst.id)===key);
+    if(candidate && !isSameSector(candidate)){
+      showToast("Sadece aynı sektördeki kurumları karşılaştırabilirsiniz.");
       return;
     }
     selectedIds.push(key);
@@ -355,7 +380,10 @@ function renderSummary(){
   const count=document.getElementById("compareSelectedCount");
   const chips=document.getElementById("compareSelectedChips");
   const remaining=document.getElementById("compareRemainingSlot");
-  if(count)count.textContent=institutions.length+" kurum seçildi";
+  if(count){
+    const sector=institutions.length ? categoryLabel(institutions[0]) : "";
+    count.textContent=institutions.length+" kurum seçildi"+(sector?" · "+sector:"");
+  }
   if(remaining){
     const left=Math.max(0,3-institutions.length);
     remaining.textContent=left
@@ -402,18 +430,24 @@ function renderTable(){
     return '<strong>'+esc(value(programs.length?programs:(inst.classes||categoryLabel(inst))))+'</strong>';
   };
 
-  root.innerHTML=
-    '<div class="compare-cell compare-head compare-label"><strong>Kriter</strong><small>Kurum bilgileri</small></div>'+
-    institutions.map(headCell).join("")+
-    row("Programlar / Hizmetler",program)+
-    row("Sınıf Mevcudu",inst=>'<strong>'+esc(value(inst.classSize))+'</strong>')+
-    row("Deneme Sınavı",inst=>'<strong>'+esc(value(inst.trialExam))+'</strong>')+
-    row("Rehberlik / Koçluk",inst=>'<strong>'+esc(value(inst.guidance))+'</strong>')+
-    row("Etüt Desteği",inst=>'<strong>'+esc(value(inst.studySupport))+'</strong>')+
-    row("Taksit",inst=>'<strong>'+esc(value(inst.installment))+'</strong>')+
-    row("Fiyat Seviyesi / Aralığı",inst=>'<strong>'+esc(value(inst.priceLevel,"Fiyat için görüşün"))+'</strong>')+
-    row("Güncel Kampanya",inst=>'<span class="campaign">'+esc(value(inst.campaign,"Kampanya belirtilmedi"))+'</span>')+
+  const educationMode=institutions.length ? isEducationSector(institutions[0]) : false;
+
+  let rowsHtml=
+    row("Hizmetler / Programlar",program);
+
+  if(educationMode){
+    rowsHtml+=
+      row("Sınıf Mevcudu",inst=>'<strong>'+esc(value(inst.classSize))+'</strong>')+
+      row("Deneme Sınavı",inst=>'<strong>'+esc(value(inst.trialExam))+'</strong>')+
+      row("Rehberlik / Koçluk",inst=>'<strong>'+esc(value(inst.guidance))+'</strong>')+
+      row("Etüt Desteği",inst=>'<strong>'+esc(value(inst.studySupport))+'</strong>');
+  }
+
+  rowsHtml+=
     row("Öne Çıkan Özellikler",inst=>'<span>'+esc(value(listValue(inst.highlights)))+'</span>')+
+    row("Fiyat Seviyesi / Aralığı",inst=>'<strong>'+esc(value(inst.priceLevel,"Fiyat için görüşün"))+'</strong>')+
+    row("Taksit / Ödeme",inst=>'<strong>'+esc(value(inst.installment))+'</strong>')+
+    row("Güncel Kampanya",inst=>'<span class="campaign">'+esc(value(inst.campaign,"Kampanya belirtilmedi"))+'</span>')+
     row("Puan",inst=>'<strong>⭐ '+Number(inst.rating||0).toFixed(1)+'</strong><small>'+Number(inst.reviewCount||0)+' değerlendirme</small>')+
     row("Tavsiye",inst=>{
       const count=Number(inst.recommendationCount||0);
@@ -431,6 +465,11 @@ function renderTable(){
       return '<span>'+esc(value(items,"Standart profil"))+'</span>';
     })+
     row("Bilgi / Fiyat",inst=>inst.offer!==false?'<span class="yes">✓ Talep gönderilebilir</span>':'<span>Kapalı</span>');
+
+  root.innerHTML=
+    '<div class="compare-cell compare-head compare-label"><strong>Kriter</strong><small>'+esc(institutions.length?categoryLabel(institutions[0]):"Kurum bilgileri")+'</small></div>'+
+    institutions.map(headCell).join("")+
+    rowsHtml;
 
   root.querySelectorAll("[data-remove]").forEach(button=>{
     button.addEventListener("click",()=>removeInstitution(button.dataset.remove));
