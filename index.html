@@ -1167,9 +1167,10 @@
           </select>
         </label>
 
-        <p class="access-help">
-          Kurumunuz listede yoksa önce “+ Kurum Ekle” bölümünden başvuru gönderin.
-        </p>
+        <div class="access-help" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span>Kurumunuz listede yoksa önce kurum başvurusu gönderin.</span>
+          <button type="button" class="btn btn-light" id="institutionRegisterAddInstitutionBtn">+ Kurum Ekle</button>
+        </div>
 
         <label>E-posta
           <input id="institutionRegisterEmail" type="email" required placeholder="ornek@kurum.com">
