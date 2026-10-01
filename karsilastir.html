@@ -10,7 +10,7 @@
   <meta name="description" content="Seçtiğiniz kurumları konum, program, sınıf mevcudu, rehberlik, etüt, taksit, fiyat seviyesi, kampanya ve kullanıcı değerlendirmelerine göre yan yana karşılaştırın.">
   <link rel="icon" type="image/png" href="assets/brand/diji-favicon.png">
   <link rel="stylesheet" href="market-nav.css?v=8">
-  <link rel="stylesheet" href="karsilastir.css?v=1">
+  <link rel="stylesheet" href="karsilastir.css?v=2">
   <script src="market-nav.js?v=10" defer></script>
 </head>
 <body class="compare-page">
@@ -25,6 +25,52 @@
         <a href="index.html#resultsSection" class="compare-page-add">+ Kurum Ekle</a>
         <button type="button" id="compareClearAllBtn">Tümünü Temizle</button>
       </div>
+    </section>
+
+    <section class="compare-picker">
+      <div class="compare-picker-head">
+        <div>
+          <span>KURUM EKLE</span>
+          <h2>Karşılaştırmak istediğiniz kurumları seçin</h2>
+          <p>Konum, kategori veya kurum adına göre arayın. En fazla 3 kurum ekleyebilirsiniz.</p>
+        </div>
+        <strong id="compareRemainingSlot">3 kurum daha ekleyebilirsiniz</strong>
+      </div>
+
+      <div class="compare-picker-filters">
+        <label>
+          <span>İl</span>
+          <select id="compareCityFilter">
+            <option value="">Tüm İller</option>
+          </select>
+        </label>
+
+        <label>
+          <span>İlçe</span>
+          <select id="compareDistrictFilter" disabled>
+            <option value="">Tüm İlçeler</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Kategori</span>
+          <select id="compareCategoryFilter">
+            <option value="">Tüm Kategoriler</option>
+          </select>
+        </label>
+
+        <label class="compare-picker-search">
+          <span>Kurum / Program Ara</span>
+          <input type="search" id="compareSearchInput" placeholder="Örn. LGS, anaokulu, sürücü kursu...">
+        </label>
+      </div>
+
+      <div class="compare-picker-actions">
+        <button type="button" id="compareFilterClearBtn">Filtreleri Temizle</button>
+        <span id="compareSearchResultCount"></span>
+      </div>
+
+      <div class="compare-search-results" id="compareSearchResults"></div>
     </section>
 
     <section class="compare-page-summary" id="comparePageSummary">
@@ -67,6 +113,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="karsilastir.js?v=1"></script>
+  <script src="karsilastir.js?v=2"></script>
 </body>
 </html>
