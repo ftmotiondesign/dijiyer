@@ -4666,7 +4666,7 @@ function getQuoteTrackingUrl(trackingCode) {
   return url.toString();
 }
 
-function getMatchingInstitutionCount(request) {
+function getMatchingInstitutions(request) {
   try {
     const requestDistrict = String(request.district || '').trim().toLocaleLowerCase('tr-TR');
 
@@ -4684,12 +4684,89 @@ function getMatchingInstitutionCount(request) {
         String(inst.district || '').trim().toLocaleLowerCase('tr-TR') === requestDistrict;
 
       return sameCategory && sameCity && sameDistrict && inst.offer !== false;
-    }).length;
+    });
   } catch (error) {
-    console.warn('Eşleşen kurum sayısı hesaplanamadı:', error);
-    return 0;
+    console.warn('Eşleşen kurumlar hesaplanamadı:', error);
+    return [];
   }
 }
+
+function getMatchingInstitutionCount(request) {
+  return getMatchingInstitutions(request).length;
+}
+
+function normalizeWhatsappTarget(value){
+  const digits=String(value||'').replace(/\D/g,'');
+  if(!digits)return '';
+  if(digits.startsWith('90') && digits.length>=12)return digits;
+  if(digits.startsWith('0') && digits.length===11)return '90'+digits.slice(1);
+  if(digits.length===10)return '90'+digits;
+  return digits;
+}
+
+function whatsappInstitutionMessage(inst,tracking,requestData,quoteId){
+  const service=String(requestData.service||'Teklif Talebi').trim();
+  const location=[requestData.district,requestData.city].filter(Boolean).join(' / ')||'Konum belirtilmedi';
+  const panelUrl=new URL('institution.html?tab=quotes',window.location.href).toString();
+  const shortId=quoteId ? 'DJY-'+String(quoteId).slice(-8).toUpperCase() : tracking.trackingCode;
+
+  return [
+    'Merhaba, Dijiyer üzerinden fiyat teklifi almak istiyorum.',
+    '',
+    'Hizmet: '+service,
+    'Bölge: '+location,
+    'Talep No: '+shortId,
+    'Takip Kodu: '+tracking.trackingCode,
+    '',
+    'Kurum panelinden teklif verebilirsiniz:',
+    panelUrl,
+    '',
+    'Teklif Dijiyer üzerinden gönderildiğinde fiyat ve şartları karşılaştırıp kabul edebileceğim.'
+  ].join('\n');
+}
+
+function renderWhatsappInstitutionHandoff(tracking,requestData,quoteId){
+  const root=document.getElementById('quoteWhatsappInstitutions');
+  if(!root)return;
+
+  const rows=getMatchingInstitutions(requestData)
+    .filter(inst=>normalizeWhatsappTarget(inst.whatsapp||inst.phone))
+    .slice(0,5);
+
+  if(!rows.length){
+    root.innerHTML='';
+    return;
+  }
+
+  root.innerHTML=`
+    <div style="padding:14px;border:1px solid #dbeafe;background:#f8fbff;border-radius:14px">
+      <strong style="display:block;margin-bottom:4px">WhatsApp ile de haber ver</strong>
+      <small style="display:block;color:#64748b;margin-bottom:10px">Talep Dijiyer'de kayıtlı kalır. WhatsApp yalnızca kuruma bildirim göndermek için kullanılır.</small>
+      <div style="display:grid;gap:8px">
+        ${rows.map(inst=>`
+          <button type="button" class="btn btn-whatsapp" data-wa-inst="${escapeHtml(String(inst.id))}" style="width:100%;justify-content:center">
+            WhatsApp · ${escapeHtml(inst.name||'Kurum')}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  root.querySelectorAll('[data-wa-inst]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const inst=rows.find(item=>String(item.id)===String(btn.dataset.waInst));
+      if(!inst)return;
+      const phone=normalizeWhatsappTarget(inst.whatsapp||inst.phone);
+      if(!phone){
+        showToast('Bu kurumun WhatsApp numarası kayıtlı değil.');
+        return;
+      }
+      const message=encodeURIComponent(whatsappInstitutionMessage(inst,tracking,requestData,quoteId));
+      window.open('https://wa.me/'+phone+'?text='+message,'_blank','noopener');
+    });
+  });
+}
+
 
 async function createQuoteTrackingAccess(quoteId, request) {
   const normalizedPhone = normalizeQuoteTrackingPhone(request.phone);
@@ -4821,6 +4898,8 @@ function showQuoteTrackingSuccess(tracking, matchedCount, quoteId, requestData =
       'noopener'
     );
   };
+
+  renderWhatsappInstitutionHandoff(tracking,requestData,quoteId);
 
   openModal('quoteSuccessModal');
 }
