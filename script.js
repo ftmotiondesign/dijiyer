@@ -3519,39 +3519,123 @@ function openInstitutionCompareModal() {
   if (!content) return;
 
   const cells = (render) => selected.map(render).join('');
+  const textValue = (value, fallback='Belirtilmedi') => {
+    const text = Array.isArray(value)
+      ? value.filter(Boolean).join(' · ')
+      : String(value || '').trim();
+    return text || fallback;
+  };
+
+  const compareRows = [
+    {
+      label:'Programlar / Hizmetler',
+      render:inst => {
+        const programs=Array.isArray(inst.programs) ? inst.programs.filter(Boolean) : [];
+        const value=programs.length ? programs.join(' · ') : (inst.classes && inst.classes!=='Bilgi eklenecek' ? inst.classes : institutionCategoryLabel(inst));
+        return '<div class="compare-value-cell compare-program-cell"><span>'+escapeHtml(textValue(value))+'</span></div>';
+      }
+    },
+    {
+      label:'Sınıf Mevcudu',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.classSize))+'</span></div>'
+    },
+    {
+      label:'Deneme Sınavı',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.trialExam))+'</span></div>'
+    },
+    {
+      label:'Rehberlik / Koçluk',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.guidance))+'</span></div>'
+    },
+    {
+      label:'Etüt Desteği',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.studySupport))+'</span></div>'
+    },
+    {
+      label:'Taksit',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.installment))+'</span></div>'
+    },
+    {
+      label:'Fiyat Seviyesi',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.priceLevel,'Fiyat için görüşün'))+'</span></div>'
+    },
+    {
+      label:'Güncel Kampanya',
+      render:inst => '<div class="compare-value-cell compare-campaign-cell"><span>'+escapeHtml(textValue(inst.campaign,'Kampanya belirtilmedi'))+'</span></div>'
+    },
+    {
+      label:'Puan',
+      render:inst => '<div class="compare-value-cell"><b>⭐ '+Number(inst.rating || 0).toFixed(1)+'</b><small>'+Number(inst.reviewCount || 0)+' değerlendirme</small></div>'
+    },
+    {
+      label:'Tavsiye',
+      render:inst => {
+        const has=Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate));
+        return '<div class="compare-value-cell">'+(has
+          ? '<b class="compare-yes">👍 %'+Math.round(Number(inst.recommendationRate))+'</b><small>'+Number(inst.recommendationYes||0)+' kişi tavsiye etti</small>'
+          : '<span>Henüz veri yok</span>')+'</div>';
+      }
+    },
+    {
+      label:'Konum',
+      render:inst => '<div class="compare-value-cell"><span>📍 '+escapeHtml(textValue(inst.location || [inst.city,inst.district].filter(Boolean).join(', ')))+'</span><small>'+escapeHtml(textValue(inst.address,''))+'</small></div>'
+    },
+    {
+      label:'Tanıtım',
+      render:inst => '<div class="compare-value-cell">'+
+        (inst.video ? '<b class="compare-yes">▶ Videolu profil</b>' : '<span>Standart profil</span>')+
+        (inst.has360Tour ? '<small>360° tur mevcut</small>' : '')+
+        '</div>'
+    },
+    {
+      label:'Çalışma Saatleri',
+      render:inst => '<div class="compare-value-cell"><span>'+escapeHtml(textValue(inst.weekdayHours))+'</span></div>'
+    },
+    {
+      label:'Bilgi / Fiyat',
+      render:inst => '<div class="compare-value-cell">'+(inst.offer ? '<b class="compare-yes">✓ Talep gönderilebilir</b>' : '<span>Kapalı</span>')+'</div>'
+    }
+  ];
 
   content.innerHTML = `
-    <div class="compare-grid" style="--compare-count:${selected.length}">
-      <div class="compare-label-cell"></div>
+    <div class="compare-summary-strip">
+      <div>
+        <span>KARAR DESTEK TABLOSU</span>
+        <strong>${selected.length} kurumu aynı kriterlerle karşılaştırıyorsunuz</strong>
+      </div>
+      <small>Eksik alanlar “Belirtilmedi” olarak gösterilir. Son kararı kendi önceliklerinize göre verin.</small>
+    </div>
+
+    <div class="compare-grid compare-grid-detailed" style="--compare-count:${selected.length}">
+      <div class="compare-label-cell compare-sticky-label">Kriter</div>
       ${cells(inst => `
         <div class="compare-institution-head">
           ${inst.logoUrl
             ? '<img src="' + safePublicProfileUrl(inst.logoUrl) + '" alt="">'
             : '<span>' + escapeHtml(inst.emoji || '🏢') + '</span>'}
           <strong>${escapeHtml(inst.name)}</strong>
-          <small>📍 ${escapeHtml(inst.location || '-')}</small>
+          <small>${escapeHtml(institutionCategoryLabel(inst))}</small>
+          <small>📍 ${escapeHtml(inst.location || [inst.city,inst.district].filter(Boolean).join(', ') || '-')}</small>
+          <a href="kurum.html?id=${encodeURIComponent(inst.id)}">Kurumu İncele →</a>
         </div>
       `)}
 
-      <div class="compare-label-cell">Puan</div>
-      ${cells(inst => '<div class="compare-value-cell"><b>⭐ ' + Number(inst.rating || 0).toFixed(1) + '</b><small>' + Number(inst.reviewCount || 0) + ' değerlendirme</small></div>')}
+      ${compareRows.map(row => `
+        <div class="compare-label-cell compare-sticky-label">${escapeHtml(row.label)}</div>
+        ${cells(row.render)}
+      `).join('')}
 
-      <div class="compare-label-cell">Teklif</div>
-      ${cells(inst => '<div class="compare-value-cell">' + (inst.offer ? '<b class="compare-yes">✓ Teklif veriyor</b>' : '<span>Teklif kapalı</span>') + '</div>')}
-
-      <div class="compare-label-cell">Tanıtım</div>
-      ${cells(inst => '<div class="compare-value-cell">' + (inst.video ? '<b class="compare-yes">▶ Videolu profil</b>' : '<span>Standart profil</span>') + '</div>')}
-
-      <div class="compare-label-cell">Hizmet Bölgesi</div>
-      ${cells(inst => '<div class="compare-value-cell"><span>' + escapeHtml(inst.serviceAreas || inst.location || '-') + '</span></div>')}
-
-      <div class="compare-label-cell">Çalışma</div>
-      ${cells(inst => '<div class="compare-value-cell"><span>' + escapeHtml(inst.weekdayHours || 'Bilgi yok') + '</span></div>')}
-
-      <div class="compare-label-cell">İşlem</div>
-      ${cells(inst => '<div class="compare-value-cell"><a href="kurum.html?id=' + encodeURIComponent(inst.id) + '">Profili Gör →</a></div>')}
+      <div class="compare-label-cell compare-sticky-label">İşlem</div>
+      ${cells(inst => '<div class="compare-value-cell compare-action-cell"><a href="kurum.html?id=' + encodeURIComponent(inst.id) + '">Profili Gör</a>' + (inst.offer ? '<button type="button" data-compare-offer="'+escapeHtml(String(inst.id))+'">Bilgi / Fiyat İste</button>' : '') + '</div>')}
     </div>
   `;
+
+  content.querySelectorAll('[data-compare-offer]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('institutionCompareModal')?.classList.add('hidden');
+      openInstitutionDirectQuote(btn.dataset.compareOffer);
+    });
+  });
 
   document.getElementById('institutionCompareModal')?.classList.remove('hidden');
 }
