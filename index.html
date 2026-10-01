@@ -48,7 +48,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=86" />
+  <link rel="stylesheet" href="style.css?v=87" />
   <link rel="stylesheet" href="offers.css?v=3" />
   <link rel="stylesheet" href="market-nav.css?v=7">
   <script src="market-nav.js?v=8" defer></script>
@@ -180,27 +180,12 @@
           </button>
           <a href="#resultsSection" class="hero-appointment-btn">🔎 Kurumları İncele</a>
           <button type="button" class="hero-secondary-btn" id="heroInstitutionBtn">
-            İşletmeni Ücretsiz Ekle
+            Kurumunu Ekle
           </button>
         </div>
 
-        <form class="hero-tracking-box" id="heroTrackingForm">
-          <div class="hero-tracking-copy">
-            <span>TEKLİFİMİ TAKİP ET</span>
-            <strong>Üye olmadan tekliflerini aç</strong>
-            <small>Takip kodu + talepte kullandığın telefon yeterli.</small>
-          </div>
-          <div class="hero-tracking-fields">
-            <input id="heroTrackingCode" type="text" autocomplete="off" placeholder="Takip kodu · DJY-..." required>
-            <input id="heroTrackingPhone" type="tel" autocomplete="tel" placeholder="Telefon · 05xx xxx xx xx" required>
-            <button type="submit">Tekliflerimi Aç</button>
-          </div>
-          <p class="hero-tracking-message" id="heroTrackingMessage"></p>
-          <a href="teklif.html?taleplerim=1" style="display:inline-block;margin-top:7px;color:#fff;font-size:10.5px;font-weight:850;text-decoration:underline">Farklı sektörlerdeki taleplerim · Tüm Taleplerim</a>
-        </form>
-
         <div class="home-hero-note">
-          Kredi kartı gerekmez · Üyelik zorunlu değil · Gizli ücret yok
+          Kurumları keşfetmek için üyelik gerekmez · Bilgileri incele · Seçeneklerini karşılaştır
         </div>
       </div>
 
@@ -243,8 +228,7 @@
         <h2>Kategori seç, yakınındaki kurumları hemen gör</h2>
       </div>
       <div class="main-portals-heading-actions">
-        <a href="randevu.html" class="desktop-appointment-cta">📅 Randevu Al</a>
-        <small>Kurum · Hizmet · Teklif · Randevu</small>
+        <small>Konumunu seç · Kategorini belirle · Kurumları karşılaştır</small>
       </div>
     </div>
 
@@ -278,17 +262,17 @@
       </div>
       <div class="desktop-category-preview-actions">
         <button type="button" class="desktop-category-preview-open" id="desktopCategoryPreviewOpen">Kurumları Gör</button>
-        <a href="teklif-al.html" class="desktop-category-preview-quote">Ücretsiz Teklif Al</a>
+        <a href="#resultsSection" class="desktop-category-preview-quote">Karşılaştırmaya Git</a>
       </div>
 
       <div class="desktop-category-inline-results hidden" id="desktopCategoryInlineResults"></div>
     </section>
 
     <div class="desktop-service-shortcuts">
-      <a href="teklif-al.html"><span>🏷</span><div><strong>Ücretsiz Teklif Al</strong><small>İhtiyacını yaz, işletmeler fiyat versin.</small></div><b>→</b></a>
-      <a href="randevu.html" class="appointment-shortcut"><span>📅</span><div><strong>Randevu Al</strong><small>Randevu veren kurumları bul, uygun saatini seç.</small></div><b>→</b></a>
-      <a href="is-firsatlari.html"><span>💼</span><div><strong>İş Fırsatları</strong><small>İş, eleman ve ek kazanç ilanlarını gör.</small></div><b>→</b></a>
-      <a href="bayi-servis.html"><span>🔧</span><div><strong>Bayi &amp; Servis Bul</strong><small>Markaya göre yetkili noktaları keşfet.</small></div><b>→</b></a>
+      <a href="#resultsSection"><span>⚖️</span><div><strong>Kurumları Karşılaştır</strong><small>Seçtiğin 2-3 kurumu özellikleriyle yan yana incele.</small></div><b>→</b></a>
+      <a href="randevu.html" class="appointment-shortcut"><span>📅</span><div><strong>Randevu Al</strong><small>Görüşmek istediğin kurum için uygun zamanı seç.</small></div><b>→</b></a>
+      <a href="teklif-al.html"><span>💬</span><div><strong>Bilgi / Fiyat İste</strong><small>Gerekirse kurumlara doğrudan bilgi veya fiyat talebi gönder.</small></div><b>→</b></a>
+      <a href="firsatlar.html"><span>🎯</span><div><strong>Kampanyaları Gör</strong><small>Bölgenizdeki güncel kurum fırsatlarını incele.</small></div><b>→</b></a>
     </div>
   </section>
 
@@ -557,7 +541,7 @@
 
       <div class="sidebar-note">
   <strong>Dijiyer</strong>
-  <p>Aradığın hizmeti bul, kurumları karşılaştır, teklif al ve kolayca ulaş.</p>
+  <p>Aradığın kurumu bul, bilgilerini incele, seçenekleri karşılaştır ve doğrudan ulaş.</p>
 </div>
     </aside>
 
@@ -1428,7 +1412,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="page-banner.js?v=2"></script>
-  <script src="script.js?v=216"></script>
+  <script src="script.js?v=217"></script>
 <script src="offers.js?v=7"></script>
 </body>
 </html>
