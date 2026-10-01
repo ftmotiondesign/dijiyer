@@ -347,3 +347,21 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,
 .kp-campaign-box small{display:block;color:#957000;font-size:7.5px;font-weight:900}
 .kp-campaign-box strong{display:block;margin-top:2px;color:#5c4700;font-size:10.5px}
 @media(max-width:700px){.kp-fact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* ON KAYIT V1 */
+.kp-btn.prereg{background:#eefbf5;border-color:#bfe8d3;color:#127a4d}
+.kp-btn.prereg:hover{background:#dcf7e9;border-color:#9dd8bb}
+.kp-mobile-actions .prereg{background:#ecfdf5;color:#15803d}
+.kp-prereg-card{width:min(560px,96vw);max-height:92vh;overflow-y:auto}
+.kp-prereg-intro{margin:0 34px 12px 0;color:#718096;font-size:9.5px;line-height:1.55}
+.kp-prereg-badge{padding:5px 8px;border-radius:999px;background:#dcfce7;color:#15803d;font-size:8px;font-weight:900;white-space:nowrap}
+.kp-prereg-consent{display:flex!important;align-items:flex-start;gap:9px;padding:11px 12px;border:1px solid #d6e3ef;border-radius:11px;background:#f8fafc;cursor:pointer}
+.kp-prereg-consent input{width:18px!important;height:18px;flex:0 0 auto;margin-top:1px;accent-color:#16a34a}
+.kp-prereg-consent span{font-size:9px!important;font-weight:700!important;line-height:1.45;color:#526175!important}
+.kp-prereg-submit{background:#16824a}
+.kp-prereg-submit:hover{background:#116c3d}
+@media(max-width:640px){
+  .kp-prereg-badge{grid-column:2;width:max-content}
+  .kp-mobile-actions:has(.prereg){grid-template-columns:repeat(5,1fr)}
+}
