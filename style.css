@@ -20748,3 +20748,34 @@ to{opacity:1;transform:none}
     height:44px;
   }
 }
+
+
+/* Üst bar · Tüm Taleplerim */
+.top-all-requests-btn{
+  height:46px;
+  padding:0 14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #dfe6ef;
+  border-radius:12px;
+  background:#fff;
+  color:#17243a;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.top-all-requests-btn:hover{
+  border-color:#b9cdea;
+  background:#f8fbff;
+  box-shadow:0 4px 12px rgba(22,119,255,.07);
+}
+@media(min-width:1151px){
+  .topbar{
+    grid-template-columns:260px minmax(300px,1fr) 235px 150px 145px 180px;
+  }
+}
+@media(max-width:1150px){
+  .top-all-requests-btn{display:none}
+}
