@@ -753,16 +753,27 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     const institutionWhatsapp=directWhatsappTarget(institution.whatsapp||institution.phone||"");
 
     if(whatsappBtn){
+      whatsappBtn.classList.remove("hidden");
+      if(whatsappNote)whatsappNote.classList.remove("hidden");
+
       if(institutionWhatsapp && tracking){
-        whatsappBtn.classList.remove("hidden");
-        if(whatsappNote)whatsappNote.classList.remove("hidden");
+        whatsappBtn.disabled=false;
+        whatsappBtn.textContent="WhatsApp'tan Kuruma Haber Ver";
+        if(whatsappNote)whatsappNote.textContent="Talep Dijiyer'de kayıtlı kalır; WhatsApp yalnızca kuruma bildirim gönderir.";
         whatsappBtn.onclick=()=>{
           const message=encodeURIComponent(directWhatsappMessage(tracking,request,quoteRef.id));
           window.open("https://wa.me/"+institutionWhatsapp+"?text="+message,"_blank","noopener");
         };
+      }else if(!institutionWhatsapp){
+        whatsappBtn.disabled=true;
+        whatsappBtn.textContent="WhatsApp numarası kayıtlı değil";
+        if(whatsappNote)whatsappNote.textContent="Bu kurumun telefon/WhatsApp numarası kurum kaydına eklenince burada WhatsApp bildirimi açılacak.";
+        whatsappBtn.onclick=null;
       }else{
-        whatsappBtn.classList.add("hidden");
-        if(whatsappNote)whatsappNote.classList.add("hidden");
+        whatsappBtn.disabled=true;
+        whatsappBtn.textContent="WhatsApp bildirimi hazırlanamadı";
+        if(whatsappNote)whatsappNote.textContent="Takip kaydı oluşmadığı için WhatsApp bildirimi hazırlanamadı.";
+        whatsappBtn.onclick=null;
       }
     }
 
