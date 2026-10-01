@@ -31,6 +31,15 @@ function ensureTrackingInputsInteractive(){
 
 ensureTrackingInputsInteractive();
 document.addEventListener("DOMContentLoaded",ensureTrackingInputsInteractive,{once:true});
+
+document.getElementById("showAllRequestsBtn")?.addEventListener("click",openAllLocalRequests);
+document.getElementById("closeAllRequestsBtn")?.addEventListener("click",()=>{
+  document.getElementById("allRequestsCard")?.classList.add("hidden");
+});
+document.getElementById("allRequestsForm")?.addEventListener("submit",event=>{
+  event.preventDefault();
+  renderAllLocalRequests(document.getElementById("allRequestsPhone")?.value||"");
+});
 let currentAccess=null;
 let stopOffersListener=null;
 let stopOfferHistoryListener=null;
@@ -76,6 +85,116 @@ function toast(text){
   setTimeout(()=>el.classList.remove("show"),2400);
 }
 function normalizeCode(v){return String(v||"").trim().toUpperCase();}
+
+function localCustomerRequestsForPhone(rawPhone){
+  const phone=normalizePhone(rawPhone);
+  if(phone.length<10)return [];
+
+  let dataMap={};
+  let phoneMap={};
+  try{dataMap=JSON.parse(localStorage.getItem("dijiyerCustomerQuoteData")||"{}")||{};}catch(_){}
+  try{phoneMap=JSON.parse(localStorage.getItem("dijiyerTrackingPhoneByCode")||"{}")||{};}catch(_){}
+
+  return Object.entries(dataMap)
+    .map(([quoteId,row])=>({quoteId,...(row||{})}))
+    .filter(row=>{
+      const code=normalizeCode(row.trackingCode||"");
+      const rowPhone=normalizePhone(row.phone||phoneMap[code]||"");
+      return code && rowPhone===phone;
+    })
+    .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+}
+
+function localRequestDateLabel(value){
+  if(!value)return "-";
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return "-";
+  return d.toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+function renderAllLocalRequests(rawPhone){
+  const phone=normalizePhone(rawPhone);
+  const messageEl=document.getElementById("allRequestsMessage");
+  const listEl=document.getElementById("allRequestsList");
+  if(!listEl)return;
+
+  if(phone.length<10){
+    if(messageEl)messageEl.textContent="Geçerli bir telefon numarası yazın.";
+    listEl.innerHTML="";
+    return;
+  }
+
+  const rows=localCustomerRequestsForPhone(phone);
+  if(messageEl)messageEl.textContent=rows.length
+    ? rows.length+" talep bulundu."
+    : "Bu cihazda bu telefon numarasıyla kayıtlı bir talep bulunamadı.";
+
+  if(!rows.length){
+    listEl.innerHTML='<div class="empty">Henüz kayıtlı talep yok. Başka bir cihazda oluşturulan talepler için takip kodu gerekir.</div>';
+    return;
+  }
+
+  listEl.innerHTML=rows.map(row=>{
+    const service=safe(row.service||row.subCategory||"Teklif Talebi");
+    const location=safe([row.city,row.district].filter(Boolean).join(" / ")||"-");
+    const code=safe(normalizeCode(row.trackingCode||""));
+    return `
+      <article class="all-request-row">
+        <div class="all-request-main">
+          <span class="all-request-sector">${safe(row.mainCategory||"Talep")}</span>
+          <strong>${service}</strong>
+          <small>📍 ${location} · ${safe(localRequestDateLabel(row.date))}</small>
+          <em>${code}</em>
+        </div>
+        <button type="button"
+          data-open-local-request="${safe(row.trackingCode||"")}"
+          data-local-phone="${safe(phone)}">
+          Teklifleri Aç
+        </button>
+      </article>`;
+  }).join("");
+
+  listEl.querySelectorAll("[data-open-local-request]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      const code=normalizeCode(button.dataset.openLocalRequest||"");
+      const localPhone=normalizePhone(button.dataset.localPhone||"");
+      if(!code||!localPhone)return;
+
+      codeInput.value=code;
+      phoneInput.value=localPhone.length===10 ? "0"+localPhone : localPhone;
+      sessionStorage.setItem("dijiyerTrackingCode",code);
+      sessionStorage.setItem("dijiyerTrackingPhone",localPhone);
+
+      document.getElementById("allRequestsCard")?.classList.add("hidden");
+      form.requestSubmit();
+    });
+  });
+}
+
+function openAllLocalRequests(){
+  const card=document.getElementById("allRequestsCard");
+  const phoneField=document.getElementById("allRequestsPhone");
+  if(!card||!phoneField)return;
+
+  const remembered=normalizePhone(
+    phoneInput?.value ||
+    sessionStorage.getItem("dijiyerTrackingPhone") ||
+    ""
+  );
+
+  if(remembered && !phoneField.value){
+    phoneField.value=remembered.length===10 ? "0"+remembered : remembered;
+  }
+
+  card.classList.remove("hidden");
+  card.scrollIntoView({behavior:"smooth",block:"start"});
+
+  if(phoneField.value){
+    renderAllLocalRequests(phoneField.value);
+  }else{
+    setTimeout(()=>phoneField.focus(),120);
+  }
+}
 
 function acceptedQuoteStorageKey(quoteId){
   return "dijiyerAcceptedQuote_"+String(quoteId||"");
@@ -1642,7 +1761,14 @@ if(rememberedPhone){
 
 ensureTrackingInputsInteractive();
 
-const autoOpenTracking=new URLSearchParams(location.search).get("oto")==="1";
+const pageParams=new URLSearchParams(location.search);
+const autoOpenTracking=pageParams.get("oto")==="1";
+const openAllRequestsFromUrl=pageParams.get("taleplerim")==="1";
+
+if(openAllRequestsFromUrl){
+  setTimeout(openAllLocalRequests,120);
+}
+
 if(autoOpenTracking && codeInput.value && phoneInput.value){
   setTimeout(()=>{
     if(!submitBtn.disabled){
