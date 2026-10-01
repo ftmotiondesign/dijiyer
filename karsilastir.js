@@ -118,6 +118,40 @@ function isEducationSector(inst){
   return educationSectorKeys.has(sectorKey(inst)) || String(inst?.mainCategory||"")==="egitim";
 }
 
+function campaignSponsorIsActive(inst){
+  if(!inst?.campaignSponsored || !String(inst?.campaign||"").trim())return false;
+  const now=new Date();
+  const start=inst.campaignSponsorStart ? new Date(inst.campaignSponsorStart+"T00:00:00") : null;
+  const end=inst.campaignSponsorEnd ? new Date(inst.campaignSponsorEnd+"T23:59:59") : null;
+  if(start && Number.isFinite(start.getTime()) && now<start)return false;
+  if(end && Number.isFinite(end.getTime()) && now>end)return false;
+  return true;
+}
+
+function sponsoredCampaignHtml(inst){
+  const text=value(inst.campaign,"Kampanya belirtilmedi");
+  if(!campaignSponsorIsActive(inst)){
+    return '<span class="campaign">'+esc(text)+'</span>';
+  }
+
+  const endText=inst.campaignSponsorEnd
+    ? '<small>'+esc(inst.campaignSponsorEnd.split("-").reverse().join("."))+' tarihine kadar</small>'
+    : '';
+
+  const url=safeUrl(inst.campaignSponsorUrl);
+  const cta=url
+    ? '<a class="sponsored-campaign-cta" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(inst.campaignSponsorCta||"Kampanyayı İncele")+'</a>'
+    : '';
+
+  return '<div class="sponsored-campaign-card">'+
+    '<span class="sponsored-campaign-badge">Sponsorlu Kampanya</span>'+
+    '<strong>'+esc(text)+'</strong>'+
+    endText+
+    cta+
+    '<em>Reklam</em>'+
+  '</div>';
+}
+
 function showToast(message){
   const root=document.getElementById("compareToast");
   if(!root)return;
@@ -142,7 +176,13 @@ function normalizeInstitutionData(id,data={}){
     studySupport:data.studySupport||data.etut||"",
     installment:data.installment||data.installmentInfo||"",
     priceLevel:data.priceLevel||data.priceRange||"",
-    campaign:data.campaign||data.campaignTitle||""
+    campaign:data.campaign||data.campaignTitle||"",
+    campaignSponsored:Boolean(data.campaignSponsored),
+    campaignSponsorStart:String(data.campaignSponsorStart||""),
+    campaignSponsorEnd:String(data.campaignSponsorEnd||""),
+    campaignSponsorRevenue:Number(data.campaignSponsorRevenue||0),
+    campaignSponsorCta:String(data.campaignSponsorCta||"Kampanyayı İncele"),
+    campaignSponsorUrl:String(data.campaignSponsorUrl||"")
   };
 }
 
@@ -447,7 +487,7 @@ function renderTable(){
     row("Öne Çıkan Özellikler",inst=>'<span>'+esc(value(listValue(inst.highlights)))+'</span>')+
     row("Fiyat Seviyesi / Aralığı",inst=>'<strong>'+esc(value(inst.priceLevel,"Fiyat için görüşün"))+'</strong>')+
     row("Taksit / Ödeme",inst=>'<strong>'+esc(value(inst.installment))+'</strong>')+
-    row("Güncel Kampanya",inst=>'<span class="campaign">'+esc(value(inst.campaign,"Kampanya belirtilmedi"))+'</span>')+
+    row("Güncel Kampanya",inst=>sponsoredCampaignHtml(inst))+
     row("Puan",inst=>'<strong>⭐ '+Number(inst.rating||0).toFixed(1)+'</strong><small>'+Number(inst.reviewCount||0)+' değerlendirme</small>')+
     row("Tavsiye",inst=>{
       const count=Number(inst.recommendationCount||0);
