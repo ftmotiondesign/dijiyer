@@ -36,6 +36,31 @@ document.getElementById("showAllRequestsBtn")?.addEventListener("click",openAllL
 document.getElementById("closeAllRequestsBtn")?.addEventListener("click",()=>{
   document.getElementById("allRequestsCard")?.classList.add("hidden");
 });
+
+document.getElementById("closeInlineTrackingBtn")?.addEventListener("click",()=>{
+  stopLiveTracking();
+  currentAccess=null;
+  liveOffers=[];
+  liveOfferHistory=[];
+  liveLock=null;
+  liveEngagement=[];
+  livePublicStatus=null;
+  openingRequestInline=false;
+
+  const header=document.getElementById("inlineTrackingHeader");
+  const resultBox=document.getElementById("trackingResults");
+
+  header?.classList.add("hidden");
+  if(resultBox){
+    resultBox.innerHTML="";
+    resultBox.classList.add("hidden");
+  }
+
+  document.getElementById("allRequestsCard")?.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+});
 document.getElementById("allRequestsForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
 
@@ -99,6 +124,7 @@ const newlyArrivedOfferIds=new Set();
 let latestNewOfferNotice=null;
 let offerSortMode=localStorage.getItem("dijiyerOfferSortMode")||"arrival";
 let acceptInProgress=false;
+let openingRequestInline=false;
 
 function safe(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -198,8 +224,11 @@ function renderAllLocalRequests(rawPhone){
       sessionStorage.setItem("dijiyerTrackingPhone",localPhone);
       localStorage.setItem("dijiyerLastTrackingCode",code);
 
-      // Her zaman teklif takip sayfasında kal ve seçilen talebi burada aç.
-      window.location.href="teklif.html?kod="+encodeURIComponent(code)+"&oto=1";
+      // Aynı sayfada, Tüm Taleplerim listesinin altında aç.
+      codeInput.value=code;
+      phoneInput.value=localPhone.length===10 ? "0"+localPhone : localPhone;
+      openingRequestInline=true;
+      form.requestSubmit();
     });
   });
 }
@@ -1765,10 +1794,18 @@ form.addEventListener("submit",async e=>{
       startLiveTracking(currentAccess);
     }
 
-    document.getElementById("trackingLoginCard").classList.add("hidden");
-    document.getElementById("allRequestsCard")?.classList.add("hidden");
+    if(openingRequestInline){
+      document.getElementById("allRequestsCard")?.classList.remove("hidden");
+      document.getElementById("inlineTrackingHeader")?.classList.remove("hidden");
+      openingRequestInline=false;
+    }else{
+      document.getElementById("trackingLoginCard").classList.add("hidden");
+      document.getElementById("allRequestsCard")?.classList.add("hidden");
+      document.getElementById("inlineTrackingHeader")?.classList.add("hidden");
+    }
+
     setTimeout(()=>{
-      document.getElementById("trackingResults")?.scrollIntoView({behavior:"smooth",block:"start"});
+      document.getElementById("inlineTrackingHeader")?.scrollIntoView({behavior:"smooth",block:"start"});
     },80);
   }catch(error){
     console.error(error);
