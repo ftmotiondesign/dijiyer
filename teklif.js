@@ -49,17 +49,16 @@ document.getElementById("closeInlineTrackingBtn")?.addEventListener("click",()=>
 
   const header=document.getElementById("inlineTrackingHeader");
   const resultBox=document.getElementById("trackingResults");
+  const activeSlot=header?.closest(".all-request-inline-slot") || resultBox?.closest(".all-request-inline-slot");
+  const activeRow=activeSlot?.closest(".all-request-row");
 
   header?.classList.add("hidden");
   if(resultBox){
     resultBox.innerHTML="";
     resultBox.classList.add("hidden");
   }
-
-  document.getElementById("allRequestsCard")?.scrollIntoView({
-    behavior:"smooth",
-    block:"start"
-  });
+  activeSlot?.classList.add("hidden");
+  activeRow?.classList.remove("is-open");
 });
 document.getElementById("allRequestsForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
@@ -199,18 +198,21 @@ function renderAllLocalRequests(rawPhone){
     const location=safe([row.city,row.district].filter(Boolean).join(" / ")||"-");
     const code=safe(normalizeCode(row.trackingCode||""));
     return `
-      <article class="all-request-row">
-        <div class="all-request-main">
-          <span class="all-request-sector">${safe(row.mainCategory||"Talep")}</span>
-          <strong>${service}</strong>
-          <small>📍 ${location} · ${safe(localRequestDateLabel(row.date))}</small>
-          <em>${code}</em>
+      <article class="all-request-row" data-request-row="${safe(row.trackingCode||"")}">
+        <div class="all-request-row-top">
+          <div class="all-request-main">
+            <span class="all-request-sector">${safe(row.mainCategory||"Talep")}</span>
+            <strong>${service}</strong>
+            <small>📍 ${location} · ${safe(localRequestDateLabel(row.date))}</small>
+            <em>${code}</em>
+          </div>
+          <button type="button"
+            data-open-local-request="${safe(row.trackingCode||"")}"
+            data-local-phone="${safe(phone)}">
+            Teklifleri Aç
+          </button>
         </div>
-        <button type="button"
-          data-open-local-request="${safe(row.trackingCode||"")}"
-          data-local-phone="${safe(phone)}">
-          Teklifleri Aç
-        </button>
+        <div class="all-request-inline-slot hidden" data-inline-slot="${safe(row.trackingCode||"")}"></div>
       </article>`;
   }).join("");
 
@@ -224,7 +226,27 @@ function renderAllLocalRequests(rawPhone){
       sessionStorage.setItem("dijiyerTrackingPhone",localPhone);
       localStorage.setItem("dijiyerLastTrackingCode",code);
 
-      // Aynı sayfada, Tüm Taleplerim listesinin altında aç.
+      const slot=listEl.querySelector(
+        '[data-inline-slot="'+CSS.escape(code)+'"]'
+      );
+      if(!slot)return;
+
+      // Açık başka talep varsa kapat.
+      listEl.querySelectorAll(".all-request-inline-slot").forEach(item=>{
+        if(item!==slot)item.classList.add("hidden");
+      });
+      listEl.querySelectorAll(".all-request-row").forEach(item=>{
+        item.classList.remove("is-open");
+      });
+
+      const row=button.closest(".all-request-row");
+      row?.classList.add("is-open");
+      slot.classList.remove("hidden");
+
+      const header=document.getElementById("inlineTrackingHeader");
+      const resultsBox=document.getElementById("trackingResults");
+      slot.append(header,resultsBox);
+
       codeInput.value=code;
       phoneInput.value=localPhone.length===10 ? "0"+localPhone : localPhone;
       openingRequestInline=true;
@@ -1797,16 +1819,13 @@ form.addEventListener("submit",async e=>{
     if(openingRequestInline){
       document.getElementById("allRequestsCard")?.classList.remove("hidden");
       document.getElementById("inlineTrackingHeader")?.classList.remove("hidden");
+      document.getElementById("trackingResults")?.classList.remove("hidden");
       openingRequestInline=false;
     }else{
       document.getElementById("trackingLoginCard").classList.add("hidden");
       document.getElementById("allRequestsCard")?.classList.add("hidden");
       document.getElementById("inlineTrackingHeader")?.classList.add("hidden");
     }
-
-    setTimeout(()=>{
-      document.getElementById("inlineTrackingHeader")?.scrollIntoView({behavior:"smooth",block:"start"});
-    },80);
   }catch(error){
     console.error(error);
     message.textContent=String(error?.message||"Teklifler açılamadı.");
