@@ -36,9 +36,49 @@ document.getElementById("showAllRequestsBtn")?.addEventListener("click",openAllL
 document.getElementById("closeAllRequestsBtn")?.addEventListener("click",()=>{
   document.getElementById("allRequestsCard")?.classList.add("hidden");
 });
-document.getElementById("allRequestsForm")?.addEventListener("submit",event=>{
+document.getElementById("allRequestsForm")?.addEventListener("submit",async event=>{
   event.preventDefault();
-  renderAllLocalRequests(document.getElementById("allRequestsPhone")?.value||"");
+
+  const phoneRaw=document.getElementById("allRequestsPhone")?.value||"";
+  const code=normalizeCode(document.getElementById("allRequestsCode")?.value||"");
+  const messageEl=document.getElementById("allRequestsMessage");
+  const listEl=document.getElementById("allRequestsList");
+  const phone=normalizePhone(phoneRaw);
+
+  if(phone.length<10){
+    if(messageEl)messageEl.textContent="Geçerli bir telefon numarası yazın.";
+    if(listEl)listEl.innerHTML="";
+    return;
+  }
+
+  if(!code){
+    if(messageEl)messageEl.textContent="Güvenlik için size ait geçerli bir takip kodu yazın.";
+    if(listEl)listEl.innerHTML="";
+    return;
+  }
+
+  if(messageEl)messageEl.textContent="Bilgiler doğrulanıyor...";
+
+  try{
+    const access=await verifyAccess(code,phoneRaw);
+
+    sessionStorage.setItem("dijiyerTrackingCode",code);
+    sessionStorage.setItem("dijiyerTrackingPhone",phone);
+    localStorage.setItem("dijiyerLastTrackingCode",code);
+
+    try{
+      const phoneMap=JSON.parse(localStorage.getItem("dijiyerTrackingPhoneByCode")||"{}");
+      phoneMap[code]=phone;
+      localStorage.setItem("dijiyerTrackingPhoneByCode",JSON.stringify(phoneMap));
+    }catch(_){}
+
+    rememberVerifiedQuoteOnDevice(access);
+    renderAllLocalRequests(phone);
+  }catch(error){
+    console.error("Tüm talepler doğrulaması başarısız:",error);
+    if(messageEl)messageEl.textContent="Telefon numarası ve takip kodu eşleşmedi.";
+    if(listEl)listEl.innerHTML="";
+  }
 });
 let currentAccess=null;
 let stopOffersListener=null;
@@ -118,12 +158,6 @@ function renderAllLocalRequests(rawPhone){
   const listEl=document.getElementById("allRequestsList");
   if(!listEl)return;
 
-  if(phone.length<10){
-    if(messageEl)messageEl.textContent="Geçerli bir telefon numarası yazın.";
-    listEl.innerHTML="";
-    return;
-  }
-
   const rows=localCustomerRequestsForPhone(phone);
   if(messageEl)messageEl.textContent=rows.length
     ? rows.length+" talep bulundu."
@@ -160,13 +194,12 @@ function renderAllLocalRequests(rawPhone){
       const localPhone=normalizePhone(button.dataset.localPhone||"");
       if(!code||!localPhone)return;
 
-      codeInput.value=code;
-      phoneInput.value=localPhone.length===10 ? "0"+localPhone : localPhone;
       sessionStorage.setItem("dijiyerTrackingCode",code);
       sessionStorage.setItem("dijiyerTrackingPhone",localPhone);
+      localStorage.setItem("dijiyerLastTrackingCode",code);
 
-      document.getElementById("allRequestsCard")?.classList.add("hidden");
-      form.requestSubmit();
+      // Her zaman teklif takip sayfasında kal ve seçilen talebi burada aç.
+      window.location.href="teklif.html?kod="+encodeURIComponent(code)+"&oto=1";
     });
   });
 }
@@ -174,26 +207,37 @@ function renderAllLocalRequests(rawPhone){
 function openAllLocalRequests(){
   const card=document.getElementById("allRequestsCard");
   const phoneField=document.getElementById("allRequestsPhone");
-  if(!card||!phoneField)return;
+  const codeField=document.getElementById("allRequestsCode");
+  if(!card||!phoneField||!codeField)return;
 
   const remembered=normalizePhone(
     phoneInput?.value ||
     sessionStorage.getItem("dijiyerTrackingPhone") ||
     ""
   );
+  const rememberedCode=normalizeCode(
+    codeInput?.value ||
+    sessionStorage.getItem("dijiyerTrackingCode") ||
+    localStorage.getItem("dijiyerLastTrackingCode") ||
+    ""
+  );
 
   if(remembered && !phoneField.value){
     phoneField.value=remembered.length===10 ? "0"+remembered : remembered;
   }
+  if(rememberedCode && !codeField.value){
+    codeField.value=rememberedCode;
+  }
 
+  document.getElementById("allRequestsMessage").textContent="";
+  document.getElementById("allRequestsList").innerHTML="";
   card.classList.remove("hidden");
   card.scrollIntoView({behavior:"smooth",block:"start"});
 
-  if(phoneField.value){
-    renderAllLocalRequests(phoneField.value);
-  }else{
-    setTimeout(()=>phoneField.focus(),120);
-  }
+  setTimeout(()=>{
+    if(!phoneField.value)phoneField.focus();
+    else if(!codeField.value)codeField.focus();
+  },120);
 }
 
 function acceptedQuoteStorageKey(quoteId){
@@ -1722,6 +1766,10 @@ form.addEventListener("submit",async e=>{
     }
 
     document.getElementById("trackingLoginCard").classList.add("hidden");
+    document.getElementById("allRequestsCard")?.classList.add("hidden");
+    setTimeout(()=>{
+      document.getElementById("trackingResults")?.scrollIntoView({behavior:"smooth",block:"start"});
+    },80);
   }catch(error){
     console.error(error);
     message.textContent=String(error?.message||"Teklifler açılamadı.");
