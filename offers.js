@@ -555,51 +555,10 @@
   }
 
   function syncLiveOfferWatchers(){
-    const ids=getQuoteIds().slice(0,10);
-    const wanted=new Set(ids.map(String));
-
-    liveOfferWatchers.forEach((stop,quoteId)=>{
-      if(wanted.has(String(quoteId)))return;
-      try{ stop(); }catch(_){}
-      liveOfferWatchers.delete(quoteId);
-    });
-
-    ids.forEach(quoteId=>{
-      const id=String(quoteId||"");
-      if(!id || liveOfferWatchers.has(id))return;
-
-      let ready=false;
-      const unsubscribe=db.collection("quoteRequests")
-        .doc(id)
-        .collection("offers")
-        .onSnapshot(async snapshot=>{
-          if(!ready){
-            ready=true;
-            return;
-          }
-
-          const changed=snapshot.docChanges().some(change=>
-            change.type==="added" || change.type==="modified" || change.type==="removed"
-          );
-          if(!changed)return;
-
-          try{
-            await checkQuoteUpdates({notify:true});
-
-            const modal=document.getElementById("myOffersModal");
-            const modalOpen=modal && !modal.classList.contains("hidden");
-            if(modalOpen){
-              await loadMyOffers();
-            }
-          }catch(error){
-            console.warn("Canlı müşteri teklif güncellemesi işlenemedi:",error);
-          }
-        },error=>{
-          console.warn("Müşteri teklifleri canlı izlenemedi:",id,error);
-        });
-
-      liveOfferWatchers.set(id,unsubscribe);
-    });
+    // Firestore maliyetini düşürmek için her kayıtlı talep başına ayrı
+    // onSnapshot açmıyoruz. Teklif hareketleri mevcut 90 sn arka plan
+    // kontrolü, sekmeye dönüş ve Tekliflerim açılışı sırasında yenilenir.
+    stopLiveOfferWatchers();
   }
 
   function ensureNotificationControls(){
