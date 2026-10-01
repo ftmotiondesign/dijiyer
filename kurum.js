@@ -238,6 +238,25 @@ function closeDirectQuote(){
 }
 function routeUrl(x){if(Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))return"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(x.lat+","+x.lng);return"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([x.address,x.district,x.city].filter(Boolean).join(", "))}
 function services(x){const rows=[categoryLabel(x)];String(x.classes||"").split(/[,;\n]/).map(s=>s.trim()).filter(s=>s&&s.toLocaleLowerCase("tr-TR")!=="bilgi eklenecek").forEach(s=>rows.push(s));String(x.services||"").split(/[,;\n]/).map(s=>s.trim()).filter(Boolean).forEach(s=>rows.push(s));return[...new Set(rows)].slice(0,12)}
+function listValue(value){
+  if(Array.isArray(value)) return value.map(v=>String(v||"").trim()).filter(Boolean);
+  return String(value||"").split(/[,;\n]/).map(v=>v.trim()).filter(Boolean);
+}
+
+function discoveryFacts(x){
+  const rows=[];
+  const add=(icon,label,value)=>{
+    const text=String(value||"").trim();
+    if(text) rows.push({icon,label,value:text});
+  };
+  add("👥","Sınıf Mevcudu",x.classSize||x.classCapacity);
+  add("📝","Deneme Sınavı",x.trialExam||x.examFrequency);
+  add("🎯","Rehberlik / Koçluk",x.guidance||x.counseling);
+  add("📖","Etüt Desteği",x.studySupport||x.etut);
+  add("💳","Taksit",x.installment||x.installmentInfo);
+  add("₺","Fiyat Seviyesi",x.priceLevel||x.priceRange);
+  return rows;
+}
 function showToast(text){const e=document.getElementById("toast");e.textContent=text;e.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>e.classList.remove("show"),2000)}
 
 
@@ -330,7 +349,7 @@ function applyInstitutionSeo(x){
 }
 
 function renderProfile(){
-  const x=institution,logo=safeUrl(x.logoUrl),cover=safeUrl(x.coverUrl),video=safeUrl(x.videoUrl||x.profileVideoUrl||x.locationVideoUrl),gallery=(Array.isArray(x.galleryUrls)?x.galleryUrls:[]).map(safeUrl).filter(Boolean).slice(0,9),phone=String(x.phone||"").trim(),whatsapp=whatsappNumber(x.whatsapp||phone),website=safeUrl(x.website),instagram=instagramUrl(x.instagram),tour=safeUrl(x.virtualTourUrl||x.tour360Url||x.tourUrl),serviceRows=services(x);
+  const x=institution,logo=safeUrl(x.logoUrl),cover=safeUrl(x.coverUrl),video=safeUrl(x.videoUrl||x.profileVideoUrl||x.locationVideoUrl),gallery=(Array.isArray(x.galleryUrls)?x.galleryUrls:[]).map(safeUrl).filter(Boolean).slice(0,9),phone=String(x.phone||"").trim(),whatsapp=whatsappNumber(x.whatsapp||phone),website=safeUrl(x.website),instagram=instagramUrl(x.instagram),tour=safeUrl(x.virtualTourUrl||x.tour360Url||x.tourUrl),serviceRows=services(x),programRows=listValue(x.programs),highlightRows=listValue(x.highlights),factRows=discoveryFacts(x);
   applyInstitutionSeo(x);
   const root=document.getElementById("institutionProfile");
   root.innerHTML=`
@@ -344,13 +363,13 @@ function renderProfile(){
           <h1>${escapeHtml(x.name||"Kurum")}</h1>
           <div class="kp-status-badges">
             <span class="kp-status-badge verified">✓ Onaylı Kurum</span>
-            ${x.offer!==false?'<span class="kp-status-badge offer">₺ Teklif Veriyor</span>':""}
+            ${x.offer!==false?'<span class="kp-status-badge offer">Bilgi / Fiyat Alınabilir</span>':""}
             ${x.video||video?'<span class="kp-status-badge video">▶ Videolu Kurum</span>':""}
             ${x.vip?'<span class="kp-status-badge vip">★ Öne Çıkan</span>':""}
           </div>
           <div class="kp-meta"><span>🏷️ ${escapeHtml(categoryLabel(x))}</span><span>📍 ${escapeHtml(locationLabel(x))}</span><span class="rating"><b>★</b> ${ratingText(x.rating)} ${Number(x.reviewCount||0)?"("+Number(x.reviewCount||0)+" değerlendirme)":""}</span></div>
         </div>
-        <div class="kp-actions">${x.offer!==false?'<button type="button" class="kp-btn primary" data-direct-quote>📄 Bu Kurumdan Teklif Al</button>':""}${whatsapp?'<button id="kpWhatsapp" class="kp-btn wa">💬 WhatsApp</button>':""}${phone?'<a class="kp-btn call" href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎ Ara</a>':""}<a id="kpRouteTop" class="kp-btn" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a></div>
+        <div class="kp-actions">${x.offer!==false?'<button type="button" class="kp-btn primary" data-direct-quote>Bilgi / Fiyat İste</button>':""}${whatsapp?'<button id="kpWhatsapp" class="kp-btn wa">💬 WhatsApp</button>':""}${phone?'<a class="kp-btn call" href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎ Ara</a>':""}<a id="kpRouteTop" class="kp-btn" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a></div>
       </div>
     </section>
 
@@ -382,6 +401,21 @@ function renderProfile(){
             ${serviceRows.map(s=>'<span class="kp-service">✓ '+escapeHtml(s)+'</span>').join("")}
           </div>
         </section>
+
+        ${(programRows.length||highlightRows.length||factRows.length||x.campaign)?`
+        <section class="kp-card kp-decision-card">
+          <div class="kp-head">
+            <div>
+              <span class="eyebrow">KARAR ÖZETİ</span>
+              <h2>Bu kurum hakkında hızlı bilgiler</h2>
+              <p>Gitmeden veya aramadan önce önemli özellikleri tek yerde görün.</p>
+            </div>
+          </div>
+          ${programRows.length?`<div class="kp-decision-block"><strong>Programlar / Hizmetler</strong><div class="kp-decision-tags">${programRows.map(item=>'<span>📚 '+escapeHtml(item)+'</span>').join("")}</div></div>`:""}
+          ${factRows.length?`<div class="kp-fact-grid">${factRows.map(f=>'<article><span>'+f.icon+'</span><small>'+escapeHtml(f.label)+'</small><strong>'+escapeHtml(f.value)+'</strong></article>').join("")}</div>`:""}
+          ${highlightRows.length?`<div class="kp-decision-block"><strong>Öne Çıkan Özellikler</strong><div class="kp-highlight-list">${highlightRows.map(item=>'<span>✓ '+escapeHtml(item)+'</span>').join("")}</div></div>`:""}
+          ${x.campaign?`<div class="kp-campaign-box"><span>📣</span><div><small>GÜNCEL KAMPANYA</small><strong>${escapeHtml(x.campaign)}</strong></div></div>`:""}
+        </section>`:""}
 
         <section class="kp-card kp-works-card">
           <div class="kp-head">
@@ -427,7 +461,7 @@ function renderProfile(){
 
       <aside class="kp-side">
 
-        ${x.offer!==false?`<section class="kp-card kp-trust kp-trust-compact"><div class="kp-trust-title"><span>🛡️</span><div><h3>Dijiyer Güvencesi</h3><p>Teklif süreci kayıt altında.</p></div></div><div class="kp-trust-points"><span>✓ Fiyat ve süre görünür</span><span>✓ Seçilen fiyat kilitlenebilir</span><span>✓ Teklif koduyla doğrulama</span><span>✓ Destek kaydı oluşturulabilir</span></div><button type="button" class="kp-btn primary kp-full-btn" data-direct-quote>Bu Kurumdan Teklif Al</button></section>`:""}
+        ${x.offer!==false?`<section class="kp-card kp-trust kp-trust-compact"><div class="kp-trust-title"><span>ℹ️</span><div><h3>Bilgi / Fiyat Talebi</h3><p>Kurum açık fiyat yayınlamıyorsa doğrudan bilgi isteyebilirsiniz.</p></div></div><div class="kp-trust-points"><span>✓ Talep doğrudan kuruma gider</span><span>✓ Ödeme Dijiyer üzerinden alınmaz</span><span>✓ Kurumla doğrudan görüşebilirsiniz</span></div><button type="button" class="kp-btn primary kp-full-btn" data-direct-quote>Bilgi / Fiyat İste</button></section>`:""}
 
         <section class="kp-card kp-contact-card">
           <div class="kp-head kp-compact-head">
