@@ -1092,7 +1092,25 @@ const institutions = [
 
 let selectedId = 1;
 let currentRating = 0;
-const compareInstitutionIds = new Set();
+const DIJIYER_COMPARE_STORAGE_KEY='dijiyerCompareInstitutionIdsV1';
+function loadStoredCompareInstitutionIds(){
+  try{
+    const ids=JSON.parse(localStorage.getItem(DIJIYER_COMPARE_STORAGE_KEY)||'[]');
+    return Array.isArray(ids) ? ids.map(String).filter(Boolean).slice(0,3) : [];
+  }catch(_){
+    return [];
+  }
+}
+const compareInstitutionIds = new Set(loadStoredCompareInstitutionIds());
+
+function persistCompareInstitutionIds(){
+  try{
+    localStorage.setItem(
+      DIJIYER_COMPARE_STORAGE_KEY,
+      JSON.stringify([...compareInstitutionIds].slice(0,3))
+    );
+  }catch(_){}
+}
 
 /* =========================================================
    DİJİYER KAZANÇ · PİLOT DAVET SİSTEMİ
@@ -3562,6 +3580,7 @@ function toggleCompareInstitution(id) {
     compareInstitutionIds.add(key);
   }
 
+  persistCompareInstitutionIds();
   syncCompareSelectionUi();
   renderCompareBar();
 
@@ -3642,6 +3661,7 @@ function renderCompareBar() {
 
   document.getElementById('compareClearBtn')?.addEventListener('click', () => {
     compareInstitutionIds.clear();
+    persistCompareInstitutionIds();
     syncCompareSelectionUi();
     renderCompareBar();
     renderDecisionAlternatives();
@@ -3652,7 +3672,8 @@ function renderCompareBar() {
       showToast('Karşılaştırmak için en az 2 kurum seçin.');
       return;
     }
-    openInstitutionCompareModal();
+    persistCompareInstitutionIds();
+    window.location.href='karsilastir.html';
   });
 }
 
