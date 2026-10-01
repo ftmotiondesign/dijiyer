@@ -8404,10 +8404,14 @@ async function loadInstitutionAccounts() {
 
 async function updateInstitutionAccountStatus(id, status) {
   try {
-    await db.collection("institutionUsers").doc(id).update({
+    const now=new Date().toISOString();
+    const updates={
       status,
-      updatedAt: new Date().toISOString()
-    });
+      updatedAt:now
+    };
+    if(status==="approved")updates.approvedAt=now;
+
+    await db.collection("institutionUsers").doc(id).update(updates);
 
     await loadInstitutionAccounts();
   } catch (error) {
