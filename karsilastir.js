@@ -3,12 +3,37 @@ const compareApp=firebase.apps.find(app=>app.name==="comparePage")||firebase.ini
 const db=compareApp.firestore();
 
 const STORAGE_KEY="dijiyerCompareInstitutionIdsV1";
+const GLOBAL_CITY_KEY="dijiyerGlobalCity";
+const GLOBAL_DISTRICT_KEY="dijiyerGlobalDistrict";
 let selectedIds=loadIds();
 let institutions=[];
 let allInstitutions=[];
 let filteredInstitutions=[];
 const COMPARE_PAGE_SIZE=6;
 let visibleInstitutionCount=COMPARE_PAGE_SIZE;
+
+function preferredLocation(){
+  const params=new URLSearchParams(location.search);
+  let city=String(params.get("city")||"").trim();
+  let district=String(params.get("district")||"").trim();
+
+  try{
+    if(!city)city=String(localStorage.getItem(GLOBAL_CITY_KEY)||"").trim();
+    if(!district)district=String(localStorage.getItem(GLOBAL_DISTRICT_KEY)||"").trim();
+  }catch(_){}
+
+  return {city,district};
+}
+
+function persistPreferredLocation(city,district){
+  try{
+    if(city)localStorage.setItem(GLOBAL_CITY_KEY,String(city));
+    else localStorage.removeItem(GLOBAL_CITY_KEY);
+
+    if(district)localStorage.setItem(GLOBAL_DISTRICT_KEY,String(district));
+    else localStorage.removeItem(GLOBAL_DISTRICT_KEY);
+  }catch(_){}
+}
 
 function loadIds(){
   try{
@@ -230,12 +255,17 @@ function setupPickerOptions(){
 
   const currentCity=city.value;
   const currentCategory=category.value;
+  const preferred=preferredLocation();
+  const selectedInstitution=selectedIds.length
+    ? allInstitutions.find(inst=>String(inst.id)===String(selectedIds[0]))
+    : null;
+  const wantedCity=selectedInstitution?.city || preferred.city || currentCity || "";
 
   const cities=[...new Set(allInstitutions.map(inst=>inst.city).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,"tr"));
-  city.innerHTML='<option value="">Tüm İller</option>'+
+  city.innerHTML='<option value="">İl seçin</option>'+
     cities.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
-  if(cities.includes(currentCity))city.value=currentCity;
+  if(cities.includes(wantedCity))city.value=wantedCity;
 
   const categoriesMap=new Map();
   allInstitutions.forEach(inst=>{
@@ -270,10 +300,16 @@ function refreshDistrictOptions(){
       .filter(Boolean)
   )].sort((a,b)=>a.localeCompare(b,"tr"));
 
-  district.innerHTML='<option value="">Tüm İlçeler</option>'+
+  district.innerHTML='<option value="">İl geneli</option>'+
     districts.map(item=>'<option value="'+esc(item)+'">'+esc(item)+'</option>').join("");
   district.disabled=false;
-  if(districts.includes(current))district.value=current;
+
+  const preferred=preferredLocation();
+  const selectedInstitution=selectedIds.length
+    ? allInstitutions.find(inst=>String(inst.id)===String(selectedIds[0]))
+    : null;
+  const wantedDistrict=selectedInstitution?.district || preferred.district || current || "";
+  if(districts.includes(wantedDistrict))district.value=wantedDistrict;
 }
 
 function institutionSearchText(inst){
@@ -303,9 +339,15 @@ function applyFilters(){
   const category=String(document.getElementById("compareCategoryFilter")?.value||"").trim();
   const query=normalize(document.getElementById("compareSearchInput")?.value||"");
 
+  if(!city){
+    filteredInstitutions=[];
+    renderSearchResults();
+    return;
+  }
+
   filteredInstitutions=allInstitutions.filter(inst=>{
     const categoryKey=String(inst.subCategory||inst.category||inst.mainCategory||"").trim();
-    return (!city||inst.city===city) &&
+    return inst.city===city &&
       (!district||inst.district===district) &&
       (!category||categoryKey===category) &&
       (!query||institutionSearchText(inst).includes(query));
@@ -326,7 +368,13 @@ function renderSearchResults(){
   }
 
   if(!filteredInstitutions.length){
-    root.innerHTML='<div class="compare-search-empty">Filtrelere uygun aktif kurum bulunamadı.</div>';
+    const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
+    root.innerHTML='<div class="compare-search-empty">'+
+      (city
+        ? 'Bu bölge ve filtrelere uygun aktif kurum bulunamadı. İlçeyi “İl geneli” yaparak tekrar deneyebilirsiniz.'
+        : 'Kurumları görmek için önce il seçin. Böylece yalnızca size uygun bölgedeki kurumlar gösterilir.')+
+      '</div>';
+    if(count)count.textContent=city ? "Bu bölgede sonuç bulunamadı" : "Önce il seçin";
     document.getElementById("compareLoadMoreWrap")?.classList.add("hidden");
     return;
   }
@@ -548,23 +596,22 @@ function render(){
 
 document.getElementById("compareClearAllBtn")?.addEventListener("click",clearAll);
 document.getElementById("compareCityFilter")?.addEventListener("change",()=>{
+  const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
+  persistPreferredLocation(city,"");
   refreshDistrictOptions();
   applyFilters();
 });
-document.getElementById("compareDistrictFilter")?.addEventListener("change",applyFilters);
+document.getElementById("compareDistrictFilter")?.addEventListener("change",()=>{
+  const city=String(document.getElementById("compareCityFilter")?.value||"").trim();
+  const district=String(document.getElementById("compareDistrictFilter")?.value||"").trim();
+  persistPreferredLocation(city,district);
+  applyFilters();
+});
 document.getElementById("compareCategoryFilter")?.addEventListener("change",applyFilters);
 document.getElementById("compareSearchInput")?.addEventListener("input",applyFilters);
 document.getElementById("compareFilterClearBtn")?.addEventListener("click",()=>{
-  const city=document.getElementById("compareCityFilter");
-  const district=document.getElementById("compareDistrictFilter");
   const category=document.getElementById("compareCategoryFilter");
   const search=document.getElementById("compareSearchInput");
-  if(city)city.value="";
-  if(district){
-    district.value="";
-    district.disabled=true;
-    district.innerHTML='<option value="">Tüm İlçeler</option>';
-  }
   if(category)category.value="";
   if(search)search.value="";
   applyFilters();
