@@ -722,6 +722,9 @@ service cloud.firestore {
           && bagliKurumId() == institutionId
           && get(
             /databases/$(database)/documents/quoteRequests/$(quoteId)
+          ).data.keys().hasAny(['targetInstitutionId'])
+          && get(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)
           ).data.targetInstitutionId == institutionId
           && !exists(
             /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
