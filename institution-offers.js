@@ -1179,6 +1179,7 @@ renderQuotes = function(){
 
 async function saveRealOffer(form){
   const quoteId=form.dataset.quoteId;
+  let lastOfferDiagnostic=null;
   const quote=quoteRecords.find(q=>q.id===quoteId);
   let lock=institutionLockMap.get(quoteId);
   let existing=institutionOfferMap.get(quoteId);
@@ -1385,6 +1386,7 @@ async function saveRealOffer(form){
       city:String(quote?.city||""),
       district:String(quote?.district||"")
     };
+    lastOfferDiagnostic=diagnostic;
     console.info("TEKLİF YAZMA TEŞHİSİ:",diagnostic);
 
     try{
@@ -1490,11 +1492,32 @@ async function saveRealOffer(form){
       }
     }
 
-    alert(
-      errorCode.includes("permission-denied")
-        ? "Ana teklif Firestore tarafından reddedildi. Talep açık görünse bile kurum yetkisi veya canlı Firestore kuralları bu yazmaya izin vermiyor. Sayfayı yenileyip tekrar deneyin; sorun sürerse yönetim Firestore kuralları kontrol edilmelidir."
-        : "Teklif kaydedilemedi ("+errorCode+").\n\n"+errorMessage
-    );
+    if(errorCode.includes("permission-denied") && lastOfferDiagnostic){
+      alert(
+        "TEŞHİS · Firestore teklifi reddetti\n\n"+
+        "İşlem: "+lastOfferDiagnostic.writeMode+"\n"+
+        "Talep: "+lastOfferDiagnostic.quoteId+"\n"+
+        "Kurum ID: "+lastOfferDiagnostic.institutionId+"\n"+
+        "Hedef Kurum ID: "+(lastOfferDiagnostic.targetInstitutionId||"-")+"\n"+
+        "Talep türü: "+(lastOfferDiagnostic.requestType||"-")+"\n"+
+        "Talep durumu: "+(lastOfferDiagnostic.quoteStatus||"-")+"\n"+
+        "Mevcut teklif: "+(lastOfferDiagnostic.hasExistingOffer?"Var":"Yok")+"\n"+
+        "Mevcut sürüm: "+lastOfferDiagnostic.existingOfferVersion+"\n"+
+        "Yeni sürüm: "+lastOfferDiagnostic.nextVersion+"\n"+
+        "Kilit: "+(lastOfferDiagnostic.lockPresent?"Var":"Yok")+"\n"+
+        "Yönlendirilmiş: "+(lastOfferDiagnostic.routedLead?"Evet":"Hayır")+"\n"+
+        "Kaynak: "+(lastOfferDiagnostic.sourceType||"-")+"\n"+
+        "Şehir/İlçe: "+(lastOfferDiagnostic.city||"-")+" / "+(lastOfferDiagnostic.district||"-")+"\n\n"+
+        "Hata kodu: "+errorCode+"\n"+
+        "Bu pencerenin ekran görüntüsünü gönder."
+      );
+    }else{
+      alert(
+        errorCode.includes("permission-denied")
+          ? "Ana teklif Firestore tarafından reddedildi. Talep açık görünse bile kurum yetkisi veya canlı Firestore kuralları bu yazmaya izin vermiyor."
+          : "Teklif kaydedilemedi ("+errorCode+").\n\n"+errorMessage
+      );
+    }
   }finally{
     submit.disabled=false; submit.textContent=oldText;
   }
