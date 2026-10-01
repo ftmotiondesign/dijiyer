@@ -21287,3 +21287,13 @@ to{opacity:1;transform:none}
     display:block!important;
   }
 }
+
+
+/* Karşılaştırma seçim durumu */
+.desktop-inline-card-compare.is-selected,
+.desktop-inline-card-compare.selected{
+  border-color:#78aef1!important;
+  background:#eaf4ff!important;
+  color:#0f5fbf!important;
+  box-shadow:inset 0 0 0 1px rgba(22,119,255,.08);
+}
