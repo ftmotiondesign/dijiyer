@@ -1,7 +1,7 @@
 (()=>{
   const links=[
     ["index.html#resultsSection","Kurumları Keşfet","institutions"],
-    ["index.html#resultsSection","Karşılaştır","compare"],
+    ["karsilastir.html","Karşılaştır","compare"],
     ["randevu.html","Randevu Al","appointments"],
     ["firsatlar.html","Fırsatlar","discover"]
   ];
@@ -22,6 +22,7 @@
     const path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
     if(path==="teklif-al.html")return "quotes";
     if(path==="teklif.html")return "requests";
+    if(path==="karsilastir.html")return "compare";
     if(path==="randevu.html")return "appointments";
     if(path==="is-firsatlari.html")return "jobs";
     if(path==="ticaret-firsatlari.html")return "trade";
@@ -414,20 +415,6 @@
     });
   }
 
-  function bindCompareNav(nav){
-    nav.querySelector('a[data-market-key="compare"]')?.addEventListener("click",event=>{
-      const file=(location.pathname.split("/").pop()||"index.html").toLowerCase();
-      if(file!=="index.html" && file!=="")return;
-      event.preventDefault();
-      document.getElementById("resultsSection")?.scrollIntoView({behavior:"smooth",block:"start"});
-      setTimeout(()=>{
-        const selected=typeof compareInstitutionIds!=="undefined" ? compareInstitutionIds.size : 0;
-        if(!selected && typeof showToast==="function"){
-          showToast("Karşılaştırmak için kurum kartlarından 2 veya 3 kurum seçin.");
-        }
-      },450);
-    });
-  }
 
   function buildNav(){
     let nav=document.querySelector(".desktop-market-nav");
@@ -454,7 +441,6 @@
     if(inner)inner.innerHTML=navInnerHtml();
 
     bindMoreMenu(nav);
-    bindCompareNav(nav);
     markActive(nav);
     watchMenuVisibility(nav);
   }
