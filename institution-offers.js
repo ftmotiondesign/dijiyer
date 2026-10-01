@@ -222,6 +222,53 @@ async function refreshInstitutionLeadCreditBalance(){
 function offerSafe(v){
   return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 }
+
+function routedLeadWhatsappNumber(value){
+  let digits=String(value||"").replace(/\D/g,"");
+  if(!digits)return "";
+  if(digits.startsWith("0"))digits="90"+digits.slice(1);
+  else if(digits.length===10)digits="90"+digits;
+  return digits;
+}
+
+function routedLeadRequestCode(quote){
+  const existing=String(quote?.trackingCode||quote?.requestCode||"").trim();
+  if(existing)return existing;
+  const raw=String(quote?.id||"").replace(/[^a-zA-Z0-9]/g,"").slice(0,8).toUpperCase();
+  return raw ? "DJY-"+raw : "DJY";
+}
+
+function routedLeadWhatsappMessage(quote){
+  const service=String(quote?.service||"Teklif talebi").trim();
+  const institutionName=String(currentInstitution?.name||currentAccount?.institutionName||"Kurum").trim();
+  const requestCode=routedLeadRequestCode(quote);
+
+  return [
+    "Merhaba, Dijiyer üzerinden oluşturduğunuz "+service+" talebiniz henüz yanıtlanmadığı için size ulaşmak istedik.",
+    "Biz de talebinize teklif vermek istiyoruz.",
+    "Kurum: "+institutionName,
+    "Talep No: "+requestCode,
+    "Teklif detaylarımızı Dijiyer üzerinden de iletebiliriz."
+  ].join("\n");
+}
+
+function routedLeadWhatsappHtml(quote){
+  if(!isRoutedLeadForCurrentInstitution(quote))return "";
+  const phone=routedLeadWhatsappNumber(quote?.phone||"");
+  if(!phone)return '<div class="quote-note" style="border-left-color:#94a3b8">Müşterinin WhatsApp numarası bu talepte bulunmuyor.</div>';
+
+  return `
+    <div class="quote-actions" style="margin-top:12px">
+      <button type="button"
+        data-routed-whatsapp="${offerSafe(quote.id)}"
+        style="background:#16a34a;color:#fff;border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer">
+        WhatsApp'tan İletişim Kur
+      </button>
+      <small style="display:block;width:100%;color:#64748b;margin-top:5px">
+        Müşteri numarası ekranda gösterilmez; buton WhatsApp'ı hazır mesajla açar.
+      </small>
+    </div>`;
+}
 function offerMoney(v){ return new Intl.NumberFormat("tr-TR").format(Number(v || 0)) + " TL"; }
 function makeOfferCode(){
   const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -1079,10 +1126,11 @@ quoteCardHtml = function(quote,compact=false){
 
       <div class="quote-customer">
         <div><small>Müşteri</small><strong>${offerSafe(quote.name || "-")}</strong></div>
-        <div><small>Telefon</small><strong>${offerSafe(quote.phone || "-")}</strong></div>
+        <div><small>Telefon</small><strong>${routedToThisInstitution ? "WhatsApp butonundan iletişim" : offerSafe(quote.phone || "-")}</strong></div>
         <div><small>Tarih</small><strong>${formatDate(quote.date)}</strong></div>
       </div>
 
+      ${routedLeadWhatsappHtml(quote)}
       ${institutionResponseTimingHtml(quote)}
       ${quote.note ? `<div class="quote-note">${offerSafe(quote.note)}</div>` : ""}
       ${actionArea}
@@ -1119,6 +1167,23 @@ renderQuotes = function(){
     form.addEventListener("submit",async e=>{
       e.preventDefault();
       await saveRealOffer(form);
+    });
+  });
+
+  institutionQuotesList.querySelectorAll("[data-routed-whatsapp]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const quoteId=String(btn.dataset.routedWhatsapp||"");
+      const quote=quoteRecords.find(item=>String(item.id)===quoteId);
+      if(!quote)return;
+
+      const phone=routedLeadWhatsappNumber(quote.phone||"");
+      if(!phone){
+        alert("Müşterinin WhatsApp numarası bulunamadı.");
+        return;
+      }
+
+      const text=encodeURIComponent(routedLeadWhatsappMessage(quote));
+      window.open("https://wa.me/"+phone+"?text="+text,"_blank","noopener");
     });
   });
 
