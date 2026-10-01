@@ -1,12 +1,17 @@
 (()=>{
   const links=[
-    ["index.html#resultsSection","Kurumlar","institutions"],
-    ["teklif-al.html","Teklif Al","quotes"],
+    ["index.html#resultsSection","Kurumları Keşfet","institutions"],
+    ["index.html#resultsSection","Karşılaştır","compare"],
     ["randevu.html","Randevu Al","appointments"],
-    ["is-firsatlari.html","İş Fırsatları","jobs"],
-    ["ticaret-firsatlari.html","İş & Ticaret","trade"],
-    ["bayi-servis.html","Bayi & Servis","brands"],
-    ["firsatlar.html","Keşfet / Fırsat","discover"]
+    ["firsatlar.html","Fırsatlar","discover"]
+  ];
+
+  const moreLinks=[
+    ["teklif-al.html","Bilgi / Fiyat İste","quotes","💬"],
+    ["teklif.html?taleplerim=1","Tüm Taleplerim","requests","📋"],
+    ["is-firsatlari.html","İş Fırsatları","jobs","💼"],
+    ["ticaret-firsatlari.html","İş & Ticaret","trade","↔"],
+    ["bayi-servis.html","Bayi & Servis","brands","🔧"]
   ];
 
   const LOCATION_CITY_KEY="dijiyerGlobalCity";
@@ -15,7 +20,8 @@
 
   function activeKey(){
     const path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
-    if(path==="teklif-al.html"||path==="teklif.html")return "quotes";
+    if(path==="teklif-al.html")return "quotes";
+    if(path==="teklif.html")return "requests";
     if(path==="randevu.html")return "appointments";
     if(path==="is-firsatlari.html")return "jobs";
     if(path==="ticaret-firsatlari.html")return "trade";
@@ -31,6 +37,10 @@
       if(a.dataset.marketKey===key)a.setAttribute("aria-current","page");
       else a.removeAttribute("aria-current");
     });
+
+    const moreButton=nav.querySelector(".market-more-btn");
+    const moreActive=moreLinks.some(([, ,itemKey])=>itemKey===key);
+    moreButton?.classList.toggle("active",moreActive);
   }
 
   function safeLocalGet(key,fallback=""){
@@ -368,52 +378,92 @@
     });
   }
 
+  function navInnerHtml(){
+    return links.map(([href,label,key])=>
+      '<a href="'+href+'" data-market-key="'+key+'">'+label+'</a>'
+    ).join("")+
+    '<div class="market-more">'+
+      '<button type="button" class="market-more-btn" aria-expanded="false">Diğer <span>⌄</span></button>'+
+      '<div class="market-more-menu hidden">'+
+        moreLinks.map(([href,label,key,icon])=>
+          '<a href="'+href+'" data-market-key="'+key+'"><span>'+icon+'</span><strong>'+label+'</strong></a>'
+        ).join("")+
+      '</div>'+
+    '</div>'+
+    '<button type="button" class="market-ad-btn" data-advertise-home>Reklam Ver</button>';
+  }
+
+  function bindMoreMenu(nav){
+    const root=nav.querySelector(".market-more");
+    const button=root?.querySelector(".market-more-btn");
+    const menu=root?.querySelector(".market-more-menu");
+    if(!root||!button||!menu)return;
+
+    button.addEventListener("click",event=>{
+      event.stopPropagation();
+      const open=menu.classList.contains("hidden");
+      menu.classList.toggle("hidden",!open);
+      button.setAttribute("aria-expanded",String(open));
+    });
+
+    document.addEventListener("click",event=>{
+      if(!root.contains(event.target)){
+        menu.classList.add("hidden");
+        button.setAttribute("aria-expanded","false");
+      }
+    });
+  }
+
+  function bindCompareNav(nav){
+    nav.querySelector('a[data-market-key="compare"]')?.addEventListener("click",event=>{
+      const file=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+      if(file!=="index.html" && file!=="")return;
+      event.preventDefault();
+      document.getElementById("resultsSection")?.scrollIntoView({behavior:"smooth",block:"start"});
+      setTimeout(()=>{
+        const selected=typeof compareInstitutionIds!=="undefined" ? compareInstitutionIds.size : 0;
+        if(!selected && typeof showToast==="function"){
+          showToast("Karşılaştırmak için kurum kartlarından 2 veya 3 kurum seçin.");
+        }
+      },450);
+    });
+  }
+
   function buildNav(){
     let nav=document.querySelector(".desktop-market-nav");
     const globalHeader=document.querySelector(".dijiyer-global-topbar");
 
-    if(nav){
-      nav.classList.add("dijiyer-global-market-nav");
-      const anchors=[...nav.querySelectorAll("a")];
-      anchors.forEach(a=>{
-        const text=(a.textContent||"").trim();
-        const found=links.find(([,label])=>label===text);
-        if(found)a.dataset.marketKey=found[2];
-      });
+    if(!nav){
+      nav=document.createElement("nav");
+      nav.className="desktop-market-nav dijiyer-global-market-nav";
+      nav.setAttribute("aria-label","Dijiyer ana menü");
+      nav.innerHTML='<div class="desktop-market-nav-inner"></div>';
 
-      /* Ana sayfada menü eski header'ın altında statik duruyordu.
-         Ortak üst bar oluşturulduktan sonra menüyü her sayfada aynı yere taşı. */
+      const main=document.querySelector("body > main");
+      if(globalHeader)globalHeader.insertAdjacentElement("afterend",nav);
+      else if(main)main.insertAdjacentElement("beforebegin",nav);
+      else document.body.prepend(nav);
+    }else{
+      nav.classList.add("dijiyer-global-market-nav");
       if(globalHeader && globalHeader.nextElementSibling!==nav){
         globalHeader.insertAdjacentElement("afterend",nav);
       }
-
-      markActive(nav);
-      watchMenuVisibility(nav);
-      return;
     }
 
-    nav=document.createElement("nav");
-    nav.className="desktop-market-nav dijiyer-global-market-nav";
-    nav.setAttribute("aria-label","Dijiyer ana menü");
-    nav.innerHTML='<div class="desktop-market-nav-inner">'+
-      links.map(([href,label,key])=>
-        '<a href="'+href+'" data-market-key="'+key+'">'+label+'</a>'
-      ).join("")+
-      '</div>';
+    const inner=nav.querySelector(".desktop-market-nav-inner");
+    if(inner)inner.innerHTML=navInnerHtml();
 
-    const main=document.querySelector("body > main");
-
-    if(globalHeader)globalHeader.insertAdjacentElement("afterend",nav);
-    else if(main)main.insertAdjacentElement("beforebegin",nav);
-    else document.body.prepend(nav);
-
+    bindMoreMenu(nav);
+    bindCompareNav(nav);
     markActive(nav);
     watchMenuVisibility(nav);
   }
 
   const menuDefaults={
     institutions:true,
+    compare:true,
     quotes:true,
+    requests:true,
     appointments:true,
     jobs:true,
     trade:true,
