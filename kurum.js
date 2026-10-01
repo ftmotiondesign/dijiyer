@@ -236,6 +236,34 @@ function closeDirectQuote(){
     history.replaceState(null,"",cleanUrl.toString());
   }
 }
+
+function preRegistrationEnabled(x){
+  if(!x)return false;
+  if(x.preRegistrationEnabled===false)return false;
+  if(x.preRegistrationEnabled===true)return true;
+  return new Set(["kres","dershane","surucu","ozel_ders","dil_kursu","etut","ozel_okul","yurt","spor"]).has(String(x.subCategory||x.category||"").trim());
+}
+function preRegistrationOptions(x){
+  const key=String(x?.subCategory||x?.category||"").trim();
+  const map={
+    kres:["Yeni Kayıt","Erken Kayıt","Yaz Okulu","Görüşme / Okul Ziyareti"],
+    dershane:["LGS Programı","YKS / TYT-AYT Programı","Deneme Kulübü","Ara Sınıf Kayıt","Mezun Programı"],
+    surucu:["B Sınıfı Ehliyet","A / A1 / A2 Motosiklet","C / CE / D Ağır Vasıta","Direksiyon Eğitimi"],
+    ozel_ders:["Özel Ders","Paket Ders","Online Ders","Seviye Görüşmesi"],
+    dil_kursu:["İngilizce","Almanca","Diğer Dil Programı","Seviye Tespit / Görüşme"],
+    etut:["Etüt Programı","Ödev Takibi","Sınav Hazırlık","Birebir Ders"],
+    ozel_okul:["Yeni Kayıt","Erken Kayıt","Bursluluk / İndirim","Okul Görüşmesi"],
+    yurt:["Yeni Kayıt","Oda Ön Talebi","Fiyat / Kontenjan Görüşmesi"],
+    spor:["Üyelik","Deneme Dersi","Paket Program","Bireysel Görüşme"]
+  };
+  return map[key]||["Ön Kayıt","Bilgi / Görüşme Talebi"];
+}
+function makePreRegistrationCode(){
+  const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",bytes=new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return "DJY-ON-"+Array.from(bytes).map(b=>alphabet[b%alphabet.length]).join("");
+}
+
 function routeUrl(x){if(Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))return"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(x.lat+","+x.lng);return"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([x.address,x.district,x.city].filter(Boolean).join(", "))}
 function services(x){const rows=[categoryLabel(x)];String(x.classes||"").split(/[,;\n]/).map(s=>s.trim()).filter(s=>s&&s.toLocaleLowerCase("tr-TR")!=="bilgi eklenecek").forEach(s=>rows.push(s));String(x.services||"").split(/[,;\n]/).map(s=>s.trim()).filter(Boolean).forEach(s=>rows.push(s));return[...new Set(rows)].slice(0,12)}
 function listValue(value){
@@ -369,7 +397,7 @@ function renderProfile(){
           </div>
           <div class="kp-meta"><span>🏷️ ${escapeHtml(categoryLabel(x))}</span><span>📍 ${escapeHtml(locationLabel(x))}</span><span class="rating"><b>★</b> ${ratingText(x.rating)} ${Number(x.reviewCount||0)?"("+Number(x.reviewCount||0)+" değerlendirme)":""}</span></div>
         </div>
-        <div class="kp-actions">${x.offer!==false?'<button type="button" class="kp-btn primary" data-direct-quote>Bilgi / Fiyat İste</button>':""}${whatsapp?'<button id="kpWhatsapp" class="kp-btn wa">💬 WhatsApp</button>':""}${phone?'<a class="kp-btn call" href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎ Ara</a>':""}<a id="kpRouteTop" class="kp-btn" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a></div>
+        <div class="kp-actions">${preRegistrationEnabled(x)?'<button type="button" class="kp-btn prereg" data-pre-registration>📝 Ön Kayıt</button>':""}${x.offer!==false?'<button type="button" class="kp-btn primary" data-direct-quote>Bilgi / Fiyat İste</button>':""}${whatsapp?'<button id="kpWhatsapp" class="kp-btn wa">💬 WhatsApp</button>':""}${phone?'<a class="kp-btn call" href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎ Ara</a>':""}<a id="kpRouteTop" class="kp-btn" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭 Yol Tarifi</a></div>
       </div>
     </section>
 
@@ -528,7 +556,7 @@ function renderProfile(){
       </aside>
     </div>
 
-    <nav class="kp-mobile-actions">${x.offer!==false?'<button type="button" class="primary" data-direct-quote>📄<span>Teklif</span></button>':""}${whatsapp?'<button id="kpWhatsappMobile" class="wa">💬<span>WhatsApp</span></button>':""}${phone?'<a href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎<span>Ara</span></a>':""}<a id="kpRouteMobile" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭<span>Yol</span></a></nav>
+    <nav class="kp-mobile-actions">${preRegistrationEnabled(x)?'<button type="button" class="prereg" data-pre-registration>📝<span>Ön Kayıt</span></button>':""}${x.offer!==false?'<button type="button" class="primary" data-direct-quote>📄<span>Teklif</span></button>':""}${whatsapp?'<button id="kpWhatsappMobile" class="wa">💬<span>WhatsApp</span></button>':""}${phone?'<a href="tel:'+escapeHtml(phone.replace(/[^+\d]/g,""))+'">☎<span>Ara</span></a>':""}<a id="kpRouteMobile" href="${escapeHtml(routeUrl(x))}" target="_blank" rel="noopener">🧭<span>Yol</span></a></nav>
   `;
 
   document.getElementById("loadingState").classList.add("hidden");
@@ -542,6 +570,7 @@ function renderProfile(){
   ["kpRoute","kpRouteTop","kpRouteMobile"].forEach(id=>document.getElementById(id)?.addEventListener("click",()=>track("route_click")));
   document.getElementById("reviewOpenBtn")?.addEventListener("click",()=>document.getElementById("reviewModal").classList.remove("hidden"));
   document.querySelectorAll("[data-direct-quote]").forEach(button=>button.addEventListener("click",openDirectQuote));
+  document.querySelectorAll("[data-pre-registration]").forEach(button=>button.addEventListener("click",openPreRegistration));
 
   initMap();
   renderReviews();
@@ -939,6 +968,99 @@ function moderateReviewText(raw){
   return {ok:true};
 }
 
+
+function openPreRegistration(){
+  if(!institution||institution.isDemo){showToast("Demo kurum için ön kayıt oluşturulamaz.");return}
+  if(!preRegistrationEnabled(institution)){showToast("Bu kurum şu anda ön kayıt almıyor.");return}
+  document.getElementById("preRegistrationFormView")?.classList.remove("hidden");
+  document.getElementById("preRegistrationSuccess")?.classList.add("hidden");
+  const msg=document.getElementById("preRegistrationMessage"); if(msg)msg.textContent="";
+  const name=document.getElementById("preRegistrationInstitutionName"); if(name)name.textContent=institution.name||"Kurum";
+  const loc=document.getElementById("preRegistrationInstitutionLocation"); if(loc)loc.textContent=locationLabel(institution);
+  const icon=document.getElementById("preRegistrationInstitutionIcon");
+  if(icon){
+    const logo=safeUrl(institution.logoUrl);
+    icon.innerHTML=logo?'<img src="'+escapeHtml(logo)+'" alt="">':escapeHtml(institution.emoji||"🏢");
+  }
+  const select=document.getElementById("preRegistrationType");
+  if(select){
+    select.innerHTML='<option value="">Seçiniz</option>'+preRegistrationOptions(institution).map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join("");
+  }
+  const email=document.getElementById("preRegistrationEmail");
+  if(email&&!email.value)email.value=localStorage.getItem("dijiyerCustomerEmail")||"";
+  document.getElementById("preRegistrationModal")?.classList.remove("hidden");
+}
+function closePreRegistration(){
+  document.getElementById("preRegistrationModal")?.classList.add("hidden");
+  if(params.get("onkayit")==="1"){
+    const cleanUrl=new URL(location.href);
+    cleanUrl.searchParams.delete("onkayit");
+    history.replaceState(null,"",cleanUrl.toString());
+  }
+}
+
+document.getElementById("preRegistrationClose")?.addEventListener("click",closePreRegistration);
+document.getElementById("preRegistrationDone")?.addEventListener("click",closePreRegistration);
+document.getElementById("preRegistrationModal")?.addEventListener("click",e=>{if(e.target.id==="preRegistrationModal")closePreRegistration()});
+
+document.getElementById("preRegistrationForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const msg=document.getElementById("preRegistrationMessage");
+  const submit=document.getElementById("preRegistrationSubmit");
+  if(msg)msg.textContent="";
+  if(!institution||institution.isDemo){if(msg)msg.textContent="Kurum bilgisi hazır değil.";return}
+  const customerName=String(document.getElementById("preRegistrationName")?.value||"").trim();
+  const customerPhone=String(document.getElementById("preRegistrationPhone")?.value||"").trim();
+  const customerEmail=String(document.getElementById("preRegistrationEmail")?.value||"").trim();
+  const applicationType=String(document.getElementById("preRegistrationType")?.value||"").trim();
+  const studentName=String(document.getElementById("preRegistrationStudentName")?.value||"").trim();
+  const grade=String(document.getElementById("preRegistrationGrade")?.value||"").trim();
+  const note=String(document.getElementById("preRegistrationNote")?.value||"").trim();
+  const consent=Boolean(document.getElementById("preRegistrationConsent")?.checked);
+  if(customerName.length<2){if(msg)msg.textContent="Lütfen ad soyad girin.";return}
+  if(customerPhone.replace(/\D/g,"").length<10){if(msg)msg.textContent="Lütfen geçerli bir telefon numarası girin.";return}
+  if(!applicationType){if(msg)msg.textContent="Lütfen ön kayıt konusunu seçin.";return}
+  if(!consent){if(msg)msg.textContent="İletişim iznini onaylamanız gerekiyor.";return}
+
+  const old=submit?.textContent||"Ön Kayıt Oluştur";
+  if(submit){submit.disabled=true;submit.textContent="Kaydediliyor..."}
+  try{
+    const now=new Date().toISOString();
+    const registrationCode=makePreRegistrationCode();
+    await db.collection("preRegistrations").add({
+      institutionId:String(institution.id),
+      institutionName:String(institution.name||"Kurum"),
+      customerName,
+      customerPhone,
+      customerEmail,
+      applicationType,
+      studentName,
+      grade,
+      note,
+      registrationCode,
+      consent:true,
+      status:"new",
+      source:"institution_profile",
+      createdAt:now,
+      updatedAt:now
+    });
+    if(customerEmail)localStorage.setItem("dijiyerCustomerEmail",customerEmail);
+    document.getElementById("preRegistrationFormView")?.classList.add("hidden");
+    document.getElementById("preRegistrationSuccess")?.classList.remove("hidden");
+    const code=document.getElementById("preRegistrationCode"); if(code)code.textContent=registrationCode;
+    const txt=document.getElementById("preRegistrationSuccessText");
+    if(txt)txt.textContent=(institution.name||"Kurum")+" ön kayıt başvurunuzu aldı. Kurum sizinle iletişime geçebilir.";
+    event.target.reset();
+    track("pre_registration");
+  }catch(error){
+    console.error("Ön kayıt oluşturulamadı:",error);
+    const code=String(error?.code||"");
+    if(msg)msg.textContent=code.includes("permission-denied")?"Ön kayıt kaydedilemedi. Firestore izinlerini kontrol edin.":"Ön kayıt oluşturulamadı. Lütfen tekrar deneyin.";
+  }finally{
+    if(submit){submit.disabled=false;submit.textContent=old}
+  }
+});
+
 function closeReviewModal(){document.getElementById("reviewModal").classList.add("hidden")}
 document.getElementById("reviewModalClose").addEventListener("click",closeReviewModal);
 document.getElementById("reviewModal").addEventListener("click",event=>{if(event.target.id==="reviewModal")closeReviewModal()});
@@ -1031,6 +1153,7 @@ async function init(){
       institution={id:doc.id,...data,isDemo:false};
       renderProfile();
       if(params.get("teklif")==="1")setTimeout(openDirectQuote,80);
+      if(params.get("onkayit")==="1")setTimeout(openPreRegistration,100);
       await loadReviews();
       return
     }
@@ -1040,6 +1163,7 @@ async function init(){
     renderProfile();
     renderReviews();
     if(params.get("teklif")==="1")setTimeout(openDirectQuote,80);
+    if(params.get("onkayit")==="1")setTimeout(openPreRegistration,100);
     return
   }
   showError();
