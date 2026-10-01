@@ -310,6 +310,30 @@ function renderSidebarCategories() {
 
 renderSidebarCategories();
 
+[
+  'educationProgramFilter','classSizeMaxFilter','priceLevelFilter','minRatingFilter',
+  'studySupportFilter','guidanceFilter','installmentFilter','campaignOnlyFilter'
+].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener(el.tagName==='INPUT' && el.type==='search' ? 'input' : 'change',()=>{
+    renderList();
+  });
+});
+
+document.getElementById('decisionFilterClearBtn')?.addEventListener('click',()=>{
+  ['educationProgramFilter','classSizeMaxFilter','priceLevelFilter','minRatingFilter'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value='';
+  });
+  ['studySupportFilter','guidanceFilter','installmentFilter','campaignOnlyFilter'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.checked=false;
+  });
+  renderList();
+});
+
+
 function clearAllCategorySelections() {
   document.querySelectorAll('.categoryFilter, .subCategoryFilter')
     .forEach(input => { input.checked = false; });
@@ -2954,6 +2978,61 @@ setTimeout(() => {
   }
 }, 0);
 
+function hasMeaningfulInstitutionField(value){
+  const text=normalizeQuoteSearch(value);
+  return Boolean(text && !['yok','hayir','hayır','belirtilmedi','bilgi yok','false'].includes(text));
+}
+
+function extractInstitutionClassSize(value){
+  const nums=String(value||'').match(/\d+/g);
+  if(!nums?.length) return null;
+  const parsed=nums.map(Number).filter(Number.isFinite);
+  return parsed.length ? Math.max(...parsed) : null;
+}
+
+function institutionAdvancedSearchText(inst){
+  return normalizeQuoteSearch([
+    ...(Array.isArray(inst.programs)?inst.programs:[inst.programs]),
+    ...(Array.isArray(inst.highlights)?inst.highlights:[inst.highlights]),
+    inst.classes,
+    inst.classSize,
+    inst.trialExam,
+    inst.guidance,
+    inst.studySupport,
+    inst.installment,
+    inst.priceLevel,
+    inst.campaign
+  ].filter(Boolean).join(' '));
+}
+
+function getDecisionFilterState(){
+  return {
+    program:String(document.getElementById('educationProgramFilter')?.value||'').trim(),
+    classSizeMax:Number(document.getElementById('classSizeMaxFilter')?.value||0),
+    priceLevel:String(document.getElementById('priceLevelFilter')?.value||'').trim(),
+    minRating:Number(document.getElementById('minRatingFilter')?.value||0),
+    studySupport:Boolean(document.getElementById('studySupportFilter')?.checked),
+    guidance:Boolean(document.getElementById('guidanceFilter')?.checked),
+    installment:Boolean(document.getElementById('installmentFilter')?.checked),
+    campaignOnly:Boolean(document.getElementById('campaignOnlyFilter')?.checked)
+  };
+}
+
+function isDecisionFilterActive(){
+  const f=getDecisionFilterState();
+  return Boolean(f.program || f.classSizeMax || f.priceLevel || f.minRating || f.studySupport || f.guidance || f.installment || f.campaignOnly);
+}
+
+function updateDecisionFilterVisibility(){
+  const panel=document.getElementById('decisionFilterPanel');
+  if(!panel)return;
+  const activeMain=getSelectedMainCategory();
+  const query=String(document.getElementById('searchInput')?.value||'').trim();
+  const inferred=query ? inferQuoteCategory(query) : null;
+  const show=activeMain==='egitim' || inferred?.mainCategory==='egitim' || isDecisionFilterActive();
+  panel.classList.toggle('hidden',!show);
+}
+
 function getFilteredInstitutions() {
   const queryRaw = document.getElementById('searchInput').value.trim();
   const query = normalizeQuoteSearch(queryRaw);
@@ -2966,6 +3045,7 @@ function getFilteredInstitutions() {
   const videoOnly = document.getElementById('videoOnly').checked;
   const offerOnly = document.getElementById('offerOnly').checked;
   const tour360Only = document.getElementById('tour360Only')?.checked || false;
+  const decisionFilters = getDecisionFilterState();
 
   let data = institutions.filter(inst => {
     const [mainCategory, subCategory] = resolveTaxonomy(inst);
@@ -3000,6 +3080,7 @@ function getFilteredInstitutions() {
         inst.district,
         inst.classes,
         inst.description,
+        institutionAdvancedSearchText(inst),
         mainLabel,
         subLabel
       ].filter(Boolean).join(' ')
@@ -3041,12 +3122,35 @@ function getFilteredInstitutions() {
       (!activeLocationCity || normalizedInstitutionCity === normalizedActiveCity) &&
       (!activeLocationDistrict || normalizedInstitutionDistrict === normalizedActiveDistrict);
 
+    const advancedText=institutionAdvancedSearchText(inst);
+    const classSize=extractInstitutionClassSize(inst.classSize || inst.classCapacity || '');
+    const matchesProgram=!decisionFilters.program ||
+      advancedText.includes(normalizeQuoteSearch(decisionFilters.program));
+    const matchesClassSize=!decisionFilters.classSizeMax ||
+      (classSize!==null && classSize<=decisionFilters.classSizeMax);
+    const matchesPrice=!decisionFilters.priceLevel ||
+      normalizeQuoteSearch(inst.priceLevel || inst.priceRange || '').includes(normalizeQuoteSearch(decisionFilters.priceLevel));
+    const matchesMinRating=!decisionFilters.minRating ||
+      Number(inst.rating||0)>=decisionFilters.minRating;
+    const matchesStudy=!decisionFilters.studySupport || hasMeaningfulInstitutionField(inst.studySupport || inst.etut);
+    const matchesGuidance=!decisionFilters.guidance || hasMeaningfulInstitutionField(inst.guidance || inst.counseling);
+    const matchesInstallment=!decisionFilters.installment || hasMeaningfulInstitutionField(inst.installment || inst.installmentInfo);
+    const matchesCampaign=!decisionFilters.campaignOnly || hasMeaningfulInstitutionField(inst.campaign || inst.campaignTitle);
+
     return matchesCategory &&
       matchesQuery &&
       matchesVideo &&
       matchesOffer &&
       matches360Tour &&
-      matchesLocation;
+      matchesLocation &&
+      matchesProgram &&
+      matchesClassSize &&
+      matchesPrice &&
+      matchesMinRating &&
+      matchesStudy &&
+      matchesGuidance &&
+      matchesInstallment &&
+      matchesCampaign;
   });
 
   const sort = document.getElementById('sortSelect').value;
@@ -3280,6 +3384,13 @@ function institutionCardFacts(inst){
 function renderList() {
   const list = document.getElementById('institutionList');
   const data = getFilteredInstitutions();
+  updateDecisionFilterVisibility();
+  const decisionResult=document.getElementById('decisionFilterResult');
+  if(decisionResult){
+    decisionResult.textContent=isDecisionFilterActive()
+      ? data.length+' kurum detaylı filtrelerinize uyuyor.'
+      : '';
+  }
 
   const selectedStillVisible = data.some(
     inst => String(inst.id) === String(selectedId)
