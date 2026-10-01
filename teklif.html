@@ -54,8 +54,8 @@
 
       <div class="all-requests-entry">
         <div>
-          <strong>Takip kodunu hatırlamıyor musunuz?</strong>
-          <span>Bu cihazda daha önce oluşturduğunuz farklı sektörlerdeki talepleri telefon numaranızla listeleyin.</span>
+          <strong>Farklı sektörlerdeki tüm talepleriniz</strong>
+          <span>Güvenlik için telefon numaranız ve daha önce aldığınız geçerli bir takip kodu ile doğrulayın.</span>
         </div>
         <button type="button" id="showAllRequestsBtn">Tüm Taleplerim</button>
       </div>
@@ -77,21 +77,22 @@
         <div>
           <span class="eyebrow">TÜM TALEPLERİM</span>
           <h2>Bu cihazdaki teklif talepleriniz</h2>
-          <p>Telefon numaranızla eşleşen kayıtlar listelenir. Bir talebi seçerek o talebe gelen tüm teklifleri açabilirsiniz.</p>
+          <p>Önce telefon numaranız ve size ait geçerli bir takip kodu doğrulanır. Ardından bu cihazdaki diğer talepleriniz listelenir.</p>
         </div>
         <button type="button" id="closeAllRequestsBtn" aria-label="Kapat">×</button>
       </div>
 
       <form id="allRequestsForm" class="all-requests-form">
-        <input id="allRequestsPhone" type="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required>
-        <button type="submit">Taleplerimi Listele</button>
+        <input id="allRequestsPhone" type="tel" autocomplete="tel" placeholder="Telefon · 05xx xxx xx xx" required>
+        <input id="allRequestsCode" type="text" autocomplete="off" placeholder="Geçerli takip kodunuz · DJY-T-..." required>
+        <button type="submit">Doğrula ve Listele</button>
       </form>
 
       <p class="all-requests-message" id="allRequestsMessage"></p>
       <div id="allRequestsList" class="all-requests-list"></div>
 
       <div class="all-requests-security-note">
-        🔐 Güvenlik nedeniyle yalnızca bu cihazda daha önce oluşturulan veya doğrulanan talepler burada listelenir.
+        🔐 Sadece telefon numarası yeterli değildir. Geçerli bir takip kodu da doğrulanmadan talepler listelenmez.
       </div>
     </section>
 
