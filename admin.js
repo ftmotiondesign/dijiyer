@@ -2394,6 +2394,14 @@ const ADMIN_AD_PLACEMENTS = {
     size:"728 × 90 px",
     device:"Mobil + Masaüstü",
     description:"Ana sayfa dahil müşteri tarafındaki sayfaların üst bölümünde aynı standart düzende görünür."
+  },
+  compare_campaign:{
+    icon:"⭐",
+    name:"Karşılaştırma Sponsorlu Kampanya",
+    page:"Karşılaştırma",
+    size:"Metin / CTA",
+    device:"Mobil + Masaüstü",
+    description:"Karşılaştırma tablosunda kampanyayı sponsorlu etiketiyle öne çıkarır."
   }
 };
 
@@ -3838,6 +3846,15 @@ function openInstitutionEdit(id, data) {
   document.getElementById("editInstallment").value = data.installment || data.installmentInfo || "";
   document.getElementById("editPriceLevel").value = data.priceLevel || data.priceRange || "";
   document.getElementById("editCampaign").value = data.campaign || data.campaignTitle || "";
+  document.getElementById("editCampaignSponsored").checked = Boolean(data.campaignSponsored);
+  document.getElementById("editCampaignSponsorStart").value = data.campaignSponsorStart || "";
+  document.getElementById("editCampaignSponsorEnd").value = data.campaignSponsorEnd || "";
+  document.getElementById("editCampaignSponsorRevenue").value =
+    Number.isFinite(Number(data.campaignSponsorRevenue)) ? Number(data.campaignSponsorRevenue) : "";
+  document.getElementById("editCampaignSponsorCta").value =
+    data.campaignSponsorCta || "Kampanyayı İncele";
+  document.getElementById("editCampaignSponsorUrl").value =
+    data.campaignSponsorUrl || "";
   document.getElementById("editLocationVideoUrl").value =
     data.locationVideoUrl || data.profileVideoUrl || data.videoUrl || "";
   document.getElementById("editLocationVideoStoragePath").value =
@@ -3983,6 +4000,12 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
   const installment=String(document.getElementById("editInstallment")?.value||"").trim();
   const priceLevel=String(document.getElementById("editPriceLevel")?.value||"").trim();
   const campaign=String(document.getElementById("editCampaign")?.value||"").trim();
+  const campaignSponsored=Boolean(document.getElementById("editCampaignSponsored")?.checked);
+  const campaignSponsorStart=String(document.getElementById("editCampaignSponsorStart")?.value||"").trim();
+  const campaignSponsorEnd=String(document.getElementById("editCampaignSponsorEnd")?.value||"").trim();
+  const campaignSponsorRevenue=Math.max(0,Number(document.getElementById("editCampaignSponsorRevenue")?.value||0));
+  const campaignSponsorCta=String(document.getElementById("editCampaignSponsorCta")?.value||"Kampanyayı İncele").trim();
+  const campaignSponsorUrl=String(document.getElementById("editCampaignSponsorUrl")?.value||"").trim();
 
   const showSaveMessage=(text,state="")=>{
     if(!saveMessage)return;
@@ -4038,6 +4061,11 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     document.getElementById("editCampaignVideoUrl").focus();
     return;
   }
+  if(!isValidHttpUrl(campaignSponsorUrl)){
+    showSaveMessage("Sponsorlu kampanya bağlantısı geçerli bir http/https adresi olmalıdır.","error");
+    document.getElementById("editCampaignSponsorUrl").focus();
+    return;
+  }
 
   if(lat!==null && (!Number.isFinite(lat) || lat < -90 || lat > 90)){
     showSaveMessage("Enlem (lat) -90 ile 90 arasında olmalıdır.","error");
@@ -4073,6 +4101,14 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     installment,
     priceLevel,
     campaign,
+    campaignSponsored,
+    campaignSponsorStart,
+    campaignSponsorEnd,
+    campaignSponsorRevenue,
+    campaignSponsorCta,
+    campaignSponsorUrl,
+    campaignAdPlacement:"compare_campaign",
+    campaignAdRevenueType:"advertising",
     locationVideoUrl,
     locationVideoStoragePath,
     virtualTourUrl,
@@ -4103,6 +4139,36 @@ document.getElementById("institutionEditForm").addEventListener("submit", async 
     }
 
     await ref.update(updates);
+
+    if(campaignSponsored && campaignSponsorRevenue>0){
+      const revenueKey=[
+        "compare_campaign",
+        id,
+        campaignSponsorStart||"nostart",
+        campaignSponsorEnd||"noend"
+      ].join("_").replace(/[^a-zA-Z0-9_-]/g,"-");
+
+      await db.collection("adRevenue").doc(revenueKey).set({
+        revenueType:"advertising",
+        adType:"comparison_campaign",
+        placement:"compare_campaign",
+        productName:"Karşılaştırma Sponsorlu Kampanya",
+        institutionId:id,
+        institutionName:name,
+        amount:campaignSponsorRevenue,
+        currency:"TRY",
+        status:campaignSponsored ? "active" : "passive",
+        startDate:campaignSponsorStart,
+        endDate:campaignSponsorEnd,
+        campaignText:campaign,
+        source:"institution_edit",
+        updatedAt:new Date().toISOString(),
+        createdAt:fresh.data()?.campaignAdRevenueCreatedAt || new Date().toISOString()
+      },{merge:true});
+
+      updates.campaignAdRevenueCreatedAt=fresh.data()?.campaignAdRevenueCreatedAt || new Date().toISOString();
+      await ref.update({campaignAdRevenueCreatedAt:updates.campaignAdRevenueCreatedAt});
+    }
 
     const record=institutionRecords.find(item=>String(item.id)===id);
     if(record)Object.assign(record,updates);
