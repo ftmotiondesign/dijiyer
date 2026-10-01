@@ -3348,6 +3348,46 @@
           <label>Güncel Kampanya
             <input type="text" id="editCampaign" maxlength="160" placeholder="Örn. Erken kayıtta %15 indirim">
           </label>
+
+          <div class="admin-sponsored-campaign-box">
+            <div class="admin-sponsored-campaign-head">
+              <div>
+                <span>₺ REKLAM GELİRİ</span>
+                <strong>Karşılaştırmada Sponsorlu Kampanya</strong>
+                <small>Kurumun kampanyasını karşılaştırma tablosunda “Sponsorlu Kampanya” etiketiyle öne çıkarır. Kurumun puanını veya sıralamasını değiştirmez.</small>
+              </div>
+              <label class="admin-sponsored-campaign-switch">
+                <input type="checkbox" id="editCampaignSponsored">
+                <span>Aktif</span>
+              </label>
+            </div>
+
+            <div class="admin-sponsored-campaign-grid">
+              <label>Başlangıç Tarihi
+                <input type="date" id="editCampaignSponsorStart">
+              </label>
+              <label>Bitiş Tarihi
+                <input type="date" id="editCampaignSponsorEnd">
+              </label>
+              <label>Reklam Geliri
+                <div class="admin-sponsored-money">
+                  <input type="number" min="0" step="1" id="editCampaignSponsorRevenue" placeholder="0">
+                  <span>TL</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="admin-sponsored-campaign-grid admin-sponsored-campaign-grid-2">
+              <label>Buton Metni
+                <input type="text" id="editCampaignSponsorCta" maxlength="40" placeholder="Kampanyayı İncele">
+              </label>
+              <label>Kampanya Bağlantısı
+                <input type="url" id="editCampaignSponsorUrl" placeholder="https://...">
+              </label>
+            </div>
+
+            <p class="admin-sponsored-campaign-note">Bu alan <b>Karşılaştırma Sponsorlu Kampanya</b> reklam ürünü olarak kaydedilir ve Gelir Raporu için reklam geliri kaydı oluşturur.</p>
+          </div>
         </section>
 
                 <section class="admin-showcase-edit">
