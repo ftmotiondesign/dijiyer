@@ -21,6 +21,31 @@ function normalizeTrackingPhone(raw){let digits=String(raw||"").replace(/\D/g,""
 async function hashTrackingPhone(phone){const buffer=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(phone));return Array.from(new Uint8Array(buffer)).map(b=>b.toString(16).padStart(2,"0")).join("")}
 function makeTrackingCode(){const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",bytes=new Uint8Array(12);crypto.getRandomValues(bytes);const body=Array.from(bytes).map(b=>alphabet[b%alphabet.length]).join("");return "DJY-T-"+body.slice(0,4)+"-"+body.slice(4,8)+"-"+body.slice(8,12)}
 function trackingUrl(code){const u=new URL("teklif.html",location.href);u.searchParams.set("v","5");u.searchParams.set("kod",code);return u.toString()}
+function directWhatsappTarget(value){
+  const digits=String(value||"").replace(/\D/g,"");
+  if(!digits)return "";
+  if(digits.startsWith("90")&&digits.length>=12)return digits;
+  if(digits.startsWith("0")&&digits.length===11)return "90"+digits.slice(1);
+  if(digits.length===10)return "90"+digits;
+  return digits;
+}
+function directWhatsappMessage(tracking,request,quoteId){
+  const shortId=quoteId?"DJY-"+String(quoteId).slice(-8).toUpperCase():tracking?.trackingCode||"";
+  const panelUrl=new URL("institution.html?tab=quotes",location.href).toString();
+  return [
+    "Merhaba, Dijiyer üzerinden sizden fiyat teklifi istedim.",
+    "",
+    "Hizmet: "+String(request.service||"Teklif Talebi"),
+    "Bölge: "+[request.district,request.city].filter(Boolean).join(" / "),
+    "Talep No: "+shortId,
+    "Takip Kodu: "+String(tracking?.trackingCode||""),
+    "",
+    "Kurum panelinden teklif verebilirsiniz:",
+    panelUrl,
+    "",
+    "Teklifi Dijiyer üzerinden gönderdiğinizde fiyat ve şartları karşılaştırıp kabul edebilirim."
+  ].join("\n");
+}
 async function createDirectTrackingAccess(quoteId,request,displayCity,displayDistrict){
   const normalizedPhone=normalizeTrackingPhone(request.phone);
   const phoneHash=await hashTrackingPhone(normalizedPhone);
@@ -721,6 +746,24 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
     }else{
       codeEl.textContent="Talep kaydedildi";
       linkEl.classList.add("hidden");
+    }
+
+    const whatsappBtn=document.getElementById("directQuoteWhatsappBtn");
+    const whatsappNote=document.getElementById("directQuoteWhatsappNote");
+    const institutionWhatsapp=directWhatsappTarget(institution.whatsapp||institution.phone||"");
+
+    if(whatsappBtn){
+      if(institutionWhatsapp && tracking){
+        whatsappBtn.classList.remove("hidden");
+        if(whatsappNote)whatsappNote.classList.remove("hidden");
+        whatsappBtn.onclick=()=>{
+          const message=encodeURIComponent(directWhatsappMessage(tracking,request,quoteRef.id));
+          window.open("https://wa.me/"+institutionWhatsapp+"?text="+message,"_blank","noopener");
+        };
+      }else{
+        whatsappBtn.classList.add("hidden");
+        if(whatsappNote)whatsappNote.classList.add("hidden");
+      }
     }
 
     event.target.reset();
