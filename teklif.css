@@ -1608,3 +1608,56 @@ button,input{font:inherit}.hidden{display:none!important}
   .all-requests-form{grid-template-columns:1fr}
   .all-requests-form button{min-height:44px}
 }
+
+
+/* =========================================================
+   TÜM TALEPLERİM · SAYFA İÇİ TEKLİF DETAYI
+   ========================================================= */
+.inline-tracking-header{
+  margin-top:18px;
+  padding:13px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border:1px solid #bfdbfe;
+  border-radius:14px;
+  background:#eff6ff;
+  box-shadow:0 5px 18px rgba(30,64,175,.06);
+}
+.inline-tracking-header.hidden{display:none!important}
+.inline-tracking-header span{
+  display:block;
+  color:#2563eb;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.inline-tracking-header strong{
+  display:block;
+  margin-top:2px;
+  color:#172033;
+  font-size:14px;
+}
+.inline-tracking-header button{
+  flex:0 0 auto;
+  border:1px solid #fecaca;
+  border-radius:10px;
+  padding:9px 12px;
+  background:#fff;
+  color:#b91c1c;
+  font-weight:900;
+  cursor:pointer;
+}
+.inline-tracking-header button:hover{
+  background:#fff1f2;
+}
+@media(max-width:640px){
+  .inline-tracking-header{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .inline-tracking-header button{
+    width:100%;
+  }
+}
