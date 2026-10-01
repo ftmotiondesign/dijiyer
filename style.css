@@ -21042,3 +21042,93 @@ to{opacity:1;transform:none}
     grid-template-columns:120px repeat(var(--compare-count),minmax(190px,1fr));
   }
 }
+
+
+/* DETAYLI KARAR FİLTRELERİ */
+.decision-filter-panel{
+  margin-bottom:14px;
+  padding:15px;
+  border:1px solid #dce7f5;
+  border-radius:16px;
+  background:linear-gradient(180deg,#fbfdff,#fff);
+  box-shadow:0 6px 20px rgba(28,63,111,.05);
+}
+.decision-filter-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:12px;
+}
+.decision-filter-head>div{display:grid;gap:3px}
+.decision-filter-head span{color:#1677ff;font-size:7px;font-weight:950;letter-spacing:.08em}
+.decision-filter-head strong{color:#263850;font-size:15px}
+.decision-filter-head small{color:#78869a;font-size:8.5px}
+.decision-filter-head button{
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid #d6e2f1;
+  border-radius:9px;
+  background:#fff;
+  color:#53657b;
+  font-size:8px;
+  font-weight:850;
+}
+.decision-filter-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.decision-filter-grid label{display:grid;gap:5px}
+.decision-filter-grid label>span{color:#5f6f83;font-size:8px;font-weight:850}
+.decision-filter-grid input,
+.decision-filter-grid select{
+  width:100%;
+  min-height:38px;
+  padding:0 10px;
+  border:1px solid #dce4ee;
+  border-radius:9px;
+  background:#fff;
+  color:#34455d;
+  outline:none;
+  font-size:9px;
+}
+.decision-filter-checks{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:9px;
+}
+.decision-filter-checks label{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 9px;
+  border:1px solid #e1e8f0;
+  border-radius:999px;
+  background:#f9fbfd;
+  color:#506176;
+  font-size:8.5px;
+  font-weight:750;
+}
+.decision-filter-checks input{accent-color:#1677ff}
+.decision-filter-result{
+  min-height:0;
+  margin-top:8px;
+  color:#1677ff;
+  font-size:8px;
+  font-weight:800;
+}
+@media(max-width:900px){
+  .decision-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .decision-filter-panel{margin:8px 0 10px;padding:12px;border-radius:13px}
+  .decision-filter-head{align-items:flex-start}
+  .decision-filter-head strong{font-size:13px}
+  .decision-filter-head small{display:none}
+  .decision-filter-grid{grid-template-columns:1fr 1fr}
+  .decision-filter-checks{display:grid;grid-template-columns:1fr 1fr}
+  .decision-filter-checks label{border-radius:9px}
+}
