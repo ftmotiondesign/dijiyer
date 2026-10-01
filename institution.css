@@ -6348,3 +6348,33 @@ body[data-panel-current="showcase"] .panel-heading-action{
   .second-offer-prompt-actions{grid-column:1/-1;width:100%;display:grid;grid-template-columns:1fr 1fr}
   .second-offer-prompt button{width:100%}
 }
+
+
+/* Kurum oturumu kurtarma */
+#panelError .panel-error-copy{
+  margin-bottom:10px;
+}
+#panelError .panel-error-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+#panelError .panel-error-actions a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:9px 14px;
+  border-radius:10px;
+  font-weight:800;
+  text-decoration:none;
+}
+#panelError .panel-error-login{
+  background:#2563eb;
+  color:#fff;
+}
+#panelError .panel-error-register{
+  background:#fff;
+  color:#1e293b;
+  border:1px solid #cbd5e1;
+}
