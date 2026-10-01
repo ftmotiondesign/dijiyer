@@ -1641,6 +1641,16 @@ if(rememberedPhone){
 }
 
 ensureTrackingInputsInteractive();
+
+const autoOpenTracking=new URLSearchParams(location.search).get("oto")==="1";
+if(autoOpenTracking && codeInput.value && phoneInput.value){
+  setTimeout(()=>{
+    if(!submitBtn.disabled){
+      form.requestSubmit();
+    }
+  },120);
+}
+
 setInterval(updateCountdowns,60000);
 
 // Canlı onSnapshot dinleyicileri güncellemeleri zaten anında getirir.
