@@ -29,82 +29,55 @@ function stopInstitutionOfferStateWatchers(){
 
 // Yalnız kabul kilidi ve 2. teklif daveti canlı izlenir.
 // Kurumun kendi teklifini ayrıca onSnapshot ile dinlemiyoruz; kaydetme sonrası local map güncelleniyor.
-function syncInstitutionOfferStateWatchers(){
+async function syncInstitutionOfferStateWatchers(){
   const currentInstitutionId=String(currentAccount?.institutionId||"");
   if(!currentInstitutionId)return;
 
-  const activeQuoteIds=new Set(quoteRecords.map(quote=>String(quote.id)));
+  // Önce eski canlı dinleyicilerin tamamını kapat.
+  stopInstitutionOfferStateWatchers();
 
-  institutionOfferStateWatchers.forEach((stop,quoteId)=>{
-    if(activeQuoteIds.has(String(quoteId)))return;
-    try{ stop(); }catch(_){}
-    institutionOfferStateWatchers.delete(quoteId);
-  });
+  // Her talep için iki sürekli listener açmak yerine yalnızca ilk yüklemede
+  // gerekli lock + 2. teklif daveti durumunu bir kez oku.
+  // Teklif gönderirken lock ayrıca sunucudan tekrar kontrol ediliyor.
+  const rows=quoteRecords.slice(0,30);
 
-  quoteRecords.forEach(quote=>{
-    const quoteId=String(quote.id);
-    if(!quoteId || institutionOfferStateWatchers.has(quoteId))return;
+  await Promise.all(rows.map(async quote=>{
+    const quoteId=String(quote.id||"");
+    if(!quoteId)return;
 
     const quoteRef=db.collection("quoteRequests").doc(quoteId);
-    const unsubscribers=[];
 
-    unsubscribers.push(
-      quoteRef.collection("locks").doc("main").onSnapshot(snapshot=>{
-        const before=institutionLockMap.get(quoteId)||null;
-        const after=snapshot.exists ? snapshot.data() : null;
-        if(after)institutionLockMap.set(quoteId,after);
-        else institutionLockMap.delete(quoteId);
+    try{
+      const [lockSnap,inviteSnap]=await Promise.all([
+        quoteRef.collection("locks").doc("main").get(),
+        quoteRef.collection("secondOfferInvites").doc(currentInstitutionId).get()
+      ]);
 
-        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
-          const ownOffer=institutionOfferMap.get(quoteId)||null;
-          const belongsHere=after && institutionLockBelongsToCurrentInstitution(after,ownOffer);
+      if(lockSnap.exists){
+        const lock=lockSnap.data();
+        institutionLockMap.set(quoteId,lock);
 
-          if(belongsHere){
-            const quote=quoteRecords.find(item=>String(item.id)===quoteId);
-            if(quote){
-              quote.status="accepted";
-              quote.acceptedInstitutionId=String(after.institutionId||currentInstitutionId);
-              quote.acceptedInstitutionName=String(after.institutionName||currentInstitution?.name||"Kurum");
-              quote.acceptedOfferCode=String(after.offerCode||ownOffer?.offerCode||"");
-              quote.acceptedPrice=Number(after.price||ownOffer?.price||0);
-              quote.acceptedAt=String(after.acceptedAt||after.lockedAt||new Date().toISOString());
-            }
-          }
-
-          if(!before && belongsHere){
-            try{ showToast("✓ Müşteri teklifinizi kabul etti. Teklif kapatıldı ve artık düzenlenemez."); }catch(_){}
-          }
-          renderQuotes();
-          renderSummary();
+        if(institutionLockBelongsToCurrentInstitution(lock,institutionOfferMap.get(quoteId)||null)){
+          quote.status="accepted";
+          quote.acceptedInstitutionId=String(lock.institutionId||currentInstitutionId);
+          quote.acceptedInstitutionName=String(lock.institutionName||currentInstitution?.name||"Kurum");
+          quote.acceptedOfferCode=String(lock.offerCode||"");
+          quote.acceptedPrice=Number(lock.price||0);
+          quote.acceptedAt=String(lock.acceptedAt||lock.lockedAt||"");
         }
-      },error=>{
-        console.warn("Kabul/kilit durumu canlı izlenemedi:",quoteId,error);
-      })
-    );
+      }else{
+        institutionLockMap.delete(quoteId);
+      }
 
-
-
-    unsubscribers.push(
-      quoteRef.collection("secondOfferInvites").doc(currentInstitutionId).onSnapshot(snapshot=>{
-        const before=institutionSecondOfferInviteMap.get(quoteId)||null;
-        const after=snapshot.exists ? {id:snapshot.id,...snapshot.data()} : null;
-        if(after)institutionSecondOfferInviteMap.set(quoteId,after);
-        else institutionSecondOfferInviteMap.delete(quoteId);
-
-        if(offerStateFingerprint(before)!==offerStateFingerprint(after)){
-          renderQuotes();
-        }
-      },error=>{
-        console.warn("2. teklif daveti canlı izlenemedi:",quoteId,error);
-      })
-    );
-
-    institutionOfferStateWatchers.set(quoteId,()=>{
-      unsubscribers.forEach(unsubscribe=>{
-        try{ unsubscribe(); }catch(_){}
-      });
-    });
-  });
+      if(inviteSnap.exists){
+        institutionSecondOfferInviteMap.set(quoteId,{id:inviteSnap.id,...inviteSnap.data()});
+      }else{
+        institutionSecondOfferInviteMap.delete(quoteId);
+      }
+    }catch(error){
+      console.warn("Teklif durumu tek seferlik senkronize edilemedi:",quoteId,error);
+    }
+  }));
 }
 
 window.stopInstitutionOfferStateWatchers=stopInstitutionOfferStateWatchers;
