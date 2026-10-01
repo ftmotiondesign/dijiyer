@@ -1530,3 +1530,81 @@ button,input{font:inherit}.hidden{display:none!important}
   font-weight:750;
   line-height:1.45;
 }
+
+
+/* =========================================================
+   MÜŞTERİ · TÜM TALEPLERİM
+   ========================================================= */
+.all-requests-entry{
+  margin-top:14px;
+  padding:13px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border:1px solid #dbeafe;
+  border-radius:13px;
+  background:#f8fbff;
+}
+.all-requests-entry strong{display:block;color:#17365d;font-size:13px}
+.all-requests-entry span{display:block;margin-top:3px;color:#64748b;font-size:11px;line-height:1.45}
+.all-requests-entry button{
+  flex:0 0 auto;
+  border:0;
+  border-radius:10px;
+  padding:10px 13px;
+  background:#0f6fdc;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.all-requests-card{
+  margin-top:20px;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+.all-requests-card.hidden{display:none!important}
+.all-requests-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.all-requests-head h2{margin:4px 0 5px;color:var(--navy)}
+.all-requests-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.all-requests-head>button{
+  width:36px;height:36px;border:0;border-radius:10px;background:#f1f5f9;color:#334155;font-size:23px;cursor:pointer
+}
+.all-requests-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:16px}
+.all-requests-form input{
+  min-width:0;padding:12px;border:1px solid #d5deeb;border-radius:11px;outline:none;font:inherit
+}
+.all-requests-form input:focus{border-color:#86b5ff;box-shadow:0 0 0 4px rgba(22,119,255,.08)}
+.all-requests-form button{
+  border:0;border-radius:11px;padding:0 16px;background:var(--blue);color:#fff;font-weight:900;cursor:pointer
+}
+.all-requests-message{min-height:18px;margin:11px 0 0;color:#475569;font-size:12px;font-weight:800}
+.all-requests-list{display:grid;gap:10px;margin-top:10px}
+.all-request-row{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;
+  border:1px solid #e2e8f0;border-radius:14px;background:#fbfdff
+}
+.all-request-main{min-width:0}
+.all-request-sector{
+  display:inline-flex;margin-bottom:5px;padding:4px 7px;border-radius:999px;background:#eff6ff;color:#1d4ed8;
+  font-size:9px;font-weight:900;text-transform:uppercase
+}
+.all-request-main strong{display:block;color:#172033;font-size:14px}
+.all-request-main small{display:block;margin-top:4px;color:#64748b;font-size:11px}
+.all-request-main em{display:block;margin-top:5px;color:#0f6fdc;font-size:10px;font-style:normal;font-weight:900}
+.all-request-row>button{
+  flex:0 0 auto;border:0;border-radius:10px;padding:10px 12px;background:#16a34a;color:#fff;font-weight:900;cursor:pointer
+}
+.all-requests-security-note{
+  margin-top:14px;padding:11px 12px;border-radius:10px;background:#f8fafc;color:#64748b;font-size:10.5px;line-height:1.45
+}
+@media(max-width:640px){
+  .all-requests-entry,.all-request-row{align-items:stretch;flex-direction:column}
+  .all-requests-entry button,.all-request-row>button{width:100%}
+  .all-requests-form{grid-template-columns:1fr}
+  .all-requests-form button{min-height:44px}
+}
