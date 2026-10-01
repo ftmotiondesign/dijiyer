@@ -1367,18 +1367,55 @@ async function saveRealOffer(form){
 
     // 2) Kritik kayıt: müşterinin takip ekranını besleyen asıl teklif.
     // Yardımcı kayıtlarla aynı batch'te olmadığı için onların hatası bunu iptal edemez.
+    const writeMode=existing ? "update" : "create";
+    const diagnostic={
+      writeMode,
+      quoteId:String(quoteId||""),
+      institutionId:String(currentAccount?.institutionId||""),
+      targetInstitutionId:String(quote?.targetInstitutionId||""),
+      quoteStatus:String(quote?.status||""),
+      requestType:String(quote?.requestType||""),
+      hasExistingOffer:Boolean(existing),
+      existingOfferDocId:String(existing?.id||""),
+      existingOfferVersion:existing ? institutionOfferVersion(existing) : 0,
+      nextVersion:Number(nextVersion||0),
+      lockPresent:Boolean(lock),
+      routedLead:Boolean(routedLead),
+      sourceType:String(source?.type||""),
+      city:String(quote?.city||""),
+      district:String(quote?.district||"")
+    };
+    console.info("TEKLİF YAZMA TEŞHİSİ:",diagnostic);
+
     try{
       await offerRef.set(data,{merge:true});
     }catch(coreOfferError){
-      console.error("ANA TEKLİF YAZMA HATASI:",{
-        code:String(coreOfferError?.code||"unknown"),
-        message:String(coreOfferError?.message||""),
-        quoteId,
-        institutionId:String(currentAccount.institutionId||""),
-        existingVersion:existing ? institutionOfferVersion(existing) : 0,
-        nextVersion,
-        quoteStatus:String(quote?.status||"")
-      });
+      const coreCode=String(coreOfferError?.code||"unknown");
+      const coreMessage=String(coreOfferError?.message||"");
+      const diagnosticError={
+        ...diagnostic,
+        errorCode:coreCode,
+        errorMessage:coreMessage
+      };
+      console.error("ANA TEKLİF YAZMA HATASI:",diagnosticError);
+
+      if(coreCode.includes("permission-denied")){
+        alert(
+          "TEŞHİS · Firestore teklifi reddetti\n\n"+
+          "İşlem: "+diagnostic.writeMode+"\n"+
+          "Talep: "+diagnostic.quoteId+"\n"+
+          "Kurum ID: "+diagnostic.institutionId+"\n"+
+          "Hedef Kurum ID: "+(diagnostic.targetInstitutionId||"-")+"\n"+
+          "Talep türü: "+(diagnostic.requestType||"-")+"\n"+
+          "Talep durumu: "+(diagnostic.quoteStatus||"-")+"\n"+
+          "Mevcut teklif: "+(diagnostic.hasExistingOffer?"Var":"Yok")+"\n"+
+          "Mevcut sürüm: "+diagnostic.existingOfferVersion+"\n"+
+          "Yeni sürüm: "+diagnostic.nextVersion+"\n"+
+          "Kilit: "+(diagnostic.lockPresent?"Var":"Yok")+"\n"+
+          "Kaynak: "+(diagnostic.sourceType||"-")+"\n\n"+
+          "Bu bilgilerin ekran görüntüsünü gönder."
+        );
+      }
       throw coreOfferError;
     }
 
