@@ -1372,10 +1372,15 @@ async function saveRealOffer(form){
     const diagnostic={
       writeMode,
       quoteId:String(quoteId||""),
+      authUid:String(currentUser?.uid||""),
+      accountStatus:String(currentAccount?.status||""),
+      accountInstitutionId:String(currentAccount?.institutionId||""),
       institutionId:String(currentAccount?.institutionId||""),
       targetInstitutionId:String(quote?.targetInstitutionId||""),
       quoteStatus:String(quote?.status||""),
       requestType:String(quote?.requestType||""),
+      payloadStatus:String(data?.status||""),
+      payloadPrice:Number(data?.price||0),
       hasExistingOffer:Boolean(existing),
       existingOfferDocId:String(existing?.id||""),
       existingOfferVersion:existing ? institutionOfferVersion(existing) : 0,
@@ -1496,11 +1501,16 @@ async function saveRealOffer(form){
       alert(
         "TEŞHİS · Firestore teklifi reddetti\n\n"+
         "İşlem: "+lastOfferDiagnostic.writeMode+"\n"+
+        "Auth UID: "+(lastOfferDiagnostic.authUid||"-")+"\n"+
+        "Hesap durumu: "+(lastOfferDiagnostic.accountStatus||"-")+"\n"+
+        "Hesap Kurum ID: "+(lastOfferDiagnostic.accountInstitutionId||"-")+"\n"+
         "Talep: "+lastOfferDiagnostic.quoteId+"\n"+
         "Kurum ID: "+lastOfferDiagnostic.institutionId+"\n"+
         "Hedef Kurum ID: "+(lastOfferDiagnostic.targetInstitutionId||"-")+"\n"+
         "Talep türü: "+(lastOfferDiagnostic.requestType||"-")+"\n"+
         "Talep durumu: "+(lastOfferDiagnostic.quoteStatus||"-")+"\n"+
+        "Yazılan status: "+(lastOfferDiagnostic.payloadStatus||"-")+"\n"+
+        "Yazılan fiyat: "+String(lastOfferDiagnostic.payloadPrice||0)+"\n"+
         "Mevcut teklif: "+(lastOfferDiagnostic.hasExistingOffer?"Var":"Yok")+"\n"+
         "Mevcut sürüm: "+lastOfferDiagnostic.existingOfferVersion+"\n"+
         "Yeni sürüm: "+lastOfferDiagnostic.nextVersion+"\n"+
