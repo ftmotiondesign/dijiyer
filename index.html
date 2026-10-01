@@ -559,6 +559,61 @@
     </aside>
 
     <section class="workspace">
+      <section class="decision-filter-panel hidden" id="decisionFilterPanel" aria-label="Eğitim kurumu detaylı filtreleri">
+        <div class="decision-filter-head">
+          <div>
+            <span>DETAYLI FİLTRE</span>
+            <strong>Size uygun eğitim kurumlarını daraltın</strong>
+            <small>Program, sınıf mevcudu, etüt, rehberlik, taksit, fiyat seviyesi ve puana göre filtreleyin.</small>
+          </div>
+          <button type="button" id="decisionFilterClearBtn">Filtreleri Temizle</button>
+        </div>
+
+        <div class="decision-filter-grid">
+          <label>
+            <span>Program / Hizmet</span>
+            <input type="search" id="educationProgramFilter" placeholder="Örn. LGS, TYT, AYT">
+          </label>
+
+          <label>
+            <span>Sınıf Mevcudu</span>
+            <select id="classSizeMaxFilter">
+              <option value="">Farketmez</option>
+              <option value="15">En fazla 15 kişi</option>
+              <option value="20">En fazla 20 kişi</option>
+              <option value="25">En fazla 25 kişi</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Fiyat Seviyesi</span>
+            <select id="priceLevelFilter">
+              <option value="">Farketmez</option>
+              <option value="ekonomik">Ekonomik</option>
+              <option value="orta">Orta</option>
+              <option value="üst">Üst segment</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Minimum Puan</span>
+            <select id="minRatingFilter">
+              <option value="">Farketmez</option>
+              <option value="4">4.0 ve üzeri</option>
+              <option value="4.5">4.5 ve üzeri</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="decision-filter-checks">
+          <label><input type="checkbox" id="studySupportFilter"> Etüt desteği olsun</label>
+          <label><input type="checkbox" id="guidanceFilter"> Rehberlik / koçluk olsun</label>
+          <label><input type="checkbox" id="installmentFilter"> Taksit imkanı olsun</label>
+          <label><input type="checkbox" id="campaignOnlyFilter"> Kampanyası olanlar</label>
+        </div>
+
+        <div class="decision-filter-result" id="decisionFilterResult"></div>
+      </section>
       <section class="mobile-daily-stats stats-disabled" id="mobileDailyStats" aria-label="Bugünkü Dijiyer istatistikleri">
         <div class="mobile-daily-stats-head">
           <div>
