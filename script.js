@@ -3566,6 +3566,16 @@ function syncCompareSelectionUi(){
   }
 }
 
+function institutionCompareSectorKey(inst){
+  return String(inst?.subCategory||inst?.category||inst?.mainCategory||'').trim();
+}
+
+function currentCompareSectorKey(){
+  const firstId=[...compareInstitutionIds][0];
+  const first=institutions.find(inst=>String(inst.id)===String(firstId));
+  return first ? institutionCompareSectorKey(first) : '';
+}
+
 function toggleCompareInstitution(id) {
   const key = String(id || '');
   if (!key) return;
@@ -3575,6 +3585,12 @@ function toggleCompareInstitution(id) {
   } else {
     if (compareInstitutionIds.size >= 3) {
       showToast('En fazla 3 kurumu karşılaştırabilirsiniz.');
+      return;
+    }
+    const candidate=institutions.find(inst=>String(inst.id)===key);
+    const activeSector=currentCompareSectorKey();
+    if(candidate && activeSector && institutionCompareSectorKey(candidate)!==activeSector){
+      showToast('Sadece aynı sektördeki kurumları karşılaştırabilirsiniz.');
       return;
     }
     compareInstitutionIds.add(key);
