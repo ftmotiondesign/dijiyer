@@ -7554,18 +7554,21 @@ institutionRegisterTab.addEventListener('click', () => setInstitutionAccessMode(
 
 (function openInstitutionLoginFromUrl(){
   const params=new URLSearchParams(window.location.search);
-  if(params.get('kurumgiris')!=='1')return;
+  const wantsLogin=params.get('kurumgiris')==='1';
+  const wantsRegister=params.get('kurumkayit')==='1';
+  if(!wantsLogin && !wantsRegister)return;
 
   setInstitutionActionsMenu(false);
-  setInstitutionAccessMode('login');
+  setInstitutionAccessMode(wantsRegister ? 'register' : 'login');
   openModal('institutionAccessModal');
 
-  if(institutionLoginMessage){
+  if(institutionLoginMessage && wantsLogin){
     institutionLoginMessage.textContent='Kurum hesabınızla tekrar giriş yapın.';
   }
 
   const cleanUrl=new URL(window.location.href);
   cleanUrl.searchParams.delete('kurumgiris');
+  cleanUrl.searchParams.delete('kurumkayit');
   window.history.replaceState({},'',cleanUrl.toString());
 })();
 
