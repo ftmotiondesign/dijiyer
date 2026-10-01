@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-  <link rel="stylesheet" href="kurum.css?v=11">
+  <link rel="stylesheet" href="kurum.css?v=12">
   <link rel="stylesheet" href="kurum-premium.css?v=6">
   <link rel="stylesheet" href="appointments.css?v=1">
   <link rel="stylesheet" href="market-nav.css?v=7">
@@ -166,6 +166,97 @@
     </div>
   </div>
 
+
+  <div id="preRegistrationModal" class="kp-modal hidden">
+    <div class="kp-modal-card kp-prereg-card">
+      <button type="button" id="preRegistrationClose" class="kp-modal-close" aria-label="Kapat">×</button>
+
+      <div id="preRegistrationFormView">
+        <span class="eyebrow">ÖN KAYIT</span>
+        <h2 id="preRegistrationTitle">Ön kayıt oluşturun</h2>
+        <p class="kp-prereg-intro">Bilgilerinizi bırakın. Başvurunuz doğrudan seçtiğiniz kuruma iletilsin.</p>
+
+        <div class="kp-direct-target">
+          <span class="kp-direct-target-icon" id="preRegistrationInstitutionIcon">🏢</span>
+          <div>
+            <strong id="preRegistrationInstitutionName">Kurum</strong>
+            <small id="preRegistrationInstitutionLocation">Konum bilgisi</small>
+            <small>Bu başvuru yalnızca bu kuruma gönderilir.</small>
+          </div>
+          <span class="kp-prereg-badge">Ön Kayıt</span>
+        </div>
+
+        <form id="preRegistrationForm" class="kp-direct-form">
+          <div class="kp-direct-two">
+            <label>
+              <span>Ad Soyad</span>
+              <input id="preRegistrationName" type="text" maxlength="80" required autocomplete="name" placeholder="Adınız ve soyadınız">
+            </label>
+            <label>
+              <span>Telefon</span>
+              <input id="preRegistrationPhone" type="tel" maxlength="20" required autocomplete="tel" placeholder="05xx xxx xx xx">
+            </label>
+          </div>
+
+          <label>
+            <span>E-posta <small>(isteğe bağlı)</small></span>
+            <input id="preRegistrationEmail" type="email" maxlength="160" autocomplete="email" placeholder="ornek@email.com">
+          </label>
+
+          <label>
+            <span>Ön kayıt konusu</span>
+            <select id="preRegistrationType" required>
+              <option value="">Seçiniz</option>
+            </select>
+          </label>
+
+          <div class="kp-direct-two">
+            <label>
+              <span>Öğrenci / Katılımcı adı <small>(isteğe bağlı)</small></span>
+              <input id="preRegistrationStudentName" type="text" maxlength="80" placeholder="Ad Soyad">
+            </label>
+            <label>
+              <span>Sınıf / Program <small>(isteğe bağlı)</small></span>
+              <input id="preRegistrationGrade" type="text" maxlength="80" placeholder="Örn. 8. sınıf, B sınıfı">
+            </label>
+          </div>
+
+          <label>
+            <span>Notunuz <small>(isteğe bağlı)</small></span>
+            <textarea id="preRegistrationNote" rows="4" maxlength="500" placeholder="Kayıt dönemi, program, görüşme saati veya özel isteğiniz..."></textarea>
+          </label>
+
+          <label class="kp-prereg-consent">
+            <input id="preRegistrationConsent" type="checkbox" required>
+            <span>Başvurumla ilgili bu kurumun benimle telefon veya e-posta yoluyla iletişime geçmesini kabul ediyorum.</span>
+          </label>
+
+          <div class="kp-direct-assurance">
+            <span>✓</span>
+            <div>
+              <strong>Başvurunuz doğrudan kuruma iletilir</strong>
+              <small>Dijiyer ön kayıt için ödeme almaz. Kesin kayıt ve ücret işlemleri doğrudan kurumla yapılır.</small>
+            </div>
+          </div>
+
+          <button type="submit" class="kp-submit kp-prereg-submit" id="preRegistrationSubmit">Ön Kayıt Oluştur</button>
+          <p id="preRegistrationMessage" class="kp-form-message"></p>
+        </form>
+      </div>
+
+      <div id="preRegistrationSuccess" class="kp-direct-success hidden">
+        <span class="kp-direct-success-icon">✓</span>
+        <h2>Ön kaydınız oluşturuldu</h2>
+        <p id="preRegistrationSuccessText">Başvurunuz kuruma iletildi.</p>
+        <div class="kp-tracking-box">
+          <small>ÖN KAYIT KODUNUZ</small>
+          <strong id="preRegistrationCode">-</strong>
+        </div>
+        <button type="button" class="kp-direct-secondary" id="preRegistrationDone">Kurum Sayfasına Dön</button>
+      </div>
+    </div>
+  </div>
+
   <div id="reviewModal" class="kp-modal hidden">
     <div class="kp-modal-card">
       <button type="button" id="reviewModalClose" class="kp-modal-close">×</button>
@@ -203,7 +294,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
   <script src="page-banner.js?v=2"></script>
-  <script src="kurum.js?v=29"></script>
+  <script src="kurum.js?v=30"></script>
   <script src="kurum-premium.js?v=7"></script>
   <script src="appointments.js?v=1"></script>
 </body>
