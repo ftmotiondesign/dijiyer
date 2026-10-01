@@ -775,7 +775,18 @@ service cloud.firestore {
         && resource.data.institutionId == institutionId
         && request.resource.data.institutionId == institutionId
         && request.resource.data.offerCode == resource.data.offerCode
-        && request.resource.data.createdAt == resource.data.createdAt
+        && (
+          (
+            resource.data.keys().hasAny(['createdAt'])
+            && request.resource.data.createdAt == resource.data.createdAt
+          )
+          ||
+          (
+            !resource.data.keys().hasAny(['createdAt'])
+            && request.resource.data.createdAt is string
+            && request.resource.data.createdAt.size() > 0
+          )
+        )
         && request.resource.data.status == 'offered'
         && !exists(
           /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
