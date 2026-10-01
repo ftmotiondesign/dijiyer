@@ -7786,6 +7786,44 @@ document.getElementById('institutionForgotPasswordBtn').addEventListener('click'
 });
 
 
+const heroTrackingForm=document.getElementById('heroTrackingForm');
+heroTrackingForm?.addEventListener('submit',event=>{
+  event.preventDefault();
+
+  const code=String(document.getElementById('heroTrackingCode')?.value||'').trim().toUpperCase();
+  const rawPhone=String(document.getElementById('heroTrackingPhone')?.value||'').trim();
+  const phone=rawPhone.replace(/\D/g,'');
+  const msg=document.getElementById('heroTrackingMessage');
+
+  if(!code){
+    if(msg)msg.textContent='Takip kodunu yazın.';
+    return;
+  }
+
+  if(phone.length<10){
+    if(msg)msg.textContent='Talepte kullandığınız telefon numarasını yazın.';
+    return;
+  }
+
+  const normalizedPhone=phone.startsWith('90')&&phone.length===12
+    ? phone.slice(2)
+    : phone.startsWith('0')&&phone.length===11
+      ? phone.slice(1)
+      : phone;
+
+  sessionStorage.setItem('dijiyerTrackingCode',code);
+  sessionStorage.setItem('dijiyerTrackingPhone',normalizedPhone);
+  localStorage.setItem('dijiyerLastTrackingCode',code);
+
+  try{
+    const phoneMap=JSON.parse(localStorage.getItem('dijiyerTrackingPhoneByCode')||'{}');
+    phoneMap[code]=normalizedPhone;
+    localStorage.setItem('dijiyerTrackingPhoneByCode',JSON.stringify(phoneMap));
+  }catch(_){}
+
+  window.location.href='teklif.html?kod='+encodeURIComponent(code)+'&oto=1';
+});
+
 document.getElementById('heroQuoteBtn')?.addEventListener('click', () => {
   openModal('quoteModal');
 });
