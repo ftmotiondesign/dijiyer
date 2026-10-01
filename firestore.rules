@@ -711,100 +711,59 @@ service cloud.firestore {
 
       allow get, list: if true;
 
-      // DOĞRUDAN / ÖZEL TEKLİF:
-      // Talep açıkça bu kuruma gönderildiyse kurum kendi teklifini yazabilir.
-      // Bu yol kategori/şehir/kredi eşleşmesine bağlı değildir.
+      // 1) ÖZEL / DOĞRUDAN TALEP:
+      // Talep doğrudan bu kuruma yönelmişse, kurum kendi teklifini yazabilir.
+      // Bu yol kategori, şehir, kredi ve eski şema alanlarına bağlı değildir.
       allow create: if
         adminMi()
         ||
         (
           onayliKurumKullanicisi()
           && bagliKurumId() == institutionId
-          && teklifTalebiAcik(quoteId)
-          && (
-            (
-              get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)
-              ).data.keys().hasAny(['targetInstitutionId'])
-              && get(
-                /databases/$(database)/documents/quoteRequests/$(quoteId)
-              ).data.targetInstitutionId == institutionId
-            )
-            ||
-            (
-              kurumTalebineErisebilir(quoteId)
-              && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
-            )
+          && get(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)
+          ).data.targetInstitutionId == institutionId
+          && !exists(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
           )
           && request.resource.data.institutionId == institutionId
-          && request.resource.data.offerCode is string
-          && request.resource.data.offerCode.size() > 0
           && request.resource.data.price is number
           && request.resource.data.price > 0
-          && request.resource.data.scope is string
-          && request.resource.data.scope.size() > 0
           && request.resource.data.status == 'offered'
-          && request.resource.data.validityHours is number
-          && request.resource.data.validityHours > 0
-          && request.resource.data.registrationRequired == true
-          && request.resource.data.platformPayment == false
-          && request.resource.data.paymentPolicy
-              == 'offline_direct_between_customer_and_institution'
-          && request.resource.data.offerVersion is number
-          && request.resource.data.offerVersion >= 1
-          && request.resource.data.expiresAtTs is timestamp
-          && request.resource.data.expiresAtTs > request.time
+        )
+        ||
+        (
+          // 2) Toplu / yönlendirilmiş talepler mevcut erişim ve kredi kurallarına tabidir.
+          onayliKurumKullanicisi()
+          && bagliKurumId() == institutionId
+          && kurumTalebineErisebilir(quoteId)
+          && teklifTalebiAcik(quoteId)
+          && yonlendirilmisFirsatKredisiVar(quoteId, institutionId)
+          && request.resource.data.institutionId == institutionId
+          && request.resource.data.price is number
+          && request.resource.data.price > 0
+          && request.resource.data.status == 'offered'
         );
 
       allow update: if
         onayliKurumKullanicisi()
         && bagliKurumId() == institutionId
-        && teklifTalebiAcik(quoteId)
+        && !exists(
+          /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
+        )
         && (
-          (
-            get(
-              /databases/$(database)/documents/quoteRequests/$(quoteId)
-            ).data.keys().hasAny(['targetInstitutionId'])
-            && get(
-              /databases/$(database)/documents/quoteRequests/$(quoteId)
-            ).data.targetInstitutionId == institutionId
-          )
+          get(
+            /databases/$(database)/documents/quoteRequests/$(quoteId)
+          ).data.targetInstitutionId == institutionId
           ||
           kurumTalebineErisebilir(quoteId)
         )
         && resource.data.institutionId == institutionId
         && request.resource.data.institutionId == institutionId
         && request.resource.data.offerCode == resource.data.offerCode
-        && (
-          (
-            resource.data.keys().hasAny(['createdAt'])
-            && request.resource.data.createdAt == resource.data.createdAt
-          )
-          ||
-          (
-            !resource.data.keys().hasAny(['createdAt'])
-            && request.resource.data.createdAt is string
-            && request.resource.data.createdAt.size() > 0
-          )
-        )
-        && request.resource.data.status == 'offered'
-        && !exists(
-          /databases/$(database)/documents/quoteRequests/$(quoteId)/locks/main
-        )
         && request.resource.data.price is number
         && request.resource.data.price > 0
-        && request.resource.data.scope is string
-        && request.resource.data.scope.size() > 0
-        && request.resource.data.validityHours is number
-        && request.resource.data.validityHours > 0
-        && request.resource.data.registrationRequired == true
-        && request.resource.data.platformPayment == false
-        && request.resource.data.paymentPolicy
-            == 'offline_direct_between_customer_and_institution'
-        && request.resource.data.offerVersion is number
-        && request.resource.data.offerVersion >= 1
-        && request.resource.data.expiresAtTs is timestamp
-        && request.resource.data.expiresAtTs > request.time;
+        && request.resource.data.status == 'offered';
 
       allow delete: if adminMi();
     }
