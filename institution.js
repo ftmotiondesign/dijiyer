@@ -215,7 +215,12 @@ function formatRelativeTime(value) {
 
 function showPanelError(message) {
   panelError.hidden = false;
-  panelError.textContent = message;
+  panelError.innerHTML =
+    '<div class="panel-error-copy">'+escapeHtml(message)+'</div>'+
+    '<div class="panel-error-actions">'+
+      '<a class="panel-error-login" href="index.html?kurumgiris=1">Tekrar Giriş Yap</a>'+
+      '<a class="panel-error-register" href="index.html?kurumkayit=1">Yeni Kurum Hesabı Oluştur</a>'+
+    '</div>';
 }
 
 function safeProfileUrl(value) {
