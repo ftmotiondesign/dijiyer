@@ -748,8 +748,35 @@ document.getElementById("directQuoteForm").addEventListener("submit",async event
       linkEl.classList.add("hidden");
     }
 
-    const whatsappBtn=document.getElementById("directQuoteWhatsappBtn");
-    const whatsappNote=document.getElementById("directQuoteWhatsappNote");
+    let whatsappBtn=document.getElementById("directQuoteWhatsappBtn");
+    let whatsappNote=document.getElementById("directQuoteWhatsappNote");
+    const successBox=document.getElementById("directQuoteSuccess");
+    const doneBtn=document.getElementById("directQuoteDone");
+
+    if(!whatsappBtn && successBox){
+      whatsappBtn=document.createElement("button");
+      whatsappBtn.type="button";
+      whatsappBtn.id="directQuoteWhatsappBtn";
+      whatsappBtn.className="kp-submit";
+      whatsappBtn.style.background="#16a34a";
+      whatsappBtn.textContent="WhatsApp'tan Kuruma Haber Ver";
+
+      whatsappNote=document.createElement("small");
+      whatsappNote.id="directQuoteWhatsappNote";
+      whatsappNote.style.display="block";
+      whatsappNote.style.marginTop="8px";
+      whatsappNote.style.color="#64748b";
+      whatsappNote.textContent="Talep Dijiyer'de kayıtlı kalır; WhatsApp yalnızca kuruma bildirim gönderir.";
+
+      if(doneBtn){
+        successBox.insertBefore(whatsappBtn,doneBtn);
+        successBox.insertBefore(whatsappNote,doneBtn);
+      }else{
+        successBox.appendChild(whatsappBtn);
+        successBox.appendChild(whatsappNote);
+      }
+    }
+
     const institutionWhatsapp=directWhatsappTarget(institution.whatsapp||institution.phone||"");
 
     if(whatsappBtn){
