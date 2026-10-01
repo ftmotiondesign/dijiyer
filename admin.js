@@ -2402,6 +2402,14 @@ const ADMIN_AD_PLACEMENTS = {
     size:"Metin / CTA",
     device:"Mobil + Masaüstü",
     description:"Karşılaştırma tablosunda kampanyayı sponsorlu etiketiyle öne çıkarır."
+  },
+  compare_banner:{
+    icon:"▰",
+    name:"Karşılaştırma Sponsor Banner",
+    page:"Karşılaştırma",
+    size:"1400 × 240 px",
+    device:"Mobil + Masaüstü",
+    description:"Filtrelerin altında, kurum sonuçlarının hemen üstünde gösterilen yüksek görünürlüklü sponsor banner alanı."
   }
 };
 
