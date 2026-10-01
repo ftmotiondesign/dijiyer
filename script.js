@@ -5305,7 +5305,7 @@ document.getElementById('exploreClearFiltersBtn')?.addEventListener('click', () 
   showToast('Filtreler temizlendi.');
 });
 
-document.getElementById('addInstitutionBtn').onclick = () => openModal('quoteModal');
+document.getElementById('addInstitutionBtn').onclick = () => document.getElementById('resultsSection')?.scrollIntoView({ behavior:'smooth', block:'start' });
 
 const institutionActions = document.getElementById('institutionActions');
 const institutionActionsBtn = document.getElementById('institutionActionsBtn');
@@ -7825,19 +7825,25 @@ heroTrackingForm?.addEventListener('submit',event=>{
 });
 
 document.getElementById('heroQuoteBtn')?.addEventListener('click', () => {
-  openModal('quoteModal');
+  document.getElementById('resultsSection')?.scrollIntoView({ behavior:'smooth', block:'start' });
 });
 
 document.getElementById('heroInstitutionBtn')?.addEventListener('click', () => {
   document.getElementById('institutionAddBtn')?.click();
 });
 
-['howQuoteBtn', 'trustQuoteBtn', 'footerQuoteBtn'].forEach(id => {
+['howQuoteBtn', 'trustQuoteBtn'].forEach(id => {
   const button=document.getElementById(id);
   button?.addEventListener('click', () => {
     if(followManagedSectionLink(button))return;
-    openModal('quoteModal');
+    document.getElementById('resultsSection')?.scrollIntoView({ behavior:'smooth', block:'start' });
   });
+});
+
+document.getElementById('footerQuoteBtn')?.addEventListener('click', () => {
+  const button=document.getElementById('footerQuoteBtn');
+  if(followManagedSectionLink(button))return;
+  openModal('quoteModal');
 });
 
 ['businessAddBtn', 'footerInstitutionBtn'].forEach(id => {
