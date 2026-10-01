@@ -324,6 +324,14 @@ function toggleSelectedInstitution(id){
 
   if(institutions.length===2){
     showToast("2 kurum seçildi. Karşılaştırma tablosu hazır.");
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        document.getElementById("comparePageContent")?.scrollIntoView({
+          behavior:"smooth",
+          block:"start"
+        });
+      });
+    });
   }
 }
 
