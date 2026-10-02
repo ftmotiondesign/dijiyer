@@ -423,8 +423,10 @@ function mobileInstantInstitutionCardHtml(inst) {
   const location = [inst.district, inst.city].filter(Boolean).join(' / ') || inst.location || '';
   const rating = Number(inst.rating || 0).toFixed(1);
 
+  const compareSelected=compareInstitutionIds.has(String(inst.id));
+
   return `
-    <article class="mobile-instant-result-card" data-mobile-instant-id="${escapeHtml(String(inst.id))}">
+    <article class="mobile-instant-result-card ${compareSelected ? 'is-compare-selected' : ''}" data-mobile-instant-id="${escapeHtml(String(inst.id))}">
       <div class="mobile-instant-result-logo ${visual ? 'has-logo' : ''} ${cover ? 'has-cover' : ''}">
         ${visual
           ? '<img src="' + visual + '" alt="' + escapeHtml(inst.name || 'Kurum') + (cover ? ' kapak görseli' : ' logosu') + '">'
@@ -443,7 +445,7 @@ function mobileInstantInstitutionCardHtml(inst) {
 
       <div class="mobile-instant-result-actions">
         <button type="button" data-mobile-instant-view="${escapeHtml(String(inst.id))}">Kurumu Gör</button>
-        <button type="button" class="offer mobile-compare-btn" data-mobile-instant-compare="${escapeHtml(String(inst.id))}">⚖️ Karşılaştır</button>
+        <button type="button" class="offer mobile-compare-btn ${compareSelected ? 'selected' : ''}" data-mobile-instant-compare="${escapeHtml(String(inst.id))}" aria-pressed="${compareSelected ? 'true' : 'false'}">${compareSelected ? '✓ Seçildi' : '⚖️ Karşılaştır'}</button>
       </div>
     </article>
   `;
@@ -487,6 +489,8 @@ function showMobileInstitutionResults(shouldScroll = true) {
     `;
 
   root.classList.remove('hidden');
+  syncCompareSelectionUi();
+  renderCompareBar();
 
   root.querySelectorAll('[data-mobile-instant-view]').forEach(button => {
     button.addEventListener('click', event => {
@@ -503,15 +507,15 @@ function showMobileInstitutionResults(shouldScroll = true) {
       const id=String(button.dataset.mobileInstantCompare||'').trim();
       if(!id)return;
 
-      try{
-        const key='dijiyerCompareInstitutionIdsV1';
-        const current=JSON.parse(localStorage.getItem(key)||'[]');
-        const ids=Array.isArray(current) ? current.map(String).filter(Boolean) : [];
-        const next=[id,...ids.filter(item=>item!==id)].slice(0,3);
-        localStorage.setItem(key,JSON.stringify(next));
-      }catch(_){}
+      toggleCompareInstitution(id);
 
-      window.location.href='karsilastir.html';
+      const selected=compareInstitutionIds.has(id);
+      button.classList.toggle('selected',selected);
+      button.setAttribute('aria-pressed',selected?'true':'false');
+      button.textContent=selected ? '✓ Seçildi' : '⚖️ Karşılaştır';
+
+      const card=button.closest('[data-mobile-instant-id]');
+      card?.classList.toggle('is-compare-selected',selected);
     });
   });
 
@@ -3604,6 +3608,15 @@ function syncCompareSelectionUi(){
     }else if(button.classList.contains('compare-mini-btn')){
       button.textContent=selected ? '✓ Karşılaştırmada' : '＋ Karşılaştır';
     }
+  });
+
+  document.querySelectorAll('[data-mobile-instant-compare]').forEach(button=>{
+    const key=String(button.dataset.mobileInstantCompare||'');
+    const selected=compareInstitutionIds.has(key);
+    button.classList.toggle('selected',selected);
+    button.setAttribute('aria-pressed',selected?'true':'false');
+    button.textContent=selected ? '✓ Seçildi' : '⚖️ Karşılaştır';
+    button.closest('[data-mobile-instant-id]')?.classList.toggle('is-compare-selected',selected);
   });
 
   document.querySelectorAll('[data-alt-compare]').forEach(button=>{
