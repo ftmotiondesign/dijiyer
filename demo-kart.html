@@ -102,7 +102,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
       <div id="quickActions" class="quick"></div>
     </div>
 
-    <div id="paidTitle" class="section-title hidden">ÖZEL ÖZELLİKLER</div>
+    <div id="paidTitle" class="section-title hidden">VIPKurum</div>
     <div id="paidActions" class="actions"></div>
 
     <div id="viewer360" class="viewer360 hidden">
@@ -155,13 +155,13 @@ function instagramHref(v){const s=String(v||"").trim();if(!s)return "";if(/^http
 function mapsHref(d){if(d.maps)return d.maps;if(d.address)return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+" "+d.address);return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name||"")}
 function reviewHref(d){if(d.review)return d.review;return "https://www.google.com/search?q="+encodeURIComponent((d.name||"")+" Google yorumlar")}
 function addQuick(cls,icon,label,sub,url){if(!url)return;const a=document.createElement("a");a.className=cls||"";a.href=url;a.target=url.startsWith("tel:")?"_self":"_blank";a.rel="noopener";a.innerHTML='<div class="ico">'+icon+'</div><div class="quick-copy"><span class="quick-label">'+label+'</span><span class="quick-sub">'+sub+'</span></div>'; $("quickActions").appendChild(a)}
-function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
+function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">VIPKurum</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
 function add360Action(url){
  if(!url)return;
  const clean=ensureUrl(url);
  const a=document.createElement("a");
  a.className="action";a.href="#";
- a.innerHTML='<div class="icon">360°</div><div class="text"><b>360° Mekanı Gez</b><span>Videoyu sayfadan çıkmadan açın ve parmağınızla etrafı döndürün.</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';
+ a.innerHTML='<div class="icon">360°</div><div class="text"><b>360° Mekanı Gez</b><span>Videoyu sayfadan çıkmadan açın ve parmağınızla etrafı döndürün.</span><em class="premium-chip">VIPKurum</em></div><div class="arrow">›</div>';
  a.onclick=e=>{
   e.preventDefault();
   if(!isDirectVideoUrl(clean)){
