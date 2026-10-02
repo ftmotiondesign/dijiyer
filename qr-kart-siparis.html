@@ -29,27 +29,6 @@ h2{font-size:19px;margin:0}p.help{margin:3px 0 0;color:var(--muted);font-size:12
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
 label{display:block;font-size:12px;font-weight:800;color:#344054}input,textarea,select{width:100%;margin-top:6px;border:1px solid #cfd8e5;border-radius:11px;padding:12px;background:#fff;outline:none}
 input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}textarea{min-height:90px;resize:vertical}
-.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.template-option{position:relative;border:2px solid #e1e7f0;border-radius:16px;padding:12px;cursor:pointer;background:#fff;transition:.18s ease}
-.template-option:hover{border-color:#9fc2f8;transform:translateY(-1px)}
-.template-option input{position:absolute;opacity:0;pointer-events:none}
-.template-option:has(input:checked){border-color:var(--b);box-shadow:0 0 0 3px #1677ff13;background:#f8fbff}
-.template-preview{height:84px;border-radius:12px;margin-bottom:9px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
-.template-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.price-badge{display:inline-flex;align-items:center;margin-top:7px;padding:4px 7px;border-radius:999px;background:#eef4ff;color:#155db8;font-size:10px;font-weight:900}
-.template-preview strong{font-size:12px}.template-preview small{font-size:9px;opacity:.82}
-.tpl-classic{background:linear-gradient(135deg,#fff,#eef5ff);color:#174a85;border:1px solid #d5e5f8}
-.tpl-vip{background:linear-gradient(135deg,#111827,#2a2114);color:#f7d98b;border:1px solid #6e5b2c}
-.tpl-corporate{background:linear-gradient(135deg,#0f5fc9,#1677ff);color:#fff;border:1px solid #6ca8ff}
-.tpl-minimal{background:linear-gradient(135deg,#fff,#f7f7f7);color:#111;border:1px solid #ddd}
-.tpl-custom{background:linear-gradient(135deg,#7c3aed,#ec4899 55%,#f59e0b);color:#fff;border:1px solid #d8b4fe}
-.tpl-review-green{background:linear-gradient(135deg,#0f9d58,#34a853);color:#fff;border:1px solid #8fd3ae}
-.tpl-review-white{background:linear-gradient(135deg,#fff,#f8fafc);color:#202124;border:1px solid #dadce0}
-.tpl-review-gold{background:linear-gradient(135deg,#171717,#3b2f12);color:#f5d77a;border:1px solid #7a6325}
-.tpl-menu-dark{background:linear-gradient(135deg,#111827,#1f2937);color:#fff;border:1px solid #374151}
-.tpl-menu-warm{background:linear-gradient(135deg,#7c2d12,#ea580c);color:#fff;border:1px solid #fb923c}
-.tpl-menu-clean{background:linear-gradient(135deg,#fff,#f7fafc);color:#1f2937;border:1px solid #dbe3ee}
-.template-section.hidden{display:none}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .product-option{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:flex-start;gap:9px;background:#fff;cursor:pointer}
 .product-option:hover{border-color:#9fc2f8;background:#f9fbff}
@@ -147,90 +126,6 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         </div>
       </section>
 
-      
-
-      <section class="card template-section" id="qrTemplateSection">
-        <div class="step"><span class="num">3</span><div><h2>QR & NFC Kart Şablonu</h2><p class="help">QR & NFC kartınız için tasarım seçin.</p></div></div>
-        <div class="template-grid">
-          <label class="template-option">
-            <input type="radio" name="templateChoice" value="classic" data-name="Klasik" checked>
-            <div class="template-preview tpl-classic"><strong>Firma Adı</strong><small>Temiz · Klasik · Açık tema</small></div>
-            <div class="template-name"><span>Klasik</span><span>Standart</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="templateChoice" value="vip" data-name="VIP Siyah Gold">
-            <div class="template-preview tpl-vip"><strong>VIP Firma</strong><small>Siyah · Gold · Premium</small></div>
-            <div class="template-name"><span>VIP Siyah Gold</span><span>Premium</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="templateChoice" value="corporate" data-name="Kurumsal Mavi">
-            <div class="template-preview tpl-corporate"><strong>Kurumsal</strong><small>Mavi · Güven · Modern</small></div>
-            <div class="template-name"><span>Kurumsal Mavi</span><span>Modern</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="templateChoice" value="minimal" data-name="Minimal Beyaz">
-            <div class="template-preview tpl-minimal"><strong>Minimal</strong><small>Sade · Beyaz · Zarif</small></div>
-            <div class="template-name"><span>Minimal Beyaz</span><span>Sade</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="templateChoice" value="custom_print" data-name="Özel Baskılı">
-            <div class="template-preview tpl-custom"><strong>Özel Baskılı</strong><small>Firmanıza özel · Özgün tasarım</small></div>
-            <div class="template-name"><span>Özel Baskılı</span><span>Özel Tasarım</span></div>
-          </label>
-        </div>
-      </section>
-
-      <section class="card template-section hidden" id="reviewTemplateSection">
-        <div class="step"><span class="num">3</span><div><h2>Google Yorum Kartı Şablonu</h2><p class="help">Yorum kartınızın görünümünü seçin.</p></div></div>
-        <div class="template-grid">
-          <label class="template-option">
-            <input type="radio" name="reviewTemplateChoice" value="google_clean" data-name="Google Temiz" checked>
-            <div class="template-preview tpl-review-white" data-template-preview="review_google_clean"><strong>Google Yorum</strong><small>Temiz · Beyaz · Kurumsal</small></div>
-            <div class="template-name"><span>Google Temiz</span><span>Popüler</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="reviewTemplateChoice" value="google_green" data-name="Yeşil Yorum">
-            <div class="template-preview tpl-review-green" data-template-preview="review_google_green"><strong>5★ Yorum</strong><small>Canlı · Dikkat çekici</small></div>
-            <div class="template-name"><span>Yeşil Yorum</span><span>Canlı</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="reviewTemplateChoice" value="review_gold" data-name="Siyah Gold Yorum">
-            <div class="template-preview tpl-review-gold" data-template-preview="review_review_gold"><strong>Değerlendir</strong><small>Siyah · Gold · Premium</small></div>
-            <div class="template-name"><span>Siyah Gold</span><span>Premium</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="reviewTemplateChoice" value="review_custom" data-name="Özel Baskılı Yorum">
-            <div class="template-preview tpl-custom" data-template-preview="review_review_custom"><strong>Özel Yorum Kartı</strong><small>Markanıza özel tasarım</small></div>
-            <div class="template-name"><span>Özel Baskılı</span><span>Özel Tasarım</span></div>
-          </label>
-        </div>
-      </section>
-
-      <section class="card template-section hidden" id="menuTemplateSection">
-        <div class="step"><span class="num">3</span><div><h2>İşletme Menü Şablonu</h2><p class="help">Dijital menü veya fiyat listeniz için tasarım seçin.</p></div></div>
-        <div class="template-grid">
-          <label class="template-option">
-            <input type="radio" name="menuTemplateChoice" value="menu_clean" data-name="Modern Beyaz Menü" checked>
-            <div class="template-preview tpl-menu-clean" data-template-preview="menu_menu_clean"><strong>MENÜ</strong><small>Temiz · Modern · Açık</small></div>
-            <div class="template-name"><span>Modern Beyaz</span><span>Sade</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="menuTemplateChoice" value="menu_dark" data-name="Siyah Menü">
-            <div class="template-preview tpl-menu-dark" data-template-preview="menu_menu_dark"><strong>MENÜ</strong><small>Koyu · Şık · Premium</small></div>
-            <div class="template-name"><span>Siyah Menü</span><span>Premium</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="menuTemplateChoice" value="menu_warm" data-name="Sıcak Turuncu Menü">
-            <div class="template-preview tpl-menu-warm" data-template-preview="menu_menu_warm"><strong>LEZZET MENÜSÜ</strong><small>Sıcak · Canlı · Restoran</small></div>
-            <div class="template-name"><span>Sıcak Turuncu</span><span>Restoran</span></div>
-          </label>
-          <label class="template-option">
-            <input type="radio" name="menuTemplateChoice" value="menu_custom" data-name="Özel Baskılı Menü">
-            <div class="template-preview tpl-custom" data-template-preview="menu_menu_custom"><strong>ÖZEL MENÜ</strong><small>Markanıza özel tasarım</small></div>
-            <div class="template-name"><span>Özel Baskılı</span><span>Özel Tasarım</span></div>
-          </label>
-        </div>
-      </section>
     </div>
 
     <aside class="side">
@@ -240,10 +135,9 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="summary-row"><span>Müşteri</span><b id="sumCustomer">Henüz girilmedi</b></div>
         <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
         <div class="summary-row"><span>Ürünler</span><b id="sumProducts">QR & NFC Kart</b></div>
-        <div class="summary-row"><span>Şablonlar</span><b id="sumTemplate">QR & NFC: Klasik</b></div>
         <div class="summary-row"><span>Toplam</span><b id="sumTotal">499 TL</b></div>
         <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
-        <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve seçtiğiniz şablona göre hazırlanır.</div>
+        <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve Dijiyer ekibi tarafından hazırlanır.</div>
         <button id="submitBtn" class="submit" type="button">Siparişi Oluştur</button>
         <div class="privacy">Gönderdiğiniz bilgiler yalnızca siparişinizin hazırlanması ve sizinle iletişim kurulması amacıyla kullanılır.</div>
         <div id="formMsg" class="upload-msg" style="margin-top:10px"></div>
@@ -273,32 +167,22 @@ const app=firebase.apps.find(a=>a.name==="qrOrder")||firebase.initializeApp(fire
 const db=app.firestore(),$=id=>document.getElementById(id);
 let logo="",cover="",gallery=[];
 const ORDER_SETTINGS_DEFAULT={
- prices:{qr:499,review:349,menu:599,vipAddon:100,customAddon:200},
- templateImages:{}
+ prices:{qr:499,review:349,menu:599,vipAddon:100,customAddon:200}
 };
 let ORDER_SETTINGS=JSON.parse(JSON.stringify(ORDER_SETTINGS_DEFAULT));
 function money(v){return new Intl.NumberFormat("tr-TR",{maximumFractionDigits:0}).format(Number(v)||0)+" TL"}
-function templateAddon(id){
- if(["vip","review_gold","menu_dark"].includes(id))return Number(ORDER_SETTINGS.prices.vipAddon)||0;
- if(["custom_print","review_custom","menu_custom"].includes(id))return Number(ORDER_SETTINGS.prices.customAddon)||0;
- return 0;
-}
 function currentTotal(){
- const p=selectedProducts(),t=selectedTemplateData();
+ const p=selectedProducts();
  let total=0;
- if(p.some(x=>x.id==="qr_nfc_card")) total+=(Number(ORDER_SETTINGS.prices.qr)||0)+templateAddon(t.qr.id);
- if(p.some(x=>x.id==="google_review_card")) total+=(Number(ORDER_SETTINGS.prices.review)||0)+templateAddon(t.review.id);
- if(p.some(x=>x.id==="business_menu")) total+=(Number(ORDER_SETTINGS.prices.menu)||0)+templateAddon(t.menu.id);
+ if(p.some(x=>x.id==="qr_nfc_card")) total+=Number(ORDER_SETTINGS.prices.qr)||0;
+ if(p.some(x=>x.id==="google_review_card")) total+=Number(ORDER_SETTINGS.prices.review)||0;
+ if(p.some(x=>x.id==="business_menu")) total+=Number(ORDER_SETTINGS.prices.menu)||0;
  return total;
 }
 function applyOrderSettings(){
  if($("priceQr"))$("priceQr").textContent=money(ORDER_SETTINGS.prices.qr);
  if($("priceReview"))$("priceReview").textContent=money(ORDER_SETTINGS.prices.review);
  if($("priceMenu"))$("priceMenu").textContent=money(ORDER_SETTINGS.prices.menu);
- document.querySelectorAll("[data-template-preview]").forEach(el=>{
-   const url=ORDER_SETTINGS.templateImages?.[el.dataset.templatePreview];
-   if(url){el.innerHTML='<img src="'+url.replace(/"/g,"&quot;")+'" alt="Şablon önizleme">'}
- });
  if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
 }
 async function loadOrderSettings(){
@@ -306,8 +190,7 @@ async function loadOrderSettings(){
   const s=await db.collection("siteSettings").doc("home").get();
   const x=(s.data()||{}).qrOrderSettings||{};
   ORDER_SETTINGS={
-    prices:{...ORDER_SETTINGS_DEFAULT.prices,...(x.prices||{})},
-    templateImages:{...(x.templateImages||{})}
+    prices:{...ORDER_SETTINGS_DEFAULT.prices,...(x.prices||{})}
   };
  }catch(e){}
  applyOrderSettings();
@@ -325,38 +208,14 @@ $("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"
 function selectedProducts(){
  return [...document.querySelectorAll('input[name="productCategory"]:checked')].map(x=>({id:x.value,name:x.dataset.name}));
 }
-function selectedTemplateData(){
- const qr=document.querySelector('input[name="templateChoice"]:checked');
- const review=document.querySelector('input[name="reviewTemplateChoice"]:checked');
- const menu=document.querySelector('input[name="menuTemplateChoice"]:checked');
- return {
-  qr:{id:qr?.value||"classic",name:qr?.dataset.name||"Klasik"},
-  review:{id:review?.value||"google_clean",name:review?.dataset.name||"Google Temiz"},
-  menu:{id:menu?.value||"menu_clean",name:menu?.dataset.name||"Modern Beyaz Menü"}
- };
-}
-function updateTemplateSummary(){
- const p=selectedProducts(),t=selectedTemplateData(),parts=[];
- if(p.some(x=>x.id==="qr_nfc_card"))parts.push("QR & NFC: "+t.qr.name);
- if(p.some(x=>x.id==="google_review_card"))parts.push("Google Yorum: "+t.review.name);
- if(p.some(x=>x.id==="business_menu"))parts.push("Menü: "+t.menu.name);
- $("sumTemplate").textContent=parts.length?parts.join(" · "):"-";
- if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
-}
 function updateProductSummary(){
  const p=selectedProducts();
  $("sumProducts").textContent=p.length?p.map(x=>x.name).join(", "):"Seçim yapılmadı";
  const hasQr=p.some(x=>x.id==="qr_nfc_card");
- const hasReview=p.some(x=>x.id==="google_review_card");
- const hasMenu=p.some(x=>x.id==="business_menu");
  if($("giftPromo"))$("giftPromo").classList.toggle("hidden",!hasQr);
- if($("qrTemplateSection"))$("qrTemplateSection").classList.toggle("hidden",!hasQr);
- if($("reviewTemplateSection"))$("reviewTemplateSection").classList.toggle("hidden",!hasReview);
- if($("menuTemplateSection"))$("menuTemplateSection").classList.toggle("hidden",!hasMenu);
- updateTemplateSummary();
+ if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
 }
 document.querySelectorAll('input[name="productCategory"]').forEach(c=>c.onchange=updateProductSummary);
-document.querySelectorAll('input[name="templateChoice"],input[name="reviewTemplateChoice"],input[name="menuTemplateChoice"]').forEach(r=>r.onchange=updateTemplateSummary);
 updateProductSummary();
 
 $("submitBtn").onclick=async()=>{
@@ -394,14 +253,6 @@ $("submitBtn").onclick=async()=>{
   const businessName=(businessInfo.split(/\n|,|-/)[0]||"firma").trim();
   const cardId=slugify(businessName)+"-"+randomId().slice(0,8);
   const permanentUrl=new URL("customer-card.html?id="+encodeURIComponent(cardId),location.href).href;
-  const templates=selectedTemplateData();
-  const selectedTemplate=document.querySelector('input[name="templateChoice"]:checked');
-  const templateId=templates.qr.id;
-  const templateName=templates.qr.name;
-  const reviewTemplateId=templates.review.id;
-  const reviewTemplateName=templates.review.name;
-  const menuTemplateId=templates.menu.id;
-  const menuTemplateName=templates.menu.name;
   const whatsapp=val("whatsappPhone")||val("customerPhone");
 
   const cardData={
@@ -412,17 +263,6 @@ $("submitBtn").onclick=async()=>{
    instagram:val("instagram"),
    website:val("website"),
    description:businessInfo,
-   template:templateId,
-   templateName,
-   reviewTemplateId,
-   reviewTemplateName,
-   menuTemplateId,
-   menuTemplateName,
-   productTemplates:{
-     qr_nfc_card:{id:templateId,name:templateName},
-     google_review_card:{id:reviewTemplateId,name:reviewTemplateName},
-     business_menu:{id:menuTemplateId,name:menuTemplateName}
-   },
    productCategories:products.map(x=>x.id),
    productCategoryNames:products.map(x=>x.name),
    showContact:true,
@@ -443,17 +283,6 @@ $("submitBtn").onclick=async()=>{
    website:val("website"),
    businessName,
    businessInfo,
-   templateId,
-   templateName,
-   reviewTemplateId,
-   reviewTemplateName,
-   menuTemplateId,
-   menuTemplateName,
-   productTemplates:{
-     qr_nfc_card:{id:templateId,name:templateName},
-     google_review_card:{id:reviewTemplateId,name:reviewTemplateName},
-     business_menu:{id:menuTemplateId,name:menuTemplateName}
-   },
    productCategories:products.map(x=>x.id),
    productCategoryNames:products.map(x=>x.name),
    totalPrice:currentTotal(),
