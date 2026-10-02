@@ -571,6 +571,9 @@ function setQrCenterMode(mode){
   if(overviewSection)overviewSection.hidden=true;
   if(qrCenterSection)qrCenterSection.hidden=false;
 
+  document.querySelectorAll(".admin-main-nav-btn").forEach(btn=>btn.classList.remove("active"));
+  document.querySelectorAll("#adminSubtabs .admin-tab").forEach(tab=>tab.classList.remove("active"));
+
   if(qrOrdersOverview)qrOrdersOverview.style.display=mode==="orders"?"":"none";
   if(qrCardManagerOverview)qrCardManagerOverview.style.display=mode==="demo"?"":"none";
 
