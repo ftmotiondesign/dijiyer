@@ -773,7 +773,7 @@
       '</div>'+
       '<div class="dijiyer-global-compare-actions">'+
         '<button type="button" data-global-compare-clear>Temizle</button>'+
-        '<a href="karsilastir.html" class="'+(ids.length<2?'disabled':'')+'" aria-disabled="'+(ids.length<2?'true':'false')+'">Karşılaştır'+(ids.length>1?' ('+ids.length+')':'')+'</a>'+
+        '<a href="karsilastir.html?ids='+encodeURIComponent(ids.join(","))+'" class="'+(ids.length<2?'disabled':'')+'" aria-disabled="'+(ids.length<2?'true':'false')+'">Karşılaştır'+(ids.length>1?' ('+ids.length+')':'')+'</a>'+
       '</div>';
 
     bar.querySelector("[data-global-compare-clear]")?.addEventListener("click",()=>{
