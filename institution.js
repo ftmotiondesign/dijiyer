@@ -1105,6 +1105,24 @@ document.addEventListener("keydown", () => {
   panelAudioUnlocked = true;
 }, { once:true });
 
+function syncInstitutionQrOrderPage(){
+  const institutionId=String(currentAccount?.institutionId||currentInstitution?.id||"").trim();
+  if(!institutionId)return;
+  const url=new URL("qr-kart-siparis.html",window.location.href);
+  url.searchParams.set("institutionId",institutionId);
+  url.searchParams.set("source","institution-panel");
+
+  const frame=document.getElementById("institutionQrOrderFrame");
+  const full=document.getElementById("institutionQrFullPage");
+  const next=url.toString();
+
+  if(frame && frame.dataset.loadedInstitution!==institutionId){
+    frame.src=next;
+    frame.dataset.loadedInstitution=institutionId;
+  }
+  if(full)full.href=next;
+}
+
 function setPanelTab(name) {
   document.body.dataset.panelCurrent = name;
 
@@ -1127,6 +1145,10 @@ document.querySelectorAll("[data-panel-tab]").forEach(btn => {
 
     if (btn.dataset.panelTab === "stats" && currentInstitution) {
       await loadInstitutionStats();
+    }
+
+    if (btn.dataset.panelTab === "qr") {
+      syncInstitutionQrOrderPage();
     }
 
     if (btn.dataset.panelTab === "support" && currentAccount) {
@@ -3551,6 +3573,7 @@ auth.onAuthStateChanged(async user => {
     currentInstitution = { id: institutionDoc.id, ...institutionDoc.data() };
 
     renderInstitutionHeader();
+    syncInstitutionQrOrderPage();
     await Promise.all([
       loadMatchedQuotes(),
       loadInstitutionStats(),
@@ -3571,7 +3594,7 @@ auth.onAuthStateChanged(async user => {
 
     const allowedPanels = new Set([
       "summary","quotes","verify","showcase",
-      "profile","stats","support","announcements","account"
+      "profile","qr","stats","support","announcements","account"
     ]);
 
     if (requestedPanel && allowedPanels.has(requestedPanel)) {
