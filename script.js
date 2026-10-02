@@ -3679,6 +3679,9 @@ function currentCompareSectorKey(){
 }
 
 function toggleCompareInstitution(id) {
+  showToast('Karşılaştırma özelliği şu anda pasif.');
+  return;
+
   const key = String(id || '');
   if (!key) return;
 
@@ -3742,6 +3745,13 @@ function ensureCompareUi() {
 }
 
 function renderCompareBar() {
+  const existingBar = document.getElementById('institutionCompareBar');
+  if (existingBar) {
+    existingBar.classList.add('hidden');
+    existingBar.innerHTML = '';
+  }
+  return;
+
   ensureCompareUi();
   const bar = document.getElementById('institutionCompareBar');
   if (!bar) return;
