@@ -976,3 +976,10 @@
   .dijiyer-global-compare-actions button,
   .dijiyer-global-compare-actions a{min-height:36px;padding:0 10px;font-size:10px}
 }
+
+/* Üst sağ mobil hızlı ikonlar tüm sayfalarda kapalı */
+.mobile-top-actions,
+#mobileTopLocationBtn,
+#mobileTopInstitutionBtn{
+  display:none!important;
+}
