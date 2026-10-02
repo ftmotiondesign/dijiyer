@@ -48,7 +48,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=102" />
+  <link rel="stylesheet" href="style.css?v=99" />
   <link rel="stylesheet" href="offers.css?v=3" />
   <link rel="stylesheet" href="market-nav.css?v=10">
   <script src="market-nav.js?v=13" defer></script>
@@ -1254,26 +1254,67 @@
       </form>
 
       <form id="institutionRegisterForm" class="hidden">
-        <label>Kurumunuz
-          <select id="institutionAccountInstitution" required>
-            <option value="">Kurumlar yükleniyor...</option>
-          </select>
-        </label>
-
-        <div class="access-help" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <span>Kurumunuz listede yoksa önce kurum başvurusu gönderin.</span>
-          <button type="button" class="btn btn-light" id="institutionRegisterAddInstitutionBtn">+ Kurum Ekle</button>
+        <div class="access-register-intro">
+          <strong>Kurum hesabınızı oluşturun</strong>
+          <span>Kurumunuzu ayrıca seçmenize gerek yok. Aşağıdaki bilgilerle kurum kaydınız ve yönetici hesabınız birlikte oluşturulur.</span>
         </div>
 
-        <label>E-posta
-          <input id="institutionRegisterEmail" type="email" required placeholder="ornek@kurum.com">
+        <div class="access-register-grid">
+          <label>Kurum Adı *
+            <input id="institutionRegisterName" type="text" required maxlength="140" placeholder="Örn. Lalegül Kreş">
+          </label>
+
+          <label>Yetkili Ad Soyad *
+            <input id="institutionRegisterContactName" type="text" required maxlength="100" placeholder="Ad Soyad">
+          </label>
+
+          <label>Telefon / WhatsApp *
+            <input id="institutionRegisterPhone" type="tel" required placeholder="05xx xxx xx xx">
+          </label>
+
+          <label>Sektör / Kategori *
+            <input id="institutionRegisterCategory" type="text" required maxlength="100" placeholder="Örn. Anaokulu, Sürücü Kursu">
+          </label>
+
+          <label>Şehir *
+            <input id="institutionRegisterCity" type="text" required maxlength="80" placeholder="Örn. Çanakkale">
+          </label>
+
+          <label>İlçe *
+            <input id="institutionRegisterDistrict" type="text" required maxlength="80" placeholder="Örn. Merkez">
+          </label>
+
+          <label class="full">Açık Adres *
+            <textarea id="institutionRegisterAddress" rows="2" required maxlength="400" placeholder="Kurumun açık adresi"></textarea>
+          </label>
+
+          <label class="full">Web Sitesi / Instagram
+            <input id="institutionRegisterWebsite" type="text" maxlength="240" placeholder="İsteğe bağlı">
+          </label>
+
+          <label class="full">E-posta *
+            <input id="institutionRegisterEmail" type="email" required placeholder="ornek@kurum.com" autocomplete="email">
+          </label>
+
+          <label>Şifre *
+            <input id="institutionRegisterPassword" type="password" required minlength="8" placeholder="En az 8 karakter" autocomplete="new-password">
+          </label>
+
+          <label>Şifre Tekrar *
+            <input id="institutionRegisterPasswordConfirm" type="password" required minlength="8" placeholder="Şifreyi tekrar yazın" autocomplete="new-password">
+          </label>
+        </div>
+
+        <label class="remember-row institution-register-consent">
+          <input id="institutionRegisterConsent" type="checkbox" required>
+          <span>Verdiğim kurum bilgilerinin doğru olduğunu ve hesabın yönetici onayından sonra aktif olacağını kabul ediyorum.</span>
         </label>
 
-        <label>Şifre
-          <input id="institutionRegisterPassword" type="password" required minlength="6" placeholder="En az 6 karakter">
-        </label>
+        <div class="access-help">
+          Hesabınız oluşturulduğunda kurum kaydınız da incelemeye gönderilir. Onaydan sonra aynı e-posta ve şifreyle Kurum Paneli'ne giriş yapabilirsiniz.
+        </div>
 
-        <button class="btn btn-primary full" type="submit">Kurum Hesabı Oluştur</button>
+        <button class="btn btn-primary full" type="submit">Kurum Hesabı ve Başvurusu Oluştur</button>
         <p class="access-message" id="institutionRegisterMessage"></p>
       </form>
     </div>
@@ -1464,7 +1505,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="page-banner.js?v=2"></script>
-  <script src="script.js?v=230"></script>
+  <script src="script.js?v=99"></script>
 <script src="offers.js?v=7"></script>
 </body>
 </html>
