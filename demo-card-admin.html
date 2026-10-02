@@ -43,7 +43,7 @@ label{display:block;font-size:13px;font-weight:800;color:#344054}input,textarea,
 <label>Firma Adı<input id="name"></label>
 <label>Sektör<input id="category" placeholder="Örn. Sürücü Kursu"></label>
 <label>Telefon<input id="phone" placeholder="05..."></label>
-<label>WhatsApp<input id="whatsapp" placeholder="905..."></label>
+<label>WhatsApp<input id="whatsapp" placeholder="905..."></label>\n<label>E-posta<input id="emailContact" type="email" placeholder="firma@ornek.com"></label>
 <label class="full">Adres<input id="address"></label>
 <label>Instagram<input id="instagram" placeholder="https://instagram.com/..."></label>
 <label>Web Sitesi<input id="website" placeholder="https://..."></label>
@@ -105,7 +105,7 @@ const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomai
 const appFb=firebase.apps.find(a=>a.name==="demoCardAdmin")||firebase.initializeApp(firebaseConfig,"demoCardAdmin");
 const auth=appFb.auth(),db=appFb.firestore();
 const $=id=>document.getElementById(id);
-const fields=["name","category","phone","whatsapp","address","instagram","website","maps","review","logo","cover","slogan","description","hours","services","facebook","tiktok","youtube","gallery","campaign","routeVideo","tour360","promoVideo"];
+const fields=["name","category","phone","whatsapp","emailContact","address","instagram","website","maps","review","logo","cover","slogan","description","hours","services","facebook","tiktok","youtube","gallery","campaign","routeVideo","tour360","promoVideo"];
 const toggles=["showReview","showContact","showCampaign","showRoute","show360","showPromo","showGallery","showInfoRequest"];
 const DEMO_URL=new URL("demo-kart.html",location.href).href;
 $("demoUrl").textContent=DEMO_URL;
@@ -127,7 +127,7 @@ function renderInstitutions(arr){
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function useInstitution(x){
- fill({name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",cover:x.coverUrl||x.coverImage||"",slogan:x.slogan||"",description:x.description||x.about||"",hours:x.workingHours||x.hours||"",services:Array.isArray(x.services)?x.services.join(", "):(x.services||""),facebook:x.facebook||"",tiktok:x.tiktok||"",youtube:x.youtube||"",gallery:Array.isArray(x.gallery)?x.gallery.join(", "):(x.gallery||""),campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:false,showCampaign:false,showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl,showGallery:false,showInfoRequest:true});
+ fill({name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",emailContact:x.email||x.contactEmail||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",cover:x.coverUrl||x.coverImage||"",slogan:x.slogan||"",description:x.description||x.about||"",hours:x.workingHours||x.hours||"",services:Array.isArray(x.services)?x.services.join(", "):(x.services||""),facebook:x.facebook||"",tiktok:x.tiktok||"",youtube:x.youtube||"",gallery:Array.isArray(x.gallery)?x.gallery.join(", "):(x.gallery||""),campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:true,showCampaign:false,showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl,showGallery:false,showInfoRequest:true});
  window.scrollTo({top:0,behavior:"smooth"}); $("saveMsg").textContent="Firma forma alındı. Kontrol edip Demo Sayfasını Güncelle'ye basın."; $("saveMsg").className="msg ok";
 }
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}}
