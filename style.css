@@ -23616,3 +23616,62 @@ body.standalone-quote-page .missing-service-floating-btn .tracking-floating-labe
     bottom:calc(152px + env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+/* Bilgi Al yardım butonu V2 - tamamen bağımsız */
+body.standalone-quote-page .missing-service-floating-btn{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:fixed!important;
+  left:auto!important;
+  right:18px!important;
+  bottom:24px!important;
+  z-index:200500!important;
+  min-height:48px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:0 15px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:#102454!important;
+  color:#fff!important;
+  box-shadow:0 14px 34px rgba(16,36,84,.30)!important;
+  transform:none!important;
+  transition:none!important;
+  pointer-events:auto!important;
+  cursor:pointer!important;
+}
+body.standalone-quote-page .missing-service-floating-btn .tracking-floating-icon{
+  width:28px!important;
+  height:28px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:8px!important;
+  background:rgba(255,255,255,.13)!important;
+  color:#fff!important;
+  font-size:16px!important;
+}
+body.standalone-quote-page .missing-service-floating-btn .tracking-floating-label{
+  display:inline!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+
+@media(max-width:820px){
+  body.standalone-quote-page .missing-service-floating-btn{
+    left:10px!important;
+    right:10px!important;
+    bottom:88px!important;
+    width:calc(100vw - 20px)!important;
+    min-height:48px!important;
+    z-index:200500!important;
+  }
+
+  body.standalone-quote-page:has(.institution-compare-bar:not(.hidden)) .missing-service-floating-btn{
+    bottom:158px!important;
+  }
+}
