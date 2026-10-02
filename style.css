@@ -23766,3 +23766,23 @@ body.standalone-quote-page .missing-service-floating-btn .tracking-floating-labe
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* =========================================================
+   KARSILASTIRMA GECICI OLARAK PASIF
+   Kod korunur; arayuzde secim ve karsilastirma kontrolleri gizlenir.
+   ========================================================= */
+body.compare-disabled [data-compare-toggle],
+body.compare-disabled [data-mobile-instant-compare],
+body.compare-disabled [data-alt-compare],
+body.compare-disabled [data-compare-offer],
+body.compare-disabled .compare-mini-btn,
+body.compare-disabled .mobile-compare-btn,
+body.compare-disabled .decision-alt-compare,
+body.compare-disabled .desktop-featured-compare,
+body.compare-disabled .desktop-inline-card-compare,
+body.compare-disabled #detailCompareBtn,
+body.compare-disabled #institutionCompareBar,
+body.compare-disabled #institutionCompareModal {
+  display:none !important;
+}
