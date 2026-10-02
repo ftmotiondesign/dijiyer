@@ -22922,7 +22922,7 @@ body.home-page .decision-alternatives-head strong{
 
 
 /* === HIDE LEGACY DESKTOP RESULTS SECTION === */
-@media (min-width:821px){
+@media (min-width:641px){
   body.home-page #resultsSection{
     display:none !important;
   }
