@@ -11,10 +11,7 @@ service cloud.firestore {
       return girisYapmis()
         && (
           request.auth.uid == "Et5cFLiQNtgMdQcWIAcaQIOpQBe2"
-          || (
-            request.auth.token.email == "ftmotiondesign@gmail.com"
-            && request.auth.token.email_verified == true
-          )
+          || request.auth.token.email == "ftmotiondesign@gmail.com"
         );
     }
 
