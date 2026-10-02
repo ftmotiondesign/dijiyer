@@ -869,16 +869,19 @@ function renderMobileCategories() {
   if (!root) return;
 
   const resultPanel = document.getElementById('mobileCategoryResult');
+  const instantResults = document.getElementById('mobileInstantResults');
   const legacySubRoot = document.getElementById('mobileSubcategories');
 
-  // Sonuç paneli bir önceki render'da kategori gridinin içine taşındıysa,
-  // root.innerHTML yenilenmeden önce güvenli sabit konumuna geri al.
-  if (
-    resultPanel &&
-    root.contains(resultPanel) &&
-    legacySubRoot?.parentNode
-  ) {
-    legacySubRoot.parentNode.insertBefore(resultPanel, legacySubRoot.nextSibling);
+  // Sonuç özeti ve kurum kartları kategori gridinin içine taşınmış olabilir.
+  // Kategori HTML'i yeniden çizilmeden önce ikisini de güvenli sabit alana geri al.
+  if (legacySubRoot?.parentNode) {
+    const safeParent = legacySubRoot.parentNode;
+    if (resultPanel && root.contains(resultPanel)) {
+      safeParent.insertBefore(resultPanel, legacySubRoot.nextSibling);
+    }
+    if (instantResults && root.contains(instantResults)) {
+      resultPanel?.insertAdjacentElement('afterend', instantResults);
+    }
   }
 
   const activeMain = getSelectedMainCategory();
@@ -931,11 +934,6 @@ function renderMobileCategories() {
                   >${label}</button>
                 `;
               }).join('')}
-              <button
-                type="button"
-                class="mobile-subcategory-btn mobile-subcategory-missing"
-                data-mobile-subcategory-missing="${activeMain}"
-              ><span class="missing-service-icon" aria-hidden="true">✦</span><span class="missing-service-copy"><strong>Aradığın hizmeti bulamadın mı?</strong><small>Hizmeti yaz, sana uygun kurumları bulalım.</small></span><span class="missing-service-action">Hizmeti Yaz <span aria-hidden="true">→</span></span></button>
             </div>
           </div>
         `);
