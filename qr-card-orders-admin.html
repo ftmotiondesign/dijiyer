@@ -21,9 +21,12 @@ input{width:100%;border:1px solid #cfd8e5;border-radius:11px;padding:11px;margin
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.details{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #edf1f6}.order.open .details{display:block}.features{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{font-size:10px;background:#eef4ff;color:#155db8;padding:5px 7px;border-radius:999px}.url{font-size:10px;word-break:break-all;background:#f6f8fb;padding:8px;border-radius:9px;margin-top:8px}
 .msg{font-size:12px;font-weight:700;margin-top:10px}.ok{color:#067647}.err{color:#b42318}
 @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.order-top{flex-direction:column}.head{align-items:flex-start;flex-direction:column}}
+body.embed-mode header{display:none!important}
+body.embed-mode .wrap,body.embed-mode main{margin-top:0!important;padding-top:12px!important}
+body.embed-mode .login{margin-top:12px!important}
 </style>
 </head>
-<body>
+<body><script>if(new URLSearchParams(location.search).get("embed")==="1")document.body.classList.add("embed-mode");</script>
 <header class="top"><div class="brand"><span class="mark">D</span><span>QR Kart Siparişleri</span></div><a href="admin.html">← Ana Yönetim</a></header>
 
 <section id="loginBox" class="card login">
