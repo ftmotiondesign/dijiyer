@@ -920,3 +920,59 @@
   .shared-compare-modal-card{padding:14px}
   .shared-compare-modal-head h2{font-size:17px}
 }
+
+/* DijiyeSor ortak karşılaştırma alt çubuğu */
+#institutionCompareBar,
+#institutionComparisonBar{display:none!important}
+.dijiyer-global-compare-bar{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  z-index:99980;
+  width:min(760px,calc(100% - 28px));
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 14px;
+  border:1px solid #d9e3ef;
+  border-radius:18px;
+  background:rgba(255,255,255,.98);
+  box-shadow:0 14px 38px rgba(18,42,72,.18);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px)
+}
+.dijiyer-global-compare-bar.hidden{display:none!important}
+.dijiyer-global-compare-copy{min-width:0;display:grid;gap:2px}
+.dijiyer-global-compare-copy strong{font-size:13px;color:#17223b}
+.dijiyer-global-compare-copy small{font-size:10px;color:#6f7d90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dijiyer-global-compare-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.dijiyer-global-compare-actions button,
+.dijiyer-global-compare-actions a{
+  min-height:38px;
+  padding:0 14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:11px;
+  text-decoration:none;
+  font:850 11px/1 Inter,Arial,sans-serif
+}
+.dijiyer-global-compare-actions button{border:1px solid #dce4ee;background:#fff;color:#5d6c80;cursor:pointer}
+.dijiyer-global-compare-actions a{border:1px solid #1677ff;background:#1677ff;color:#fff}
+.dijiyer-global-compare-actions a.disabled{opacity:.45;pointer-events:none}
+@media(max-width:820px){
+  .dijiyer-global-compare-bar{
+    bottom:82px;
+    width:calc(100% - 16px);
+    padding:9px 10px;
+    border-radius:16px;
+    gap:8px
+  }
+  .dijiyer-global-compare-copy strong{font-size:12px}
+  .dijiyer-global-compare-copy small{font-size:9px;max-width:45vw}
+  .dijiyer-global-compare-actions{gap:6px}
+  .dijiyer-global-compare-actions button,
+  .dijiyer-global-compare-actions a{min-height:36px;padding:0 10px;font-size:10px}
+}
