@@ -48,7 +48,7 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=98" />
+  <link rel="stylesheet" href="style.css?v=99" />
   <link rel="stylesheet" href="offers.css?v=3" />
   <link rel="stylesheet" href="market-nav.css?v=9">
   <script src="market-nav.js?v=12" defer></script>
@@ -63,6 +63,11 @@
         <div class="brand-sub">Keşfet. İncele. Karşılaştır.</div>
       </div>
     </a>
+
+    <div class="mobile-top-actions" aria-label="Mobil hızlı işlemler">
+      <button type="button" id="mobileTopLocationBtn" aria-label="Konum seç">📍</button>
+      <button type="button" id="mobileTopInstitutionBtn" aria-label="Kurum işlemleri">🏢</button>
+    </div>
 
     <div class="searchbar" role="search" aria-label="Dijiyer kurum ve hizmet arama">
       <span class="searchbar-icon">⌕</span>
@@ -1467,6 +1472,24 @@
     </div>
   </div>
 
+  <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobil ana menü">
+    <a href="index.html" class="active" data-mobile-nav="home">
+      <span>⌂</span><small>Ana Sayfa</small>
+    </a>
+    <a href="#resultsSection" data-mobile-nav="explore">
+      <span>⌕</span><small>Keşfet</small>
+    </a>
+    <a href="teklif-al.html" data-mobile-nav="quote">
+      <span>＋</span><small>Teklif Al</small>
+    </a>
+    <a href="firsatlar.html" data-mobile-nav="opportunity">
+      <span>✦</span><small>Fırsatlar</small>
+    </a>
+    <button type="button" id="mobileInstitutionNavBtn" data-mobile-nav="institution">
+      <span>🏢</span><small>Kurum</small>
+    </button>
+  </nav>
+
   <button type="button" class="mobile-back-to-top" id="mobileBackToTopBtn" aria-label="Sayfanın başına dön" title="Yukarı çık">↑</button>
 
   <div class="toast" id="toast"></div>
@@ -1479,7 +1502,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="page-banner.js?v=2"></script>
-  <script src="script.js?v=224"></script>
+  <script src="script.js?v=225"></script>
 <script src="offers.js?v=7"></script>
 </body>
 </html>
