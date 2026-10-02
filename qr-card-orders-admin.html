@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Dijiyer | QR Kart Siparişleri</title>
+<link rel="icon" type="image/png" href="assets/brand/diji-favicon.png">
+<style>
+:root{--b:#1677ff;--bg:#f4f7fb;--text:#172033;--muted:#667085;--line:#dbe3ee;--green:#16a34a;--orange:#f59e0b;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}button,input{font:inherit}
+.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900}.mark{width:38px;height:38px;border-radius:12px;background:var(--b);color:#fff;display:grid;place-items:center;font-size:22px}.top a{text-decoration:none;color:#155db8;font-weight:800}
+.wrap{max-width:1180px;margin:20px auto;padding:0 16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 26px rgba(20,42,90,.05)}
+.login{max-width:440px;margin:70px auto}.hidden{display:none!important}h1,h2,p{margin-top:0}.muted{color:var(--muted)}
+input{width:100%;border:1px solid #cfd8e5;border-radius:11px;padding:11px;margin-top:6px}.primary,.secondary,.success,.danger{border:0;border-radius:10px;padding:10px 12px;font-weight:850;cursor:pointer}.primary{background:var(--b);color:#fff}.secondary{background:#edf3fb;color:#24415f}.success{background:#eaf8ef;color:#137a39}.danger{background:#fff0f0;color:var(--red)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}.count{background:#eaf2ff;color:#155db8;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.toolbar button.active{background:var(--b);color:#fff}
+.list{display:grid;gap:12px}.order{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}.order-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order h3{margin:0 0 4px;font-size:16px}.meta{font-size:11px;color:var(--muted);line-height:1.5}.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#fff3d6;color:#995f00}.status.active{background:#eaf8ef;color:#137a39}.status.preparing{background:#eaf2ff;color:#155db8}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.mini{background:#f8fafc;border-radius:11px;padding:9px}.mini span{display:block;font-size:9px;color:var(--muted);font-weight:800}.mini b{display:block;font-size:11px;margin-top:3px;word-break:break-word}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.details{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #edf1f6}.order.open .details{display:block}.features{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{font-size:10px;background:#eef4ff;color:#155db8;padding:5px 7px;border-radius:999px}.url{font-size:10px;word-break:break-all;background:#f6f8fb;padding:8px;border-radius:9px;margin-top:8px}
+.msg{font-size:12px;font-weight:700;margin-top:10px}.ok{color:#067647}.err{color:#b42318}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.order-top{flex-direction:column}.head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand"><span class="mark">D</span><span>QR Kart Siparişleri</span></div><a href="admin.html">← Ana Yönetim</a></header>
+
+<section id="loginBox" class="card login">
+  <h2>Yönetici Girişi</h2><p class="muted">QR kart siparişlerini görmek için giriş yapın.</p>
+  <label>E-posta<input id="email" type="email"></label><br>
+  <label>Şifre<input id="password" type="password"></label>
+  <button id="loginBtn" class="primary" style="margin-top:14px;width:100%">Giriş Yap</button>
+  <div id="loginMsg" class="msg"></div>
+</section>
+
+<main id="app" class="wrap hidden">
+  <section class="card">
+    <div class="head"><div><h1>QR / NFC Kart Siparişleri</h1><p class="muted">Yeni siparişleri kontrol edin, kartı hazırlayın ve kalıcı QR kartını aktifleştirin.</p></div><span id="count" class="count">0 sipariş</span></div>
+    <div class="toolbar">
+      <button class="secondary active" data-filter="new">Yeni</button>
+      <button class="secondary" data-filter="preparing">Hazırlanıyor</button>
+      <button class="secondary" data-filter="active">Aktif</button>
+      <button class="secondary" data-filter="all">Tümü</button>
+    </div>
+    <div id="list" class="list"><div class="muted">Siparişler yükleniyor...</div></div>
+    <div id="pageMsg" class="msg"></div>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+const appFb=firebase.apps.find(a=>a.name==="qrOrdersAdmin")||firebase.initializeApp(firebaseConfig,"qrOrdersAdmin");
+const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);
+let orders=[],filter="new";
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function fmt(s){try{return new Date(s).toLocaleString("tr-TR")}catch(e){return s||""}}
+function statusText(s){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal"})[s]||s}
+function features(d){const m=[["showReview","Google Yorum"],["showContact","Rehbere Kaydet"],["showGallery","Galeri"],["show360","360° Tur"],["showRoute","Konum Videosu"],["showPromo","Tanıtım Videosu"],["showCampaign","Kampanya"],["showInfoRequest","Bilgi Al"]];return m.filter(x=>d&&d[x[0]]).map(x=>'<span class="chip">'+x[1]+'</span>').join("")}
+function render(){
+ const arr=orders.filter(x=>filter==="all"||x.status===filter);
+ $("count").textContent=arr.length+" sipariş";
+ if(!arr.length){$("list").innerHTML='<div class="muted">Bu durumda sipariş yok.</div>';return}
+ $("list").innerHTML=arr.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||o.cardData?.name||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status)+'">'+esc(statusText(o.status))+'</span></div><div class="grid"><div class="mini"><span>MÜŞTERİ</span><b>'+esc(o.customerName)+'</b></div><div class="mini"><span>TELEFON</span><b>'+esc(o.customerPhone)+'</b></div><div class="mini"><span>KART</span><b>'+esc(o.quantity+" adet · "+(o.cardType==="qr_nfc"?"QR + NFC":"QR"))+'</b></div><div class="mini"><span>TESLİMAT</span><b>'+esc(o.deliveryAddress)+'</b></div></div><div class="actions"><button class="secondary detailBtn">Detay</button>'+(o.status==="new"?'<button class="primary prepBtn">Hazırlamaya Al</button>':"")+(o.status!=="active"?'<button class="success activateBtn">Kartı Aktifleştir</button>':'<button class="secondary openBtn">Kartı Aç</button>')+'</div><div class="details"><div class="meta"><b>Firma:</b> '+esc(o.cardData?.name)+'<br><b>Telefon:</b> '+esc(o.cardData?.phone)+'<br><b>Adres:</b> '+esc(o.cardData?.address)+'<br><b>Instagram:</b> '+esc(o.cardData?.instagram)+'<br><b>Web:</b> '+esc(o.cardData?.website)+'<br><b>Sipariş Notu:</b> '+esc(o.orderNote||"-")+'</div><div class="features">'+features(o.cardData)+'</div><div class="url">'+esc(o.permanentUrl)+'</div></div></article>').join("");
+ document.querySelectorAll(".order").forEach(el=>{
+  const o=orders.find(x=>x.id===el.dataset.id);
+  el.querySelector(".detailBtn").onclick=()=>el.classList.toggle("open");
+  const prep=el.querySelector(".prepBtn");if(prep)prep.onclick=()=>setStatus(o,"preparing");
+  const act=el.querySelector(".activateBtn");if(act)act.onclick=()=>activate(o);
+  const open=el.querySelector(".openBtn");if(open)open.onclick=()=>window.open(o.permanentUrl,"_blank");
+ });
+}
+async function load(){
+ const snap=await db.collection("qrCardOrders").orderBy("createdAt","desc").limit(200).get();
+ orders=snap.docs.map(d=>({id:d.id,...d.data()}));render();
+}
+async function setStatus(o,status){
+ await db.collection("qrCardOrders").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
+ o.status=status;render();
+}
+async function activate(o){
+ if(!confirm((o.businessName||"Bu firma")+" için kalıcı kartı aktifleştirmek istiyor musunuz?"))return;
+ try{
+  const now=new Date().toISOString();
+  const payload={...(o.cardData||{}),cardId:o.cardId,status:"active",createdAt:o.createdAt||now,updatedAt:now,sourceOrderId:o.id};
+  await db.collection("customerCards").doc(o.cardId).set(payload,{merge:true});
+  await db.collection("qrCardOrders").doc(o.id).set({status:"active",activatedAt:now,updatedAt:now},{merge:true});
+  o.status="active";$("pageMsg").textContent="Kart aktifleştirildi: "+(o.businessName||o.cardId);$("pageMsg").className="msg ok";render();
+ }catch(e){$("pageMsg").textContent="Aktifleştirilemedi: "+e.message;$("pageMsg").className="msg err"}
+}
+document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-filter]").forEach(x=>x.classList.remove("active"));b.classList.add("active");filter=b.dataset.filter;render()});
+$("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
+auth.onAuthStateChanged(async user=>{if(user){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");try{await load()}catch(e){$("pageMsg").textContent=e.message;$("pageMsg").className="msg err"}}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
+</script>
+</body>
+</html>
