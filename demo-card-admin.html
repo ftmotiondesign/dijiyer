@@ -86,9 +86,14 @@ textarea{min-height:90px;resize:vertical}
 .gallery-preview img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;border:1px solid #e5e7eb}
 @media(max-width:900px){.shell{grid-template-columns:1fr}.preview{position:static}.grid,.switches,.upload-grid{grid-template-columns:1fr}.full-upload{grid-column:auto}.sticky-info{display:none}.sticky-inner{justify-content:flex-end}}
 @media(max-width:560px){.top{padding:10px 12px}.brand span:last-child{display:none}.shell{padding:0 10px 90px;margin-top:12px}.card{padding:14px}.active-banner{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.sticky-actions{width:100%}.sticky-actions button{flex:1}}
+body.embed-mode .top{display:none}
+body.embed-mode .shell{margin:0 auto;padding-top:12px}
+body.embed-mode .login{margin:18px auto}
+body.embed-mode .preview{top:12px}
 </style>
 </head>
 <body>
+<script>if(new URLSearchParams(location.search).get("embed")==="1")document.body.classList.add("embed-mode");</script>
 <header class="top">
   <a class="brand" href="admin.html"><span class="mark">D</span><span>DijiyeSor · QR Demo Kart</span></a>
   <div class="top-actions"><a class="btn" href="admin.html">Ana Yönetim</a><button id="logoutTop" class="danger">Çıkış</button></div>
