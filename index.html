@@ -406,7 +406,7 @@
     </div>
   </section>
 
-  <section class="mobile-discovery" aria-label="Mobil kategori seçimi">
+  <section class="mobile-discovery" id="kesfetSection" aria-label="Mobil kategori seçimi">
     <button type="button" class="mobile-search-location" id="mobileSearchLocationBtn">
       <span class="mobile-search-location-icon">📍</span>
       <span class="mobile-search-location-copy">
@@ -1469,21 +1469,21 @@
   </div>
 
   <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobil ana menü">
-    <a href="index.html" class="active" data-mobile-nav="home">
+    <a href="index.html" data-mobile-nav="home">
       <span>⌂</span><small>Ana Sayfa</small>
     </a>
-    <a href="#resultsSection" data-mobile-nav="explore">
+    <a href="index.html#kesfetSection" data-mobile-nav="explore">
       <span>⌕</span><small>Keşfet</small>
     </a>
-    <a href="teklif-al.html" data-mobile-nav="quote">
+    <a href="teklif-al.html" data-mobile-nav="quote" class="mobile-nav-primary">
       <span>＋</span><small>Bilgi Al</small>
     </a>
     <a href="firsatlar.html" data-mobile-nav="opportunity">
       <span>✦</span><small>Fırsatlar</small>
     </a>
-    <button type="button" id="mobileInstitutionNavBtn" data-mobile-nav="institution">
+    <a href="index.html?kurumgiris=1" data-mobile-nav="institution">
       <span>🏢</span><small>Kurum</small>
-    </button>
+    </a>
   </nav>
 
   <button type="button" class="mobile-back-to-top" id="mobileBackToTopBtn" aria-label="Sayfanın başına dön" title="Yukarı çık">↑</button>
