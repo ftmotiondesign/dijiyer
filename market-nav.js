@@ -539,12 +539,66 @@
     });
   }
 
+  function mobileNavActiveKey(){
+    const path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+    const params=new URLSearchParams(location.search);
+    const hash=String(location.hash||"").toLowerCase();
+
+    if(params.get("kurumgiris")==="1" || params.get("kurumkayit")==="1")return "institution";
+    if(path==="teklif-al.html")return "quote";
+    if(path==="firsatlar.html")return "opportunity";
+    if(path==="index.html" || path===""){
+      if(hash==="#kesfetsection" || hash==="#resultssection")return "explore";
+      return "home";
+    }
+    return "";
+  }
+
+  function mobileNavHtml(){
+    return ''+
+      '<a href="index.html" data-mobile-nav="home"><span>⌂</span><small>Ana Sayfa</small></a>'+
+      '<a href="index.html#kesfetSection" data-mobile-nav="explore"><span>⌕</span><small>Keşfet</small></a>'+
+      '<a href="teklif-al.html" data-mobile-nav="quote" class="mobile-nav-primary"><span>＋</span><small>Bilgi Al</small></a>'+
+      '<a href="firsatlar.html" data-mobile-nav="opportunity"><span>✦</span><small>Fırsatlar</small></a>'+
+      '<a href="index.html?kurumgiris=1" data-mobile-nav="institution"><span>🏢</span><small>Kurum</small></a>';
+  }
+
+  function syncMobileBottomNav(){
+    const nav=document.getElementById("mobileAppNav");
+    if(!nav)return;
+    const key=mobileNavActiveKey();
+    nav.querySelectorAll("[data-mobile-nav]").forEach(item=>{
+      const active=String(item.dataset.mobileNav||"")===key;
+      item.classList.toggle("active",active);
+      if(active)item.setAttribute("aria-current","page");
+      else item.removeAttribute("aria-current");
+    });
+  }
+
+  function ensureMobileBottomNav(){
+    let nav=document.getElementById("mobileAppNav");
+    if(!nav){
+      nav=document.createElement("nav");
+      nav.id="mobileAppNav";
+      nav.className="mobile-app-nav";
+      nav.setAttribute("aria-label","Mobil ana menü");
+      document.body.appendChild(nav);
+    }
+
+    nav.innerHTML=mobileNavHtml();
+    syncMobileBottomNav();
+
+    window.addEventListener("hashchange",syncMobileBottomNav);
+    window.addEventListener("popstate",syncMobileBottomNav);
+  }
+
   function build(){
     cleanLiteralNewlineArtifacts();
     markLegacyHeaders();
     buildGlobalTopbar();
     buildNav();
     ensureLegalUi();
+    ensureMobileBottomNav();
     requestAnimationFrame(()=>{
       cleanLiteralNewlineArtifacts();
       markLegacyHeaders();
