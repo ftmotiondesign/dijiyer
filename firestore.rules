@@ -9,7 +9,13 @@ service cloud.firestore {
 
     function adminMi() {
       return girisYapmis()
-        && request.auth.uid == "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
+        && (
+          request.auth.uid == "Et5cFLiQNtgMdQcWIAcaQIOpQBe2"
+          || (
+            request.auth.token.email == "ftmotiondesign@gmail.com"
+            && request.auth.token.email_verified == true
+          )
+        );
     }
 
     function onayliKurumKullanicisi() {
