@@ -23087,3 +23087,35 @@ body.home-page .decision-alternatives-head strong{
   }
 }
 /* === END DIJIYER DESKTOP SHOWCASE V2 TIGHT LAYOUT === */
+
+
+/* === FEATURED BUSINESS COMPARE BUTTON === */
+.desktop-featured-card-link{
+  display:block;
+  color:inherit;
+  text-decoration:none;
+}
+.desktop-featured-compare{
+  width:calc(100% - 16px);
+  min-height:30px;
+  margin:0 8px 8px;
+  border:1px solid #cfe0f7;
+  border-radius:9px;
+  background:#f7fbff;
+  color:#145eb4;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.desktop-featured-compare:hover{
+  border-color:#8ab8ef;
+  background:#eaf4ff;
+  transform:translateY(-1px);
+}
+.desktop-featured-compare.selected{
+  border-color:#75aef1;
+  background:#eaf4ff;
+  color:#095abf;
+}
+/* === END FEATURED BUSINESS COMPARE BUTTON === */
