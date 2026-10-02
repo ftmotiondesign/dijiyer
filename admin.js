@@ -553,26 +553,51 @@ adminBackToTop?.addEventListener("click",()=>{
 
 updateAdminBackToTop();
 
-const qrOrdersMainBtn=document.getElementById("qrOrdersMainBtn");
-qrOrdersMainBtn?.addEventListener("click",(event)=>{
-  if(adminLinkShouldOpenNormally(event))return;
-  event.preventDefault();
-  openSimpleAdminTab("overviewTabBtn");
-  window.setTimeout(()=>{
-    const section=document.getElementById("qrOrdersOverview");
-    const frame=document.getElementById("qrOrdersFrame");
-    const wrap=document.getElementById("qrOrdersFrameWrap");
-    if(wrap && wrap.style.display==="none"){
-      wrap.style.display="";
-      const toggle=document.getElementById("toggleQrOrdersBtn");
-      if(toggle)toggle.textContent="Siparişleri Gizle";
-    }
-    section?.scrollIntoView({behavior:"smooth",block:"start"});
-    if(frame && !frame.src.includes("embed=1")) frame.src="qr-card-orders-admin.html?embed=1";
-  },80);
+const qrCenterSection=document.getElementById("qrCenterSection");
+const qrSideOrdersBtn=document.getElementById("qrSideOrdersBtn");
+const qrSideDemoBtn=document.getElementById("qrSideDemoBtn");
+const qrOrdersOverview=document.getElementById("qrOrdersOverview");
+const qrCardManagerOverview=document.getElementById("qrCardManagerOverview");
+
+function setQrCenterMode(mode){
+  overviewTabBtn?.click();
+  if(overviewSection)overviewSection.hidden=true;
+  if(qrCenterSection)qrCenterSection.hidden=false;
+
+  if(qrOrdersOverview)qrOrdersOverview.style.display=mode==="orders"?"":"none";
+  if(qrCardManagerOverview)qrCardManagerOverview.style.display=mode==="demo"?"":"none";
+
+  qrSideOrdersBtn?.classList.toggle("active",mode==="orders");
+  qrSideDemoBtn?.classList.toggle("active",mode==="demo");
+
+  if(adminCurrentSection)adminCurrentSection.textContent=mode==="orders"?"QR Kart Siparişleri":"QR Demo Kart";
+  if(adminCurrentHint)adminCurrentHint.textContent=mode==="orders"
+    ?"Yeni QR / NFC kart siparişlerini kontrol edin, hazırlayın ve aktifleştirin."
+    :"QR / NFC demo kartlarını oluşturun, düzenleyin ve yönetin.";
+
+  history.replaceState({qrMode:mode},"",mode==="orders"?"#qr-kart-siparisleri":"#qr-demo-kart");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+qrSideOrdersBtn?.addEventListener("click",()=>setQrCenterMode("orders"));
+qrSideDemoBtn?.addEventListener("click",()=>setQrCenterMode("demo"));
+
+document.querySelectorAll("[data-admin-main], #adminSubtabs .admin-tab").forEach(el=>{
+  el.addEventListener("click",()=>{
+    if(qrCenterSection)qrCenterSection.hidden=true;
+    qrSideOrdersBtn?.classList.remove("active");
+    qrSideDemoBtn?.classList.remove("active");
+  },true);
 });
 
+function restoreQrCenterFromHash(){
+  if(location.hash==="#qr-kart-siparisleri")setQrCenterMode("orders");
+  else if(location.hash==="#qr-demo-kart")setQrCenterMode("demo");
+}
+window.addEventListener("hashchange",restoreQrCenterFromHash);
+
 initSimpleAdminNavigation();
+restoreQrCenterFromHash();
 
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
 
