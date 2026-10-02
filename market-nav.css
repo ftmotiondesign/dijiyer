@@ -791,3 +791,132 @@
     background:#edf5ff;
   }
 }
+
+/* Ortak karşılaştırma çubuğu: Fırsatlar + Kurum profili */
+.shared-institution-compare-bar{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:100050;
+  width:min(720px,calc(100vw - 28px));
+  min-height:64px;
+  padding:10px 12px 10px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:18px;
+  background:rgba(19,35,59,.96);
+  color:#fff;
+  box-shadow:0 18px 50px rgba(12,26,49,.28);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px)
+}
+.shared-institution-compare-bar.hidden{display:none!important}
+.shared-compare-copy{min-width:0}
+.shared-compare-copy strong{display:block;font-size:13px}
+.shared-compare-copy small{
+  display:block;
+  max-width:420px;
+  margin-top:3px;
+  overflow:hidden;
+  color:#bfcbda;
+  font-size:10px;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.shared-compare-actions{display:flex;gap:7px;flex:0 0 auto}
+.shared-compare-actions button{
+  min-height:40px;
+  padding:0 13px;
+  border-radius:11px;
+  font-size:10px;
+  font-weight:900
+}
+.shared-compare-cancel{
+  border:1px solid rgba(255,255,255,.18);
+  background:transparent;
+  color:#e2eaf5
+}
+.shared-compare-open{border:0;background:#fff;color:#1267e8}
+.shared-compare-open:disabled{opacity:.48;cursor:not-allowed}
+
+.shared-compare-modal{
+  position:fixed;
+  inset:0;
+  z-index:100100;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(11,24,43,.5)
+}
+.shared-compare-modal.hidden{display:none!important}
+.shared-compare-modal-card{
+  position:relative;
+  width:min(940px,96vw);
+  max-height:88vh;
+  overflow:auto;
+  padding:18px;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 24px 70px rgba(9,25,49,.28)
+}
+.shared-compare-close{
+  position:absolute;
+  right:12px;
+  top:12px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:10px;
+  background:#eef3f8;
+  color:#43536a;
+  font-size:20px
+}
+.shared-compare-modal-head span{color:#1677ff;font-size:8px;font-weight:950;letter-spacing:.08em}
+.shared-compare-modal-head h2{margin:5px 42px 14px 0;color:#1c2f49;font-size:21px}
+.shared-compare-modal-content{overflow:auto}
+.shared-compare-grid{
+  min-width:680px;
+  display:grid;
+  grid-template-columns:120px repeat(var(--shared-compare-count),minmax(180px,1fr));
+  border:1px solid #e3e9f0;
+  border-radius:12px;
+  overflow:hidden
+}
+.shared-compare-grid>div{
+  min-height:56px;
+  padding:10px;
+  border-right:1px solid #edf1f5;
+  border-bottom:1px solid #edf1f5
+}
+.shared-compare-label{
+  display:flex;
+  align-items:center;
+  background:#f8fafc;
+  color:#748397;
+  font-size:8px;
+  font-weight:900
+}
+.shared-compare-head,.shared-compare-value{display:grid;align-content:center;gap:4px}
+.shared-compare-head strong,.shared-compare-value strong{color:#263b55;font-size:10px}
+.shared-compare-head small,.shared-compare-value{color:#6f7f92;font-size:8.5px}
+.shared-compare-loading,.shared-compare-empty{padding:30px;text-align:center;color:#718096}
+
+@media(max-width:820px){
+  .shared-institution-compare-bar{
+    bottom:calc(82px + env(safe-area-inset-bottom,0px));
+    width:calc(100vw - 20px);
+    min-height:62px;
+    padding:8px 9px 8px 12px;
+    border-radius:16px
+  }
+  .shared-compare-copy strong{font-size:10px}
+  .shared-compare-copy small{max-width:145px;font-size:7px}
+  .shared-compare-actions button{min-height:38px;padding:0 10px;font-size:8px}
+  .shared-compare-modal{padding:10px}
+  .shared-compare-modal-card{padding:14px}
+  .shared-compare-modal-head h2{font-size:17px}
+}
