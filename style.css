@@ -22529,7 +22529,9 @@ body.home-page .decision-alternatives-head strong{
   }
 
   body.home-page .compare-clear-btn{
-    display:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
   }
 
   body.home-page .compare-open-btn{
