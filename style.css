@@ -22919,3 +22919,12 @@ body.home-page .decision-alternatives-head strong{
   body.home-page .free-benefit-strip{display:none!important}
 }
 /* === END DIJIYER DESKTOP SHOWCASE V1 === */
+
+
+/* === HIDE LEGACY DESKTOP RESULTS SECTION === */
+@media (min-width:821px){
+  body.home-page #resultsSection{
+    display:none !important;
+  }
+}
+/* === END HIDE LEGACY DESKTOP RESULTS SECTION === */
