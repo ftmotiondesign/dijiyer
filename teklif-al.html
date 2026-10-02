@@ -124,6 +124,7 @@
     </div>
     <button class="btn btn-primary quote-main-btn" id="addInstitutionBtn">Toplu Bilgi Al</button>
     <button class="btn btn-light my-offers-btn" id="myOffersBtn">🔒 Tekliflerim <span class="my-offers-count" id="myOffersCount"></span></button>
+    <button type="button" class="btn btn-light missing-service-top-btn" id="missingServiceTopBtn">⌕ Aradığın hizmeti bulamadın mı?</button>
 
     <div class="institution-actions" id="institutionActions">
       <button
@@ -249,20 +250,6 @@
               <button type="button" id="mobileInstantResultsClose" aria-label="Sonuçları kapat">×</button>
             </div>
             <div class="mobile-instant-results-list" id="mobileInstantResultsList"></div>
-          </section>
-      
-          <section class="quote-search-fallback hidden" id="quoteSearchFallback" aria-live="polite">
-            <div class="quote-search-fallback-icon">⌕</div>
-            <div class="quote-search-fallback-main">
-              <span>ARADIĞIN HİZMETİ BULAMADIK</span>
-              <h3><b id="quoteSearchFallbackQuery">Aramanız</b> için doğrudan bir sonuç bulunamadı.</h3>
-              <p>Yakın alt kategorilerden birini deneyebilir veya ihtiyacınızı serbestçe yazıp teklif talebi oluşturabilirsiniz.</p>
-              <div class="quote-search-fallback-suggestions hidden" id="quoteSearchFallbackSuggestions"></div>
-              <div class="quote-search-fallback-actions">
-                <button type="button" id="quoteSearchFallbackAllBtn">Tüm Kategorilerde Ara</button>
-                <button type="button" class="primary" id="quoteSearchFallbackQuoteBtn">İhtiyacımı Yazıp Bilgi Al</button>
-              </div>
-            </div>
           </section>
 
           <input type="checkbox" id="videoOnly" hidden>
@@ -1754,6 +1741,10 @@
   });
 
   document.getElementById('quotePageFreeQuoteBtn')?.addEventListener('click',()=>{
+    openQuoteForm();
+  });
+
+  document.getElementById('missingServiceTopBtn')?.addEventListener('click',()=>{
     openQuoteForm();
   });
 
