@@ -592,6 +592,152 @@
     window.addEventListener("popstate",syncMobileBottomNav);
   }
 
+
+  const SHARED_COMPARE_KEY="dijiyerCompareInstitutionIdsV1";
+
+  function sharedCompareIds(){
+    try{
+      const value=JSON.parse(localStorage.getItem(SHARED_COMPARE_KEY)||"[]");
+      return Array.isArray(value)?value.map(String).filter(Boolean).slice(0,3):[];
+    }catch(_){
+      return [];
+    }
+  }
+
+  function ensureSharedCompareUi(){
+    const path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
+    if(["index.html","teklif-al.html","karsilastir.html"].includes(path))return;
+    if(document.getElementById("institutionCompareBar"))return;
+
+    let bar=document.getElementById("sharedInstitutionCompareBar");
+    if(!bar){
+      bar=document.createElement("div");
+      bar.id="sharedInstitutionCompareBar";
+      bar.className="shared-institution-compare-bar hidden";
+      document.body.appendChild(bar);
+    }
+
+    let modal=document.getElementById("sharedInstitutionCompareModal");
+    if(!modal){
+      modal=document.createElement("div");
+      modal.id="sharedInstitutionCompareModal";
+      modal.className="shared-compare-modal hidden";
+      modal.innerHTML=
+        '<div class="shared-compare-modal-card">'+
+          '<button type="button" class="shared-compare-close" aria-label="Kapat">×</button>'+
+          '<div class="shared-compare-modal-head"><span>KURUMLARI KARŞILAŞTIR</span><h2>Seçtiğiniz kurumları yan yana inceleyin</h2></div>'+
+          '<div class="shared-compare-modal-content">Karşılaştırma hazırlanıyor...</div>'+
+        '</div>';
+      document.body.appendChild(modal);
+      modal.addEventListener("click",e=>{if(e.target===modal)modal.classList.add("hidden")});
+      modal.querySelector(".shared-compare-close")?.addEventListener("click",()=>modal.classList.add("hidden"));
+    }
+
+    refreshSharedCompareBar();
+  }
+
+  function refreshSharedCompareBar(){
+    const bar=document.getElementById("sharedInstitutionCompareBar");
+    if(!bar)return;
+    const ids=sharedCompareIds();
+
+    if(!ids.length){
+      bar.classList.add("hidden");
+      bar.innerHTML="";
+      return;
+    }
+
+    bar.classList.remove("hidden");
+    bar.innerHTML=
+      '<div class="shared-compare-copy"><strong>'+ids.length+' kurum seçildi</strong><small>Seçiminiz sayfalar arasında korunuyor</small></div>'+
+      '<div class="shared-compare-actions">'+
+        '<button type="button" class="shared-compare-cancel">İptal Et</button>'+
+        '<button type="button" class="shared-compare-open" '+(ids.length<2?'disabled':'')+'>Karşılaştır'+(ids.length>1?' ('+ids.length+')':'')+'</button>'+
+      '</div>';
+
+    bar.querySelector(".shared-compare-cancel")?.addEventListener("click",()=>{
+      try{localStorage.removeItem(SHARED_COMPARE_KEY)}catch(_){}
+      refreshSharedCompareBar();
+      window.dispatchEvent(new CustomEvent("dijiyer-compare-changed"));
+    });
+
+    bar.querySelector(".shared-compare-open")?.addEventListener("click",()=>{
+      if(sharedCompareIds().length<2)return;
+      openSharedCompareModal();
+    });
+  }
+
+  async function sharedCompareInstitutions(){
+    const ids=sharedCompareIds();
+    if(!ids.length)return [];
+
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        const db=firebase.firestore();
+        const rows=[];
+        for(const id of ids){
+          const snap=await db.collection("institutions").doc(String(id)).get();
+          if(snap.exists)rows.push({id:snap.id,...(snap.data()||{})});
+        }
+        return rows;
+      }
+    }catch(error){
+      console.warn("Karşılaştırma kurumları yüklenemedi:",error);
+    }
+    return [];
+  }
+
+  function sharedCompareValue(value,fallback="Belirtilmedi"){
+    if(Array.isArray(value)){
+      const arr=value.filter(Boolean);
+      return arr.length?arr.join(" · "):fallback;
+    }
+    const text=String(value||"").trim();
+    return text||fallback;
+  }
+
+  async function openSharedCompareModal(){
+    const modal=document.getElementById("sharedInstitutionCompareModal");
+    const content=modal?.querySelector(".shared-compare-modal-content");
+    if(!modal||!content)return;
+
+    modal.classList.remove("hidden");
+    content.innerHTML='<div class="shared-compare-loading">Karşılaştırma hazırlanıyor...</div>';
+
+    const rows=await sharedCompareInstitutions();
+    if(rows.length<2){
+      content.innerHTML='<div class="shared-compare-empty">Seçilen kurum bilgileri yüklenemedi.</div>';
+      return;
+    }
+
+    const row=(label,fn)=>
+      '<div class="shared-compare-label">'+label+'</div>'+
+      rows.map(inst=>'<div class="shared-compare-value">'+fn(inst)+'</div>').join("");
+
+    content.style.setProperty("--shared-compare-count",String(rows.length));
+    content.innerHTML=
+      '<div class="shared-compare-grid">'+
+        '<div class="shared-compare-label">Kurum</div>'+
+        rows.map(inst=>'<div class="shared-compare-head"><strong>'+String(inst.name||"Kurum").replace(/[&<>"]/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[s]))+'</strong><small>📍 '+sharedCompareValue(inst.location||[inst.district,inst.city].filter(Boolean).join(" / "))+'</small></div>').join("")+
+        row("Hizmet / Program",inst=>'<strong>'+sharedCompareValue(inst.programs||inst.classes||inst.category)+'</strong>')+
+        row("Fiyat",inst=>'<strong>'+sharedCompareValue(inst.priceLevel,"Fiyat için görüşün")+'</strong>')+
+        row("Kampanya",inst=>sharedCompareValue(inst.campaign,"Kampanya belirtilmedi"))+
+        row("Puan",inst=>'<strong>⭐ '+Number(inst.rating||0).toFixed(1)+'</strong>')+
+        row("Konum",inst=>sharedCompareValue(inst.address||inst.location))+
+      '</div>';
+  }
+
+  window.addEventListener("storage",event=>{
+    if(event.key===SHARED_COMPARE_KEY)refreshSharedCompareBar();
+  });
+  window.addEventListener("dijiyer-compare-changed",refreshSharedCompareBar);
+
+  window.DijiyerCompareUI={
+    refresh:refreshSharedCompareBar,
+    ids:sharedCompareIds,
+    open:openSharedCompareModal
+  };
+
   function build(){
     cleanLiteralNewlineArtifacts();
     markLegacyHeaders();
@@ -599,6 +745,7 @@
     buildNav();
     ensureLegalUi();
     ensureMobileBottomNav();
+    ensureSharedCompareUi();
     requestAnimationFrame(()=>{
       cleanLiteralNewlineArtifacts();
       markLegacyHeaders();
