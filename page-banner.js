@@ -84,6 +84,12 @@
   }
 
   function ensureShell(){
+    if(currentPageKey()==="quote"){
+      const existing=document.getElementById("pageTopMiniBanner");
+      existing?.closest(".unified-page-banner-shell,.standalone-page-back")?.remove();
+      return null;
+    }
+
     let root=document.getElementById("pageTopMiniBanner");
     if(root){
       const shell=root.closest(".standalone-page-back,.unified-page-banner-shell");
