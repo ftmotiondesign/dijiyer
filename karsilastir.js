@@ -14,6 +14,69 @@ const compareDistrictCache=new Map();
 const COMPARE_PAGE_SIZE=6;
 let visibleInstitutionCount=COMPARE_PAGE_SIZE;
 
+const COMPARE_DEMO_INSTITUTIONS=[
+  {
+    id:"1",
+    name:"Özel Ayyıldız Sürücü Kursu",
+    short:"Ayyıldız SK",
+    category:"surucu",
+    mainCategory:"egitim",
+    subCategory:"surucu",
+    rating:4.8,
+    reviewCount:128,
+    location:"Çanakkale, Merkez",
+    city:"Çanakkale",
+    district:"Merkez",
+    address:"Atatürk Cd. No:42",
+    classes:"B, A1, A2, D, BE",
+    video:true,
+    offer:true,
+    vip:true,
+    emoji:"🚘",
+    source:"demo"
+  },
+  {
+    id:"2",
+    name:"Troya Sürücü Kursu",
+    short:"Troya SK",
+    category:"surucu",
+    mainCategory:"egitim",
+    subCategory:"surucu",
+    rating:4.6,
+    reviewCount:96,
+    location:"Çanakkale, Merkez",
+    city:"Çanakkale",
+    district:"Merkez",
+    address:"İskele Cd. No:18",
+    classes:"B, A1, A2, D",
+    video:true,
+    offer:true,
+    vip:false,
+    emoji:"🚗",
+    source:"demo"
+  },
+  {
+    id:"3",
+    name:"18 Mart Sürücü Kursu",
+    short:"18 Mart SK",
+    category:"surucu",
+    mainCategory:"egitim",
+    subCategory:"surucu",
+    rating:4.5,
+    reviewCount:64,
+    location:"Çanakkale, Merkez",
+    city:"Çanakkale",
+    district:"Merkez",
+    address:"Barbaros Mah. Troya Cd. No:7",
+    classes:"B, A1, A2",
+    video:true,
+    offer:true,
+    vip:false,
+    emoji:"🚙",
+    source:"demo"
+  }
+];
+
 function preferredLocation(){
   const params=new URLSearchParams(location.search);
   let city=String(params.get("city")||"").trim();
@@ -206,8 +269,8 @@ function showToast(message){
 
 function normalizeInstitutionData(id,data={}){
   return {
-    id:String(id),
     ...data,
+    id:String(id),
     city:String(data.city||"").trim(),
     district:String(data.district||"").trim(),
     name:String(data.name||"Kurum").trim(),
@@ -235,6 +298,14 @@ async function loadAllInstitutions(){
     allInstitutions=snap.docs
       .map(doc=>normalizeInstitutionData(doc.id,doc.data()||{}))
       .filter(inst=>String(inst.status||"active")!=="passive");
+
+    // Ana sayfadaki demo sürücü kursları da mobil karşılaştırmadan seçilebiliyor.
+    // Seçilmişlerse karşılaştırma sayfasında da aynı ID'lerle tanı.
+    COMPARE_DEMO_INSTITUTIONS.forEach(demo=>{
+      if(!allInstitutions.some(inst=>String(inst.id)===String(demo.id))){
+        allInstitutions.push(normalizeInstitutionData(demo.id,demo));
+      }
+    });
 
     allInstitutions.sort((a,b)=>
       Number(Boolean(b.vip))-Number(Boolean(a.vip)) ||
