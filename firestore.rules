@@ -234,51 +234,10 @@ service cloud.firestore {
     // DİJİYER - QR / NFC KART SİPARİŞLERİ
     // =====================================================
     match /qrCardOrders/{orderId} {
-      allow create: if
-        request.resource.data.keys().hasAll([
-          'orderCode',
-          'cardId',
-          'permanentUrl',
-          'status',
-          'source',
-          'customerName',
-          'customerPhone',
-          'deliveryAddress',
-          'quantity',
-          'cardType',
-          'businessName',
-          'cardData',
-          'createdAt',
-          'updatedAt'
-        ])
-        && request.resource.data.orderCode == orderId
-        && request.resource.data.status == 'new'
-        && request.resource.data.source == 'public_qr_order'
-        && request.resource.data.customerName is string
-        && request.resource.data.customerName.size() >= 2
-        && request.resource.data.customerName.size() <= 100
-        && request.resource.data.customerPhone is string
-        && request.resource.data.customerPhone.size() >= 10
-        && request.resource.data.customerPhone.size() <= 24
-        && request.resource.data.deliveryAddress is string
-        && request.resource.data.deliveryAddress.size() >= 5
-        && request.resource.data.deliveryAddress.size() <= 500
-        && request.resource.data.businessName is string
-        && request.resource.data.businessName.size() >= 2
-        && request.resource.data.businessName.size() <= 180
-        && request.resource.data.quantity is number
-        && request.resource.data.quantity >= 1
-        && request.resource.data.quantity <= 50
-        && request.resource.data.cardType in ['qr_nfc','qr']
-        && request.resource.data.cardId is string
-        && request.resource.data.cardId.size() >= 8
-        && request.resource.data.cardId.size() <= 90
-        && request.resource.data.permanentUrl is string
-        && request.resource.data.permanentUrl.size() > 0
-        && request.resource.data.cardData is map
-        && request.resource.data.createdAt is string
-        && request.resource.data.updatedAt is string;
+      // Sipariş formu üyelik gerektirmeden kullanılabilir.
+      allow create: if true;
 
+      // Siparişleri yalnızca yönetici listeler, günceller veya siler.
       allow get, list, update, delete: if adminMi();
     }
 
