@@ -284,7 +284,7 @@ textarea{min-height:90px;resize:vertical}
 
 <div id="stickyBar" class="sticky-save hidden">
   <div class="sticky-inner">
-    <div class="sticky-info"><b>Demo kartı düzenliyorsun</b><span>Değişiklikler kaydedilmeden QR sayfasına yansımaz.</span></div>
+    <div class="sticky-info"><b id="stickyInfoTitle">Kart düzenliyorsun</b><span id="stickyInfoText">Değişiklikler kaydedilmeden QR sayfasına yansımaz.</span></div>
     <div class="sticky-actions">
       <button id="clearBtn" class="secondary">Formu Temizle</button>
       <button id="saveBtn" class="primary">Demo Sayfasını Güncelle</button>
@@ -311,6 +311,12 @@ new QRCode($("qrcode"),{text:DEMO_URL,width:220,height:220,colorDark:"#111827",c
 function val(id){return $(id).value.trim()}
 function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"kart"}
 let CUSTOMER_URL="";
+let ACTIVE_CUSTOMER_CARD_ID="";
+function setActiveCustomerCard(id){
+ ACTIVE_CUSTOMER_CARD_ID=id||"";
+ if($("saveBtn"))$("saveBtn").textContent=ACTIVE_CUSTOMER_CARD_ID?"QR Kartı Güncelle":"Demo Sayfasını Güncelle";
+ if($("stickyInfoText"))$("stickyInfoText").textContent=ACTIVE_CUSTOMER_CARD_ID?"Seçili müşteri QR kartındaki değişiklikleri kaydet.":"Değişiklikler kaydedilmeden QR sayfasına yansımaz.";
+}
 function normalizeTargetUrl(v){const s=String(v||"").trim();if(!s)return "";return /^https?:\/\//i.test(s)?s:"https://"+s}
 function customerUrlFor(id){return new URL("customer-card.html?id="+encodeURIComponent(id),location.href).href}
 async function uniqueCardId(base){
@@ -334,7 +340,7 @@ async function loadCustomerCards(){
   $("cardCount").textContent=rows.length;
   if(!rows.length){box.innerHTML='<div class="row">Henüz kalıcı kart oluşturulmadı.</div>';return}
   box.innerHTML=rows.map((x,i)=>'<div class="row"><div><b>'+esc(x.name||x.id)+'</b><small>'+esc(x.id)+(x.targetUrl?' · Özel link':' · Dijital kart')+'</small></div><button data-card="'+i+'">QR</button></div>').join("");
-  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];showCustomerQr(x.id,x.name);$("customCardSlug").value=x.id;$("customTargetUrl").value=x.targetUrl||""});
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];showCustomerQr(x.id,x.name);$("customCardSlug").value=x.id;$("customTargetUrl").value=x.targetUrl||"";fill(x);setActiveCustomerCard(x.id);$("saveMsg").textContent=x.name+" QR kartı düzenleme için açıldı.";$("saveMsg").className="msg ok"});
  }catch(e){box.innerHTML='<div class="row">Kartlar yüklenemedi.</div>'}
 }
 function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=>o[k]=$(k).checked);o.updatedAt=new Date().toISOString();return o}
@@ -427,10 +433,21 @@ $("remove360").onclick=async()=>{$("tour360").value="";$("tour360File").value=""
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
 $("saveBtn").onclick=async()=>{
  try{
-  const d=formData();await saveDemo(d);$("saveMsg").textContent="Kaydedildi. Sabit QR artık "+(d.name||"bu firma")+" kartını açıyor.";$("saveMsg").className="msg ok"
+  const d=formData();
+  if(ACTIVE_CUSTOMER_CARD_ID){
+   const targetUrl=normalizeTargetUrl($("customTargetUrl").value);
+   await db.collection("customerCards").doc(ACTIVE_CUSTOMER_CARD_ID).set({...d,cardId:ACTIVE_CUSTOMER_CARD_ID,status:"active",targetUrl,updatedAt:new Date().toISOString()},{merge:true});
+   showCustomerQr(ACTIVE_CUSTOMER_CARD_ID,d.name);
+   await loadCustomerCards();
+   $("saveMsg").textContent="QR kartı güncellendi: "+(d.name||ACTIVE_CUSTOMER_CARD_ID);
+  }else{
+   await saveDemo(d);
+   $("saveMsg").textContent="Demo sayfası güncellendi. Sabit demo QR artık "+(d.name||"bu firma")+" kartını açıyor.";
+  }
+  $("saveMsg").className="msg ok";
  }catch(e){$("saveMsg").textContent="Kaydedilemedi: "+e.message;$("saveMsg").className="msg err"}
 };
-$("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor musunuz?"))fill({showContact:true,showInfoRequest:true})};
+$("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor musunuz?")){setActiveCustomerCard("");$("customCardSlug").value="";$("customTargetUrl").value="";fill({showContact:true,showInfoRequest:true})}};
 $("previewBtn").onclick=$("previewTop").onclick=()=>window.open(DEMO_URL,"_blank");
 $("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı";setTimeout(()=>$("copyUrl").textContent="Linki Kopyala",1400)};
 $("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas"),a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
@@ -446,6 +463,8 @@ $("createCustomerCard").onclick=async()=>{
   if(!old.exists)payload.createdAt=now;
   await ref.set(payload,{merge:true});
   showCustomerQr(id,d.name);
+  setActiveCustomerCard(id);
+  $("customCardSlug").value=id;
   await loadCustomerCards();
   $("saveMsg").textContent="Müşteriye özel kalıcı kart oluşturuldu: "+d.name;
   $("saveMsg").className="msg ok";
@@ -456,6 +475,7 @@ $("createCustomerCard").onclick=async()=>{
 };
 
 $("newFirmBtn").onclick=()=>{
+ setActiveCustomerCard("");
  fill({showContact:true,showInfoRequest:true});
  $("customCardSlug").value="";
  $("customTargetUrl").value="";
@@ -478,6 +498,7 @@ $("saveAsNewCard").onclick=async()=>{
   await ref.set({...d,cardId:id,status:"active",targetUrl,createdAt:now,updatedAt:now});
   $("customCardSlug").value=id;
   showCustomerQr(id,d.name);
+  setActiveCustomerCard(id);
   await loadCustomerCards();
   msg.textContent="Yeni firma kartı oluşturuldu. QR bu karta özeldir ve hedef linki sonradan değişse bile aynı QR kullanılabilir.";
   msg.className="msg ok";
@@ -498,7 +519,7 @@ $("name").addEventListener("input",e=>updateNames(e.target.value.trim()));
 auth.onAuthStateChanged(async user=>{
  if(user){
   $("loginBox").classList.add("hidden");$("app").classList.remove("hidden");$("stickyBar").classList.remove("hidden");
-  try{await Promise.all([loadDemo(),loadInstitutions()])}catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}
+  try{await Promise.all([loadDemo(),loadInstitutions(),loadCustomerCards()])}catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}
  }else{
   $("loginBox").classList.remove("hidden");$("app").classList.add("hidden");$("stickyBar").classList.add("hidden")
  }
