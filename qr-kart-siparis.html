@@ -205,6 +205,29 @@ function now(){return new Date().toISOString()}
 function orderCode(){return "QR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+randomId().slice(0,5).toUpperCase()}
 function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
 
+async function prefillInstitutionFromQuery(){
+ const params=new URLSearchParams(location.search);
+ const institutionId=params.get("institutionId");
+ if(!institutionId)return;
+ try{
+  const snap=await db.collection("institutions").doc(institutionId).get();
+  if(!snap.exists)return;
+  const d=snap.data()||{};
+  const set=(id,value)=>{const el=$(id);if(el&&value!=null&&String(value).trim())el.value=String(value).trim()};
+  set("customerName",d.contactName||d.ownerName||d.name||"");
+  set("customerPhone",d.phone||"");
+  set("whatsappPhone",d.whatsapp||d.phone||"");
+  set("instagram",d.instagram||"");
+  set("website",d.website||"");
+  set("address",d.address||[d.city,d.district].filter(Boolean).join(" / "));
+  set("businessInfo",[d.name,d.description].filter(Boolean).join("\n"));
+  $("sumCustomer").textContent=$("customerName").value.trim()||"Henüz girilmedi";
+  $("sumPhone").textContent=$("customerPhone").value.trim()||"Henüz girilmedi";
+ }catch(error){
+  console.warn("Firma bilgileri QR formuna yüklenemedi:",error);
+ }
+}
+
 $("customerName").oninput=e=>$("sumCustomer").textContent=e.target.value.trim()||"Henüz girilmedi";
 $("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"Henüz girilmedi";
 function selectedProducts(){
@@ -220,6 +243,7 @@ function updateProductSummary(){
 document.querySelectorAll('input[name="productCategory"]').forEach(c=>c.onchange=updateProductSummary);
 updateProductSummary();
 startOrderSettingsSync();
+prefillInstitutionFromQuery();
 
 $("submitBtn").onclick=async()=>{
  const required=["customerName","customerPhone","address","businessInfo"];
