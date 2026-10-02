@@ -6428,3 +6428,17 @@ body[data-panel-current="showcase"] .panel-heading-action{
   .panel-auth-recovery-actions{display:grid;grid-template-columns:1fr}
   .panel-auth-recovery-actions a{text-align:center}
 }
+
+.institution-qr-view{padding:0}
+.institution-qr-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;background:linear-gradient(135deg,#f7fbff,#eef5ff);border:1px solid #dce9fa;border-radius:18px;padding:20px;margin-bottom:14px}
+.institution-qr-hero h2{margin:6px 0 7px;font-size:24px}
+.institution-qr-hero p{margin:0;color:#68768b;font-size:13px;line-height:1.6;max-width:760px}
+.institution-qr-open{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;background:#1677ff;color:#fff!important;border-radius:11px;padding:11px 14px;font-size:11px;font-weight:900}
+.institution-qr-frame-card{background:#fff;border:1px solid #e1e7ef;border-radius:18px;overflow:hidden}
+#institutionQrOrderFrame{display:block;width:100%;height:calc(100vh - 180px);min-height:900px;border:0;background:#f4f7fb}
+@media(max-width:760px){
+  .institution-qr-hero{flex-direction:column;padding:15px}
+  .institution-qr-hero h2{font-size:20px}
+  .institution-qr-open{width:100%}
+  #institutionQrOrderFrame{height:1100px;min-height:1100px}
+}
