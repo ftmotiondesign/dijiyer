@@ -9721,3 +9721,42 @@ details.matching-institutions .matching-buttons{
     min-height:44px!important;
   }
 }
+
+
+/* Kurum işlemleri merkezi */
+.institution-operation-center{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 14px;
+  padding:14px 16px;
+  border:1px solid #dbe3ee;
+  border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff,#fff);
+}
+.institution-operation-copy{display:grid;gap:3px}
+.institution-operation-copy>span{font-size:9px;font-weight:900;letter-spacing:.08em;color:#1677ff}
+.institution-operation-copy>strong{font-size:15px;color:#172033}
+.institution-operation-copy>small{font-size:10px;color:#667085}
+.institution-operation-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.institution-operation-btn{
+  border:1px solid #d8e1ec;
+  background:#fff;
+  color:#334155;
+  border-radius:9px;
+  padding:9px 11px;
+  font-size:11px;
+  font-weight:800;
+  text-decoration:none;
+  cursor:pointer;
+}
+.institution-operation-btn.primary{
+  background:#1677ff;
+  color:#fff;
+  border-color:#1677ff;
+}
+@media(max-width:760px){
+  .institution-operation-center{align-items:flex-start;flex-direction:column}
+  .institution-operation-actions{width:100%;justify-content:flex-start}
+}
