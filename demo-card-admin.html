@@ -273,20 +273,29 @@ function renderUploads(){
  $("coverPreview").innerHTML=cover?'<img src="'+esc(cover)+'" alt="Kapak">':'<span>Kapak yok</span>';
  $("galleryPreview").innerHTML=gallery.length?gallery.slice(0,12).map(u=>'<img src="'+esc(u)+'" alt="Galeri">').join(""):'<span>Galeri boş</span>';
 }
-async function uploadOne(file,kind,msgId){
- if(!file)return "";
- if(!auth.currentUser)throw new Error("Oturum bulunamadı.");
- if(!file.type.startsWith("image/"))throw new Error("Sadece görsel dosyası yükleyebilirsiniz.");
- if(file.size>10*1024*1024)throw new Error("Görsel en fazla 10 MB olabilir.");
- const msg=$(msgId);msg.textContent="Yükleniyor...";
- const fd=new FormData();
- fd.append("file",file);
- fd.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
- fd.append("folder","dijiyer/demo-card/"+kind);
- const res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload",{method:"POST",body:fd});
- const data=await res.json();
- if(!res.ok||!data.secure_url)throw new Error(data?.error?.message||"Cloudinary yükleme başarısız.");
- msg.textContent="Yüklendi ✓";return data.secure_url;
+function uploadOne(file,kind,msgId){
+ return new Promise((resolve,reject)=>{
+  if(!file)return resolve("");
+  if(!auth.currentUser)return reject(new Error("Oturum bulunamadı."));
+  if(!file.type.startsWith("image/"))return reject(new Error("Sadece görsel dosyası yükleyebilirsiniz."));
+  if(file.size>10*1024*1024)return reject(new Error("Görsel en fazla 10 MB olabilir."));
+  const msg=$(msgId);msg.textContent="Cloudinary'ye yükleniyor...";
+  const fd=new FormData();
+  fd.append("file",file);
+  fd.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+  const xhr=new XMLHttpRequest();
+  xhr.open("POST","https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload",true);
+  xhr.timeout=20000;
+  xhr.onload=()=>{
+   let data={};try{data=JSON.parse(xhr.responseText||"{}")}catch(e){}
+   if(xhr.status>=200&&xhr.status<300&&data.secure_url){msg.textContent="Yüklendi ✓";resolve(data.secure_url)}
+   else{const detail=(data.error&&data.error.message)?data.error.message:("HTTP "+xhr.status);msg.textContent="Yüklenemedi: "+detail;reject(new Error(detail))}
+  };
+  xhr.onerror=()=>{msg.textContent="Yüklenemedi: Ağ bağlantısı hatası";reject(new Error("Cloudinary bağlantısı kurulamadı."))};
+  xhr.ontimeout=()=>{msg.textContent="Yüklenemedi: 20 saniye zaman aşımı";reject(new Error("Cloudinary yanıt vermedi."))};
+  xhr.upload.onprogress=e=>{if(e.lengthComputable)msg.textContent="%"+Math.round(e.loaded/e.total*100)+" yükleniyor..."};
+  xhr.send(fd);
+ });
 }
 async function loadDemo(){const s=await db.collection("siteSettings").doc("home").get();fill((s.data()||{}).demoCard||{})}
 async function saveDemo(data=formData()){await db.collection("siteSettings").doc("home").set({demoCard:data},{merge:true});fill(data)}
