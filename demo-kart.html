@@ -62,13 +62,19 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 .action .text{min-width:0;flex:1}.action b{display:block;font-size:14px}.action span{display:block;margin-top:4px;color:var(--text);font-size:11px;line-height:1.35}.action .arrow{font-size:20px;color:#b5b6be}
 .premium-chip{display:inline-block;margin-top:5px;background:#fff3d6;color:#995f00;padding:3px 6px;border-radius:999px;font-size:9px;font-weight:900}
 .info{margin-top:17px;padding:15px;border-radius:17px;background:#f7f7fa;color:var(--text);font-size:12px;line-height:1.65}.info strong{display:block;color:var(--dark);font-size:13px;margin-bottom:4px}
-.qr-block{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;margin-top:14px;padding:14px;border-radius:17px;background:#f7f7fa}
-#qrCode{width:112px;height:112px;background:#fff;border-radius:12px;padding:6px;display:grid;place-items:center}
+.qr-block{margin-top:14px;padding:16px;border-radius:20px;background:linear-gradient(180deg,#f8fafc,#f3f6fb);border:1px solid #e7ebf2}
+.qr-main{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center}
+#qrCode{width:112px;height:112px;background:#fff;border-radius:14px;padding:6px;display:grid;place-items:center;box-shadow:0 8px 22px #17203312}
+.qr-copy b{display:block;font-size:15px;margin-bottom:5px;color:var(--dark)}
+.qr-copy span{display:block;color:var(--text);font-size:11px;line-height:1.5}
+.qr-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.qr-mini{min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border-radius:13px;background:#fff;border:1px solid #e6eaf0;font-size:11px;font-weight:900;color:var(--dark);box-shadow:0 4px 14px #17203308}
+.qr-mini .mi{font-size:16px}.qr-mini.ig{color:#b42372}.qr-mini.loc{color:#b54708}.qr-mini.review{color:#8a5a00}
 .save{width:100%;margin-top:12px;border:1px solid #dedfea;background:#fff;color:var(--dark);padding:14px;border-radius:16px;font-weight:900;cursor:pointer}
 .save:hover{background:#f8fafc}.hint{margin-top:8px;text-align:center;color:var(--text);font-size:10px;line-height:1.4}
 .footer{color:#d0d3dc;text-align:center;font-size:11px;padding:17px 8px 2px;line-height:1.5}
 .empty{background:#fff;border-radius:24px;padding:45px 20px;text-align:center}.hidden{display:none!important}
-@media(max-width:390px){.quick{gap:10px}.quick a{min-height:110px;padding:14px}.quick .ico{width:48px;height:48px;border-radius:15px}.quick .web{min-height:86px}.quick-head{margin-bottom:12px}#qrCode{width:98px;height:98px}.qr-block{grid-template-columns:98px 1fr}}
+@media(max-width:390px){.quick{gap:10px}.quick a{min-height:110px;padding:14px}.quick .ico{width:48px;height:48px;border-radius:15px}.quick .web{min-height:86px}.quick-head{margin-bottom:12px}#qrCode{width:98px;height:98px}.qr-main{grid-template-columns:98px 1fr}.qr-actions{grid-template-columns:1fr}.qr-mini{justify-content:flex-start;padding-left:14px}}
 </style>
 </head>
 <body>
@@ -96,11 +102,14 @@ a{text-decoration:none;color:inherit}button{font:inherit}
     </div>
 
     <div class="qr-block">
-      <div id="qrCode"></div>
-      <div>
-        <b style="display:block;font-size:14px;margin-bottom:5px">QR ile Aç</b>
-        <span style="display:block;color:var(--text);font-size:11px;line-height:1.45">Bu dijital karta tekrar ulaşmak için QR kodu okutabilirsiniz.</span>
+      <div class="qr-main">
+        <div id="qrCode"></div>
+        <div class="qr-copy">
+          <b>QR ile Aç</b>
+          <span>Telefon kameranızla okutun; bu dijital karta ve firma bağlantılarına hızlıca ulaşın.</span>
+        </div>
       </div>
+      <div id="qrMiniActions" class="qr-actions"></div>
     </div>
 
     <button class="save" id="saveContact" type="button">＋ Rehbere Ekle</button>
@@ -123,6 +132,7 @@ function telHref(v){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else 
 function waHref(v,name){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"https://wa.me/"+p+"?text="+encodeURIComponent("Merhaba "+(name||"")+", bilgi almak istiyorum."):""}
 function addQuick(cls,icon,label,sub,url){if(!url)return;const a=document.createElement("a");a.className=cls||"";a.href=url;a.target=url.startsWith("tel:")?"_self":"_blank";a.rel="noopener";a.innerHTML='<div class="ico">'+icon+'</div><div class="quick-copy"><span class="quick-label">'+label+'</span><span class="quick-sub">'+sub+'</span></div>'; $("quickActions").appendChild(a)}
 function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
+function addQrMini(cls,icon,label,url){if(!url)return;const a=document.createElement("a");a.className="qr-mini "+cls;a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<span class="mi">'+icon+'</span><span>'+label+'</span>';$("qrMiniActions").appendChild(a)}
 function escV(v){return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;")}
 function vcardText(d){return ["BEGIN:VCARD","VERSION:3.0","FN:"+escV(d.name),"ORG:"+escV(d.name),"TEL;TYPE=WORK,VOICE:"+escV(d.phone),"TEL;TYPE=CELL:"+escV(d.whatsapp||d.phone),"EMAIL;TYPE=WORK:"+escV(d.emailContact),"ADR;TYPE=WORK:;;"+escV(d.address),"URL:"+escV(d.website),"NOTE:"+escV("DijiyeSor dijital kart"),"END:VCARD"].join("\r\n")}
 function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:location.href,width:100,height:100,correctLevel:QRCode.CorrectLevel.M})}
@@ -158,6 +168,10 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
   if(d.show360)addPaid("360°","360° Mekanı Gez","Mekanı sanal tur ile içeriden keşfedin.",d.tour360);
   if(d.showPromo)addPaid("🎬","Tanıtım Videosu","İşletmenin tanıtım videosunu izleyin.",d.promoVideo);
   if(d.showInfoRequest){const link=waHref(d.whatsapp||d.phone,d.name);addPaid("✉","Bilgi Al","WhatsApp üzerinden hızlı bilgi isteyin.",link)}
+
+  addQrMini("ig","◎","Instagram",d.instagram);
+  addQrMini("loc","📍","Konum",d.maps);
+  if(d.showReview)addQrMini("review","★","Yorum Yap",d.review);
 
   renderQr();
   $("saveContact").onclick=()=>{
