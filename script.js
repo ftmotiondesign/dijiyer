@@ -3654,7 +3654,22 @@ function syncCompareSelectionUi(){
 }
 
 function institutionCompareSectorKey(inst){
-  return String(inst?.subCategory||inst?.category||inst?.mainCategory||'').trim();
+  const raw=String(inst?.subCategory||inst?.category||inst?.mainCategory||'').trim();
+  const key=normalizeQuoteSearch(raw);
+
+  // Sürücü kursları eski/yeni kayıt yapısında farklı anahtarlarla tutulabiliyor.
+  // Hepsini aynı karşılaştırma sektörüne dahil et.
+  if(
+    key==='surucu' ||
+    key==='surucu kursu' ||
+    key==='surucu_kursu' ||
+    key==='driving school' ||
+    key.includes('surucu')
+  ){
+    return 'surucu';
+  }
+
+  return raw;
 }
 
 function currentCompareSectorKey(){
