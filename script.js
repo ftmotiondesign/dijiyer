@@ -9264,3 +9264,58 @@ async function syncCustomCategoryTaxonomyFromSettings(){
 
 syncCustomCategoryTaxonomyFromSettings();
 
+
+
+// Dijiyer mobil uygulama görünümü V1
+(function initMobileAppShell(){
+  const isMobile=()=>window.matchMedia('(max-width:820px)').matches;
+
+  document.getElementById('mobileTopLocationBtn')?.addEventListener('click',()=>{
+    if(!isMobile())return;
+    const discoveryLocation=document.getElementById('mobileSearchLocationBtn');
+    if(discoveryLocation){
+      discoveryLocation.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(()=>discoveryLocation.click(),220);
+      return;
+    }
+    document.getElementById('locationBtn')?.click();
+  });
+
+  const openInstitutionMenu=()=>{
+    const addBtn=document.getElementById('institutionAddBtn');
+    const actionBtn=document.getElementById('institutionActionsBtn');
+    if(actionBtn){
+      actionBtn.click();
+      return;
+    }
+    addBtn?.click();
+  };
+
+  document.getElementById('mobileTopInstitutionBtn')?.addEventListener('click',openInstitutionMenu);
+  document.getElementById('mobileInstitutionNavBtn')?.addEventListener('click',()=>{
+    document.querySelectorAll('#mobileAppNav [data-mobile-nav]').forEach(x=>x.classList.remove('active'));
+    document.getElementById('mobileInstitutionNavBtn')?.classList.add('active');
+    openInstitutionMenu();
+  });
+
+  document.querySelector('#mobileAppNav [data-mobile-nav="explore"]')?.addEventListener('click',()=>{
+    document.querySelectorAll('#mobileAppNav [data-mobile-nav]').forEach(x=>x.classList.remove('active'));
+    document.querySelector('#mobileAppNav [data-mobile-nav="explore"]')?.classList.add('active');
+    setTimeout(()=>document.getElementById('resultsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),20);
+  });
+
+  const syncMobileNav=()=>{
+    if(!isMobile())return;
+    const nav=document.getElementById('mobileAppNav');
+    if(!nav)return;
+    const explore=document.getElementById('resultsSection');
+    const exploreTop=explore?.getBoundingClientRect().top ?? 9999;
+    const exploreActive=exploreTop < window.innerHeight*.55;
+    nav.querySelectorAll('[data-mobile-nav]').forEach(x=>x.classList.remove('active'));
+    nav.querySelector('[data-mobile-nav="'+(exploreActive?'explore':'home')+'"]')?.classList.add('active');
+  };
+
+  window.addEventListener('scroll',syncMobileNav,{passive:true});
+  window.addEventListener('resize',syncMobileNav);
+  syncMobileNav();
+})();
