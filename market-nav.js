@@ -83,7 +83,7 @@
           <span class="dijiyer-global-brand-mark" aria-hidden="true">D</span>
           <span class="dijiyer-global-brand-copy">
             <strong>DijiyeSor</strong>
-            <small>Bul. Karşılaştır. Teklif Al.</small>
+            <small>Bul. Karşılaştır. Bilgi Al.</small>
           </span>
         </a>
 
