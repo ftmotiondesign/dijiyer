@@ -29,6 +29,19 @@ h2{font-size:19px;margin:0}p.help{margin:3px 0 0;color:var(--muted);font-size:12
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
 label{display:block;font-size:12px;font-weight:800;color:#344054}input,textarea,select{width:100%;margin-top:6px;border:1px solid #cfd8e5;border-radius:11px;padding:12px;background:#fff;outline:none}
 input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}textarea{min-height:90px;resize:vertical}
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.template-option{position:relative;border:2px solid #e1e7f0;border-radius:16px;padding:12px;cursor:pointer;background:#fff;transition:.18s ease}
+.template-option:hover{border-color:#9fc2f8;transform:translateY(-1px)}
+.template-option input{position:absolute;opacity:0;pointer-events:none}
+.template-option:has(input:checked){border-color:var(--b);box-shadow:0 0 0 3px #1677ff13;background:#f8fbff}
+.template-preview{height:84px;border-radius:12px;margin-bottom:9px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.template-preview strong{font-size:12px}.template-preview small{font-size:9px;opacity:.82}
+.tpl-classic{background:linear-gradient(135deg,#fff,#eef5ff);color:#174a85;border:1px solid #d5e5f8}
+.tpl-vip{background:linear-gradient(135deg,#111827,#2a2114);color:#f7d98b;border:1px solid #6e5b2c}
+.tpl-corporate{background:linear-gradient(135deg,#0f5fc9,#1677ff);color:#fff;border:1px solid #6ca8ff}
+.tpl-minimal{background:linear-gradient(135deg,#fff,#f7f7f7);color:#111;border:1px solid #ddd}
+.template-name{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;font-weight:900}
+.template-name span:last-child{font-size:9px;color:var(--muted);font-weight:700}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.feature{border:1px solid var(--line);border-radius:13px;padding:11px;display:flex;align-items:flex-start;gap:9px;font-size:12px}.feature input{width:auto;margin:2px 0 0}.feature b{display:block}.feature small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
 .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.upload{border:1px dashed #cbd5e1;border-radius:14px;padding:13px;background:#fafcff}.upload.full{grid-column:1/-1}.upload b{display:block;font-size:13px;margin-bottom:6px}.upload small{display:block;color:var(--muted);font-size:10px;margin-bottom:9px}.file{display:none}.upload-btn{width:100%;border:0;background:#edf3fb;color:#24415f;border-radius:10px;padding:10px;font-weight:850;cursor:pointer}.upload-msg{font-size:10px;color:var(--muted);margin-top:7px;min-height:13px;word-break:break-word}
 .summary h3{margin:0 0 12px;font-size:17px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #edf1f6;font-size:12px}.summary-row span{color:var(--muted)}.summary-row b{text-align:right}
@@ -40,7 +53,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .order-no{display:inline-block;margin-top:8px;background:#eef4ff;color:#155db8;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}
 .footer{text-align:center;color:#98a2b3;font-size:11px;padding:10px 16px 30px}
 @media(max-width:820px){.hero-in,.layout{grid-template-columns:1fr}.hero{padding-top:32px}.hero h1{font-size:32px}.hero-card{display:none}.side{position:static}.wrap{margin-top:-42px}}
-@media(max-width:560px){.grid,.feature-grid,.upload-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
+@media(max-width:560px){.grid,.feature-grid,.upload-grid,.template-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
 </style>
 </head>
 <body>
@@ -71,11 +84,41 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
   <div id="formLayout" class="layout">
     <div>
       <section class="card">
-        <div class="step"><span class="num">1</span><div><h2>QR / NFC Kart Siparişi</h2><p class="help">Sipariş için yalnızca temel iletişim bilgilerinizi girmeniz yeterli.</p></div></div>
+        <div class="step"><span class="num">1</span><div><h2>QR / NFC Kart Siparişi</h2><p class="help">Kartta kullanılacak iletişim bilgilerini girin.</p></div></div>
         <div class="grid">
           <label>İsim Soyisim *<input id="customerName" required placeholder="Adınız Soyadınız"></label>
-          <label>Telefon *<input id="customerPhone" placeholder="05xx xxx xx xx" required></label>
-          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve isterseniz kısa notunuzu yazın."></textarea></label>
+          <label>Ara / Telefon *<input id="customerPhone" placeholder="05xx xxx xx xx" required></label>
+          <label>WhatsApp<input id="whatsappPhone" placeholder="05xx xxx xx xx"></label>
+          <label>Instagram<input id="instagram" placeholder="@kullaniciadi"></label>
+          <label class="full">Web Sitesi<input id="website" placeholder="https://..."></label>
+          <label class="full">Adres *<textarea id="address" required placeholder="Firma adresi"></textarea></label>
+          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve kısa tanıtım bilgisi"></textarea></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="step"><span class="num">2</span><div><h2>Kart Şablonu</h2><p class="help">Siparişinizde kullanılmasını istediğiniz tasarımı seçin.</p></div></div>
+        <div class="template-grid">
+          <label class="template-option">
+            <input type="radio" name="templateChoice" value="classic" data-name="Klasik" checked>
+            <div class="template-preview tpl-classic"><strong>Firma Adı</strong><small>Temiz · Klasik · Açık tema</small></div>
+            <div class="template-name"><span>Klasik</span><span>Standart</span></div>
+          </label>
+          <label class="template-option">
+            <input type="radio" name="templateChoice" value="vip" data-name="VIP Siyah Gold">
+            <div class="template-preview tpl-vip"><strong>VIP Firma</strong><small>Siyah · Gold · Premium</small></div>
+            <div class="template-name"><span>VIP Siyah Gold</span><span>Premium</span></div>
+          </label>
+          <label class="template-option">
+            <input type="radio" name="templateChoice" value="corporate" data-name="Kurumsal Mavi">
+            <div class="template-preview tpl-corporate"><strong>Kurumsal</strong><small>Mavi · Güven · Modern</small></div>
+            <div class="template-name"><span>Kurumsal Mavi</span><span>Modern</span></div>
+          </label>
+          <label class="template-option">
+            <input type="radio" name="templateChoice" value="minimal" data-name="Minimal Beyaz">
+            <div class="template-preview tpl-minimal"><strong>Minimal</strong><small>Sade · Beyaz · Zarif</small></div>
+            <div class="template-name"><span>Minimal Beyaz</span><span>Sade</span></div>
+          </label>
         </div>
       </section>
     </div>
@@ -86,8 +129,9 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="summary-row"><span>Ürün</span><b>Özel QR / NFC Kart</b></div>
         <div class="summary-row"><span>Müşteri</span><b id="sumCustomer">Henüz girilmedi</b></div>
         <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
+        <div class="summary-row"><span>Şablon</span><b id="sumTemplate">Klasik</b></div>
         <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
-        <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart detayları ve tasarım bilgileri sizinle ayrıca netleştirilir.</div>
+        <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve seçtiğiniz şablona göre hazırlanır.</div>
         <button id="submitBtn" class="submit" type="button">Siparişi Oluştur</button>
         <div class="privacy">Gönderdiğiniz bilgiler yalnızca siparişinizin hazırlanması ve sizinle iletişim kurulması amacıyla kullanılır.</div>
         <div id="formMsg" class="upload-msg" style="margin-top:10px"></div>
@@ -126,9 +170,13 @@ function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
 
 $("customerName").oninput=e=>$("sumCustomer").textContent=e.target.value.trim()||"Henüz girilmedi";
 $("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"Henüz girilmedi";
+document.querySelectorAll('input[name="templateChoice"]').forEach(r=>r.onchange=()=>{
+ const selected=document.querySelector('input[name="templateChoice"]:checked');
+ $("sumTemplate").textContent=selected?.dataset.name||"Klasik";
+});
 
 $("submitBtn").onclick=async()=>{
- const required=["customerName","customerPhone","businessInfo"];
+ const required=["customerName","customerPhone","address","businessInfo"];
  for(const id of required){
   if(!val(id)){
    document.getElementById(id).focus();
@@ -138,6 +186,10 @@ $("submitBtn").onclick=async()=>{
  }
  if(!validPhone(val("customerPhone"))){
   $("formMsg").textContent="Telefon numarasını kontrol edin.";
+  return;
+ }
+ if(val("whatsappPhone")&&!validPhone(val("whatsappPhone"))){
+  $("formMsg").textContent="WhatsApp numarasını kontrol edin.";
   return;
  }
 
@@ -152,12 +204,21 @@ $("submitBtn").onclick=async()=>{
   const businessName=(businessInfo.split(/\n|,|-/)[0]||"firma").trim();
   const cardId=slugify(businessName)+"-"+randomId().slice(0,8);
   const permanentUrl=new URL("customer-card.html?id="+encodeURIComponent(cardId),location.href).href;
+  const selectedTemplate=document.querySelector('input[name="templateChoice"]:checked');
+  const templateId=selectedTemplate?.value||"classic";
+  const templateName=selectedTemplate?.dataset.name||"Klasik";
+  const whatsapp=val("whatsappPhone")||val("customerPhone");
 
   const cardData={
    name:businessName,
    phone:val("customerPhone"),
-   whatsapp:val("customerPhone"),
+   whatsapp,
+   address:val("address"),
+   instagram:val("instagram"),
+   website:val("website"),
    description:businessInfo,
+   template:templateId,
+   templateName,
    showContact:true,
    showInfoRequest:true
   };
@@ -170,8 +231,14 @@ $("submitBtn").onclick=async()=>{
    source:"public_qr_order",
    customerName:val("customerName"),
    customerPhone:val("customerPhone"),
+   whatsappPhone:whatsapp,
+   address:val("address"),
+   instagram:val("instagram"),
+   website:val("website"),
    businessName,
    businessInfo,
+   templateId,
+   templateName,
    quantity:1,
    cardType:"qr_nfc",
    cardData,
