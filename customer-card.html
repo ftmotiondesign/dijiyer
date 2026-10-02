@@ -189,6 +189,15 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
   if(!CARD_ID)throw new Error("Kart bağlantısı eksik.");
   const s=await db.collection("customerCards").doc(CARD_ID).get(),d=s.data();
   if(!s.exists||!d||!d.name)throw new Error("Bu dijital kart henüz aktif değil.");
+  if(d.status==="inactive")throw new Error("Bu dijital kart şu anda pasif.");
+  if(d.targetUrl){
+    const target=ensureUrl(d.targetUrl);
+    if(target){
+      $("loading").textContent="Firma sayfası açılıyor...";
+      location.replace(target);
+      return;
+    }
+  }
 
   document.title=d.name+" | Dijital Kart";
   $("cardName").textContent=d.name;
