@@ -3208,7 +3208,7 @@ function getFilteredInstitutions() {
   return data;
 }
 
-const comparedInstitutionIds = new Set();
+const comparedInstitutionIds = compareInstitutionIds;
 
 function institutionCategoryText(inst){
   const [mainCategory,subCategory]=resolveTaxonomy(inst);
