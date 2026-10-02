@@ -112,8 +112,8 @@ textarea{min-height:90px;resize:vertical}
 
     <section class="card">
       <div class="step"><span class="step-num">1</span><div><h2>Firma Seç</h2><p class="helper">DijiyeSor'daki kayıtlı firmayı bulup tek tıkla forma aktar.</p></div></div>
-      <input id="search" class="search" placeholder="Firma adı, sektör, il veya ilçe ara...">
-      <div id="institutionList" class="list"><div class="row">Kurumlar yükleniyor...</div></div>
+      <input id="search" class="search" placeholder="Firma adı, sektör, il veya ilçe ara..." autocomplete="off">
+      <div id="institutionList" class="list hidden"><div class="row">Arama yapın...</div></div>
     </section>
 
     <section class="card">
@@ -299,7 +299,7 @@ function uploadOne(file,kind,msgId){
 }
 async function loadDemo(){const s=await db.collection("siteSettings").doc("home").get();fill((s.data()||{}).demoCard||{})}
 async function saveDemo(data=formData()){await db.collection("siteSettings").doc("home").set({demoCard:data},{merge:true});fill(data)}
-async function loadInstitutions(){const snap=await db.collection("institutions").limit(200).get();const arr=snap.docs.map(d=>({id:d.id,...d.data()}));window._inst=arr;renderInstitutions(arr)}
+async function loadInstitutions(){const snap=await db.collection("institutions").limit(200).get();const arr=snap.docs.map(d=>({id:d.id,...d.data()}));window._inst=arr;$("institutionList").classList.add("hidden");$("institutionList").innerHTML='<div class="row">Arama yapın...</div>'}
 function renderInstitutions(arr){
  const box=$("institutionList");
  if(!arr.length){box.innerHTML='<div class="row">Kayıtlı kurum bulunamadı.</div>';return}
@@ -347,7 +347,13 @@ $("previewBtn").onclick=$("previewTop").onclick=()=>window.open(DEMO_URL,"_blank
 $("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı";setTimeout(()=>$("copyUrl").textContent="Linki Kopyala",1400)};
 $("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas"),a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
 $("logoutTop").onclick=()=>auth.signOut();
-$("search").oninput=e=>{const q=e.target.value.toLocaleLowerCase("tr");renderInstitutions((window._inst||[]).filter(x=>JSON.stringify(x).toLocaleLowerCase("tr").includes(q)))};
+$("search").oninput=e=>{
+ const q=e.target.value.trim().toLocaleLowerCase("tr");
+ const box=$("institutionList");
+ if(q.length<2){box.classList.add("hidden");box.innerHTML='<div class="row">Arama yapın...</div>';return}
+ const results=(window._inst||[]).filter(x=>JSON.stringify(x).toLocaleLowerCase("tr").includes(q)).slice(0,20);
+ box.classList.remove("hidden");renderInstitutions(results);
+};
 $("name").addEventListener("input",e=>updateNames(e.target.value.trim()));
 auth.onAuthStateChanged(async user=>{
  if(user){
