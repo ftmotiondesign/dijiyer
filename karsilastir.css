@@ -1408,3 +1408,19 @@ body{
     text-overflow:clip;
   }
 }
+
+
+/* Dikkat çekici kısa kriter sütunu */
+.compare-table .compare-label{
+  font-weight:950;
+  color:#27415f;
+}
+.compare-table .compare-label:not(.compare-head){
+  background:#f4f8fd;
+}
+@media(max-width:820px){
+  .compare-table .compare-label{
+    font-size:7.6px;
+    letter-spacing:-.01em;
+  }
+}
