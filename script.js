@@ -1124,6 +1124,9 @@ function persistCompareInstitutionIds(){
       JSON.stringify([...compareInstitutionIds].slice(0,3))
     );
   }catch(_){}
+  try{
+    document.dispatchEvent(new CustomEvent('dijiyer:comparechange'));
+  }catch(_){}
 }
 
 /* =========================================================
@@ -3737,7 +3740,7 @@ function renderCompareBar() {
       <small>${selected.map(inst => escapeHtml(inst.short || inst.name)).join(' · ')}</small>
     </div>
     <div class="compare-bar-actions">
-      <button type="button" class="compare-clear-btn" id="compareClearBtn">İptal Et</button>
+      <button type="button" class="compare-clear-btn" id="compareClearBtn">Temizle</button>
       <button type="button" class="compare-open-btn" id="compareOpenBtn" ${selected.length < 2 ? 'disabled' : ''}>
         Karşılaştır ${selected.length > 1 ? '(' + selected.length + ')' : ''}
       </button>
