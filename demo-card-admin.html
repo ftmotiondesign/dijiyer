@@ -50,7 +50,15 @@ label{display:block;font-size:13px;font-weight:800;color:#344054}input,textarea,
 <label>Google Maps / Yol Tarifi<input id="maps" placeholder="https://maps.google.com/..."></label>
 <label>Google Yorum Linki<input id="review" placeholder="https://g.page/r/.../review"></label>
 <label class="full">Logo URL<input id="logo" placeholder="https://..."></label>
+<label class="full">Kapak Görseli URL<input id="cover" placeholder="https://..."></label>
+<label class="full">Kısa Slogan<input id="slogan" placeholder="Örn. Güvenle keşfet, kolayca ulaş."></label>
 <label class="full">Kısa Açıklama<textarea id="description"></textarea></label>
+<label>Çalışma Saatleri<input id="hours" placeholder="Örn. Pzt-Cmt 09:00-19:00"></label>
+<label>Hizmetler<input id="services" placeholder="Örn. B Sınıfı, A2, Direksiyon Eğitimi"></label>
+<label>Facebook<input id="facebook" placeholder="https://facebook.com/..."></label>
+<label>TikTok<input id="tiktok" placeholder="https://tiktok.com/@..."></label>
+<label>YouTube<input id="youtube" placeholder="https://youtube.com/..."></label>
+<label class="full">Galeri Görselleri<input id="gallery" placeholder="3 görsel URL'sini virgülle ayırın"></label>
 <label>Kampanya Linki<input id="campaign"></label>
 <label>Konum Videosu<input id="routeVideo"></label>
 <label>360° Tur Linki<input id="tour360"></label>
@@ -64,6 +72,8 @@ label{display:block;font-size:13px;font-weight:800;color:#344054}input,textarea,
 <label class="switch"><input id="showRoute" type="checkbox">Konum Videosu <b>Ücretli</b></label>
 <label class="switch"><input id="show360" type="checkbox">360° Mekan Turu <b>Ücretli</b></label>
 <label class="switch"><input id="showPromo" type="checkbox">Tanıtım Videosu <b>Ücretli</b></label>
+<label class="switch"><input id="showGallery" type="checkbox">Geniş Galeri <b>Ücretli</b></label>
+<label class="switch"><input id="showInfoRequest" type="checkbox">Bilgi Al Butonu <b>Ücretli</b></label>
 </div>
 <div class="actions"><button id="saveBtn" class="primary">Demo Sayfasını Güncelle</button><button id="previewBtn" class="secondary">Demo Sayfasını Aç</button></div>
 <div id="saveMsg" class="msg"></div>
@@ -95,8 +105,8 @@ const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomai
 const appFb=firebase.apps.find(a=>a.name==="demoCardAdmin")||firebase.initializeApp(firebaseConfig,"demoCardAdmin");
 const auth=appFb.auth(),db=appFb.firestore();
 const $=id=>document.getElementById(id);
-const fields=["name","category","phone","whatsapp","address","instagram","website","maps","review","logo","description","campaign","routeVideo","tour360","promoVideo"];
-const toggles=["showReview","showContact","showCampaign","showRoute","show360","showPromo"];
+const fields=["name","category","phone","whatsapp","address","instagram","website","maps","review","logo","cover","slogan","description","hours","services","facebook","tiktok","youtube","gallery","campaign","routeVideo","tour360","promoVideo"];
+const toggles=["showReview","showContact","showCampaign","showRoute","show360","showPromo","showGallery","showInfoRequest"];
 const DEMO_URL=new URL("demo-kart.html",location.href).href;
 $("demoUrl").textContent=DEMO_URL;
 new QRCode($("qrcode"),{text:DEMO_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
@@ -117,7 +127,7 @@ function renderInstitutions(arr){
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function useInstitution(x){
- fill({name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",description:x.description||x.about||"",campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:false,showCampaign:false,showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl});
+ fill({name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",cover:x.coverUrl||x.coverImage||"",slogan:x.slogan||"",description:x.description||x.about||"",hours:x.workingHours||x.hours||"",services:Array.isArray(x.services)?x.services.join(", "):(x.services||""),facebook:x.facebook||"",tiktok:x.tiktok||"",youtube:x.youtube||"",gallery:Array.isArray(x.gallery)?x.gallery.join(", "):(x.gallery||""),campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:false,showCampaign:false,showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl,showGallery:false,showInfoRequest:true});
  window.scrollTo({top:0,behavior:"smooth"}); $("saveMsg").textContent="Firma forma alındı. Kontrol edip Demo Sayfasını Güncelle'ye basın."; $("saveMsg").className="msg ok";
 }
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}}
