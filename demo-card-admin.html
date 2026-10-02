@@ -256,6 +256,28 @@ textarea{min-height:90px;resize:vertical}
         </div>
       </div>
     </div>
+
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+      <h3 style="margin-bottom:6px">Yeni Firma / Farklı Kaydet</h3>
+      <p class="helper">Aynı kart tasarımını başka firma için çoğalt. İstersen hazırladığın özel sayfa linkini hedef olarak yaz.</p>
+      <label style="margin-top:10px">Kart Kısa Kodu
+        <input id="customCardSlug" placeholder="Otomatik: firma-adindan-olusur">
+      </label>
+      <label style="margin-top:10px">Firma Sayfa Linki <span style="font-weight:500;color:#98a2b3">(isteğe bağlı)</span>
+        <input id="customTargetUrl" placeholder="https://...">
+      </label>
+      <div class="actions">
+        <button id="newFirmBtn" class="secondary">+ Yeni Firma</button>
+        <button id="saveAsNewCard" class="primary">Farklı Firma Olarak Kaydet</button>
+      </div>
+      <div id="newCardMsg" class="msg"></div>
+    </div>
+
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+      <div class="section-head" style="margin-bottom:8px"><h3>Oluşturulan QR Kartlar</h3><span id="cardCount" class="mini-badge">0</span></div>
+      <div id="customerCardsList" class="list" style="max-height:260px"><div class="row">Yükleniyor...</div></div>
+    </div>
+
     <p class="helper" style="margin-top:12px">Firma bilgilerini değiştirdikten sonra alttaki <b>Demo Sayfasını Güncelle</b> butonuna bas.</p>
   </aside>
 </main>
@@ -289,6 +311,32 @@ new QRCode($("qrcode"),{text:DEMO_URL,width:220,height:220,colorDark:"#111827",c
 function val(id){return $(id).value.trim()}
 function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"kart"}
 let CUSTOMER_URL="";
+function normalizeTargetUrl(v){const s=String(v||"").trim();if(!s)return "";return /^https?:\/\//i.test(s)?s:"https://"+s}
+function customerUrlFor(id){return new URL("customer-card.html?id="+encodeURIComponent(id),location.href).href}
+async function uniqueCardId(base){
+ let id=base||"kart",n=2;
+ while((await db.collection("customerCards").doc(id).get()).exists){id=base+"-"+n;n++}
+ return id;
+}
+function showCustomerQr(id,name){
+ CUSTOMER_URL=customerUrlFor(id);
+ $("customerCardName").textContent=name||id;
+ $("customerCardUrl").textContent=CUSTOMER_URL;
+ $("customerQr").innerHTML="";
+ new QRCode($("customerQr"),{text:CUSTOMER_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+ $("customerCardResult").classList.remove("hidden");
+}
+async function loadCustomerCards(){
+ const box=$("customerCardsList"); if(!box)return;
+ try{
+  const snap=await db.collection("customerCards").orderBy("updatedAt","desc").limit(50).get();
+  const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+  $("cardCount").textContent=rows.length;
+  if(!rows.length){box.innerHTML='<div class="row">Henüz kalıcı kart oluşturulmadı.</div>';return}
+  box.innerHTML=rows.map((x,i)=>'<div class="row"><div><b>'+esc(x.name||x.id)+'</b><small>'+esc(x.id)+(x.targetUrl?' · Özel link':' · Dijital kart')+'</small></div><button data-card="'+i+'">QR</button></div>').join("");
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];showCustomerQr(x.id,x.name);$("customCardSlug").value=x.id;$("customTargetUrl").value=x.targetUrl||""});
+ }catch(e){box.innerHTML='<div class="row">Kartlar yüklenemedi.</div>'}
+}
 function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=>o[k]=$(k).checked);o.updatedAt=new Date().toISOString();return o}
 function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k]);updateNames(d.name||"");renderUploads()}
 function updateNames(name){$("activeFirmName").textContent=name||"Henüz firma seçilmedi";$("sideFirmName").textContent=name||"-"}
@@ -394,21 +442,46 @@ $("createCustomerCard").onclick=async()=>{
   const ref=db.collection("customerCards").doc(id);
   const old=await ref.get();
   const now=new Date().toISOString();
-  const payload={...d,cardId:id,status:"active",updatedAt:now};
+  const payload={...d,cardId:id,status:"active",targetUrl:"",updatedAt:now};
   if(!old.exists)payload.createdAt=now;
   await ref.set(payload,{merge:true});
-  CUSTOMER_URL=new URL("customer-card.html?id="+encodeURIComponent(id),location.href).href;
-  $("customerCardName").textContent=d.name;
-  $("customerCardUrl").textContent=CUSTOMER_URL;
-  $("customerQr").innerHTML="";
-  new QRCode($("customerQr"),{text:CUSTOMER_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
-  $("customerCardResult").classList.remove("hidden");
+  showCustomerQr(id,d.name);
+  await loadCustomerCards();
   $("saveMsg").textContent="Müşteriye özel kalıcı kart oluşturuldu: "+d.name;
   $("saveMsg").className="msg ok";
  }catch(e){
   $("saveMsg").textContent="Kalıcı kart oluşturulamadı: "+e.message;
   $("saveMsg").className="msg err";
  }
+};
+
+$("newFirmBtn").onclick=()=>{
+ fill({showContact:true,showInfoRequest:true});
+ $("customCardSlug").value="";
+ $("customTargetUrl").value="";
+ $("newCardMsg").textContent="Yeni firma için form hazır. Firma bilgilerini girip Farklı Firma Olarak Kaydet'e bas.";
+ $("newCardMsg").className="msg ok";
+ window.scrollTo({top:0,behavior:"smooth"});
+};
+
+$("saveAsNewCard").onclick=async()=>{
+ const msg=$("newCardMsg");
+ try{
+  const d=formData();
+  if(!d.name)throw new Error("Önce firma adını girin.");
+  const typed=slugify($("customCardSlug").value||d.name);
+  const id=$("customCardSlug").value.trim()?typed:await uniqueCardId(typed);
+  const ref=db.collection("customerCards").doc(id);
+  if($("customCardSlug").value.trim() && (await ref.get()).exists)throw new Error("Bu kısa kod zaten kullanılıyor. Başka bir kısa kod yazın.");
+  const now=new Date().toISOString();
+  const targetUrl=normalizeTargetUrl($("customTargetUrl").value);
+  await ref.set({...d,cardId:id,status:"active",targetUrl,createdAt:now,updatedAt:now});
+  $("customCardSlug").value=id;
+  showCustomerQr(id,d.name);
+  await loadCustomerCards();
+  msg.textContent="Yeni firma kartı oluşturuldu. QR bu karta özeldir ve hedef linki sonradan değişse bile aynı QR kullanılabilir.";
+  msg.className="msg ok";
+ }catch(e){msg.textContent="Kaydedilemedi: "+e.message;msg.className="msg err"}
 };
 $("openCustomerCard").onclick=()=>{if(CUSTOMER_URL)window.open(CUSTOMER_URL,"_blank")};
 $("copyCustomerUrl").onclick=async()=>{if(!CUSTOMER_URL)return;await navigator.clipboard.writeText(CUSTOMER_URL);$("copyCustomerUrl").textContent="Kopyalandı";setTimeout(()=>$("copyCustomerUrl").textContent="Linki Kopyala",1400)};
