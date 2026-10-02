@@ -202,7 +202,17 @@ textarea{min-height:90px;resize:vertical}
           <div class="grid" style="margin-bottom:12px">
             <label>Kampanya Linki<input id="campaign" placeholder="https://..."></label>
             <label>Konum Videosu<input id="routeVideo" placeholder="https://..."></label>
-            <label>360° Tur Linki<input id="tour360" placeholder="https://..."></label>
+            <div class="full" style="border:1px solid var(--line);border-radius:14px;padding:13px;background:#fafcff">
+              <input id="tour360" type="hidden">
+              <div class="upload-title"><b>360° Video</b><span>MP4 / WEBM · 2:1 equirectangular önerilir</span></div>
+              <input id="tour360File" class="file-input" type="file" accept="video/mp4,video/webm,video/*">
+              <div class="upload-actions">
+                <button type="button" class="primary upload-btn" data-target="tour360File">360° Video Yükle</button>
+                <button type="button" id="remove360" class="danger">Sil</button>
+              </div>
+              <div id="tour360UploadMsg" class="upload-msg"></div>
+              <div id="tour360Status" class="field-note">Henüz 360° video yüklenmedi.</div>
+            </div>
             <label>Tanıtım Videosu<input id="promoVideo" placeholder="https://..."></label>
           </div>
           <div class="switches">
@@ -268,24 +278,27 @@ function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=
 function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k]);updateNames(d.name||"");renderUploads()}
 function updateNames(name){$("activeFirmName").textContent=name||"Henüz firma seçilmedi";$("sideFirmName").textContent=name||"-"}
 function renderUploads(){
- const logo=$("logo").value.trim(),cover=$("cover").value.trim(),gallery=$("gallery").value.split(",").map(x=>x.trim()).filter(Boolean);
+ const logo=$("logo").value.trim(),cover=$("cover").value.trim(),gallery=$("gallery").value.split(",").map(x=>x.trim()).filter(Boolean),tour360=$("tour360").value.trim();
  $("logoPreview").innerHTML=logo?'<img src="'+esc(logo)+'" alt="Logo">':'<span>Logo yok</span>';
  $("coverPreview").innerHTML=cover?'<img src="'+esc(cover)+'" alt="Kapak">':'<span>Kapak yok</span>';
  $("galleryPreview").innerHTML=gallery.length?gallery.slice(0,12).map(u=>'<img src="'+esc(u)+'" alt="Galeri">').join(""):'<span>Galeri boş</span>';
+ if($("tour360Status"))$("tour360Status").textContent=tour360?"360° video hazır ✓":"Henüz 360° video yüklenmedi.";
 }
-function uploadOne(file,kind,msgId){
+function uploadOne(file,kind,msgId,resourceType="image"){
  return new Promise((resolve,reject)=>{
   if(!file)return resolve("");
   if(!auth.currentUser)return reject(new Error("Oturum bulunamadı."));
-  if(!file.type.startsWith("image/"))return reject(new Error("Sadece görsel dosyası yükleyebilirsiniz."));
-  if(file.size>10*1024*1024)return reject(new Error("Görsel en fazla 10 MB olabilir."));
+  if(resourceType==="image"&&!file.type.startsWith("image/"))return reject(new Error("Sadece görsel dosyası yükleyebilirsiniz."));
+  if(resourceType==="video"&&!file.type.startsWith("video/"))return reject(new Error("Sadece video dosyası yükleyebilirsiniz."));
+  const maxSize=resourceType==="video"?100*1024*1024:10*1024*1024;
+  if(file.size>maxSize)return reject(new Error(resourceType==="video"?"Video en fazla 100 MB olabilir.":"Görsel en fazla 10 MB olabilir."));
   const msg=$(msgId);msg.textContent="Cloudinary'ye yükleniyor...";
   const fd=new FormData();
   fd.append("file",file);
   fd.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
   const xhr=new XMLHttpRequest();
-  xhr.open("POST","https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload",true);
-  xhr.timeout=20000;
+  xhr.open("POST","https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/"+resourceType+"/upload",true);
+  xhr.timeout=resourceType==="video"?120000:20000;
   xhr.onload=()=>{
    let data={};try{data=JSON.parse(xhr.responseText||"{}")}catch(e){}
    if(xhr.status>=200&&xhr.status<300&&data.secure_url){msg.textContent="Yüklendi ✓";resolve(data.secure_url)}
@@ -326,6 +339,17 @@ document.querySelectorAll(".acc-head").forEach(btn=>btn.onclick=()=>btn.closest(
 document.querySelectorAll(".upload-btn").forEach(btn=>btn.onclick=()=>$(btn.dataset.target).click());
 $("logoFile").onchange=async e=>{try{const url=await uploadOne(e.target.files[0],"logo","logoUploadMsg");if(url){$("logo").value=url;renderUploads();await saveDemo(formData());$("logoUploadMsg").textContent="Yüklendi ve kaydedildi ✓"}}catch(err){$("logoUploadMsg").textContent="Yüklenemedi: "+err.message}};
 $("coverFile").onchange=async e=>{try{const url=await uploadOne(e.target.files[0],"cover","coverUploadMsg");if(url){$("cover").value=url;renderUploads();await saveDemo(formData());$("coverUploadMsg").textContent="Yüklendi ve kaydedildi ✓"}}catch(err){$("coverUploadMsg").textContent="Yüklenemedi: "+err.message}};
+$("tour360File").onchange=async e=>{try{
+ const file=e.target.files[0];if(!file)return;
+ const url=await uploadOne(file,"tour360","tour360UploadMsg","video");
+ if(url){
+  $("tour360").value=url;
+  $("show360").checked=true;
+  renderUploads();
+  await saveDemo(formData());
+  $("tour360UploadMsg").textContent="360° video yüklendi ve demo karta kaydedildi ✓";
+ }
+}catch(err){$("tour360UploadMsg").textContent="Yüklenemedi: "+err.message}};
 $("galleryFiles").onchange=async e=>{try{
  const files=[...e.target.files].slice(0,12);if(!files.length)return;
  const msg=$("galleryUploadMsg");msg.textContent="0 / "+files.length+" yükleniyor...";
@@ -336,6 +360,7 @@ $("galleryFiles").onchange=async e=>{try{
 $("removeLogo").onclick=()=>{$("logo").value="";$("logoFile").value="";$("logoUploadMsg").textContent="Logo kaldırıldı.";renderUploads()};
 $("removeCover").onclick=()=>{$("cover").value="";$("coverFile").value="";$("coverUploadMsg").textContent="Kapak kaldırıldı.";renderUploads()};
 $("clearGallery").onclick=()=>{$("gallery").value="";$("galleryFiles").value="";$("galleryUploadMsg").textContent="Galeri temizlendi.";renderUploads()};
+$("remove360").onclick=async()=>{$("tour360").value="";$("tour360File").value="";$("show360").checked=false;$("tour360UploadMsg").textContent="360° video kaldırıldı.";renderUploads();try{await saveDemo(formData())}catch(e){}};
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
 $("saveBtn").onclick=async()=>{
  try{
