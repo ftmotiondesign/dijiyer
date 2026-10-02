@@ -25,7 +25,7 @@
         <p>Yönetim Paneli</p>
       </a>
 
-      <a href="index.html">Siteye Dön</a>
+      <a href="index.html">Siteyi Gör</a>
     </header>
 
 
@@ -159,39 +159,16 @@
 
         <div class="admin-dashboard-main">
 
-      <nav class="admin-main-nav" aria-label="Yönetim ana menüsü">
-        <a href="admin.html#genel-bakis" class="admin-main-nav-btn active" data-admin-main="overview">
-          <span>Ana Sayfa</span>
-        </a>
-        <a href="admin.html#teklifler" class="admin-main-nav-btn" data-admin-main="quotes">
-          <span>Teklifler</span>
-        </a>
-        <a href="admin.html#yanitsiz-teklifler" class="admin-main-nav-btn admin-main-nav-revenue" data-admin-main="unanswered">
-          <span class="admin-main-nav-revenue-copy">
-            <small>GELİR FIRSATI</small>
-            <strong>Yanıtsız Teklifler</strong>
-          </span>
-          <b id="quoteRoutingMainCount" class="admin-main-nav-revenue-count">0</b>
-        </a>
-        <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions">
-          <span>Kurumlar</span>
-        </a>
-        <a href="admin.html#ust-menu" class="admin-main-nav-btn" data-admin-main="categories">
-          <span>ÜST MENÜ</span>
-        </a>
-        <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business">
-          <span>İş &amp; Ticaret</span>
-        </a>
-        <a href="admin.html#destek" class="admin-main-nav-btn" data-admin-main="support">
-          <span>İletişim</span>
-        </a>
-        <a href="admin.html#sistem" class="admin-main-nav-btn" data-admin-main="system">
-          <span>Yönetim</span>
-        </a>
-        <a href="admin.html#sistem-hatalari" class="admin-main-nav-btn" data-admin-main="errors">
-          <span>Sistem Hataları</span>
-          <b id="systemErrorsMainCount" class="admin-main-nav-revenue-count">0</b>
-        </a>
+      <nav class="admin-main-nav admin-main-nav-simple" aria-label="Yönetim ana menüsü">
+        <a href="admin.html#genel-bakis" class="admin-main-nav-btn active" data-admin-main="overview"><span>⌂ Ana Sayfa</span></a>
+        <a href="admin.html#teklifler" class="admin-main-nav-btn" data-admin-main="quotes"><span>💬 Teklifler</span></a>
+        <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions"><span>🏢 Kurumlar</span></a>
+        <a href="admin.html#qr-kart-siparisleri" class="admin-main-nav-btn"><span>▣ QR / NFC Kart</span></a>
+        <a href="admin.html#reklam-merkezi" class="admin-main-nav-btn" data-admin-main="ads"><span>📣 Reklamlar</span></a>
+        <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business"><span>🤝 İş &amp; Ticaret</span></a>
+        <a href="admin.html#destek" class="admin-main-nav-btn" data-admin-main="support"><span>✉ Destek &amp; Duyurular</span></a>
+        <a href="admin.html#ust-menu" class="admin-main-nav-btn" data-admin-main="categories"><span>🧩 Site Yönetimi</span></a>
+        <a href="admin.html#sistem" class="admin-main-nav-btn" data-admin-main="system"><span>⚙ Ayarlar</span></a>
       </nav>
 
       <div class="admin-tabs admin-subtabs" id="adminSubtabs">
@@ -207,7 +184,7 @@
         <a href="admin.html#hesaplar" class="admin-tab" id="accountsTabBtn" data-admin-group="institutions">Hesaplar</a>
         <a href="admin.html#bulunamayan-aramalar" class="admin-tab" id="unmatchedSearchesTabBtn" data-admin-group="institutions">🔎 Bulunamayan Aramalar <span id="unmatchedSearchesTabCount" class="admin-tab-count">0</span></a>
 
-        <a href="admin.html#ust-menu" class="admin-tab" id="categoriesTabBtn" data-admin-group="categories">ÜST MENÜ</a>
+        <a href="admin.html#ust-menu" class="admin-tab" id="categoriesTabBtn" data-admin-group="categories">Site Yönetimi</a>
 
         <a href="admin.html#is-ticaret" class="admin-tab" id="businessOpportunitiesTabBtn" data-admin-group="business">🤝 İş &amp; Ticaret Fırsatları <span id="businessOpportunitiesTabCount" class="admin-tab-count">0</span></a>
 
@@ -221,10 +198,10 @@
         <a href="admin.html#reklam-takvimi" class="admin-tab" id="adCalendarTabBtn" data-admin-group="ads">🗓️ Reklam Takvimi <span id="adCalendarTabCount" class="admin-tab-count">0</span></a>
         <a href="admin.html#gelir-raporu" class="admin-tab" id="adRevenueTabBtn" data-admin-group="ads">₺ Gelir Raporu</a>
 
-        <a href="admin.html#destek" class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek <span id="adminSupportTabCount" class="admin-tab-count">0</span></a>
+        <a href="admin.html#destek" class="admin-tab" id="supportTabBtn" data-admin-group="support">Destek Talepleri <span id="adminSupportTabCount" class="admin-tab-count">0</span></a>
         <a href="admin.html#duyurular" class="admin-tab" id="announcementsTabBtn" data-admin-group="support">Duyurular</a>
 
-        <a href="admin.html#sistem" class="admin-tab" id="systemTabBtn" data-admin-group="system">Sistem</a>
+        <a href="admin.html#sistem" class="admin-tab" id="systemTabBtn" data-admin-group="system">Ayarlar</a>
         <a href="admin.html#sistem-hatalari" class="admin-tab" id="clientErrorsTabBtn" data-admin-group="errors">Sistem Hataları <span id="clientErrorsTabCount" class="admin-tab-count">0</span></a>
       </div>
 
@@ -343,8 +320,8 @@
       <section id="overviewSection">
         <div class="section-title overview-title-row">
           <div>
-            <h3>Genel Bakış</h3>
-            <p>Dijiyer'de şu anda neler oluyor? Önemli rakamlar ve işlem bekleyen konular.</p>
+            <h3>Bugünün Yönetim Özeti</h3>
+            <p>Önce işlem bekleyen konulara bakın; ayrıntılı ayarlar ilgili bölümlerde tutulur.</p>
           </div>
           <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
         </div>
@@ -352,9 +329,9 @@
         <section class="admin-today-board">
           <div class="admin-today-head">
             <div>
-              <span>BUGÜN YAPILACAKLAR</span>
-              <h4>Önce bunlara bakın</h4>
-              <p>Teklif, kurum, reklam ve destek tarafında işlem bekleyen konular tek yerde.</p>
+              <span>ÖNCELİKLİ İŞLER</span>
+              <h4>Bugün ilgilenmeniz gerekenler</h4>
+              <p>Teklif, kurum, QR siparişi, reklam ve destek tarafındaki bekleyen işlemler.</p>
             </div>
             <div class="admin-today-head-side">
               <strong id="adminTodayTaskCount">0</strong>
@@ -388,86 +365,6 @@
             <small>İncelenmesi gereken bildirimler</small>
           </article>
         </div>
-
-        <section class="overview-visibility-control" id="dailyStatsVisibilityCard">
-          <div class="overview-visibility-copy">
-            <span class="overview-visibility-icon">📊</span>
-            <div>
-              <strong>“Bugün Dijiyer’de” Günlük İstatistikleri</strong>
-              <small>Mobil ana sayfadaki günlük teklif istatistik alanını göster veya gizle. Pasifken veriler birikmeye devam eder.</small>
-            </div>
-          </div>
-
-          <div class="overview-visibility-actions">
-            <button type="button" class="overview-section-edit-btn" data-home-section-edit="dailyStats">Düzenle</button>
-            <span class="overview-visibility-state passive" id="dailyStatsVisibilityState">Pasif · Gizli</span>
-            <label class="overview-visibility-switch">
-              <input type="checkbox" id="dailyStatsVisibilityToggle">
-              <span aria-hidden="true"></span>
-              <b>Aktif / Pasif</b>
-            </label>
-          </div>
-        </section>
-
-        <section class="overview-visibility-control" id="bottomQuoteVisibilityCard">
-          <div class="overview-visibility-copy">
-            <span class="overview-visibility-icon">🏷️</span>
-            <div>
-              <strong>Ana Sayfa Alt Teklif / İşletme Alanı</strong>
-              <small>Ana sayfanın altındaki teklif verme / işletme ekleme bölümünü göster veya gizle.</small>
-            </div>
-          </div>
-
-          <div class="overview-visibility-actions">
-            <button type="button" class="overview-section-edit-btn" data-home-section-edit="bottomQuote">Düzenle</button>
-            <span class="overview-visibility-state active" id="bottomQuoteVisibilityState">Aktif · Görünüyor</span>
-            <label class="overview-visibility-switch">
-              <input type="checkbox" id="bottomQuoteVisibilityToggle" checked>
-              <span aria-hidden="true"></span>
-              <b>Aktif / Pasif</b>
-            </label>
-          </div>
-        </section>
-
-        <section class="overview-visibility-control" id="earningsVisibilityCard">
-          <div class="overview-visibility-copy">
-            <span class="overview-visibility-icon">₺</span>
-            <div>
-              <strong>Dijiyer Kazanç</strong>
-              <small>Ana sayfanın altındaki Dijiyer Kazanç pilot bölümünü göster veya gizle.</small>
-            </div>
-          </div>
-
-          <div class="overview-visibility-actions">
-            <button type="button" class="overview-section-edit-btn" data-home-section-edit="earnings">Düzenle</button>
-            <span class="overview-visibility-state passive" id="earningsVisibilityState">Pasif · Gizli</span>
-            <label class="overview-visibility-switch">
-              <input type="checkbox" id="earningsVisibilityToggle">
-              <span aria-hidden="true"></span>
-              <b>Aktif / Pasif</b>
-            </label>
-          </div>
-        </section>
-
-        <section class="overview-visibility-control" id="homeFooterVisibilityCard">
-          <div class="overview-visibility-copy">
-            <span class="overview-visibility-icon">🧩</span>
-            <div>
-              <strong>Yerel İşletmeler ve Müşteriler Alt Bölümü</strong>
-              <small>“Yerel işletmeler ve müşteriler tek yerde” yazan ana sayfa alt bölümünü göster veya gizle.</small>
-            </div>
-          </div>
-
-          <div class="overview-visibility-actions">
-            <button type="button" class="overview-section-edit-btn" data-home-section-edit="homeFooter">Düzenle</button>
-            <span class="overview-visibility-state passive" id="homeFooterVisibilityState">Pasif · Gizli</span>
-            <label class="overview-visibility-switch">
-              <input type="checkbox" id="homeFooterVisibilityToggle">
-              <span aria-hidden="true"></span>
-              <b>Aktif / Pasif</b>
-            </label>
-          </div>
-        </section>
 
 
 
@@ -558,8 +455,8 @@
       <section id="categoriesSection" class="categories-admin-section top-menu-admin-page" hidden>
         <div class="section-title categories-admin-title top-menu-admin-title">
           <div>
-            <span class="categories-admin-eyebrow">ANA SAYFA ÜST MENÜ YÖNETİMİ</span>
-            <h3>ÜST MENÜ</h3>
+            <span class="categories-admin-eyebrow">SİTE MENÜ VE KATEGORİ YÖNETİMİ</span>
+            <h3>Site Yönetimi</h3>
             <p>Ana sayfanın üst menüsündeki sayfaları tek yerden aktif / pasif yönetin. Sektör ve alt kategori yönetimi de aynı sayfanın altında kalır.</p>
           </div>
           <div class="categories-admin-title-actions">
@@ -2475,9 +2372,102 @@
 
       <section id="systemSection" hidden>
         <div class="section-title">
-          <h3>Sistem Kontrolü ve Yönetim Araçları</h3>
-          <p>Eksik kayıtları, bağlantı sorunlarını ve yönetim ayarlarını tek yerden kontrol edin.</p>
+          <h3>Ayarlar ve Sistem</h3>
+          <p>Site görünürlüğü, yönetim ayarları ve sistem kontrollerini tek yerden yönetin.</p>
         </div>
+
+        <section class="advanced-card" style="margin-bottom:16px">
+          <div class="advanced-card-head">
+            <div>
+              <h4>Ana Sayfa Görünürlük Ayarları</h4>
+              <p>Günlük kullanımda ihtiyaç olmayan site görünürlük ayarları burada toplandı.</p>
+            </div>
+          </div>
+          
+
+        <section class="overview-visibility-control" id="dailyStatsVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">📊</span>
+            <div>
+              <strong>“Bugün Dijiyer’de” Günlük İstatistikleri</strong>
+              <small>Mobil ana sayfadaki günlük teklif istatistik alanını göster veya gizle. Pasifken veriler birikmeye devam eder.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="dailyStats">Düzenle</button>
+            <span class="overview-visibility-state passive" id="dailyStatsVisibilityState">Pasif · Gizli</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="dailyStatsVisibilityToggle">
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+
+
+        <section class="overview-visibility-control" id="bottomQuoteVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">🏷️</span>
+            <div>
+              <strong>Ana Sayfa Alt Teklif / İşletme Alanı</strong>
+              <small>Ana sayfanın altındaki teklif verme / işletme ekleme bölümünü göster veya gizle.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="bottomQuote">Düzenle</button>
+            <span class="overview-visibility-state active" id="bottomQuoteVisibilityState">Aktif · Görünüyor</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="bottomQuoteVisibilityToggle" checked>
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+
+
+        <section class="overview-visibility-control" id="earningsVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">₺</span>
+            <div>
+              <strong>Dijiyer Kazanç</strong>
+              <small>Ana sayfanın altındaki Dijiyer Kazanç pilot bölümünü göster veya gizle.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="earnings">Düzenle</button>
+            <span class="overview-visibility-state passive" id="earningsVisibilityState">Pasif · Gizli</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="earningsVisibilityToggle">
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+
+
+        <section class="overview-visibility-control" id="homeFooterVisibilityCard">
+          <div class="overview-visibility-copy">
+            <span class="overview-visibility-icon">🧩</span>
+            <div>
+              <strong>Yerel İşletmeler ve Müşteriler Alt Bölümü</strong>
+              <small>“Yerel işletmeler ve müşteriler tek yerde” yazan ana sayfa alt bölümünü göster veya gizle.</small>
+            </div>
+          </div>
+
+          <div class="overview-visibility-actions">
+            <button type="button" class="overview-section-edit-btn" data-home-section-edit="homeFooter">Düzenle</button>
+            <span class="overview-visibility-state passive" id="homeFooterVisibilityState">Pasif · Gizli</span>
+            <label class="overview-visibility-switch">
+              <input type="checkbox" id="homeFooterVisibilityToggle">
+              <span aria-hidden="true"></span>
+              <b>Aktif / Pasif</b>
+            </label>
+          </div>
+        </section>
+        </section>
 
         <div class="system-kpi-grid">
           <article><span>Kritik Sorun</span><strong id="systemCriticalCount">0</strong></article>
