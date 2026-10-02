@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>DijiyeSor İşletme Kartı</title>
+<link rel="icon" type="image/png" href="assets/brand/diji-favicon.png">
+<style>
+:root{--b:#1677ff;--text:#172033;--muted:#667085;--line:#e1e7ef;--bg:#f5f7fb}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:680px;margin:auto;padding:18px}.brand{display:flex;align-items:center;justify-content:space-between;margin:4px 0 16px}.brand-left{display:flex;align-items:center;gap:10px;font-weight:900}.mark{width:40px;height:40px;border-radius:13px;background:var(--b);color:#fff;display:grid;place-items:center;font-size:23px}.demo{font-size:11px;font-weight:900;background:#fff1d6;color:#9a6700;padding:7px 9px;border-radius:999px}
+.card{background:#fff;border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 18px 50px rgba(30,50,90,.08)}
+.hero{padding:26px;text-align:center;background:linear-gradient(180deg,#eef5ff,#fff)}.logo{width:92px;height:92px;border-radius:22px;background:#fff;border:1px solid var(--line);object-fit:contain;padding:8px;display:none;margin:0 auto 14px}.hero h1{margin:0;font-size:28px}.cat{display:inline-block;margin-top:8px;background:#eef4ff;color:#155db8;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:800}.desc{color:var(--muted);line-height:1.55;margin:14px auto 0;max-width:520px}
+.actions{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:11px}.a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff;font-weight:800}.a span{font-size:20px}.a.primary{background:var(--b);color:#fff;border-color:var(--b)}.a.premium{background:#fffaf0;border-color:#f3d9a4}.tag{margin-left:auto;font-size:9px;background:#fef0c7;color:#93370d;padding:4px 6px;border-radius:999px}.info{padding:0 20px 22px}.info div{padding:12px 0;border-top:1px solid #edf1f5}.info small{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:3px}.footer{text-align:center;color:#98a2b3;font-size:12px;padding:18px}
+.empty{padding:50px 24px;text-align:center}.hidden{display:none!important}
+@media(max-width:520px){.wrap{padding:10px}.actions{grid-template-columns:1fr}.hero h1{font-size:24px}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand"><div class="brand-left"><span class="mark">D</span>DijiyeSor</div><span class="demo">ÖRNEK İŞLETME KARTI</span></div>
+<section id="card" class="card hidden">
+<div class="hero"><img id="logo" class="logo"><h1 id="name"></h1><div id="category" class="cat"></div><p id="description" class="desc"></p></div>
+<div id="actions" class="actions"></div>
+<div class="info"><div id="addressWrap"><small>ADRES</small><span id="address"></span></div><div id="phoneWrap"><small>TELEFON</small><span id="phone"></span></div></div>
+</section>
+<section id="loading" class="card empty">Demo firma bilgisi yükleniyor...</section>
+<div class="footer">DijiyeSor · Keşfet · İncele · Karşılaştır</div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+const app=firebase.apps.find(a=>a.name==="demoCardPublic")||firebase.initializeApp(firebaseConfig,"demoCardPublic"),db=app.firestore(),$=id=>document.getElementById(id);
+function cleanPhone(s){return String(s||"").replace(/\D/g,"")} function add(label,icon,url,cls="",premium=false){if(!url)return;const a=document.createElement("a");a.className="a "+cls;a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML="<span>"+icon+"</span><b>"+label+"</b>"+(premium?'<i class="tag">ÖZEL</i>':"");$("actions").appendChild(a)}
+function wa(v){let p=cleanPhone(v);if(p.startsWith("0"))p="90"+p.slice(1);return p?"https://wa.me/"+p:""}
+function tel(v){const p=cleanPhone(v);return p?"tel:+"+(p.startsWith("90")?p:"90"+p.replace(/^0/,"")):""}
+function vcard(d){const text=["BEGIN:VCARD","VERSION:3.0","FN:"+d.name,"ORG:"+d.name,"TEL;TYPE=CELL:"+d.phone,"ADR;TYPE=WORK:;;"+d.address,"URL:"+d.website,"END:VCARD"].join("\n");return "data:text/vcard;charset=utf-8,"+encodeURIComponent(text)}
+(async()=>{try{const s=await db.collection("siteSettings").doc("home").get(),d=(s.data()||{}).demoCard;if(!d||!d.name)throw new Error("Demo firma henüz seçilmedi.");
+$("name").textContent=d.name;$("category").textContent=d.category||"İşletme";$("description").textContent=d.description||"";$("address").textContent=d.address||"-";$("phone").textContent=d.phone||"-";
+if(d.logo){$("logo").src=d.logo;$("logo").style.display="block"}
+add("Ara","☎",tel(d.phone),"primary");add("WhatsApp","💬",wa(d.whatsapp||d.phone),"primary");add("Yol Tarifi","📍",d.maps);add("Instagram","◎",d.instagram);add("Web Sitesi","🌐",d.website);
+if(d.showReview)add("Google Yorum Yap","★",d.review,"premium",true);
+if(d.showContact)add("Rehbere Kaydet","👤",vcard(d),"premium",true);
+if(d.showCampaign)add("Kampanyayı Gör","🎁",d.campaign,"premium",true);
+if(d.showRoute)add("Konum Videosu","▶",d.routeVideo,"premium",true);
+if(d.show360)add("360° Mekanı Gez","360°",d.tour360,"premium",true);
+if(d.showPromo)add("Tanıtım Videosu","🎬",d.promoVideo,"premium",true);
+$("loading").classList.add("hidden");$("card").classList.remove("hidden");document.title=d.name+" | DijiyeSor";
+}catch(e){$("loading").textContent=e.message}})();
+</script></body></html>
