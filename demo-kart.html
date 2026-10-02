@@ -123,6 +123,9 @@ const db=app.firestore(),$=id=>document.getElementById(id);
 function digits(v){return String(v||"").replace(/\D/g,"")}
 function telHref(v){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"tel:+"+p:""}
 function waHref(v,name){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"https://wa.me/"+p+"?text="+encodeURIComponent("Merhaba "+(name||"")+", bilgi almak istiyorum."):""}
+function instagramHref(v){const s=String(v||"").trim();if(!s)return "";if(/^https?:\/\//i.test(s))return s;return "https://instagram.com/"+s.replace(/^@/,"")}
+function mapsHref(d){if(d.maps)return d.maps;if(d.address)return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+" "+d.address);return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name||"")}
+function reviewHref(d){if(d.review)return d.review;return "https://www.google.com/search?q="+encodeURIComponent((d.name||"")+" Google yorumlar")}
 function addQuick(cls,icon,label,sub,url){if(!url)return;const a=document.createElement("a");a.className=cls||"";a.href=url;a.target=url.startsWith("tel:")?"_self":"_blank";a.rel="noopener";a.innerHTML='<div class="ico">'+icon+'</div><div class="quick-copy"><span class="quick-label">'+label+'</span><span class="quick-sub">'+sub+'</span></div>'; $("quickActions").appendChild(a)}
 function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
 function escV(v){return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;")}
@@ -150,12 +153,13 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
 
   addQuick("call","☎","Ara","Telefonla hemen ulaşın",telHref(d.phone));
   addQuick("wa","💬","WhatsApp","Mesaj gönderin",waHref(d.whatsapp||d.phone,d.name));
-  addQuick("loc","📍","Konum","Yol tarifini açın",d.maps);
-  addQuick("ig","◎","Instagram","Sosyal medya hesabını açın",d.instagram);
+  const mapUrl=mapsHref(d),igUrl=instagramHref(d.instagram),reviewUrl=reviewHref(d);
+  addQuick("loc","📍","Konum","Yol tarifini açın",mapUrl);
+  addQuick("ig","◎","Instagram","Sosyal medya hesabını açın",igUrl);
   addQuick("web","🌐","Web Sitesi","Firma web sitesini inceleyin",d.website);
-  if(d.showReview)addQuick("review","★","Google Yorum","Yorum bırakın",d.review);
+  addQuick("review","★","Google Yorum","Yorumları açın",reviewUrl);
 
-  if(d.showReview)addPaid("★","Google Yorum Yap","Google işletme profilinde değerlendirme bırakın.",d.review);
+  if(d.showReview&&d.review)addPaid("★","Google Yorum Yap","Google işletme profilinde değerlendirme bırakın.",d.review);
   if(d.showCampaign)addPaid("🎁","Kampanyayı Gör","Güncel fırsat ve kampanyaları inceleyin.",d.campaign);
   if(d.showRoute)addPaid("▶","Konum Videosu","İşletmeye sanal yol tarifi videosunu izleyin.",d.routeVideo);
   if(d.show360)addPaid("360°","360° Mekanı Gez","Mekanı sanal tur ile içeriden keşfedin.",d.tour360);
