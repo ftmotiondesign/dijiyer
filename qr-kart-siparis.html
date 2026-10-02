@@ -34,7 +34,9 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .template-option:hover{border-color:#9fc2f8;transform:translateY(-1px)}
 .template-option input{position:absolute;opacity:0;pointer-events:none}
 .template-option:has(input:checked){border-color:var(--b);box-shadow:0 0 0 3px #1677ff13;background:#f8fbff}
-.template-preview{height:84px;border-radius:12px;margin-bottom:9px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.template-preview{height:84px;border-radius:12px;margin-bottom:9px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
+.template-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.price-badge{display:inline-flex;align-items:center;margin-top:7px;padding:4px 7px;border-radius:999px;background:#eef4ff;color:#155db8;font-size:10px;font-weight:900}
 .template-preview strong{font-size:12px}.template-preview small{font-size:9px;opacity:.82}
 .tpl-classic{background:linear-gradient(135deg,#fff,#eef5ff);color:#174a85;border:1px solid #d5e5f8}
 .tpl-vip{background:linear-gradient(135deg,#111827,#2a2114);color:#f7d98b;border:1px solid #6e5b2c}
@@ -109,15 +111,15 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="product-grid">
           <label class="product-option">
             <input type="checkbox" name="productCategory" value="qr_nfc_card" data-name="QR & NFC Kart" checked>
-            <span><b>QR & NFC Kart</b><small>Dijital iletişim ve yönlendirme kartı</small></span>
+            <span><b>QR & NFC Kart</b><small>Dijital iletişim ve yönlendirme kartı</small><span class="price-badge" id="priceQr">499 TL</span></span>
           </label>
           <label class="product-option">
             <input type="checkbox" name="productCategory" value="google_review_card" data-name="Google Yorum Kartı">
-            <span><b>Google Yorum Kartı</b><small>Tek dokunuşla Google yorum sayfasını açar</small></span>
+            <span><b>Google Yorum Kartı</b><small>Tek dokunuşla Google yorum sayfasını açar</small><span class="price-badge" id="priceReview">349 TL</span></span>
           </label>
           <label class="product-option">
             <input type="checkbox" name="productCategory" value="business_menu" data-name="İşletme Menü">
-            <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small></span>
+            <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small><span class="price-badge" id="priceMenu">599 TL</span></span>
           </label>
         </div>
         <div id="giftPromo" class="gift-promo">
@@ -183,22 +185,22 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="template-grid">
           <label class="template-option">
             <input type="radio" name="reviewTemplateChoice" value="google_clean" data-name="Google Temiz" checked>
-            <div class="template-preview tpl-review-white"><strong>Google Yorum</strong><small>Temiz · Beyaz · Kurumsal</small></div>
+            <div class="template-preview tpl-review-white" data-template-preview="review_google_clean"><strong>Google Yorum</strong><small>Temiz · Beyaz · Kurumsal</small></div>
             <div class="template-name"><span>Google Temiz</span><span>Popüler</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="reviewTemplateChoice" value="google_green" data-name="Yeşil Yorum">
-            <div class="template-preview tpl-review-green"><strong>5★ Yorum</strong><small>Canlı · Dikkat çekici</small></div>
+            <div class="template-preview tpl-review-green" data-template-preview="review_google_green"><strong>5★ Yorum</strong><small>Canlı · Dikkat çekici</small></div>
             <div class="template-name"><span>Yeşil Yorum</span><span>Canlı</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="reviewTemplateChoice" value="review_gold" data-name="Siyah Gold Yorum">
-            <div class="template-preview tpl-review-gold"><strong>Değerlendir</strong><small>Siyah · Gold · Premium</small></div>
+            <div class="template-preview tpl-review-gold" data-template-preview="review_review_gold"><strong>Değerlendir</strong><small>Siyah · Gold · Premium</small></div>
             <div class="template-name"><span>Siyah Gold</span><span>Premium</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="reviewTemplateChoice" value="review_custom" data-name="Özel Baskılı Yorum">
-            <div class="template-preview tpl-custom"><strong>Özel Yorum Kartı</strong><small>Markanıza özel tasarım</small></div>
+            <div class="template-preview tpl-custom" data-template-preview="review_review_custom"><strong>Özel Yorum Kartı</strong><small>Markanıza özel tasarım</small></div>
             <div class="template-name"><span>Özel Baskılı</span><span>Özel Tasarım</span></div>
           </label>
         </div>
@@ -209,22 +211,22 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="template-grid">
           <label class="template-option">
             <input type="radio" name="menuTemplateChoice" value="menu_clean" data-name="Modern Beyaz Menü" checked>
-            <div class="template-preview tpl-menu-clean"><strong>MENÜ</strong><small>Temiz · Modern · Açık</small></div>
+            <div class="template-preview tpl-menu-clean" data-template-preview="menu_menu_clean"><strong>MENÜ</strong><small>Temiz · Modern · Açık</small></div>
             <div class="template-name"><span>Modern Beyaz</span><span>Sade</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="menuTemplateChoice" value="menu_dark" data-name="Siyah Menü">
-            <div class="template-preview tpl-menu-dark"><strong>MENÜ</strong><small>Koyu · Şık · Premium</small></div>
+            <div class="template-preview tpl-menu-dark" data-template-preview="menu_menu_dark"><strong>MENÜ</strong><small>Koyu · Şık · Premium</small></div>
             <div class="template-name"><span>Siyah Menü</span><span>Premium</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="menuTemplateChoice" value="menu_warm" data-name="Sıcak Turuncu Menü">
-            <div class="template-preview tpl-menu-warm"><strong>LEZZET MENÜSÜ</strong><small>Sıcak · Canlı · Restoran</small></div>
+            <div class="template-preview tpl-menu-warm" data-template-preview="menu_menu_warm"><strong>LEZZET MENÜSÜ</strong><small>Sıcak · Canlı · Restoran</small></div>
             <div class="template-name"><span>Sıcak Turuncu</span><span>Restoran</span></div>
           </label>
           <label class="template-option">
             <input type="radio" name="menuTemplateChoice" value="menu_custom" data-name="Özel Baskılı Menü">
-            <div class="template-preview tpl-custom"><strong>ÖZEL MENÜ</strong><small>Markanıza özel tasarım</small></div>
+            <div class="template-preview tpl-custom" data-template-preview="menu_menu_custom"><strong>ÖZEL MENÜ</strong><small>Markanıza özel tasarım</small></div>
             <div class="template-name"><span>Özel Baskılı</span><span>Özel Tasarım</span></div>
           </label>
         </div>
@@ -239,6 +241,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
         <div class="summary-row"><span>Ürünler</span><b id="sumProducts">QR & NFC Kart</b></div>
         <div class="summary-row"><span>Şablonlar</span><b id="sumTemplate">QR & NFC: Klasik</b></div>
+        <div class="summary-row"><span>Toplam</span><b id="sumTotal">499 TL</b></div>
         <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
         <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve seçtiğiniz şablona göre hazırlanır.</div>
         <button id="submitBtn" class="submit" type="button">Siparişi Oluştur</button>
@@ -269,6 +272,46 @@ const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomai
 const app=firebase.apps.find(a=>a.name==="qrOrder")||firebase.initializeApp(firebaseConfig,"qrOrder");
 const db=app.firestore(),$=id=>document.getElementById(id);
 let logo="",cover="",gallery=[];
+const ORDER_SETTINGS_DEFAULT={
+ prices:{qr:499,review:349,menu:599,vipAddon:100,customAddon:200},
+ templateImages:{}
+};
+let ORDER_SETTINGS=JSON.parse(JSON.stringify(ORDER_SETTINGS_DEFAULT));
+function money(v){return new Intl.NumberFormat("tr-TR",{maximumFractionDigits:0}).format(Number(v)||0)+" TL"}
+function templateAddon(id){
+ if(["vip","review_gold","menu_dark"].includes(id))return Number(ORDER_SETTINGS.prices.vipAddon)||0;
+ if(["custom_print","review_custom","menu_custom"].includes(id))return Number(ORDER_SETTINGS.prices.customAddon)||0;
+ return 0;
+}
+function currentTotal(){
+ const p=selectedProducts(),t=selectedTemplateData();
+ let total=0;
+ if(p.some(x=>x.id==="qr_nfc_card")) total+=(Number(ORDER_SETTINGS.prices.qr)||0)+templateAddon(t.qr.id);
+ if(p.some(x=>x.id==="google_review_card")) total+=(Number(ORDER_SETTINGS.prices.review)||0)+templateAddon(t.review.id);
+ if(p.some(x=>x.id==="business_menu")) total+=(Number(ORDER_SETTINGS.prices.menu)||0)+templateAddon(t.menu.id);
+ return total;
+}
+function applyOrderSettings(){
+ if($("priceQr"))$("priceQr").textContent=money(ORDER_SETTINGS.prices.qr);
+ if($("priceReview"))$("priceReview").textContent=money(ORDER_SETTINGS.prices.review);
+ if($("priceMenu"))$("priceMenu").textContent=money(ORDER_SETTINGS.prices.menu);
+ document.querySelectorAll("[data-template-preview]").forEach(el=>{
+   const url=ORDER_SETTINGS.templateImages?.[el.dataset.templatePreview];
+   if(url){el.innerHTML='<img src="'+url.replace(/"/g,"&quot;")+'" alt="Şablon önizleme">'}
+ });
+ if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
+}
+async function loadOrderSettings(){
+ try{
+  const s=await db.collection("siteSettings").doc("home").get();
+  const x=(s.data()||{}).qrOrderSettings||{};
+  ORDER_SETTINGS={
+    prices:{...ORDER_SETTINGS_DEFAULT.prices,...(x.prices||{})},
+    templateImages:{...(x.templateImages||{})}
+  };
+ }catch(e){}
+ applyOrderSettings();
+}
 
 function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b=>b.toString(36).padStart(2,"0")).join("").slice(0,10)}
 function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,45)||"kart"}
@@ -298,6 +341,7 @@ function updateTemplateSummary(){
  if(p.some(x=>x.id==="google_review_card"))parts.push("Google Yorum: "+t.review.name);
  if(p.some(x=>x.id==="business_menu"))parts.push("Menü: "+t.menu.name);
  $("sumTemplate").textContent=parts.length?parts.join(" · "):"-";
+ if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
 }
 function updateProductSummary(){
  const p=selectedProducts();
@@ -412,6 +456,8 @@ $("submitBtn").onclick=async()=>{
    },
    productCategories:products.map(x=>x.id),
    productCategoryNames:products.map(x=>x.name),
+   totalPrice:currentTotal(),
+   priceSnapshot:{...ORDER_SETTINGS.prices},
    quantity:1,
    cardType:"qr_nfc",
    cardData,
