@@ -64,6 +64,13 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 .action .icon{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;background:#f0eff7;font-size:20px}
 .action .text{min-width:0;flex:1}.action b{display:block;font-size:14px}.action span{display:block;margin-top:4px;color:var(--text);font-size:11px;line-height:1.35}.action .arrow{font-size:20px;color:#b5b6be}
 .premium-chip{display:inline-block;margin-top:5px;background:#fff3d6;color:#995f00;padding:3px 6px;border-radius:999px;font-size:9px;font-weight:900}
+.viewer360{margin-top:16px;padding:12px;border:1px solid #e6e8ef;border-radius:18px;background:#fff}
+.viewer360-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.viewer360-head b{font-size:14px}
+.viewer360-head button{border:0;background:#f1f5f9;color:#334155;border-radius:10px;padding:7px 10px;font-weight:800;cursor:pointer}
+.viewer360-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#0f172a}
+.viewer360-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.viewer360-note{margin-top:8px;color:#7b8090;font-size:10px;line-height:1.45;text-align:center}
 .gallery-section{margin-top:18px}.gallery-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.gallery-head b{font-size:14px}.gallery-head span{font-size:10px;color:var(--muted);font-weight:800}.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.gallery-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc}
 .info{margin-top:17px;padding:15px;border-radius:17px;background:#f7f7fa;color:var(--text);font-size:12px;line-height:1.65}.info strong{display:block;color:var(--dark);font-size:13px;margin-bottom:4px}
 .qr-block{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;margin-top:14px;padding:14px;border-radius:17px;background:#f7f7fa}
@@ -96,6 +103,12 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 
     <div id="paidTitle" class="section-title hidden">ÖZEL ÖZELLİKLER</div>
     <div id="paidActions" class="actions"></div>
+
+    <div id="viewer360" class="viewer360 hidden">
+      <div class="viewer360-head"><b>360° Mekan Videosu</b><button id="close360" type="button">Kapat</button></div>
+      <div class="viewer360-frame"><iframe id="viewer360Frame" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen title="360 derece mekan videosu"></iframe></div>
+      <div class="viewer360-note">Videoyu oynatın, ardından görüntüyü parmağınızla veya mouse ile sürükleyerek etrafa bakın.</div>
+    </div>
 
     <div id="gallerySection" class="gallery-section hidden">
       <div class="gallery-head"><b>Galeri</b><span>FOTOĞRAFLAR</span></div>
@@ -134,11 +147,33 @@ function digits(v){return String(v||"").replace(/\D/g,"")}
 function telHref(v){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"tel:+"+p:""}
 function waHref(v,name){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"https://wa.me/"+p+"?text="+encodeURIComponent("Merhaba "+(name||"")+", bilgi almak istiyorum."):""}
 function ensureUrl(v){const s=String(v||"").trim();if(!s)return "";if(/^https?:\/\//i.test(s))return s;return "https://"+s.replace(/^\/+/, "")}
+function youtubeId(v){
+ const s=String(v||"").trim();if(!s)return "";
+ try{
+  const u=new URL(ensureUrl(s));
+  if(u.hostname.includes("youtu.be"))return u.pathname.split("/").filter(Boolean)[0]||"";
+  if(u.hostname.includes("youtube.com")){
+   if(u.pathname.startsWith("/watch"))return u.searchParams.get("v")||"";
+   if(u.pathname.startsWith("/embed/"))return u.pathname.split("/embed/")[1]?.split("/")[0]||"";
+   if(u.pathname.startsWith("/shorts/"))return u.pathname.split("/shorts/")[1]?.split("/")[0]||"";
+  }
+ }catch(e){}
+ return "";
+}
 function instagramHref(v){const s=String(v||"").trim();if(!s)return "";if(/^https?:\/\//i.test(s))return s;return "https://instagram.com/"+s.replace(/^@/,"")}
 function mapsHref(d){if(d.maps)return d.maps;if(d.address)return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+" "+d.address);return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name||"")}
 function reviewHref(d){if(d.review)return d.review;return "https://www.google.com/search?q="+encodeURIComponent((d.name||"")+" Google yorumlar")}
 function addQuick(cls,icon,label,sub,url){if(!url)return;const a=document.createElement("a");a.className=cls||"";a.href=url;a.target=url.startsWith("tel:")?"_self":"_blank";a.rel="noopener";a.innerHTML='<div class="ico">'+icon+'</div><div class="quick-copy"><span class="quick-label">'+label+'</span><span class="quick-sub">'+sub+'</span></div>'; $("quickActions").appendChild(a)}
 function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
+function add360Action(url){
+ if(!url)return;
+ const id=youtubeId(url);
+ if(!id){addPaid("360°","360° Mekanı Gez","Mekanı sanal tur ile içeriden keşfedin.",ensureUrl(url));return}
+ const a=document.createElement("a");
+ a.className="action";a.href="#";a.innerHTML='<div class="icon">360°</div><div class="text"><b>360° Mekanı Gez</b><span>Sayfadan çıkmadan 360° videoyu açın ve etrafı sürükleyerek keşfedin.</span><em class="premium-chip">ÖZEL ÖZELLİK</em></div><div class="arrow">›</div>';
+ a.onclick=e=>{e.preventDefault();const box=$("viewer360"),fr=$("viewer360Frame");fr.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id)+"?rel=0&playsinline=1";box.classList.remove("hidden");setTimeout(()=>box.scrollIntoView({behavior:"smooth",block:"center"}),30)};
+ $("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden");
+}
 function escV(v){return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;")}
 function vcardText(d){return ["BEGIN:VCARD","VERSION:3.0","FN:"+escV(d.name),"ORG:"+escV(d.name),"TEL;TYPE=WORK,VOICE:"+escV(d.phone),"TEL;TYPE=CELL:"+escV(d.whatsapp||d.phone),"EMAIL;TYPE=WORK:"+escV(d.emailContact),"ADR;TYPE=WORK:;;"+escV(d.address),"URL:"+escV(d.website),"NOTE:"+escV("DijiyeSor dijital kart"),"END:VCARD"].join("\r\n")}
 function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:location.href,width:100,height:100,correctLevel:QRCode.CorrectLevel.M})}
@@ -173,7 +208,7 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
   if(d.showReview&&d.review)addPaid("★","Google Yorum Yap","Google işletme profilinde değerlendirme bırakın.",d.review);
   if(d.showCampaign)addPaid("🎁","Kampanyayı Gör","Güncel fırsat ve kampanyaları inceleyin.",ensureUrl(d.campaign));
   if(d.showRoute)addPaid("▶","Konum Videosu","İşletmeye sanal yol tarifi videosunu izleyin.",ensureUrl(d.routeVideo));
-  if(d.show360)addPaid("360°","360° Mekanı Gez","Mekanı sanal tur ile içeriden keşfedin.",ensureUrl(d.tour360));
+  if(d.show360)add360Action(d.tour360);
   if(d.showPromo)addPaid("🎬","Tanıtım Videosu","İşletmenin tanıtım videosunu izleyin.",ensureUrl(d.promoVideo));
   if(d.showInfoRequest){const link=waHref(d.whatsapp||d.phone,d.name);addPaid("✉","Bilgi Al","WhatsApp üzerinden hızlı bilgi isteyin.",link)}
 
@@ -186,6 +221,7 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
     }
   }
 
+  $("close360").onclick=()=>{$("viewer360Frame").src="";$("viewer360").classList.add("hidden")};
   renderQr();
   $("saveContact").onclick=()=>{
     const blob=new Blob([vcardText(d)],{type:"text/vcard;charset=utf-8"});
