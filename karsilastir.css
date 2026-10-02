@@ -1280,3 +1280,20 @@ body{
   .compare-search-results{grid-template-columns:1fr}
 }
 /* === END DIJIYER COMPARE PAGE REDESIGN V2 === */
+
+/* Mobil karşılaştırma: doğrudan seçilen kurumlarla başla */
+@media(max-width:820px){
+  body.compare-page .compare-page-hero,
+  body.compare-page .compare-howto,
+  body.compare-page .compare-picker{
+    display:none!important;
+  }
+
+  body.compare-page .compare-page-main{
+    padding-top:10px!important;
+  }
+
+  body.compare-page .compare-page-summary{
+    margin-top:0!important;
+  }
+}
