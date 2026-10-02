@@ -250,12 +250,13 @@ textarea{min-height:90px;resize:vertical}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
 const appFb=firebase.apps.find(a=>a.name==="demoCardAdmin")||firebase.initializeApp(firebaseConfig,"demoCardAdmin");
-const auth=appFb.auth(),db=appFb.firestore(),storage=appFb.storage(),$=id=>document.getElementById(id);
+const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);
+const CLOUDINARY_CLOUD_NAME="okefpzsy";
+const CLOUDINARY_UPLOAD_PRESET="dijiyer_upload";
 const fields=["name","category","phone","whatsapp","emailContact","address","instagram","website","maps","review","logo","cover","slogan","description","hours","services","facebook","tiktok","youtube","gallery","campaign","routeVideo","tour360","promoVideo"];
 const toggles=["showReview","showContact","showCampaign","showRoute","show360","showPromo","showGallery","showInfoRequest"];
 const DEMO_URL=new URL("demo-kart.html",location.href).href;
@@ -272,15 +273,20 @@ function renderUploads(){
  $("coverPreview").innerHTML=cover?'<img src="'+esc(cover)+'" alt="Kapak">':'<span>Kapak yok</span>';
  $("galleryPreview").innerHTML=gallery.length?gallery.slice(0,12).map(u=>'<img src="'+esc(u)+'" alt="Galeri">').join(""):'<span>Galeri boş</span>';
 }
-function safeFileName(name){return String(name||"gorsel").toLowerCase().replace(/[^a-z0-9._-]+/g,"-").replace(/-+/g,"-")}
 async function uploadOne(file,kind,msgId){
  if(!file)return "";
- const user=auth.currentUser;if(!user)throw new Error("Oturum bulunamadı.");
+ if(!auth.currentUser)throw new Error("Oturum bulunamadı.");
+ if(!file.type.startsWith("image/"))throw new Error("Sadece görsel dosyası yükleyebilirsiniz.");
+ if(file.size>10*1024*1024)throw new Error("Görsel en fazla 10 MB olabilir.");
  const msg=$(msgId);msg.textContent="Yükleniyor...";
- const path="demo-card/"+user.uid+"/"+Date.now()+"-"+kind+"-"+safeFileName(file.name);
- const snap=await storage.ref(path).put(file);
- const url=await snap.ref.getDownloadURL();
- msg.textContent="Yüklendi ✓";return url;
+ const fd=new FormData();
+ fd.append("file",file);
+ fd.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+ fd.append("folder","dijiyer/demo-card/"+kind);
+ const res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload",{method:"POST",body:fd});
+ const data=await res.json();
+ if(!res.ok||!data.secure_url)throw new Error(data?.error?.message||"Cloudinary yükleme başarısız.");
+ msg.textContent="Yüklendi ✓";return data.secure_url;
 }
 async function loadDemo(){const s=await db.collection("siteSettings").doc("home").get();fill((s.data()||{}).demoCard||{})}
 async function saveDemo(data=formData()){await db.collection("siteSettings").doc("home").set({demoCard:data},{merge:true});fill(data)}
