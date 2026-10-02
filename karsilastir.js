@@ -39,6 +39,20 @@ function persistPreferredLocation(city,district){
 
 function loadIds(){
   try{
+    const params=new URLSearchParams(location.search);
+    const queryIds=String(params.get("ids")||"")
+      .split(",")
+      .map(id=>id.trim())
+      .filter(Boolean)
+      .slice(0,3);
+
+    if(queryIds.length){
+      try{
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(queryIds));
+      }catch(_){}
+      return queryIds;
+    }
+
     const ids=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
     return Array.isArray(ids)?ids.map(String).filter(Boolean).slice(0,3):[];
   }catch(_){
