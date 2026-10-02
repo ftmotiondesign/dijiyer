@@ -832,10 +832,7 @@ function renderMobileSubcategories(mainKey) {
         data-mobile-main="${mainKey}"
       >${label}</button>
     `;
-  }).join('') +
-    '<button type="button" class="mobile-subcategory-btn mobile-subcategory-missing" data-mobile-subcategory-missing="' +
-    mainKey +
-    '"><span class="missing-service-icon" aria-hidden="true">✦</span><span class="missing-service-copy"><strong>Aradığın hizmeti bulamadın mı?</strong><small>Hizmeti yaz, sana uygun kurumları bulalım.</small></span><span class="missing-service-action">Hizmeti Yaz <span aria-hidden="true">→</span></span></button>';
+  }).join('');
 
   root.querySelectorAll('[data-mobile-subcategory]').forEach(button => {
     button.addEventListener('click', () => {
