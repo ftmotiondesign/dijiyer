@@ -11,7 +11,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Dijiyer - Kurum Paneli</title>
-  <link rel="stylesheet" href="institution.css?v=48">
+  <link rel="stylesheet" href="institution.css?v=49">
   <link rel="stylesheet" href="institution-announcements.css?v=3">
   <link rel="stylesheet" href="offers.css?v=3">
   <link rel="stylesheet" href="institution-appointments.css?v=1">
@@ -238,6 +238,14 @@
               <small>Performans ve ziyaretler</small>
             </span>
           </button>
+
+          <button type="button" class="side-nav-item" data-panel-tab="qr">
+            <span class="side-nav-icon">▣</span>
+            <span class="side-nav-copy">
+              <strong>QR / NFC Kartım</strong>
+              <small>Kart oluştur ve sipariş ver</small>
+            </span>
+          </button>
         </div>
 
         <div class="side-nav-group">
@@ -297,6 +305,7 @@
       <button class="panel-tab" data-panel-tab="verify">✓ Teklif Doğrula</button>
       <button class="panel-tab" data-panel-tab="showcase">◎ Tanıtım Hizmetleri</button>
       <button class="panel-tab" data-panel-tab="stats">📊 Detaylı İstatistik</button>
+      <button class="panel-tab" data-panel-tab="qr">▣ QR / NFC Kartım</button>
       <button class="panel-tab" data-panel-tab="support">
         🛟 Destek <span class="tab-count support-tab-count" id="supportTabCount">0</span>
       </button>
@@ -1245,6 +1254,21 @@
     </section>
 
 
+    <section class="panel-view institution-qr-view" data-panel-view="qr">
+      <section class="institution-qr-hero">
+        <div>
+          <span class="eyebrow">QR / NFC AKILLI KART</span>
+          <h2>Müşteri bilgilerini yaz, QR kodunu oluştur.</h2>
+          <p>Firma bilgilerin otomatik gelir. İletişim bilgilerini kontrol et, kart siparişini oluştur; sistem sana özel kalıcı QR adresini ve karekodu üretir.</p>
+        </div>
+        <a id="institutionQrFullPage" class="institution-qr-open" href="qr-kart-siparis.html" target="_blank" rel="noopener">Tam Sayfa Aç ↗</a>
+      </section>
+
+      <section class="institution-qr-frame-card">
+        <iframe id="institutionQrOrderFrame" title="QR NFC Kart Oluştur ve Sipariş Ver" src="qr-kart-siparis.html"></iframe>
+      </section>
+    </section>
+
     <section class="panel-view" data-panel-view="stats">
       <div class="section-intro">
         <div>
@@ -1655,6 +1679,7 @@
         <button type="button" class="mobile-showcase-btn" data-panel-tab="showcase">◎ <span>Tanıtım Hizmetleri</span><b>YENİ</b></button>
         <button type="button" data-panel-tab="profile">✎ <span>Kurum Bilgileri</span></button>
         <button type="button" data-panel-tab="stats">▥ <span>İstatistikler</span></button>
+        <button type="button" data-panel-tab="qr">▣ <span>QR / NFC Kartım</span></button>
         <button type="button" data-panel-tab="announcements">📣 <span>Duyurular</span></button>
         <button type="button" data-panel-tab="support">? <span>Destek</span></button>
         <button type="button" data-panel-tab="account">⚙ <span>Hesap</span></button>
@@ -1681,8 +1706,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="institution.js?v=28"></script>
-  <script src="institution-layout.js?v=3"></script>
+  <script src="institution.js?v=29"></script>
+  <script src="institution-layout.js?v=4"></script>
   <script src="institution-offers.js?v=51"></script>
   <script src="institution-communication.js?v=13"></script>
   <script src="institution-announcements.js?v=2"></script>
