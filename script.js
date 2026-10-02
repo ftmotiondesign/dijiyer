@@ -9266,7 +9266,7 @@ syncCustomCategoryTaxonomyFromSettings();
 
 
 
-// Dijiyer mobil uygulama görünümü V1
+// Dijiyer mobil uygulama görünümü V2
 (function initMobileAppShell(){
   const isMobile=()=>window.matchMedia('(max-width:820px)').matches;
 
@@ -9281,41 +9281,15 @@ syncCustomCategoryTaxonomyFromSettings();
     document.getElementById('locationBtn')?.click();
   });
 
-  const openInstitutionMenu=()=>{
-    const addBtn=document.getElementById('institutionAddBtn');
-    const actionBtn=document.getElementById('institutionActionsBtn');
-    if(actionBtn){
-      actionBtn.click();
+  const openInstitutionAccess=()=>{
+    if(!isMobile())return;
+    const current=new URL(window.location.href);
+    if((current.pathname.split('/').pop()||'index.html').toLowerCase()==='index.html'){
+      document.getElementById('institutionLoginBtn')?.click();
       return;
     }
-    addBtn?.click();
+    window.location.href='index.html?kurumgiris=1';
   };
 
-  document.getElementById('mobileTopInstitutionBtn')?.addEventListener('click',openInstitutionMenu);
-  document.getElementById('mobileInstitutionNavBtn')?.addEventListener('click',()=>{
-    document.querySelectorAll('#mobileAppNav [data-mobile-nav]').forEach(x=>x.classList.remove('active'));
-    document.getElementById('mobileInstitutionNavBtn')?.classList.add('active');
-    openInstitutionMenu();
-  });
-
-  document.querySelector('#mobileAppNav [data-mobile-nav="explore"]')?.addEventListener('click',()=>{
-    document.querySelectorAll('#mobileAppNav [data-mobile-nav]').forEach(x=>x.classList.remove('active'));
-    document.querySelector('#mobileAppNav [data-mobile-nav="explore"]')?.classList.add('active');
-    setTimeout(()=>document.getElementById('resultsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),20);
-  });
-
-  const syncMobileNav=()=>{
-    if(!isMobile())return;
-    const nav=document.getElementById('mobileAppNav');
-    if(!nav)return;
-    const explore=document.getElementById('resultsSection');
-    const exploreTop=explore?.getBoundingClientRect().top ?? 9999;
-    const exploreActive=exploreTop < window.innerHeight*.55;
-    nav.querySelectorAll('[data-mobile-nav]').forEach(x=>x.classList.remove('active'));
-    nav.querySelector('[data-mobile-nav="'+(exploreActive?'explore':'home')+'"]')?.classList.add('active');
-  };
-
-  window.addEventListener('scroll',syncMobileNav,{passive:true});
-  window.addEventListener('resize',syncMobileNav);
-  syncMobileNav();
-})();
+  document.getElementById('mobileTopInstitutionBtn')?.addEventListener('click',openInstitutionAccess);
+})();;
