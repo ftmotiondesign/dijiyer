@@ -1310,5 +1310,46 @@
   })();
   </script>
 <script src="page-banner.js?v=2"></script>
-  </body>
+  
+  <nav class="mobile-app-nav opportunities-mobile-nav" id="mobileAppNav" aria-label="Mobil ana menü">
+    <a href="index.html" data-mobile-nav="home">
+      <span>⌂</span><small>Ana Sayfa</small>
+    </a>
+    <a href="index.html#kesfetSection" data-mobile-nav="explore">
+      <span>⌕</span><small>Keşfet</small>
+    </a>
+    <a href="teklif-al.html" data-mobile-nav="quote" class="mobile-nav-primary">
+      <span>＋</span><small>Bilgi Al</small>
+    </a>
+    <a href="firsatlar.html" data-mobile-nav="opportunity" class="active" aria-current="page">
+      <span>✦</span><small>Fırsatlar</small>
+    </a>
+    <a href="index.html?kurumgiris=1" data-mobile-nav="institution">
+      <span>🏢</span><small>Kurum</small>
+    </a>
+  </nav>
+
+
+  <style>
+    @media(max-width:900px){
+      body{padding-bottom:86px!important}
+      .opportunities-mobile-nav{
+        position:fixed!important;
+        left:8px!important;
+        right:8px!important;
+        bottom:8px!important;
+        z-index:99999!important;
+        height:64px!important;
+        display:grid!important;
+        grid-template-columns:repeat(5,minmax(0,1fr))!important;
+        padding:5px!important;
+        border:1px solid rgba(211,222,236,.96)!important;
+        border-radius:20px!important;
+        background:rgba(255,255,255,.98)!important;
+        box-shadow:0 12px 36px rgba(21,43,73,.18)!important;
+      }
+    }
+  </style>
+
+</body>
 </html>
