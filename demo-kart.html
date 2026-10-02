@@ -61,6 +61,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 .action .icon{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;background:#f0eff7;font-size:20px}
 .action .text{min-width:0;flex:1}.action b{display:block;font-size:14px}.action span{display:block;margin-top:4px;color:var(--text);font-size:11px;line-height:1.35}.action .arrow{font-size:20px;color:#b5b6be}
 .premium-chip{display:inline-block;margin-top:5px;background:#fff3d6;color:#995f00;padding:3px 6px;border-radius:999px;font-size:9px;font-weight:900}
+.gallery-section{margin-top:18px}.gallery-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.gallery-head b{font-size:14px}.gallery-head span{font-size:10px;color:var(--muted);font-weight:800}.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.gallery-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc}
 .info{margin-top:17px;padding:15px;border-radius:17px;background:#f7f7fa;color:var(--text);font-size:12px;line-height:1.65}.info strong{display:block;color:var(--dark);font-size:13px;margin-bottom:4px}
 .qr-block{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;margin-top:14px;padding:14px;border-radius:17px;background:#f7f7fa}
 #qrCode{width:112px;height:112px;background:#fff;border-radius:12px;padding:6px;display:grid;place-items:center}
@@ -90,6 +91,11 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 
     <div id="paidTitle" class="section-title hidden">ÖZEL ÖZELLİKLER</div>
     <div id="paidActions" class="actions"></div>
+
+    <div id="gallerySection" class="gallery-section hidden">
+      <div class="gallery-head"><b>Galeri</b><span>FOTOĞRAFLAR</span></div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </div>
 
     <div id="infoBox" class="info hidden">
       <strong id="infoName"></strong>
@@ -165,6 +171,15 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
   if(d.show360)addPaid("360°","360° Mekanı Gez","Mekanı sanal tur ile içeriden keşfedin.",d.tour360);
   if(d.showPromo)addPaid("🎬","Tanıtım Videosu","İşletmenin tanıtım videosunu izleyin.",d.promoVideo);
   if(d.showInfoRequest){const link=waHref(d.whatsapp||d.phone,d.name);addPaid("✉","Bilgi Al","WhatsApp üzerinden hızlı bilgi isteyin.",link)}
+
+  if(d.gallery){
+    const urls=String(d.gallery).split(",").map(x=>x.trim()).filter(Boolean).slice(0,12);
+    if(urls.length){
+      $("galleryGrid").innerHTML="";
+      urls.forEach(u=>{const img=document.createElement("img");img.src=u;img.loading="lazy";img.alt=d.name+" galeri görseli";$("galleryGrid").appendChild(img)});
+      $("gallerySection").classList.remove("hidden");
+    }
+  }
 
   renderQr();
   $("saveContact").onclick=()=>{
