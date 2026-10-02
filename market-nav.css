@@ -682,3 +682,27 @@
     font:850 11px/1.2 Inter,Arial,sans-serif;
   }
 }
+
+
+/* 2026-10 ana sayfa üst bölüm hizalama düzeltmesi */
+@media(min-width:821px){
+  body.home-page > header.topbar,
+  body.home-page > header.dijiyer-legacy-topbar{
+    display:none!important;
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body.home-page .dijiyer-global-topbar + .dijiyer-global-market-nav{
+    position:relative!important;
+    top:auto!important;
+    margin-top:0!important;
+  }
+
+  body.home-page .unified-page-banner-shell.home{
+    display:none!important;
+  }
+}
