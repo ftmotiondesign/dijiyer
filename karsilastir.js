@@ -624,44 +624,22 @@ function renderTable(){
     return '<strong>'+esc(value(programs.length?programs:(inst.classes||categoryLabel(inst))))+'</strong>';
   };
 
-  const educationMode=institutions.length ? isEducationSector(institutions[0]) : false;
-
-  let rowsHtml=
-    row("Hizmetler / Programlar",program);
-
-  if(educationMode){
-    rowsHtml+=
-      row("Sınıf Mevcudu",inst=>'<strong>'+esc(value(inst.classSize))+'</strong>')+
-      row("Deneme Sınavı",inst=>'<strong>'+esc(value(inst.trialExam))+'</strong>')+
-      row("Rehberlik / Koçluk",inst=>'<strong>'+esc(value(inst.guidance))+'</strong>')+
-      row("Etüt Desteği",inst=>'<strong>'+esc(value(inst.studySupport))+'</strong>');
-  }
-
-  rowsHtml+=
-    row("Öne Çıkan Özellikler",inst=>'<span>'+esc(value(listValue(inst.highlights)))+'</span>')+
-    row("Fiyat Seviyesi / Aralığı",inst=>'<strong>'+esc(value(inst.priceLevel,"Fiyat için görüşün"))+'</strong>')+
-    row("Taksit / Ödeme",inst=>'<strong>'+esc(value(inst.installment))+'</strong>')+
-    row("Güncel Kampanya",inst=>sponsoredCampaignHtml(inst))+
-    row("Puan",inst=>'<strong>⭐ '+Number(inst.rating||0).toFixed(1)+'</strong><small>'+Number(inst.reviewCount||0)+' değerlendirme</small>')+
-    row("Tavsiye",inst=>{
+  const rowsHtml=
+    row("⭐ Puan",inst=>'<strong>⭐ '+Number(inst.rating||0).toFixed(1)+'</strong><small>'+Number(inst.reviewCount||0)+' değerlendirme</small>')+
+    row("📍 Konum",inst=>'<strong>'+esc(value(locationText(inst)))+'</strong><small>'+esc(value(inst.address,""))+'</small>')+
+    row("✓ Hizmet",program)+
+    row("₺ Fiyat",inst=>'<strong>'+esc(value(inst.priceLevel,"Fiyat için görüşün"))+'</strong>')+
+    row("🎯 Kampanya",inst=>sponsoredCampaignHtml(inst))+
+    row("👍 Tavsiye",inst=>{
       const count=Number(inst.recommendationCount||0);
       const rate=Number(inst.recommendationRate);
       return count>0&&Number.isFinite(rate)
         ? '<span class="yes">👍 %'+Math.round(rate)+'</span><small>'+Number(inst.recommendationYes||0)+' kişi tavsiye etti</small>'
         : '<span>Henüz veri yok</span>';
-    })+
-    row("Konum",inst=>'<strong>📍 '+esc(value(locationText(inst)))+'</strong><small>'+esc(value(inst.address,""))+'</small>')+
-    row("Çalışma Saatleri",inst=>'<strong>'+esc(value(inst.weekdayHours))+'</strong>')+
-    row("Tanıtım İçeriği",inst=>{
-      const items=[];
-      if(inst.video||inst.videoUrl||inst.profileVideoUrl||inst.locationVideoUrl)items.push("▶ Videolu profil");
-      if(inst.virtualTourUrl||inst.tour360Url||inst.tourUrl)items.push("360° tur");
-      return '<span>'+esc(value(items,"Standart profil"))+'</span>';
-    })+
-    row("Bilgi / Fiyat",inst=>inst.offer!==false?'<span class="yes">✓ Talep gönderilebilir</span>':'<span>Kapalı</span>');
+    });
 
   root.innerHTML=
-    '<div class="compare-cell compare-head compare-label"><strong>Kriter</strong><small>'+esc(institutions.length?categoryLabel(institutions[0]):"Kurum bilgileri")+'</small></div>'+
+    '<div class="compare-cell compare-head compare-label"><strong>Kriter</strong><small>Öne çıkan 6 bilgi</small></div>'+
     institutions.map(headCell).join("")+
     rowsHtml;
 
