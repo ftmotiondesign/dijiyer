@@ -23675,3 +23675,34 @@ body.standalone-quote-page .missing-service-floating-btn .tracking-floating-labe
     bottom:158px!important;
   }
 }
+
+
+/* MOBILE COMPARISON CLEAN START */
+@media (max-width: 820px){
+  /* Mobilde karşılaştırma açıldığında üst açıklama alanını kaldır;
+     ekran doğrudan seçilen kurumların karşılaştırma tablosundan başlasın. */
+  .institution-comparison-modal{
+    padding:0;
+    place-items:stretch;
+    background:#fff;
+    backdrop-filter:none;
+  }
+
+  .institution-comparison-card{
+    width:100%;
+    max-height:100dvh;
+    min-height:100dvh;
+    padding:0 10px 16px;
+    border-radius:0;
+    box-shadow:none;
+  }
+
+  .comparison-modal-head{
+    display:none;
+  }
+
+  .comparison-table-wrap{
+    margin-top:0;
+    padding-top:8px;
+  }
+}
