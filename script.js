@@ -3758,7 +3758,7 @@ function renderCompareBar() {
       return;
     }
     persistCompareInstitutionIds();
-    window.location.href='karsilastir.html';
+    openInstitutionCompareModal();
   });
 }
 
