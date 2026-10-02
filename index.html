@@ -48,13 +48,13 @@
   </script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=101" />
+  <link rel="stylesheet" href="style.css?v=102" />
   <link rel="stylesheet" href="offers.css?v=3" />
   <link rel="stylesheet" href="market-nav.css?v=12">
   <script src="market-nav.js?v=15" defer></script>
   <link rel="stylesheet" href="page-banner.css?v=2">
 </head>
-<body class="home-page compare-disabled">
+<body class="home-page compare-disabled focused-home">
   <header class="topbar">
     <a class="brand" href="index.html" aria-label="Dijiyer ana sayfası" title="Ana sayfaya dön">
       <div class="brand-pin">D</div>
@@ -150,42 +150,32 @@
       </div>
     </div>
   </header>
-  <nav class="desktop-market-nav" aria-label="Dijiyer ana menü">
+  <nav class="desktop-market-nav focused-main-nav" aria-label="DijiyeSor ana menü">
     <div class="desktop-market-nav-inner">
-      <a href="#resultsSection" class="active">Kurumlar</a>
+      <a href="#kesfetSection" class="active">Keşfet</a>
       <a href="teklif-al.html">Bilgi Al</a>
-      <a href="teklif.html?taleplerim=1" class="nav-all-requests-link">📋 Tüm Taleplerim</a>
       <a href="randevu.html">Randevu Al</a>
-      <a href="https://ftmotiondesign.github.io/dijiyer/qr-kart-siparis.html">QR Kart</a>
-      <a href="is-firsatlari.html">İş Fırsatları</a>
-      <a href="ticaret-firsatlari.html">İş &amp; Ticaret</a>
-      <a href="bayi-servis.html">Bayi &amp; Servis</a>
-      <a href="firsatlar.html">Keşfet / Fırsat</a>
-      <button type="button" data-advertise-home>Reklam Ver</button>
+      <a href="firsatlar.html">Kampanyalar</a>
     </div>
   </nav>
 
   <section class="home-hero">
     <div class="home-hero-inner">
       <div class="home-hero-copy">
-        <span class="home-hero-kicker">DİJİYER · YEREL HİZMET VE İŞLETME PLATFORMU</span>
-        <h1>Aradığın her hizmet,<br>tek yerde.</h1>
+        <span class="home-hero-kicker">DİJİYESOR · YAKININDAKİ KURUMLARI KEŞFET</span>
+        <h1>Ne arıyorsun?<br>Diji’ye sor.</h1>
         <p>
-          Yakınındaki işletmeleri ve hizmetleri keşfet; bilgilerini incele, bilgi al, randevu oluştur ve sana uygun olanı seç.
+          Yakınındaki kurumları keşfet, hizmetlerini incele, bilgi al ve istersen randevunu oluştur.
         </p>
 
-        <div class="home-hero-actions">
-          <button type="button" class="hero-primary-btn" id="heroQuoteBtn">
-            Kurumları Keşfet
-          </button>
-          <a href="#resultsSection" class="hero-appointment-btn">🔎 Kurumları İncele</a>
-          <button type="button" class="hero-secondary-btn" id="heroInstitutionBtn">
-            Kurumunu Ekle
-          </button>
+        <div class="home-hero-actions focused-hero-actions">
+          <button type="button" class="hero-primary-btn" id="heroQuoteBtn">🔎 Keşfet</button>
+          <a href="teklif-al.html" class="hero-appointment-btn">💬 Bilgi Al</a>
+          <a href="randevu.html" class="hero-secondary-btn focused-randevu-btn">📅 Randevu Al</a>
         </div>
 
         <div class="home-hero-note">
-          Kurumları keşfetmek için üyelik gerekmez · Bilgileri incele · Doğrudan bilgi al
+          Kurumları görmek ücretsiz · Üyelik gerekmez · İhtiyacın olan bilgiye hızlı ulaş
         </div>
       </div>
 
@@ -201,20 +191,20 @@
           >
           <div class="diji-speech">
             <strong>Merhaba, ben Diji!</strong>
-            <span>Ne arıyorsun? Yakınındaki seçenekleri birlikte bulalım.</span>
+            <span>Ne aradığını söyle; yakınındaki kurumları bulmana yardımcı olayım.</span>
           </div>
         </div>
 
         <div class="home-hero-free-card">
-          <div class="free-zero">0 TL</div>
-          <strong>Kurumları keşfetmek ücretsiz</strong>
-          <p>Kurumları bul, profillerini incele ve doğrudan bilgi al.</p>
+          <div class="free-zero">DijiyeSor</div>
+          <strong>Tek yerde ihtiyacın olan 4 şey</strong>
+          <p>Kurum aramak artık sadece adres bulmak değil.</p>
 
           <div class="free-mini-grid">
-            <span>✓ Kurum bulmak</span>
-            <span>✓ Profil incelemek</span>
-            <span>✓ Randevu almak</span>
-            <span>✓ Doğrudan iletişim</span>
+            <span>🔎 Keşfet</span>
+            <span>💬 Bilgi Al</span>
+            <span>📅 Randevu Al</span>
+            <span>🎯 Kampanyalar</span>
           </div>
         </div>
       </div>
@@ -268,12 +258,11 @@
       <div class="desktop-category-inline-results hidden" id="desktopCategoryInlineResults"></div>
     </section>
 
-    <div class="desktop-service-shortcuts">
-      <a href="#resultsSection"><span>🔎</span><div><strong>Kurumları İncele</strong><small>Yakınındaki kurumların bilgilerini ve hizmetlerini görüntüle.</small></div><b>→</b></a>
-      <a href="randevu.html" class="appointment-shortcut"><span>📅</span><div><strong>Randevu Al</strong><small>Görüşmek istediğin kurum için uygun zamanı seç.</small></div><b>→</b></a>
-      <a href="teklif-al.html"><span>💬</span><div><strong>Bilgi / Fiyat İste</strong><small>Gerekirse kurumlara doğrudan bilgi veya fiyat talebi gönder.</small></div><b>→</b></a>
-      <a href="firsatlar.html"><span>🎯</span><div><strong>Kampanyaları Gör</strong><small>Bölgenizdeki güncel kurum fırsatlarını incele.</small></div><b>→</b></a>
-      <a href="https://ftmotiondesign.github.io/dijiyer/qr-kart-siparis.html"><span>▣</span><div><strong>QR / NFC Kart Siparişi</strong><small>İşletmenize özel dijital kartınızı oluşturun ve baskı siparişi verin.</small></div><b>→</b></a>
+    <div class="desktop-service-shortcuts focused-service-shortcuts">
+      <a href="#resultsSection"><span>🔎</span><div><strong>Keşfet</strong><small>Yakınındaki kurumları ve sundukları hizmetleri gör.</small></div><b>→</b></a>
+      <a href="teklif-al.html"><span>💬</span><div><strong>Bilgi Al</strong><small>Merak ettiğin konuyu kuruma doğrudan sor.</small></div><b>→</b></a>
+      <a href="randevu.html" class="appointment-shortcut"><span>📅</span><div><strong>Randevu Al</strong><small>Görüşmek istediğin kurum için zaman seç.</small></div><b>→</b></a>
+      <a href="firsatlar.html"><span>🎯</span><div><strong>Kampanyalar</strong><small>Yakınındaki güncel fırsat ve duyuruları gör.</small></div><b>→</b></a>
     </div>
   </section>
 
@@ -427,19 +416,10 @@
       <span class="mobile-search-location-action">Değiştir ›</span>
     </button>
 
-    <div class="mobile-search-quick-filters" aria-label="Hızlı kurum filtreleri">
-      <button type="button" id="mobileVideoOnlyBtn">
-        <span>🎥</span>
-        <strong>Videolu Kurumlar</strong>
-      </button>
-      <button type="button" id="mobileTour360Btn">
-        <span>🧭</span>
-        <strong>360° Turu Olanlar</strong>
-      </button>
-      <button type="button" id="mobileAppointmentBtn" onclick="window.location.href='randevu.html'">
-        <span>📅</span>
-        <strong>Randevu Al</strong>
-      </button>
+    <div class="mobile-search-quick-filters focused-mobile-actions" aria-label="Hızlı işlemler">
+      <a href="teklif-al.html"><span>💬</span><strong>Bilgi Al</strong></a>
+      <a href="randevu.html"><span>📅</span><strong>Randevu Al</strong></a>
+      <a href="firsatlar.html"><span>🎯</span><strong>Kampanyalar</strong></a>
     </div>
 
     <div class="mobile-discovery-head">
@@ -1485,7 +1465,7 @@
       <span>＋</span><small>Bilgi Al</small>
     </a>
     <a href="firsatlar.html" data-mobile-nav="opportunity">
-      <span>✦</span><small>Fırsatlar</small>
+      <span>✦</span><small>Kampanyalar</small>
     </a>
     <a href="index.html?kurumgiris=1" data-mobile-nav="institution">
       <span>🏢</span><small>Kurum</small>
@@ -1504,7 +1484,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="page-banner.js?v=2"></script>
-  <script src="script.js?v=230"></script>
+  <script src="script.js?v=231"></script>
 <script src="offers.js?v=7"></script>
 </body>
 </html>
