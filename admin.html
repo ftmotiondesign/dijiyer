@@ -10,7 +10,7 @@
 
   <title>Dijiyer Admin Paneli</title>
 
-  <link rel="stylesheet" href="admin.css?v=62">
+  <link rel="stylesheet" href="admin.css?v=63">
   <link rel="stylesheet" href="admin-advanced.css?v=47">
   <link rel="stylesheet" href="admin-business-opportunities.css?v=1">
 </head>
@@ -162,7 +162,7 @@
       <nav class="admin-main-nav admin-main-nav-simple" aria-label="Yönetim ana menüsü">
         <a href="admin.html#genel-bakis" class="admin-main-nav-btn active" data-admin-main="overview"><span>⌂ Ana Sayfa</span></a>
         <a href="admin.html#teklifler" class="admin-main-nav-btn" data-admin-main="quotes"><span>💬 Teklifler</span></a>
-        <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions"><span>🏢 Kurumlar</span></a>
+        <a href="admin.html#kurumlar" id="institutionsMainNavBtn" class="admin-main-nav-btn" data-admin-main="institutions"><span>🏢 Kurumlar</span></a>
         <a href="admin.html#qr-kart-siparisleri" id="qrMainNavBtn" class="admin-main-nav-btn"><span>▣ QR / NFC Kart</span></a>
         <a href="admin.html#reklam-merkezi" class="admin-main-nav-btn" data-admin-main="ads"><span>📣 Reklamlar</span></a>
         <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business"><span>🤝 İş &amp; Ticaret</span></a>
@@ -627,8 +627,24 @@
 
       <section id="institutionsSection" hidden>
         <div class="section-title">
-          <h3>Kurumlar</h3>
-          <p id="institutionCount">Kurumlar yükleniyor...</p>
+          <div>
+            <h3>Kurumlar</h3>
+            <p id="institutionCount">Kurumlar yükleniyor...</p>
+          </div>
+        </div>
+
+        <div class="institution-operation-center">
+          <div class="institution-operation-copy">
+            <span>KURUM İŞLEMLERİ</span>
+            <strong>Kurum yönetimi</strong>
+            <small>Kurum ekleme, başvurular, hesaplar ve kayıtlı kurum yönetimini buradan yapın.</small>
+          </div>
+          <div class="institution-operation-actions">
+            <a href="index.html?kurum=ekle" target="_blank" class="institution-operation-btn primary">＋ Kurum Ekle</a>
+            <button type="button" id="institutionApplicationsShortcut" class="institution-operation-btn">Başvurular</button>
+            <button type="button" id="institutionAccountsShortcut" class="institution-operation-btn">Kurum Hesapları</button>
+            <button type="button" id="institutionUnmatchedShortcut" class="institution-operation-btn">Bulunamayan Aramalar</button>
+          </div>
         </div>
 
         <div class="institution-mini-stats ad-focused">
@@ -3687,7 +3703,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="admin.js?v=61"></script>
+<script src="admin.js?v=62"></script>
   <script src="admin-advanced.js?v=61"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
