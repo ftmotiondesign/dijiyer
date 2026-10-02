@@ -80,7 +80,7 @@
     return `
       <div class="dijiyer-global-topbar-inner">
         <a class="dijiyer-global-brand" href="index.html" aria-label="Dijiyer ana sayfası" title="Ana sayfaya dön">
-          <span class="dijiyer-global-brand-mark"><img src="assets/brand/diji-mascot.webp" alt="" aria-hidden="true"></span>
+          <span class="dijiyer-global-brand-mark" aria-hidden="true">D</span>
           <span class="dijiyer-global-brand-copy">
             <strong>Dijiyer</strong>
             <small>Bul. Karşılaştır. Teklif Al.</small>
