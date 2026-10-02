@@ -23119,3 +23119,164 @@ body.home-page .decision-alternatives-head strong{
   color:#095abf;
 }
 /* === END FEATURED BUSINESS COMPARE BUTTON === */
+
+/* === DIJIYER HOME COLOR HIERARCHY V1 === */
+@media (min-width:769px){
+  body.home-page{
+    background:#f4f7fb;
+  }
+
+  body.home-page .main-portals-section.desktop-category-hub{
+    background:#ffffff!important;
+    border-color:#e1e7ef!important;
+    box-shadow:0 8px 24px rgba(31,59,100,.045)!important;
+  }
+
+  /* Kategoriler: ayni beyaz kutu hissini kir, renkleri pastel tut */
+  body.home-page .desktop-category-grid{
+    gap:7px;
+    border:0;
+    background:transparent;
+  }
+
+  body.home-page .desktop-category-grid button{
+    min-height:92px;
+    border:1px solid transparent;
+    border-radius:10px;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+
+  body.home-page .desktop-category-grid button:nth-child(1){background:#eef7ff;border-color:#d9ebff;}
+  body.home-page .desktop-category-grid button:nth-child(2){background:#fff1f1;border-color:#ffe0e0;}
+  body.home-page .desktop-category-grid button:nth-child(3){background:#fff7e9;border-color:#ffe9c3;}
+  body.home-page .desktop-category-grid button:nth-child(4){background:#f7f0ff;border-color:#eadcff;}
+  body.home-page .desktop-category-grid button:nth-child(5){background:#edf9f2;border-color:#d8f0e2;}
+  body.home-page .desktop-category-grid button:nth-child(6){background:#eef3ff;border-color:#dde6ff;}
+  body.home-page .desktop-category-grid button:nth-child(7){background:#eafaf8;border-color:#d3f2ed;}
+  body.home-page .desktop-category-grid button:nth-child(8){background:#fff0f7;border-color:#ffdcea;}
+  body.home-page .desktop-category-grid button:nth-child(9){background:#fff9e7;border-color:#f9ebbb;}
+  body.home-page .desktop-category-grid button:nth-child(10){background:#f3f0fa;border-color:#e5def4;}
+  body.home-page .desktop-category-grid button:nth-child(11){background:#edf9f6;border-color:#d7f0e8;}
+
+  body.home-page .desktop-category-grid button:nth-child(1)>span{background:#dceeff;}
+  body.home-page .desktop-category-grid button:nth-child(2)>span{background:#ffe1e1;}
+  body.home-page .desktop-category-grid button:nth-child(3)>span{background:#ffeac5;}
+  body.home-page .desktop-category-grid button:nth-child(4)>span{background:#eadcff;}
+  body.home-page .desktop-category-grid button:nth-child(5)>span{background:#d9f0e3;}
+  body.home-page .desktop-category-grid button:nth-child(6)>span{background:#dde6ff;}
+  body.home-page .desktop-category-grid button:nth-child(7)>span{background:#d3f1ec;}
+  body.home-page .desktop-category-grid button:nth-child(8)>span{background:#ffdeeb;}
+  body.home-page .desktop-category-grid button:nth-child(9)>span{background:#f9ebbd;}
+  body.home-page .desktop-category-grid button:nth-child(10)>span{background:#e6def4;}
+  body.home-page .desktop-category-grid button:nth-child(11)>span{background:#d6efe7;}
+
+  body.home-page .desktop-category-grid button:last-child{
+    background:linear-gradient(135deg,#142b4d,#1f4d82);
+    border-color:#173a64;
+    box-shadow:0 7px 16px rgba(20,43,77,.14);
+  }
+  body.home-page .desktop-category-grid button:last-child>span{
+    background:rgba(255,255,255,.14);
+    color:#fff;
+  }
+  body.home-page .desktop-category-grid button:last-child>strong,
+  body.home-page .desktop-category-grid button:last-child>small{
+    color:#fff;
+  }
+  body.home-page .desktop-category-grid button:last-child>small{opacity:.76;}
+
+  body.home-page .desktop-category-grid button:hover{
+    transform:translateY(-2px);
+    border-color:#b9cbe2;
+    box-shadow:0 8px 18px rgba(31,59,100,.09);
+  }
+  body.home-page .desktop-category-grid button:last-child:hover{
+    background:linear-gradient(135deg,#102541,#1a426f);
+    border-color:#102f53;
+  }
+
+  body.home-page .desktop-category-grid button.is-active:not(:last-child){
+    box-shadow:inset 0 0 0 2px #5fa6f5,0 7px 16px rgba(31,94,171,.08);
+  }
+
+  /* Ana islemler: iki ana aksiyon daha guclu, digerleri daha sakin */
+  body.home-page .desktop-service-shortcuts{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:9px;
+  }
+  body.home-page .desktop-service-shortcuts a{
+    border-radius:10px;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  body.home-page .desktop-service-shortcuts a:nth-child(1){
+    background:linear-gradient(135deg,#eaf4ff,#f8fbff);
+    border-color:#cfe5ff;
+    box-shadow:inset 4px 0 0 #1677ff;
+  }
+  body.home-page .desktop-service-shortcuts a:nth-child(1)>span{background:#d9ebff;}
+  body.home-page .desktop-service-shortcuts a:nth-child(1) strong{color:#0e63c7;}
+
+  body.home-page .desktop-service-shortcuts a:nth-child(2){
+    background:#fbfcfe;
+    border-color:#e2e8ef;
+  }
+  body.home-page .desktop-service-shortcuts a:nth-child(2)>span{background:#f1f4f7;}
+
+  body.home-page .desktop-service-shortcuts a:nth-child(3){
+    background:linear-gradient(135deg,#f2ecff,#fbf9ff);
+    border-color:#e0d3ff;
+    box-shadow:inset 4px 0 0 #7448df;
+  }
+  body.home-page .desktop-service-shortcuts a:nth-child(3)>span{background:#e7dcff;}
+  body.home-page .desktop-service-shortcuts a:nth-child(3) strong{color:#6035c8;}
+  body.home-page .desktop-service-shortcuts a:nth-child(3) b{color:#7448df;}
+
+  body.home-page .desktop-service-shortcuts a:nth-child(4){
+    background:#fff9ef;
+    border-color:#f4e4c5;
+  }
+  body.home-page .desktop-service-shortcuts a:nth-child(4)>span{background:#ffedcf;}
+  body.home-page .desktop-service-shortcuts a:nth-child(4) b{color:#cf7a16;}
+
+  body.home-page .desktop-service-shortcuts a:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(31,59,100,.08);
+  }
+
+  /* Avantaj seridi: her bilgi kendi hafif tonuna sahip */
+  body.home-page .desktop-trust-strip{
+    gap:7px;
+    padding:8px;
+    background:#f8fafc;
+    border-color:#e4eaf2;
+    box-shadow:none;
+  }
+  body.home-page .desktop-trust-strip article{
+    border-right:0;
+    border-radius:11px;
+    padding:9px 12px;
+  }
+  body.home-page .desktop-trust-strip article:nth-child(1){background:#fff9e8;}
+  body.home-page .desktop-trust-strip article:nth-child(2){background:#fff1f5;}
+  body.home-page .desktop-trust-strip article:nth-child(3){background:#edf6ff;}
+  body.home-page .desktop-trust-strip article:nth-child(4){background:#f4f0ff;}
+  body.home-page .desktop-trust-strip article:nth-child(5){background:#edf9f1;}
+
+  /* One cikan kurumlar: beyaz kartlar gri zeminde daha net ayrissin */
+  body.home-page .desktop-showcase-main{
+    padding:12px;
+    border:1px solid #e5eaf1;
+    border-radius:16px;
+    background:#f5f7fa;
+  }
+  body.home-page .desktop-featured-card{
+    border-color:#dfe6ef;
+    box-shadow:0 6px 18px rgba(31,59,100,.055);
+  }
+  body.home-page .desktop-featured-card:nth-child(4n+1) .desktop-featured-card-media{background:linear-gradient(145deg,#e8f3ff,#dbeaff);}
+  body.home-page .desktop-featured-card:nth-child(4n+2) .desktop-featured-card-media{background:linear-gradient(145deg,#f3ecff,#e7dcff);}
+  body.home-page .desktop-featured-card:nth-child(4n+3) .desktop-featured-card-media{background:linear-gradient(145deg,#edf9f3,#dff2e8);}
+  body.home-page .desktop-featured-card:nth-child(4n+4) .desktop-featured-card-media{background:linear-gradient(145deg,#fff5e8,#ffe8c8);}
+}
+/* === END DIJIYER HOME COLOR HIERARCHY V1 === */
+
