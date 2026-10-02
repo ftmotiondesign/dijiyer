@@ -41,6 +41,12 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .tpl-corporate{background:linear-gradient(135deg,#0f5fc9,#1677ff);color:#fff;border:1px solid #6ca8ff}
 .tpl-minimal{background:linear-gradient(135deg,#fff,#f7f7f7);color:#111;border:1px solid #ddd}
 .tpl-custom{background:linear-gradient(135deg,#7c3aed,#ec4899 55%,#f59e0b);color:#fff;border:1px solid #d8b4fe}
+.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.product-option{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:flex-start;gap:9px;background:#fff;cursor:pointer}
+.product-option:hover{border-color:#9fc2f8;background:#f9fbff}
+.product-option input{width:18px;height:18px;margin:1px 0 0;flex:0 0 auto}
+.product-option b{display:block;font-size:12px}
+.product-option small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:3px}
 .template-name{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;font-weight:900}
 .template-name span:last-child{font-size:9px;color:var(--muted);font-weight:700}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.feature{border:1px solid var(--line);border-radius:13px;padding:11px;display:flex;align-items:flex-start;gap:9px;font-size:12px}.feature input{width:auto;margin:2px 0 0}.feature b{display:block}.feature small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
@@ -54,7 +60,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .order-no{display:inline-block;margin-top:8px;background:#eef4ff;color:#155db8;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}
 .footer{text-align:center;color:#98a2b3;font-size:11px;padding:10px 16px 30px}
 @media(max-width:820px){.hero-in,.layout{grid-template-columns:1fr}.hero{padding-top:32px}.hero h1{font-size:32px}.hero-card{display:none}.side{position:static}.wrap{margin-top:-42px}}
-@media(max-width:560px){.grid,.feature-grid,.upload-grid,.template-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
+@media(max-width:560px){.grid,.feature-grid,.upload-grid,.template-grid,.product-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
 </style>
 </head>
 <body>
@@ -98,7 +104,25 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
       </section>
 
       <section class="card">
-        <div class="step"><span class="num">2</span><div><h2>Kart Şablonu</h2><p class="help">Siparişinizde kullanılmasını istediğiniz tasarımı seçin.</p></div></div>
+        <div class="step"><span class="num">2</span><div><h2>Sipariş Kategorisi</h2><p class="help">İstediğiniz ürünlerin yanındaki kutuyu işaretleyin. Birden fazla seçim yapabilirsiniz.</p></div></div>
+        <div class="product-grid">
+          <label class="product-option">
+            <input type="checkbox" name="productCategory" value="qr_nfc_card" data-name="QR & NFC Kart" checked>
+            <span><b>QR & NFC Kart</b><small>Dijital iletişim ve yönlendirme kartı</small></span>
+          </label>
+          <label class="product-option">
+            <input type="checkbox" name="productCategory" value="google_review_card" data-name="Google Yorum Kartı">
+            <span><b>Google Yorum Kartı</b><small>Tek dokunuşla Google yorum sayfasını açar</small></span>
+          </label>
+          <label class="product-option">
+            <input type="checkbox" name="productCategory" value="business_menu" data-name="İşletme Menü">
+            <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="step"><span class="num">3</span><div><h2>Kart Şablonu</h2><p class="help">Siparişinizde kullanılmasını istediğiniz tasarımı seçin.</p></div></div>
         <div class="template-grid">
           <label class="template-option">
             <input type="radio" name="templateChoice" value="classic" data-name="Klasik" checked>
@@ -135,6 +159,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
         <div class="summary-row"><span>Ürün</span><b>Özel QR / NFC Kart</b></div>
         <div class="summary-row"><span>Müşteri</span><b id="sumCustomer">Henüz girilmedi</b></div>
         <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
+        <div class="summary-row"><span>Ürünler</span><b id="sumProducts">QR & NFC Kart</b></div>
         <div class="summary-row"><span>Şablon</span><b id="sumTemplate">Klasik</b></div>
         <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
         <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve seçtiğiniz şablona göre hazırlanır.</div>
@@ -176,6 +201,16 @@ function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
 
 $("customerName").oninput=e=>$("sumCustomer").textContent=e.target.value.trim()||"Henüz girilmedi";
 $("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"Henüz girilmedi";
+function selectedProducts(){
+ return [...document.querySelectorAll('input[name="productCategory"]:checked')].map(x=>({id:x.value,name:x.dataset.name}));
+}
+function updateProductSummary(){
+ const p=selectedProducts();
+ $("sumProducts").textContent=p.length?p.map(x=>x.name).join(", "):"Seçim yapılmadı";
+}
+document.querySelectorAll('input[name="productCategory"]').forEach(c=>c.onchange=updateProductSummary);
+updateProductSummary();
+
 document.querySelectorAll('input[name="templateChoice"]').forEach(r=>r.onchange=()=>{
  const selected=document.querySelector('input[name="templateChoice"]:checked');
  $("sumTemplate").textContent=selected?.dataset.name||"Klasik";
@@ -196,6 +231,12 @@ $("submitBtn").onclick=async()=>{
  }
  if(val("whatsappPhone")&&!validPhone(val("whatsappPhone"))){
   $("formMsg").textContent="WhatsApp numarasını kontrol edin.";
+  return;
+ }
+
+ const products=selectedProducts();
+ if(!products.length){
+  $("formMsg").textContent="Lütfen en az bir sipariş kategorisi seçin.";
   return;
  }
 
@@ -225,6 +266,8 @@ $("submitBtn").onclick=async()=>{
    description:businessInfo,
    template:templateId,
    templateName,
+   productCategories:products.map(x=>x.id),
+   productCategoryNames:products.map(x=>x.name),
    showContact:true,
    showInfoRequest:true
   };
@@ -245,6 +288,8 @@ $("submitBtn").onclick=async()=>{
    businessInfo,
    templateId,
    templateName,
+   productCategories:products.map(x=>x.id),
+   productCategoryNames:products.map(x=>x.name),
    quantity:1,
    cardType:"qr_nfc",
    cardData,
