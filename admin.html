@@ -163,7 +163,7 @@
         <a href="admin.html#genel-bakis" class="admin-main-nav-btn active" data-admin-main="overview"><span>⌂ Ana Sayfa</span></a>
         <a href="admin.html#teklifler" class="admin-main-nav-btn" data-admin-main="quotes"><span>💬 Teklifler</span></a>
         <a href="admin.html#kurumlar" class="admin-main-nav-btn" data-admin-main="institutions"><span>🏢 Kurumlar</span></a>
-        <a href="admin.html#qr-kart-siparisleri" class="admin-main-nav-btn"><span>▣ QR / NFC Kart</span></a>
+        <a href="admin.html#qr-kart-siparisleri" id="qrMainNavBtn" class="admin-main-nav-btn"><span>▣ QR / NFC Kart</span></a>
         <a href="admin.html#reklam-merkezi" class="admin-main-nav-btn" data-admin-main="ads"><span>📣 Reklamlar</span></a>
         <a href="admin.html#is-ticaret" class="admin-main-nav-btn" data-admin-main="business"><span>🤝 İş &amp; Ticaret</span></a>
         <a href="admin.html#destek" class="admin-main-nav-btn" data-admin-main="support"><span>✉ Destek &amp; Duyurular</span></a>
@@ -273,8 +273,14 @@
         <div class="section-title overview-title-row">
           <div>
             <h3>QR / NFC Kart</h3>
-            <p>QR kart siparişlerini ve demo kart yönetimini tek bölümden yönetin.</p>
+            <p>QR kart siparişlerini yönetin veya yeni QR kart oluşturun.</p>
           </div>
+        </div>
+
+        <div class="qr-center-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px">
+          <button type="button" id="qrCenterOrdersTab" class="overview-refresh-btn">📦 Siparişler</button>
+          <button type="button" id="qrCenterCreateTab" class="overview-refresh-btn">＋ QR Kart Oluştur / Yönet</button>
+          <a href="qr-kart-siparis.html" target="_blank" class="overview-refresh-btn" style="text-decoration:none;display:inline-flex;align-items:center">Müşteri Sipariş Sayfasını Aç</a>
         </div>
         <section class="overview-panel" id="qrOrdersOverview" data-qr-panel="orders" style="margin-bottom:18px;overflow:hidden">
           <div class="overview-panel-head" style="align-items:center">
@@ -298,8 +304,8 @@
         <section class="overview-panel" id="qrCardManagerOverview" data-qr-panel="demo" style="margin-bottom:18px;overflow:hidden;display:none">
           <div class="overview-panel-head" style="align-items:center">
             <div>
-              <h4>QR / NFC Kart Yönetimi</h4>
-              <p>Yeni firma kartı oluşturun, kayıtlı QR kartları arayın, açın, güncelleyin veya silin.</p>
+              <h4>QR Kart Oluştur / Yönet</h4>
+              <p>Yeni firma kartı oluşturun, QR üretin, kayıtlı kartları arayın, açın, güncelleyin veya silin.</p>
             </div>
             <button type="button" class="overview-refresh-btn" id="toggleQrManagerBtn">Kart Yönetimini Gizle</button>
           </div>
