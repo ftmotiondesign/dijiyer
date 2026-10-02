@@ -274,8 +274,14 @@ textarea{min-height:90px;resize:vertical}
     </div>
 
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
-      <div class="section-head" style="margin-bottom:8px"><h3>Oluşturulan QR Kartlar</h3><span id="cardCount" class="mini-badge">0</span></div>
-      <div id="customerCardsList" class="list" style="max-height:260px"><div class="row">Yükleniyor...</div></div>
+      <button id="toggleCards" type="button" class="acc-head" style="padding:0 0 10px;background:transparent">
+        <span class="acc-title"><span class="acc-icon">🪪</span>Oluşturulan QR Kartlar <span id="cardCount" class="mini-badge">0</span></span>
+        <span id="cardsArrow" class="acc-arrow">⌄</span>
+      </button>
+      <div id="cardsPanel">
+        <input id="cardSearch" class="search" placeholder="Firma adı veya kart kodu ara..." autocomplete="off">
+        <div id="customerCardsList" class="list" style="max-height:300px"><div class="row">Yükleniyor...</div></div>
+      </div>
     </div>
 
     <p class="helper" style="margin-top:12px">Firma bilgilerini değiştirdikten sonra alttaki <b>Demo Sayfasını Güncelle</b> butonuna bas.</p>
@@ -332,16 +338,25 @@ function showCustomerQr(id,name){
  new QRCode($("customerQr"),{text:CUSTOMER_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
  $("customerCardResult").classList.remove("hidden");
 }
+let CUSTOMER_CARDS=[];
+function renderCustomerCards(){
+ const box=$("customerCardsList"); if(!box)return;
+ const q=String($("cardSearch")?.value||"").trim().toLocaleLowerCase("tr");
+ const rows=CUSTOMER_CARDS.filter(x=>!q||String((x.name||"")+" "+x.id).toLocaleLowerCase("tr").includes(q));
+ $("cardCount").textContent=CUSTOMER_CARDS.length;
+ if(!rows.length){box.innerHTML='<div class="row">'+(CUSTOMER_CARDS.length?'Aramaya uygun kart bulunamadı.':'Henüz kalıcı kart oluşturulmadı.')+'</div>';return}
+ box.innerHTML=rows.map((x,i)=>'<div class="row"><div style="min-width:0"><b>'+esc(x.name||x.id)+'</b><small>'+esc(x.id)+(x.targetUrl?' · Özel link':' · Dijital kart')+'</small></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="card-open" data-card="'+i+'">Aç</button><button class="card-qr" data-card="'+i+'">QR</button><button class="card-delete danger" data-card="'+i+'">Sil</button></div></div>').join("");
+ box.querySelectorAll(".card-open").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];window.open(customerUrlFor(x.id),"_blank")});
+ box.querySelectorAll(".card-qr").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];showCustomerQr(x.id,x.name);$("customCardSlug").value=x.id;$("customTargetUrl").value=x.targetUrl||"";fill(x);setActiveCustomerCard(x.id);$("saveMsg").textContent=x.name+" QR kartı düzenleme için açıldı.";$("saveMsg").className="msg ok"});
+ box.querySelectorAll(".card-delete").forEach(b=>b.onclick=async()=>{const x=rows[+b.dataset.card];if(!confirm((x.name||x.id)+" kartını silmek istediğinize emin misiniz?"))return;try{await db.collection("customerCards").doc(x.id).delete();if(ACTIVE_CUSTOMER_CARD_ID===x.id){setActiveCustomerCard("");$("customCardSlug").value="";$("customTargetUrl").value="";$("customerCardResult").classList.add("hidden")}await loadCustomerCards();$("saveMsg").textContent=(x.name||x.id)+" kartı silindi.";$("saveMsg").className="msg ok"}catch(e){$("saveMsg").textContent="Kart silinemedi: "+e.message;$("saveMsg").className="msg err"}});
+}
 async function loadCustomerCards(){
  const box=$("customerCardsList"); if(!box)return;
  try{
-  const snap=await db.collection("customerCards").orderBy("updatedAt","desc").limit(50).get();
-  const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-  $("cardCount").textContent=rows.length;
-  if(!rows.length){box.innerHTML='<div class="row">Henüz kalıcı kart oluşturulmadı.</div>';return}
-  box.innerHTML=rows.map((x,i)=>'<div class="row"><div><b>'+esc(x.name||x.id)+'</b><small>'+esc(x.id)+(x.targetUrl?' · Özel link':' · Dijital kart')+'</small></div><button data-card="'+i+'">QR</button></div>').join("");
-  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=rows[+b.dataset.card];showCustomerQr(x.id,x.name);$("customCardSlug").value=x.id;$("customTargetUrl").value=x.targetUrl||"";fill(x);setActiveCustomerCard(x.id);$("saveMsg").textContent=x.name+" QR kartı düzenleme için açıldı.";$("saveMsg").className="msg ok"});
- }catch(e){box.innerHTML='<div class="row">Kartlar yüklenemedi.</div>'}
+  const snap=await db.collection("customerCards").orderBy("updatedAt","desc").limit(100).get();
+  CUSTOMER_CARDS=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderCustomerCards();
+ }catch(e){box.innerHTML='<div class="row">Kartlar yüklenemedi: '+esc(e.message)+'</div>'}
 }
 function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=>o[k]=$(k).checked);o.updatedAt=new Date().toISOString();return o}
 function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k]);updateNames(d.name||"");renderUploads()}
@@ -514,6 +529,12 @@ $("search").oninput=e=>{
  if(q.length<2){box.classList.add("hidden");box.innerHTML='<div class="row">Arama yapın...</div>';return}
  const results=(window._inst||[]).filter(x=>JSON.stringify(x).toLocaleLowerCase("tr").includes(q)).slice(0,20);
  box.classList.remove("hidden");renderInstitutions(results);
+};
+$("cardSearch").oninput=()=>renderCustomerCards();
+$("toggleCards").onclick=()=>{
+ const p=$("cardsPanel"),a=$("cardsArrow");
+ const hidden=p.classList.toggle("hidden");
+ a.style.transform=hidden?"rotate(-90deg)":"rotate(0deg)";
 };
 $("name").addEventListener("input",e=>updateNames(e.target.value.trim()));
 auth.onAuthStateChanged(async user=>{
