@@ -228,6 +228,15 @@ service cloud.firestore {
 
 
     // =====================================================
+    // DİJİYER - KALICI MÜŞTERİ DİJİTAL KARTLARI
+    // =====================================================
+    match /customerCards/{cardId} {
+      allow read: if true;
+      allow create, update, delete: if adminMi();
+    }
+
+
+    // =====================================================
     // DİJİYER - REKLAM / TANITIM
     // =====================================================
 
