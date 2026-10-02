@@ -554,8 +554,11 @@ adminBackToTop?.addEventListener("click",()=>{
 updateAdminBackToTop();
 
 const qrCenterSection=document.getElementById("qrCenterSection");
+const qrMainNavBtn=document.getElementById("qrMainNavBtn");
 const qrSideOrdersBtn=document.getElementById("qrSideOrdersBtn");
 const qrSideDemoBtn=document.getElementById("qrSideDemoBtn");
+const qrCenterOrdersTab=document.getElementById("qrCenterOrdersTab");
+const qrCenterCreateTab=document.getElementById("qrCenterCreateTab");
 const qrOrdersOverview=document.getElementById("qrOrdersOverview");
 const qrCardManagerOverview=document.getElementById("qrCardManagerOverview");
 
@@ -569,6 +572,9 @@ function setQrCenterMode(mode){
 
   qrSideOrdersBtn?.classList.toggle("active",mode==="orders");
   qrSideDemoBtn?.classList.toggle("active",mode==="demo");
+  qrCenterOrdersTab?.classList.toggle("active",mode==="orders");
+  qrCenterCreateTab?.classList.toggle("active",mode==="demo");
+  qrMainNavBtn?.classList.add("active");
 
   if(adminCurrentSection)adminCurrentSection.textContent=mode==="orders"?"QR Kart Siparişleri":"QR Demo Kart";
   if(adminCurrentHint)adminCurrentHint.textContent=mode==="orders"
@@ -579,14 +585,18 @@ function setQrCenterMode(mode){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
+qrMainNavBtn?.addEventListener("click",(e)=>{e.preventDefault();setQrCenterMode("orders")});
 qrSideOrdersBtn?.addEventListener("click",()=>setQrCenterMode("orders"));
 qrSideDemoBtn?.addEventListener("click",()=>setQrCenterMode("demo"));
+qrCenterOrdersTab?.addEventListener("click",()=>setQrCenterMode("orders"));
+qrCenterCreateTab?.addEventListener("click",()=>setQrCenterMode("demo"));
 
 document.querySelectorAll("[data-admin-main], #adminSubtabs .admin-tab").forEach(el=>{
   el.addEventListener("click",()=>{
     if(qrCenterSection)qrCenterSection.hidden=true;
     qrSideOrdersBtn?.classList.remove("active");
     qrSideDemoBtn?.classList.remove("active");
+    qrMainNavBtn?.classList.remove("active");
   },true);
 });
 
