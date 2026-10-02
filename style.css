@@ -23786,3 +23786,153 @@ body.compare-disabled #institutionCompareBar,
 body.compare-disabled #institutionCompareModal {
   display:none !important;
 }
+
+
+/* =========================================================
+   FOCUSED HOME — DijiyeSor sade ana deneyim
+   ========================================================= */
+body.focused-home .desktop-home-showcase,
+body.focused-home .free-benefit-strip,
+body.focused-home .trust-section{
+  display:none !important;
+}
+
+body.focused-home .my-offers-btn,
+body.focused-home .top-all-requests-btn,
+body.focused-home .tracking-floating-btn,
+body.focused-home .opportunities-floating-btn{
+  display:none !important;
+}
+
+body.focused-home .focused-main-nav .desktop-market-nav-inner{
+  justify-content:center;
+  gap:8px;
+}
+
+body.focused-home .focused-main-nav a{
+  min-width:120px;
+  text-align:center;
+}
+
+body.focused-home .focused-hero-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+body.focused-home .focused-hero-actions > *{
+  min-width:150px;
+  text-align:center;
+}
+
+body.focused-home .focused-randevu-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+}
+
+body.focused-home .focused-service-shortcuts{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+@media(max-width:820px){
+  body.focused-home .home-hero{
+    padding-bottom:12px;
+  }
+
+  body.focused-home .home-hero-copy h1{
+    max-width:12ch;
+  }
+
+  body.focused-home .focused-hero-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  body.focused-home .focused-hero-actions .hero-primary-btn{
+    grid-column:1/-1;
+  }
+
+  body.focused-home .focused-hero-actions > *{
+    min-width:0;
+    width:100%;
+  }
+
+  body.focused-home .focused-mobile-actions{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+    margin:-4px 0 14px;
+  }
+
+  body.focused-home .focused-mobile-actions a{
+    min-width:0;
+    min-height:58px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    padding:7px 5px;
+    border:1px solid #dce5ef;
+    border-radius:11px;
+    background:#fff;
+    color:#40536b;
+    text-align:center;
+    text-decoration:none;
+    box-sizing:border-box;
+  }
+
+  body.focused-home .focused-mobile-actions a > span{
+    font-size:18px;
+    line-height:1;
+  }
+
+  body.focused-home .focused-mobile-actions a > strong{
+    font-size:9px;
+    line-height:1.2;
+    font-weight:850;
+  }
+
+  body.focused-home .desktop-category-hub{
+    display:none !important;
+  }
+}
+
+body.focused-home .focused-card-actions{
+  display:grid !important;
+  grid-template-columns:1.2fr 1fr 1fr;
+  gap:7px;
+}
+body.focused-home .focused-card-actions button{
+  min-width:0;
+}
+body.focused-home .institution-info-btn,
+body.focused-home .institution-appointment-btn{
+  border:1px solid #cfe0f5;
+  border-radius:9px;
+  background:#f7fbff;
+  color:#1766c2;
+  font-weight:800;
+  padding:9px 7px;
+  cursor:pointer;
+}
+body.focused-home .institution-card-campaign{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:9px;
+  background:#fff8e8;
+  color:#8a5b00;
+  font-size:12px;
+  font-weight:800;
+}
+@media(max-width:820px){
+  body.focused-home .focused-card-actions{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+  body.focused-home .focused-card-actions button{
+    font-size:10px;
+    padding:8px 4px;
+  }
+}
