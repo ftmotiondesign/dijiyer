@@ -37,6 +37,9 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 .brand h1{font-size:25px;margin:0 0 7px;letter-spacing:.2px}
 .brand p{margin:0;color:#e5e7eb;font-size:14px;line-height:1.55}
 .badge{display:inline-flex;margin-top:12px;background:var(--orange);color:#fff;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:900;letter-spacing:.7px}
+.top-save-contact{display:block;width:min(360px,100%);margin:14px auto 0;border:1px solid #ffffff55;background:#fff;color:var(--dark);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;box-shadow:0 12px 28px #0003}
+.top-save-contact:hover{transform:translateY(-1px)}
+.top-save-hint{margin-top:7px;color:#e5e7eb;font-size:10px;font-weight:700;text-shadow:0 1px 8px #0006}
 .card{background:rgba(255,255,255,.95);border:1px solid #ffffff66;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:26px;padding:18px;box-shadow:0 22px 55px #0006}
 .quick-wrap{padding:4px 0 2px}
 .quick-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 2px 14px}
@@ -68,7 +71,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
 .qr-copy b{display:block;font-size:14px;margin-bottom:5px;color:var(--dark)}
 .qr-copy span{display:block;color:var(--text);font-size:11px;line-height:1.45}
 .save{width:100%;margin-top:12px;border:1px solid #dedfea;background:#fff;color:var(--dark);padding:14px;border-radius:16px;font-weight:900;cursor:pointer}
-.save-contact-main{margin-top:16px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;border:0;box-shadow:0 10px 24px #1677ff33;font-size:14px}
+
 .save:hover{background:#f8fafc}.hint{margin-top:8px;text-align:center;color:var(--text);font-size:10px;line-height:1.4}
 .footer{color:#d0d3dc;text-align:center;font-size:11px;padding:17px 8px 2px;line-height:1.5}
 .empty{background:#fff;border-radius:24px;padding:45px 20px;text-align:center}.hidden{display:none!important}
@@ -82,6 +85,8 @@ a{text-decoration:none;color:inherit}button{font:inherit}
     <h1 id="cardName">İşletme</h1>
     <p><span id="cardLocation"></span><br><span id="cardSlogan"></span></p>
     <div class="badge">DİJİTAL İLETİŞİM KARTI</div>
+    <button class="top-save-contact" id="saveContact" type="button">＋ Rehbere Ekle</button>
+    <div class="top-save-hint">Firma bilgilerini tek dokunuşla telefonunuza kaydedin.</div>
   </section>
 
   <section id="card" class="card hidden">
@@ -89,9 +94,6 @@ a{text-decoration:none;color:inherit}button{font:inherit}
       <div class="quick-head"><h2>Hızlı İletişim</h2><span>TEK DOKUNUŞLA</span></div>
       <div id="quickActions" class="quick"></div>
     </div>
-
-    <button class="save save-contact-main" id="saveContact" type="button">＋ Rehbere Ekle</button>
-    <div class="hint">Firma bilgilerini tek dokunuşla telefon rehberine kaydedin.</div>
 
     <div id="paidTitle" class="section-title hidden">ÖZEL ÖZELLİKLER</div>
     <div id="paidActions" class="actions"></div>
