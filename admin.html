@@ -173,7 +173,7 @@
         <a href="demo-card-admin.html" class="admin-main-nav-btn" style="background:#fff7e6;border-color:#f4c76b;color:#8a5a00;">
           <span>QR Demo Kart</span>
         </a>
-        <a href="qr-card-orders-admin.html" class="admin-main-nav-btn" style="background:#eef8ff;border-color:#b9dcff;color:#155db8;">
+        <a href="admin.html#qr-kart-siparisleri" class="admin-main-nav-btn" style="background:#eef8ff;border-color:#b9dcff;color:#155db8;">
           <span>QR Kart Siparişleri</span>
         </a>
         <a href="admin.html#ust-menu" class="admin-main-nav-btn" data-admin-main="categories">
@@ -300,6 +300,25 @@
           </div>
           <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
         </div>
+
+        <section class="overview-panel" id="qrOrdersOverview" style="margin-bottom:18px;overflow:hidden">
+          <div class="overview-panel-head" style="align-items:center">
+            <div>
+              <h4>QR / NFC Kart Siparişleri</h4>
+              <p>Yeni siparişleri burada kontrol edin, hazırlamaya alın ve kartı aktifleştirin.</p>
+            </div>
+            <button type="button" class="overview-refresh-btn" id="toggleQrOrdersBtn">Siparişleri Gizle</button>
+          </div>
+          <div id="qrOrdersFrameWrap" style="margin-top:12px">
+            <iframe
+              id="qrOrdersFrame"
+              src="qr-card-orders-admin.html?embed=1"
+              title="QR NFC Kart Siparişleri"
+              style="width:100%;height:650px;border:1px solid #dbe3ee;border-radius:16px;background:#f4f7fb"
+              loading="lazy"
+            ></iframe>
+          </div>
+        </section>
 
         <section class="overview-panel" id="qrCardManagerOverview" style="margin-bottom:18px;overflow:hidden">
           <div class="overview-panel-head" style="align-items:center">
@@ -3670,6 +3689,8 @@
 (function(){
   const btn=document.getElementById("toggleQrManagerBtn");
   const wrap=document.getElementById("qrManagerFrameWrap");
+  const orderBtn=document.getElementById("toggleQrOrdersBtn");
+  const orderWrap=document.getElementById("qrOrdersFrameWrap");
   if(btn&&wrap){
     btn.addEventListener("click",()=>{
       const hidden=wrap.hasAttribute("hidden");
@@ -3682,6 +3703,21 @@
       }
     });
   }
+  if(orderBtn&&orderWrap){
+    orderBtn.addEventListener("click",()=>{
+      const hidden=orderWrap.hasAttribute("hidden");
+      if(hidden){orderWrap.removeAttribute("hidden");orderBtn.textContent="Siparişleri Gizle";}
+      else{orderWrap.setAttribute("hidden","");orderBtn.textContent="Siparişleri Aç";}
+    });
+  }
+  function focusQrOrders(){
+    if(location.hash==="#qr-kart-siparisleri"){
+      const el=document.getElementById("qrOrdersOverview");
+      if(el)setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"start"}),250);
+    }
+  }
+  window.addEventListener("hashchange",focusQrOrders);
+  focusQrOrders();
 })();
 </script>
 </body>
