@@ -738,6 +738,67 @@
     open:openSharedCompareModal
   };
 
+  const GLOBAL_COMPARE_STORAGE_KEY="dijiyerCompareInstitutionIdsV1";
+
+  function globalCompareIds(){
+    try{
+      const ids=JSON.parse(localStorage.getItem(GLOBAL_COMPARE_STORAGE_KEY)||"[]");
+      return Array.isArray(ids) ? ids.map(String).filter(Boolean).slice(0,3) : [];
+    }catch(_){
+      return [];
+    }
+  }
+
+  function renderGlobalCompareBar(){
+    let bar=document.getElementById("dijiyerGlobalCompareBar");
+    if(!bar){
+      bar=document.createElement("div");
+      bar.id="dijiyerGlobalCompareBar";
+      bar.className="dijiyer-global-compare-bar hidden";
+      document.body.appendChild(bar);
+    }
+
+    const ids=globalCompareIds();
+    if(!ids.length){
+      bar.classList.add("hidden");
+      bar.innerHTML="";
+      return;
+    }
+
+    bar.classList.remove("hidden");
+    bar.innerHTML=
+      '<div class="dijiyer-global-compare-copy">'+
+        '<strong>'+ids.length+' kurum seçildi</strong>'+
+        '<small>'+ (ids.length<2 ? 'Karşılaştırmak için bir kurum daha seçin.' : 'Seçtiğiniz kurumları yan yana inceleyin.') +'</small>'+
+      '</div>'+
+      '<div class="dijiyer-global-compare-actions">'+
+        '<button type="button" data-global-compare-clear>Temizle</button>'+
+        '<a href="karsilastir.html" class="'+(ids.length<2?'disabled':'')+'" aria-disabled="'+(ids.length<2?'true':'false')+'">Karşılaştır'+(ids.length>1?' ('+ids.length+')':'')+'</a>'+
+      '</div>';
+
+    bar.querySelector("[data-global-compare-clear]")?.addEventListener("click",()=>{
+      try{localStorage.removeItem(GLOBAL_COMPARE_STORAGE_KEY)}catch(_){}
+      document.dispatchEvent(new CustomEvent("dijiyer:comparechange"));
+      renderGlobalCompareBar();
+    });
+
+    const open=bar.querySelector(".dijiyer-global-compare-actions a");
+    open?.addEventListener("click",event=>{
+      if(ids.length<2){
+        event.preventDefault();
+        return;
+      }
+    });
+  }
+
+  function ensureGlobalCompareBar(){
+    renderGlobalCompareBar();
+    window.addEventListener("storage",event=>{
+      if(event.key===GLOBAL_COMPARE_STORAGE_KEY)renderGlobalCompareBar();
+    });
+    document.addEventListener("dijiyer:comparechange",renderGlobalCompareBar);
+  }
+
   function build(){
     cleanLiteralNewlineArtifacts();
     markLegacyHeaders();
@@ -745,6 +806,7 @@
     buildNav();
     ensureLegalUi();
     ensureMobileBottomNav();
+    ensureGlobalCompareBar();
     ensureSharedCompareUi();
     requestAnimationFrame(()=>{
       cleanLiteralNewlineArtifacts();
