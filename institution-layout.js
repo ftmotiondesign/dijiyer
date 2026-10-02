@@ -35,6 +35,13 @@
       action:"Müşteri Sayfamı Gör",
       actionTarget:"profile-preview"
     },
+    qr: {
+      group:"KURUMUM",
+      title:"QR / NFC Kartım",
+      description:"Firma bilgilerinizi kullanarak QR/NFC kart siparişi oluşturun ve kalıcı QR kodunuzu üretin.",
+      action:"Tam Sayfa Aç",
+      actionTarget:"qr-full"
+    },
     stats: {
       group:"KURUMUM",
       title:"İstatistikler",
@@ -99,6 +106,11 @@
       if (filter) filter.value = "new";
       setPanelTab("quotes");
       if (typeof renderQuotes === "function") renderQuotes();
+      return;
+    }
+
+    if (target === "qr-full") {
+      document.getElementById("institutionQrFullPage")?.click();
       return;
     }
 
