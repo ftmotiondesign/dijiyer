@@ -35,7 +35,9 @@ const app=firebase.apps.find(a=>a.name==="demoCardPublic")||firebase.initializeA
 function cleanPhone(s){return String(s||"").replace(/\D/g,"")} function add(label,icon,url,cls="",premium=false){if(!url)return;const a=document.createElement("a");a.className="a "+cls;a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML="<span>"+icon+"</span><b>"+label+"</b>"+(premium?'<i class="tag">ÖZEL</i>':"");$("actions").appendChild(a)}
 function wa(v){let p=cleanPhone(v);if(p.startsWith("0"))p="90"+p.slice(1);return p?"https://wa.me/"+p:""}
 function tel(v){const p=cleanPhone(v);return p?"tel:+"+(p.startsWith("90")?p:"90"+p.replace(/^0/,"")):""}
-function vcard(d){const text=["BEGIN:VCARD","VERSION:3.0","FN:"+d.name,"ORG:"+d.name,"TEL;TYPE=CELL:"+d.phone,"ADR;TYPE=WORK:;;"+d.address,"URL:"+d.website,"END:VCARD"].join("\n");return "data:text/vcard;charset=utf-8,"+encodeURIComponent(text)}
+function escV(v){return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;")}
+function vcardText(d){return ["BEGIN:VCARD","VERSION:3.0","FN:"+escV(d.name),"ORG:"+escV(d.name),"TEL;TYPE=WORK,VOICE:"+escV(d.phone),"TEL;TYPE=CELL:"+escV(d.whatsapp||d.phone),"EMAIL;TYPE=WORK:"+escV(d.emailContact),"ADR;TYPE=WORK:;;"+escV(d.address),"URL:"+escV(d.website),"NOTE:"+escV("DijiyeSor üzerinden kaydedildi"),"END:VCARD"].filter(Boolean).join("\r\n")}
+function addContactButton(d){if(!d.phone&&!d.whatsapp)return;const btn=document.createElement("button");btn.className="a premium";btn.style.cursor="pointer";btn.style.font="inherit";btn.innerHTML='<span>👤</span><b>Rehbere Kaydet</b><i class="tag">ÖZEL</i>';btn.onclick=()=>{const blob=new Blob([vcardText(d)],{type:"text/vcard;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(d.name||"dijiyesor-kisi").replace(/[^a-z0-9çğıöşüÇĞİÖŞÜ _-]/gi,"").trim().replace(/\s+/g,"-")+".vcf";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200)};$("actions").appendChild(btn)}
 (async()=>{try{const s=await db.collection("siteSettings").doc("home").get(),d=(s.data()||{}).demoCard;if(!d||!d.name)throw new Error("Demo firma henüz seçilmedi.");
 $("name").textContent=d.name;$("category").textContent=d.category||"İşletme";$("slogan").textContent=d.slogan||"";$("description").textContent=d.description||"";$("address").textContent=d.address||"-";$("phone").textContent=d.phone||"-";$("hours").textContent=d.hours||"Belirtilmedi";
 if(d.cover)$("cover").style.backgroundImage='linear-gradient(180deg,transparent 35%,rgba(0,0,0,.35)),url("'+d.cover.replace(/"/g,"%22")+'")';
@@ -43,7 +45,7 @@ if(d.cover)$("cover").style.backgroundImage='linear-gradient(180deg,transparent 
 if(d.logo){$("logo").src=d.logo;$("logo").style.display="block"}
 add("Ara","☎",tel(d.phone),"primary");add("WhatsApp","💬",wa(d.whatsapp||d.phone),"primary");add("Yol Tarifi","📍",d.maps);add("Instagram","◎",d.instagram);add("Web Sitesi","🌐",d.website);add("Facebook","f",d.facebook);add("TikTok","♪",d.tiktok);add("YouTube","▶",d.youtube);
 if(d.showReview)add("Google Yorum Yap","★",d.review,"premium",true);
-if(d.showContact)add("Rehbere Kaydet","👤",vcard(d),"premium",true);
+if(d.showContact)addContactButton(d);
 if(d.showCampaign)add("Kampanyayı Gör","🎁",d.campaign,"premium",true);
 if(d.showRoute)add("Konum Videosu","▶",d.routeVideo,"premium",true);
 if(d.show360)add("360° Mekanı Gez","360°",d.tour360,"premium",true);
