@@ -3399,6 +3399,48 @@ function institutionCardFacts(inst){
   return facts.slice(0,4);
 }
 
+
+// === DIJIYER DESKTOP SHOWCASE V1 ===
+function renderDesktopFeaturedBusinesses(){
+  const root=document.getElementById('desktopFeaturedBusinesses');
+  if(!root) return;
+
+  const rows=(Array.isArray(institutions)?institutions:[])
+    .filter(inst=>inst && inst.name)
+    .slice()
+    .sort((a,b)=>{
+      const vipDiff=Number(Boolean(b.vip))-Number(Boolean(a.vip));
+      if(vipDiff) return vipDiff;
+      const ratingDiff=Number(b.rating||0)-Number(a.rating||0);
+      if(ratingDiff) return ratingDiff;
+      return Number(b.reviewCount||0)-Number(a.reviewCount||0);
+    })
+    .slice(0,4);
+
+  if(!rows.length){
+    root.innerHTML='<div class="desktop-featured-loading">Henüz öne çıkan işletme bulunmuyor.</div>';
+    return;
+  }
+
+  root.innerHTML=rows.map(inst=>{
+    const image=inst.coverUrl || inst.logoUrl || '';
+    const location=inst.location || [inst.city,inst.district].filter(Boolean).join(', ') || 'Konum bilgisi';
+    const category=institutionCategoryLabel(inst);
+    return '<a class="desktop-featured-card" href="kurum.html?id='+encodeURIComponent(inst.id)+'">'+
+      '<div class="desktop-featured-card-media">'+
+        (image?'<img src="'+safePublicProfileUrl(image)+'" alt="'+escapeHtml(inst.name)+'">':'<span>'+escapeHtml(inst.emoji||'🏢')+'</span>')+
+        (inst.vip?'<em class="featured-sponsored">Sponsorlu</em>':'')+
+      '</div>'+
+      '<div class="desktop-featured-card-body">'+
+        '<strong>'+escapeHtml(inst.name)+'</strong>'+
+        '<span>'+escapeHtml(category)+'</span>'+
+        '<div class="desktop-featured-meta">⭐ '+Number(inst.rating||0).toFixed(1)+' <span>('+Number(inst.reviewCount||0)+')</span></div>'+
+        '<div class="desktop-featured-location">📍 '+escapeHtml(location)+'</div>'+
+      '</div>'+
+    '</a>';
+  }).join('');
+}
+
 function renderList() {
   const list = document.getElementById('institutionList');
   const data = getFilteredInstitutions();
@@ -3431,6 +3473,7 @@ function renderList() {
 
   syncExploreQuickFilterState();
   renderSponsoredAds();
+  renderDesktopFeaturedBusinesses();
 
   const institutionCards = data.map(inst => {
     const compared = compareInstitutionIds.has(String(inst.id));
