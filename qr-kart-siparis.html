@@ -179,7 +179,7 @@ $("submitBtn").onclick=async()=>{
    updatedAt:now()
   };
 
-  await db.collection("qrCardOrders").doc(code).set(payload);
+  await db.collection("siparisler").doc(code).set({...payload,orderType:"qr_card"});
 
   $("formLayout").style.display="none";
   $("successBox").classList.add("show");
