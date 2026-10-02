@@ -243,6 +243,19 @@ textarea{min-height:90px;resize:vertical}
       <button id="copyUrl" class="secondary">Linki Kopyala</button>
       <button id="downloadQr" class="secondary">QR PNG İndir</button>
     </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+      <button id="createCustomerCard" class="success" style="width:100%">Müşteriye Özel Kart Oluştur</button>
+      <div id="customerCardResult" class="hidden" style="margin-top:12px">
+        <div class="preview-status"><small>KALICI MÜŞTERİ KARTI</small><b id="customerCardName">-</b></div>
+        <div id="customerQr" class="qrwrap"></div>
+        <div id="customerCardUrl" class="url"></div>
+        <div class="actions">
+          <button id="openCustomerCard" class="primary">Kartı Aç</button>
+          <button id="copyCustomerUrl" class="secondary">Linki Kopyala</button>
+          <button id="downloadCustomerQr" class="secondary">QR PNG İndir</button>
+        </div>
+      </div>
+    </div>
     <p class="helper" style="margin-top:12px">Firma bilgilerini değiştirdikten sonra alttaki <b>Demo Sayfasını Güncelle</b> butonuna bas.</p>
   </aside>
 </main>
@@ -274,6 +287,8 @@ $("demoUrl").textContent=DEMO_URL;
 new QRCode($("qrcode"),{text:DEMO_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
 
 function val(id){return $(id).value.trim()}
+function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"kart"}
+let CUSTOMER_URL="";
 function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=>o[k]=$(k).checked);o.updatedAt=new Date().toISOString();return o}
 function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k]);updateNames(d.name||"");renderUploads()}
 function updateNames(name){$("activeFirmName").textContent=name||"Henüz firma seçilmedi";$("sideFirmName").textContent=name||"-"}
@@ -371,6 +386,33 @@ $("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor mus
 $("previewBtn").onclick=$("previewTop").onclick=()=>window.open(DEMO_URL,"_blank");
 $("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı";setTimeout(()=>$("copyUrl").textContent="Linki Kopyala",1400)};
 $("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas"),a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
+$("createCustomerCard").onclick=async()=>{
+ try{
+  const d=formData();
+  if(!d.name)throw new Error("Önce firma adını girin.");
+  const id=slugify(d.name);
+  const ref=db.collection("customerCards").doc(id);
+  const old=await ref.get();
+  const now=new Date().toISOString();
+  const payload={...d,cardId:id,status:"active",updatedAt:now};
+  if(!old.exists)payload.createdAt=now;
+  await ref.set(payload,{merge:true});
+  CUSTOMER_URL=new URL("customer-card.html?id="+encodeURIComponent(id),location.href).href;
+  $("customerCardName").textContent=d.name;
+  $("customerCardUrl").textContent=CUSTOMER_URL;
+  $("customerQr").innerHTML="";
+  new QRCode($("customerQr"),{text:CUSTOMER_URL,width:220,height:220,colorDark:"#111827",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+  $("customerCardResult").classList.remove("hidden");
+  $("saveMsg").textContent="Müşteriye özel kalıcı kart oluşturuldu: "+d.name;
+  $("saveMsg").className="msg ok";
+ }catch(e){
+  $("saveMsg").textContent="Kalıcı kart oluşturulamadı: "+e.message;
+  $("saveMsg").className="msg err";
+ }
+};
+$("openCustomerCard").onclick=()=>{if(CUSTOMER_URL)window.open(CUSTOMER_URL,"_blank")};
+$("copyCustomerUrl").onclick=async()=>{if(!CUSTOMER_URL)return;await navigator.clipboard.writeText(CUSTOMER_URL);$("copyCustomerUrl").textContent="Kopyalandı";setTimeout(()=>$("copyCustomerUrl").textContent="Linki Kopyala",1400)};
+$("downloadCustomerQr").onclick=()=>{const img=$("customerQr").querySelector("img"),canvas=$("customerQr").querySelector("canvas");if(!img&&!canvas)return;const a=document.createElement("a");a.download=slugify($("customerCardName").textContent)+"-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
 $("logoutTop").onclick=()=>auth.signOut();
 $("search").oninput=e=>{
  const q=e.target.value.trim().toLocaleLowerCase("tr");
