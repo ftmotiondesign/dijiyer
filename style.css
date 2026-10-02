@@ -23554,3 +23554,17 @@ body.home-page .decision-alternatives-head strong{
     font-weight:900;
   }
 }
+
+/* Bilgi Al: eski Teklif Takip konumundaki yardım butonu */
+.standalone-quote-page .missing-service-floating-btn{
+  border:0;
+  cursor:pointer;
+}
+.standalone-quote-page .missing-service-floating-btn .tracking-floating-label{
+  white-space:nowrap;
+}
+@media(max-width:820px){
+  .standalone-quote-page .missing-service-floating-btn{
+    z-index:100040!important;
+  }
+}
