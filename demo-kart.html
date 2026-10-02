@@ -117,9 +117,7 @@ a{text-decoration:none;color:inherit}button{font:inherit}
     </div>
 
     <div id="infoBox" class="info hidden">
-      <strong id="infoName"></strong>
       <span id="infoHours"></span>
-      <div id="infoAddress" style="margin-top:5px"></div>
     </div>
 
     <div class="qr-block">
@@ -194,10 +192,8 @@ function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:
   $("cardName").textContent=d.name;
   $("cardSlogan").textContent=d.slogan||d.description||"Dijital iletişim kartı";
   $("cardLocation").textContent=d.address||d.category||"";
-  $("infoName").textContent=d.name;
   $("infoHours").textContent=d.hours?("Çalışma Saatleri: "+d.hours):"";
-  $("infoAddress").textContent=d.address||"";
-  if(d.hours||d.address)$("infoBox").classList.remove("hidden");
+  if(d.hours)$("infoBox").classList.remove("hidden");
 
   if(d.logo){$("cardLogo").src=d.logo;$("cardLogo").style.display="block";$("cardLogo").alt=d.name;$("logoFallback").style.display="none"}
   else $("logoFallback").textContent=(d.name||"F").trim().charAt(0).toLocaleUpperCase("tr-TR");
