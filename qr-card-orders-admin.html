@@ -77,15 +77,15 @@ function render(){
  });
 }
 function load(){
- return db.collection("qrCardOrders").orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
-  orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+ return db.collection("siparisler").orderBy("createdAt","desc").limit(300).onSnapshot(snap=>{
+  orders=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.orderType==="qr_card"||x.source==="public_qr_order");
   const newCount=orders.filter(x=>x.status==="new").length;
   document.title=(newCount?"("+newCount+") ":"")+"Dijiyer | QR Kart Siparişleri";
   render();
  },e=>{$("pageMsg").textContent=e.message;$("pageMsg").className="msg err"});
 }
 async function setStatus(o,status){
- await db.collection("qrCardOrders").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
+ await db.collection("siparisler").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
  o.status=status;render();
 }
 async function activate(o){
@@ -94,7 +94,7 @@ async function activate(o){
   const now=new Date().toISOString();
   const payload={...(o.cardData||{}),cardId:o.cardId,status:"active",createdAt:o.createdAt||now,updatedAt:now,sourceOrderId:o.id};
   await db.collection("customerCards").doc(o.cardId).set(payload,{merge:true});
-  await db.collection("qrCardOrders").doc(o.id).set({status:"active",activatedAt:now,updatedAt:now},{merge:true});
+  await db.collection("siparisler").doc(o.id).set({status:"active",activatedAt:now,updatedAt:now},{merge:true});
   o.status="active";$("pageMsg").textContent="Kart aktifleştirildi: "+(o.businessName||o.cardId);$("pageMsg").className="msg ok";render();
  }catch(e){$("pageMsg").textContent="Aktifleştirilemedi: "+e.message;$("pageMsg").className="msg err"}
 }
