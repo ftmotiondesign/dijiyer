@@ -443,9 +443,7 @@ function mobileInstantInstitutionCardHtml(inst) {
 
       <div class="mobile-instant-result-actions">
         <button type="button" data-mobile-instant-view="${escapeHtml(String(inst.id))}">Kurumu Gör</button>
-        ${inst.offer
-          ? '<button type="button" class="offer" data-mobile-instant-offer="' + escapeHtml(String(inst.id)) + '">Fiyat Al</button>'
-          : ''}
+        <button type="button" class="offer mobile-compare-btn" data-mobile-instant-compare="${escapeHtml(String(inst.id))}">⚖️ Karşılaştır</button>
       </div>
     </article>
   `;
@@ -498,10 +496,22 @@ function showMobileInstitutionResults(shouldScroll = true) {
     });
   });
 
-  root.querySelectorAll('[data-mobile-instant-offer]').forEach(button => {
+  root.querySelectorAll('[data-mobile-instant-compare]').forEach(button => {
     button.addEventListener('click', event => {
       event.stopPropagation();
-      openInstitutionDirectQuote(button.dataset.mobileInstantOffer);
+
+      const id=String(button.dataset.mobileInstantCompare||'').trim();
+      if(!id)return;
+
+      try{
+        const key='dijiyerCompareInstitutionIdsV1';
+        const current=JSON.parse(localStorage.getItem(key)||'[]');
+        const ids=Array.isArray(current) ? current.map(String).filter(Boolean) : [];
+        const next=[id,...ids.filter(item=>item!==id)].slice(0,3);
+        localStorage.setItem(key,JSON.stringify(next));
+      }catch(_){}
+
+      window.location.href='karsilastir.html';
     });
   });
 
