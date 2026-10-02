@@ -553,6 +553,25 @@ adminBackToTop?.addEventListener("click",()=>{
 
 updateAdminBackToTop();
 
+const qrOrdersMainBtn=document.getElementById("qrOrdersMainBtn");
+qrOrdersMainBtn?.addEventListener("click",(event)=>{
+  if(adminLinkShouldOpenNormally(event))return;
+  event.preventDefault();
+  openSimpleAdminTab("overviewTabBtn");
+  window.setTimeout(()=>{
+    const section=document.getElementById("qrOrdersOverview");
+    const frame=document.getElementById("qrOrdersFrame");
+    const wrap=document.getElementById("qrOrdersFrameWrap");
+    if(wrap && wrap.style.display==="none"){
+      wrap.style.display="";
+      const toggle=document.getElementById("toggleQrOrdersBtn");
+      if(toggle)toggle.textContent="Siparişleri Gizle";
+    }
+    section?.scrollIntoView({behavior:"smooth",block:"start"});
+    if(frame && !frame.src.includes("embed=1")) frame.src="qr-card-orders-admin.html?embed=1";
+  },80);
+});
+
 initSimpleAdminNavigation();
 
 const ADMIN_UID = "Et5cFLiQNtgMdQcWIAcaQIOpQBe2";
