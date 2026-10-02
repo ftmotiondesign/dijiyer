@@ -301,6 +301,25 @@
           <button type="button" class="overview-refresh-btn" id="overviewRefreshBtn">Verileri Yenile</button>
         </div>
 
+        <section class="overview-panel" id="qrCardManagerOverview" style="margin-bottom:18px;overflow:hidden">
+          <div class="overview-panel-head" style="align-items:center">
+            <div>
+              <h4>QR / NFC Kart Yönetimi</h4>
+              <p>Yeni firma kartı oluşturun, kayıtlı QR kartları arayın, açın, güncelleyin veya silin.</p>
+            </div>
+            <button type="button" class="overview-refresh-btn" id="toggleQrManagerBtn">Kart Yönetimini Gizle</button>
+          </div>
+          <div id="qrManagerFrameWrap" style="margin-top:12px">
+            <iframe
+              id="qrManagerFrame"
+              src="demo-card-admin.html?embed=1"
+              title="QR NFC Kart Yönetimi"
+              style="width:100%;height:980px;border:1px solid #dbe3ee;border-radius:16px;background:#f4f7fb"
+              loading="lazy"
+            ></iframe>
+          </div>
+        </section>
+
         <section class="admin-today-board">
           <div class="admin-today-head">
             <div>
@@ -3647,5 +3666,23 @@
   <script src="admin-advanced.js?v=60"></script>
   <script src="admin-business-opportunities.js?v=1"></script>
 
+<script>
+(function(){
+  const btn=document.getElementById("toggleQrManagerBtn");
+  const wrap=document.getElementById("qrManagerFrameWrap");
+  if(btn&&wrap){
+    btn.addEventListener("click",()=>{
+      const hidden=wrap.hasAttribute("hidden");
+      if(hidden){
+        wrap.removeAttribute("hidden");
+        btn.textContent="Kart Yönetimini Gizle";
+      }else{
+        wrap.setAttribute("hidden","");
+        btn.textContent="Kart Yönetimini Aç";
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>
