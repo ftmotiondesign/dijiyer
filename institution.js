@@ -1058,6 +1058,24 @@ function startLiveQuoteWatcher() {
           .sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
 
         showLiveQuoteAlert(newest);
+
+        try {
+          if ("Notification" in window &&
+              Notification.permission === "granted" &&
+              (document.hidden || !document.hasFocus())) {
+            const service = newest?.service || "Yeni bilgi talebi";
+            const place = [newest?.city, newest?.district].filter(Boolean).join(" / ");
+            const notification = new Notification("DijiyeSor · Yeni müşteri talebi", {
+              body: service + (place ? " · " + place : ""),
+              tag: "dijiyer-new-quote-" + String(newest?.id || Date.now())
+            });
+            notification.onclick = () => {
+              window.focus();
+              try { setPanelTab("quotes"); } catch (_) {}
+              notification.close();
+            };
+          }
+        } catch (_) {}
       }
 
       if (added.length || modified) {
