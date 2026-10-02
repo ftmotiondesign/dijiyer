@@ -73,9 +73,13 @@ function render(){
   const open=el.querySelector(".openBtn");if(open)open.onclick=()=>window.open(o.permanentUrl,"_blank");
  });
 }
-async function load(){
- const snap=await db.collection("qrCardOrders").orderBy("createdAt","desc").limit(200).get();
- orders=snap.docs.map(d=>({id:d.id,...d.data()}));render();
+function load(){
+ return db.collection("qrCardOrders").orderBy("createdAt","desc").limit(200).onSnapshot(snap=>{
+  orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const newCount=orders.filter(x=>x.status==="new").length;
+  document.title=(newCount?"("+newCount+") ":"")+"Dijiyer | QR Kart Siparişleri";
+  render();
+ },e=>{$("pageMsg").textContent=e.message;$("pageMsg").className="msg err"});
 }
 async function setStatus(o,status){
  await db.collection("qrCardOrders").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
@@ -93,7 +97,7 @@ async function activate(o){
 }
 document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-filter]").forEach(x=>x.classList.remove("active"));b.classList.add("active");filter=b.dataset.filter;render()});
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
-auth.onAuthStateChanged(async user=>{if(user){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");try{await load()}catch(e){$("pageMsg").textContent=e.message;$("pageMsg").className="msg err"}}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
+auth.onAuthStateChanged(user=>{if(user){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");load()}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
 </script>
 </body>
 </html>
