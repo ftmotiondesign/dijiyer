@@ -9640,3 +9640,84 @@ details.matching-institutions .matching-buttons{
     grid-template-columns:1fr;
   }
 }
+
+
+/* ===== 2026-10 Admin sadeleştirme ===== */
+.admin-dashboard-shell{
+  display:block!important;
+}
+.admin-ad-side-panel{
+  display:none!important;
+}
+.admin-dashboard-main{
+  width:100%!important;
+  max-width:none!important;
+}
+.admin-main-nav.admin-main-nav-simple{
+  display:grid!important;
+  grid-template-columns:repeat(9,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin:0 0 12px!important;
+  padding:8px!important;
+  border:1px solid #dfe6ef!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  overflow:visible!important;
+}
+.admin-main-nav.admin-main-nav-simple .admin-main-nav-btn{
+  min-width:0!important;
+  min-height:46px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:10px 8px!important;
+  border:1px solid transparent!important;
+  border-radius:10px!important;
+  background:#f8fafc!important;
+  color:#334155!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:normal!important;
+}
+.admin-main-nav.admin-main-nav-simple .admin-main-nav-btn:hover{
+  background:#eef5ff!important;
+  border-color:#cfe0fb!important;
+  color:#1268da!important;
+}
+.admin-main-nav.admin-main-nav-simple .admin-main-nav-btn.active{
+  background:#1677ff!important;
+  color:#fff!important;
+  border-color:#1677ff!important;
+}
+#adminSubtabs{
+  margin-top:0!important;
+}
+#overviewSection .overview-visibility-control{
+  display:none!important;
+}
+#systemSection .overview-visibility-control{
+  display:flex!important;
+  margin:0 0 10px!important;
+  box-shadow:none!important;
+}
+@media(max-width:1180px){
+  .admin-main-nav.admin-main-nav-simple{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  .admin-main-nav.admin-main-nav-simple{
+    display:flex!important;
+    overflow-x:auto!important;
+    gap:7px!important;
+    padding:7px!important;
+    scrollbar-width:none;
+  }
+  .admin-main-nav.admin-main-nav-simple::-webkit-scrollbar{display:none}
+  .admin-main-nav.admin-main-nav-simple .admin-main-nav-btn{
+    flex:0 0 auto!important;
+    min-width:130px!important;
+    min-height:44px!important;
+  }
+}
