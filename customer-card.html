@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="index,follow">
+<title>DijiyeSor | Dijital İşletme Kartı</title>
+<link rel="icon" type="image/png" href="assets/brand/diji-favicon.png">
+<meta name="theme-color" content="#172033">
+<style>
+:root{
+  --brand:#1677ff;
+  --brand-dark:#0f5fc9;
+  --bg:#f5f6fa;
+  --text:#676b79;
+  --dark:#172033;
+  --white:#fff;
+  --green:#25D366;
+  --orange:#f59e0b;
+}
+*{box-sizing:border-box}
+html{background:#0f172a}
+body{
+  margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:var(--dark);
+  background:linear-gradient(155deg,rgba(15,23,42,.82),rgba(15,95,201,.78) 58%,rgba(15,23,42,.92));
+  background-size:cover;background-position:center;background-attachment:fixed
+}
+a{text-decoration:none;color:inherit}button{font:inherit}
+.shell{width:min(520px,100%);min-height:100vh;margin:auto;padding:22px 16px calc(26px + env(safe-area-inset-bottom))}
+.brand{text-align:center;color:#fff;padding:12px 8px 18px;text-shadow:0 2px 12px #0008}
+.logo-wrap{
+  width:106px;height:106px;margin:0 auto 14px;border-radius:50%;background:#fff;padding:12px;
+  display:grid;place-items:center;box-shadow:0 16px 38px #0005,0 0 0 5px #ffffff16
+}
+.logo-wrap img{width:100%;height:100%;object-fit:contain;display:none}
+.logo-fallback{font-size:42px;font-weight:900;color:var(--brand)}
+.brand h1{font-size:25px;margin:0 0 7px;letter-spacing:.2px}
+.brand p{margin:0;color:#e5e7eb;font-size:14px;line-height:1.55}
+.badge{display:inline-flex;margin-top:12px;background:var(--orange);color:#fff;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:900;letter-spacing:.7px}
+.top-save-contact{display:block;width:min(360px,100%);margin:14px auto 0;border:1px solid #b91c1c;background:#dc2626;color:#fff;padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;box-shadow:0 12px 28px #0003}
+.top-save-contact:hover{transform:translateY(-1px)}
+.top-save-hint{margin-top:7px;color:#e5e7eb;font-size:10px;font-weight:700;text-shadow:0 1px 8px #0006}
+.card{background:rgba(255,255,255,.95);border:1px solid #ffffff66;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:26px;padding:18px;box-shadow:0 22px 55px #0006}
+.quick-wrap{padding:4px 0 2px}
+.quick-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 2px 14px}
+.quick-head h2{margin:0;font-size:16px;color:var(--dark);letter-spacing:-.2px}
+.quick-head span{color:#9295a3;font-size:10px;font-weight:800;letter-spacing:.5px}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.quick a{
+  position:relative;min-width:0;min-height:118px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;
+  gap:12px;padding:16px;background:linear-gradient(180deg,#fff,#fafafd);border:1px solid #ececf3;border-radius:20px;
+  font-size:13px;font-weight:900;text-align:left;box-shadow:0 8px 20px #1720330a;overflow:hidden
+}
+.quick a::after{content:"›";position:absolute;right:14px;bottom:12px;color:#b8bac5;font-size:20px;font-weight:700}
+.quick .ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;background:var(--dark);box-shadow:0 10px 22px #17203326;font-size:23px}
+.quick .quick-label{display:block;font-size:13px;line-height:1.2;color:var(--dark)}
+.quick .quick-sub{display:block;margin-top:4px;color:#8a8d98;font-size:10px;line-height:1.35;font-weight:700}
+.quick .wa .ico{background:var(--green)}.quick .loc .ico{background:var(--orange)}
+.quick .ig .ico{background:linear-gradient(135deg,#833AB4,#E1306C,#FCAF45)}
+.quick .web .ico{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.quick .review .ico{background:linear-gradient(135deg,#f59e0b,#f97316)}
+.section-title{margin:20px 2px 10px;font-size:12px;font-weight:900;letter-spacing:.8px;color:#8a8d98}
+.actions{display:grid;gap:10px}.action{display:flex;align-items:center;gap:12px;min-height:62px;padding:11px 13px;border:1px solid #ececf2;border-radius:17px;background:#fff}
+.action .icon{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;background:#f0eff7;font-size:20px}
+.action .text{min-width:0;flex:1}.action b{display:block;font-size:14px}.action span{display:block;margin-top:4px;color:var(--text);font-size:11px;line-height:1.35}.action .arrow{font-size:20px;color:#b5b6be}
+.premium-chip{display:inline-block;margin-top:5px;background:#fff3d6;color:#995f00;padding:3px 6px;border-radius:999px;font-size:9px;font-weight:900}
+.viewer360{margin-top:16px;padding:12px;border:1px solid #e6e8ef;border-radius:18px;background:#fff}
+.viewer360-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.viewer360-head b{font-size:14px}
+.viewer360-head button{border:0;background:#f1f5f9;color:#334155;border-radius:10px;padding:7px 10px;font-weight:800;cursor:pointer}
+.viewer360-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#0f172a}
+.viewer360-frame a-scene{width:100%!important;height:100%!important;position:absolute!important;inset:0!important}
+.viewer360-frame canvas{touch-action:none!important}
+.viewer360-note{margin-top:8px;color:#7b8090;font-size:10px;line-height:1.45;text-align:center}
+.gallery-section{margin-top:18px}.gallery-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.gallery-head b{font-size:14px}.gallery-head span{font-size:10px;color:var(--muted);font-weight:800}.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.gallery-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;border:1px solid #e5e7eb;background:#f8fafc}
+.info{margin-top:17px;padding:15px;border-radius:17px;background:#f7f7fa;color:var(--text);font-size:12px;line-height:1.65}.info strong{display:block;color:var(--dark);font-size:13px;margin-bottom:4px}
+.qr-block{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;margin-top:14px;padding:14px;border-radius:17px;background:#f7f7fa}
+#qrCode{width:112px;height:112px;background:#fff;border-radius:12px;padding:6px;display:grid;place-items:center}
+.qr-copy b{display:block;font-size:14px;margin-bottom:5px;color:var(--dark)}
+.qr-copy span{display:block;color:var(--text);font-size:11px;line-height:1.45}
+.save{width:100%;margin-top:12px;border:1px solid #dedfea;background:#fff;color:var(--dark);padding:14px;border-radius:16px;font-weight:900;cursor:pointer}
+
+.save:hover{background:#f8fafc}.hint{margin-top:8px;text-align:center;color:var(--text);font-size:10px;line-height:1.4}
+.footer{color:#d0d3dc;text-align:center;font-size:11px;padding:17px 8px 2px;line-height:1.5}
+.empty{background:#fff;border-radius:24px;padding:45px 20px;text-align:center}.hidden{display:none!important}
+@media(max-width:390px){.quick{gap:10px}.quick a{min-height:110px;padding:14px}.quick .ico{width:48px;height:48px;border-radius:15px}.quick-head{margin-bottom:12px}#qrCode{width:98px;height:98px}.qr-block{grid-template-columns:98px 1fr}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section id="brandBlock" class="brand hidden">
+    <div class="logo-wrap"><img id="cardLogo" alt=""><div id="logoFallback" class="logo-fallback">F</div></div>
+    <h1 id="cardName">İşletme</h1>
+    <p><span id="cardLocation"></span><br><span id="cardSlogan"></span></p>
+    <button class="top-save-contact" id="saveContact" type="button">＋ Rehbere Ekle</button>
+    <div class="top-save-hint">Firma bilgilerini tek dokunuşla telefonunuza kaydedin.</div>
+  </section>
+
+  <section id="card" class="card hidden">
+    <div class="quick-wrap">
+      <div class="quick-head"><h2>Hızlı İletişim</h2><span>TEK DOKUNUŞLA</span></div>
+      <div id="quickActions" class="quick"></div>
+    </div>
+
+    <div id="paidTitle" class="section-title hidden">VIPKurum</div>
+    <div id="paidActions" class="actions"></div>
+
+    <div id="viewer360" class="viewer360 hidden">
+      <div class="viewer360-head"><b>360° Mekan Videosu</b><button id="close360" type="button">Kapat</button></div>
+      <div class="viewer360-frame" id="viewer360Frame"></div>
+      <div class="viewer360-note">Videoyu oynatın, ardından görüntüyü parmağınızla veya mouse ile sürükleyerek etrafa bakın.</div>
+    </div>
+
+    <div id="gallerySection" class="gallery-section hidden">
+      <div class="gallery-head"><b>Galeri</b><span>FOTOĞRAFLAR</span></div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </div>
+
+    <div id="infoBox" class="info hidden">
+      <span id="infoHours"></span>
+    </div>
+
+    <div class="qr-block">
+      <div id="qrCode"></div>
+      <div class="qr-copy">
+        <b>QR ile Aç</b>
+        <span>Telefon kameranızla QR kodu okutun ve dijital karta hızlıca ulaşın.</span>
+      </div>
+    </div>
+
+
+  </section>
+
+  <section id="loading" class="empty">Demo firma bilgisi yükleniyor...</section>
+  <div class="footer">DijiyeSor altyapısıyla hazırlanmıştır<br>NFC / QR Dijital Kart</div>
+</main>
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+const app=firebase.apps.find(a=>a.name==="demoCardPublic")||firebase.initializeApp(firebaseConfig,"demoCardPublic");
+const db=app.firestore(),$=id=>document.getElementById(id);
+const CARD_ID=new URLSearchParams(location.search).get("id")||"";
+function digits(v){return String(v||"").replace(/\D/g,"")}
+function telHref(v){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"tel:+"+p:""}
+function waHref(v,name){let p=digits(v);if(p.startsWith("0"))p="90"+p.slice(1);else if(p.length===10)p="90"+p;return p?"https://wa.me/"+p+"?text="+encodeURIComponent("Merhaba "+(name||"")+", bilgi almak istiyorum."):""}
+function ensureUrl(v){const s=String(v||"").trim();if(!s)return "";if(/^https?:\/\//i.test(s))return s;return "https://"+s.replace(/^\/+/, "")}
+function isDirectVideoUrl(v){
+ const s=String(v||"").trim().toLowerCase();
+ return /\.(mp4|webm|ogg)(\?|#|$)/i.test(s);
+}
+function instagramHref(v){const s=String(v||"").trim();if(!s)return "";if(/^https?:\/\//i.test(s))return s;return "https://instagram.com/"+s.replace(/^@/,"")}
+function mapsHref(d){if(d.maps)return d.maps;if(d.address)return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name+" "+d.address);return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(d.name||"")}
+function reviewHref(d){if(d.review)return d.review;return "https://www.google.com/search?q="+encodeURIComponent((d.name||"")+" Google yorumlar")}
+function addQuick(cls,icon,label,sub,url){if(!url)return;const a=document.createElement("a");a.className=cls||"";a.href=url;a.target=url.startsWith("tel:")?"_self":"_blank";a.rel="noopener";a.innerHTML='<div class="ico">'+icon+'</div><div class="quick-copy"><span class="quick-label">'+label+'</span><span class="quick-sub">'+sub+'</span></div>'; $("quickActions").appendChild(a)}
+function addPaid(icon,title,sub,url){if(!url)return;const a=document.createElement("a");a.className="action";a.href=url;a.target="_blank";a.rel="noopener";a.innerHTML='<div class="icon">'+icon+'</div><div class="text"><b>'+title+'</b><span>'+sub+'</span><em class="premium-chip">VIPKurum</em></div><div class="arrow">›</div>';$("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden")}
+function add360Action(url){
+ if(!url)return;
+ const clean=ensureUrl(url);
+ const a=document.createElement("a");
+ a.className="action";a.href="#";
+ a.innerHTML='<div class="icon">360°</div><div class="text"><b>360° Mekanı Gez</b><span>Videoyu sayfadan çıkmadan açın ve parmağınızla etrafı döndürün.</span><em class="premium-chip">VIPKurum</em></div><div class="arrow">›</div>';
+ a.onclick=e=>{
+  e.preventDefault();
+  if(!isDirectVideoUrl(clean)){
+   alert("Gerçek dokunmatik 360 oynatıcı için doğrudan MP4/WebM video linki gerekir. YouTube linki yerine 360 video dosyasının direkt bağlantısını kullanın.");
+   return;
+  }
+  const box=$("viewer360"),fr=$("viewer360Frame");
+  fr.innerHTML='<a-scene embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: true"><a-assets><video id="video360src" src="'+clean.replace(/"/g,"%22")+'" crossorigin="anonymous" playsinline webkit-playsinline loop></video></a-assets><a-videosphere src="#video360src" rotation="0 -90 0"></a-videosphere><a-camera look-controls="touchEnabled: true; mouseEnabled: true; magicWindowTrackingEnabled: true"></a-camera></a-scene>';
+  box.classList.remove("hidden");
+  setTimeout(()=>{
+   const v=document.getElementById("video360src");
+   if(v){v.play().catch(()=>{});}
+   box.scrollIntoView({behavior:"smooth",block:"center"});
+  },400);
+ };
+ $("paidActions").appendChild(a);$("paidTitle").classList.remove("hidden");
+}
+function escV(v){return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;")}
+function vcardText(d){return ["BEGIN:VCARD","VERSION:3.0","FN:"+escV(d.name),"ORG:"+escV(d.name),"TEL;TYPE=WORK,VOICE:"+escV(d.phone),"TEL;TYPE=CELL:"+escV(d.whatsapp||d.phone),"EMAIL;TYPE=WORK:"+escV(d.emailContact),"ADR;TYPE=WORK:;;"+escV(d.address),"URL:"+escV(d.website),"NOTE:"+escV("DijiyeSor dijital kart"),"END:VCARD"].join("\r\n")}
+function renderQr(){const box=$("qrCode");box.innerHTML="";new QRCode(box,{text:location.href,width:100,height:100,correctLevel:QRCode.CorrectLevel.M})}
+
+(async()=>{
+ try{
+  if(!CARD_ID)throw new Error("Kart bağlantısı eksik.");
+  const s=await db.collection("customerCards").doc(CARD_ID).get(),d=s.data();
+  if(!s.exists||!d||!d.name)throw new Error("Bu dijital kart henüz aktif değil.");
+
+  document.title=d.name+" | Dijital Kart";
+  $("cardName").textContent=d.name;
+  $("cardSlogan").textContent=d.slogan||d.description||"Dijital iletişim kartı";
+  $("cardLocation").textContent=d.address||d.category||"";
+  $("infoHours").textContent=d.hours?("Çalışma Saatleri: "+d.hours):"";
+  if(d.hours)$("infoBox").classList.remove("hidden");
+
+  if(d.logo){$("cardLogo").src=d.logo;$("cardLogo").style.display="block";$("cardLogo").alt=d.name;$("logoFallback").style.display="none"}
+  else $("logoFallback").textContent=(d.name||"F").trim().charAt(0).toLocaleUpperCase("tr-TR");
+
+  if(d.cover)document.body.style.background='linear-gradient(155deg,rgba(15,23,42,.78),rgba(15,95,201,.74) 58%,rgba(15,23,42,.9)),url("'+d.cover.replace(/"/g,"%22")+'") center/cover no-repeat fixed';
+
+  addQuick("call","☎","Ara","Telefonla hemen ulaşın",telHref(d.phone));
+  addQuick("wa","💬","WhatsApp","Mesaj gönderin",waHref(d.whatsapp||d.phone,d.name));
+  const mapUrl=mapsHref(d),igUrl=instagramHref(d.instagram),reviewUrl=reviewHref(d);
+  addQuick("loc","📍","Konum","Yol tarifini açın",mapUrl);
+  addQuick("ig",'<svg viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;display:block;fill:none;stroke:currentColor;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"></circle></svg>',"Instagram","Sosyal medya hesabını açın",igUrl);
+  addQuick("web","🌐","Web Sitesi","Firma web sitesini inceleyin",d.website);
+  addQuick("review","★","Google Yorum","Yorumları açın",reviewUrl);
+
+  if(d.showReview&&d.review)addPaid("★","Google Yorum Yap","Google işletme profilinde değerlendirme bırakın.",d.review);
+  if(d.showCampaign)addPaid("🎁","Kampanyayı Gör","Güncel fırsat ve kampanyaları inceleyin.",ensureUrl(d.campaign));
+  if(d.showRoute)addPaid("▶","Konum Videosu","İşletmeye sanal yol tarifi videosunu izleyin.",ensureUrl(d.routeVideo));
+  if(d.show360)add360Action(d.tour360);
+  if(d.showPromo)addPaid("🎬","Tanıtım Videosu","İşletmenin tanıtım videosunu izleyin.",ensureUrl(d.promoVideo));
+  if(d.showInfoRequest){const link=waHref(d.whatsapp||d.phone,d.name);addPaid("✉","Bilgi Al","WhatsApp üzerinden hızlı bilgi isteyin.",link)}
+
+  if(d.gallery){
+    const urls=String(d.gallery).split(",").map(x=>x.trim()).filter(Boolean).slice(0,12);
+    if(urls.length){
+      $("galleryGrid").innerHTML="";
+      urls.forEach(u=>{const img=document.createElement("img");img.src=u;img.loading="lazy";img.alt=d.name+" galeri görseli";$("galleryGrid").appendChild(img)});
+      $("gallerySection").classList.remove("hidden");
+    }
+  }
+
+  $("close360").onclick=()=>{const v=document.getElementById("video360src");if(v)v.pause();$("viewer360Frame").innerHTML="";$("viewer360").classList.add("hidden")};
+  renderQr();
+  $("saveContact").onclick=()=>{
+    const blob=new Blob([vcardText(d)],{type:"text/vcard;charset=utf-8"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=(d.name||"firma").replace(/[^a-z0-9çğıöşüÇĞİÖŞÜ _-]/gi,"").trim().replace(/\s+/g,"-")+".vcf";
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
+  };
+
+  $("loading").classList.add("hidden");$("brandBlock").classList.remove("hidden");$("card").classList.remove("hidden");
+ }catch(e){$("loading").textContent=e.message}
+})();
+</script>
+</body>
+</html>
