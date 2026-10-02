@@ -3532,16 +3532,12 @@ function renderList() {
           <div class="rating">⭐ ${Number(inst.rating || 0).toFixed(1)} <span>(${Number(inst.reviewCount || 0)} değerlendirme)</span>${Number(inst.recommendationCount||0)>0 && Number.isFinite(Number(inst.recommendationRate)) ? '<em class="institution-recommendation">👍 '+Number(inst.recommendationYes||0)+' kişi · %'+Math.round(Number(inst.recommendationRate))+'</em>' : ''}</div>
           ${institutionCardFacts(inst).length ? '<div class="institution-card-facts">'+institutionCardFacts(inst).map(f=>'<span><b>'+f.icon+'</b>'+escapeHtml(f.text)+'</span>').join('')+'</div>' : ''}
           ${inst.description ? '<p class="institution-card-description">'+escapeHtml(String(inst.description).slice(0,110))+(String(inst.description).length>110?'…':'')+'</p>' : ''}
-          <div class="card-actions institution-card-actions-new">
-            <button type="button" class="institution-view-btn" data-view-institution="${escapeHtml(String(inst.id))}">Kurumu İncele</button>
-            <button
-              type="button"
-              class="compare-mini-btn ${compared ? 'selected' : ''}"
-              data-compare-toggle="${escapeHtml(String(inst.id))}"
-              aria-pressed="${compared ? 'true' : 'false'}"
-            >${compared ? '✓ Karşılaştırmada' : '＋ Karşılaştır'}</button>
+          <div class="card-actions institution-card-actions-new focused-card-actions">
+            <button type="button" class="institution-view-btn" data-view-institution="${escapeHtml(String(inst.id))}">Kurumu Gör</button>
+            <button type="button" class="institution-info-btn" data-quick-offer="${escapeHtml(String(inst.id))}">Bilgi Al</button>
+            <button type="button" class="institution-appointment-btn" data-appointment-institution="${escapeHtml(String(inst.id))}">Randevu Al</button>
           </div>
-          ${inst.offer ? '<button class="institution-secondary-offer" data-quick-offer="'+escapeHtml(String(inst.id))+'">Bu kurumdan bilgi / fiyat iste</button>' : ''}
+          ${inst.campaign ? '<div class="institution-card-campaign">🎯 '+escapeHtml(String(inst.campaign))+'</div>' : ''}
         </div>
       </article>
     `;
@@ -3597,6 +3593,13 @@ function renderList() {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       openInstitutionDirectQuote(btn.dataset.quickOffer);
+    });
+  });
+
+  document.querySelectorAll('[data-appointment-institution]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      window.location.href='randevu.html?kurum='+encodeURIComponent(btn.dataset.appointmentInstitution);
     });
   });
 
