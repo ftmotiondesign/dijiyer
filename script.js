@@ -9362,3 +9362,28 @@ syncCustomCategoryTaxonomyFromSettings();
 
   document.getElementById('mobileTopInstitutionBtn')?.addEventListener('click',openInstitutionAccess);
 })();;
+
+
+/* firma-ara.html kurum basvuru yonlendirmesi */
+(function openInstitutionApplicationFromSearchPage(){
+  try{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('firma-ekle')!=='1')return;
+
+    const openForm=()=>{
+      const button=document.getElementById('institutionAddBtn');
+      if(button){
+        button.click();
+        const cleanUrl=new URL(window.location.href);
+        cleanUrl.searchParams.delete('firma-ekle');
+        history.replaceState({},'',cleanUrl.pathname+cleanUrl.search+cleanUrl.hash);
+      }
+    };
+
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',()=>setTimeout(openForm,180),{once:true});
+    }else{
+      setTimeout(openForm,180);
+    }
+  }catch(_){}
+})();
