@@ -82,7 +82,7 @@
         <a class="dijiyer-global-brand" href="index.html" aria-label="Dijiyer ana sayfası" title="Ana sayfaya dön">
           <span class="dijiyer-global-brand-mark" aria-hidden="true">D</span>
           <span class="dijiyer-global-brand-copy">
-            <strong>Dijiyer</strong>
+            <strong>DijiyeSor</strong>
             <small>Bul. Karşılaştır. Teklif Al.</small>
           </span>
         </a>
