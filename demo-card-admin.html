@@ -6,95 +6,201 @@
 <meta name="robots" content="noindex,nofollow">
 <title>DijiyeSor QR Demo Kart Yönetimi</title>
 <style>
-:root{--b:#1677ff;--bg:#f4f7fb;--text:#172033;--muted:#667085;--line:#d9e2ef}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.top{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:800}.mark{width:38px;height:38px;border-radius:12px;background:var(--b);color:#fff;display:grid;place-items:center;font-size:22px}
-.top a.btn{background:#eef4ff;color:#125ec9;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}
-.shell{max-width:1180px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1.25fr .75fr;gap:20px}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 28px rgba(20,42,90,.06)}
-h1,h2,h3,p{margin-top:0}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
-label{display:block;font-size:13px;font-weight:800;color:#344054}input,textarea,select{width:100%;margin-top:6px;border:1px solid #cfd8e5;border-radius:11px;padding:11px 12px;font:inherit;background:#fff}textarea{min-height:88px;resize:vertical}
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.primary,.secondary,.danger{border:0;border-radius:11px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:var(--b);color:#fff}.secondary{background:#edf3fb;color:#24415f}.danger{background:#fff0f0;color:#b42318}
-.msg{margin-top:12px;font-weight:700;font-size:13px}.ok{color:#067647}.err{color:#b42318}
+:root{
+  --b:#1677ff;--b2:#0f5fc9;--bg:#f4f7fb;--text:#172033;--muted:#667085;
+  --line:#dbe3ee;--green:#16a34a;--orange:#f59e0b;--danger:#b42318
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}
+.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:900}
+.mark{width:38px;height:38px;border-radius:12px;background:var(--b);color:#fff;display:grid;place-items:center;font-size:22px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.top a.btn,.top button{border:0;background:#eef4ff;color:#125ec9;padding:10px 13px;border-radius:10px;text-decoration:none;font-weight:800;cursor:pointer}
+.shell{max-width:1240px;margin:20px auto;padding:0 16px 90px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px}
+.main{min-width:0}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 26px rgba(20,42,90,.05)}
+.card+.card{margin-top:16px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:24px;margin-bottom:6px}
+h2{font-size:18px;margin-bottom:6px}
+h3{font-size:14px;margin:0}
+.muted{color:var(--muted)}
+.helper{font-size:12px;color:var(--muted);margin:3px 0 0}
+.active-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(135deg,#edf5ff,#f8fbff);border:1px solid #cfe2ff;border-radius:16px;padding:14px 16px;margin-bottom:16px}
+.active-banner b{display:block;font-size:15px}.active-banner span{font-size:12px;color:#55708f}
+.step{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-num{width:30px;height:30px;border-radius:10px;background:#eaf2ff;color:#155db8;display:grid;place-items:center;font-weight:900;font-size:13px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:800;color:#344054}
+input,textarea,select{width:100%;margin-top:6px;border:1px solid #cfd8e5;border-radius:11px;padding:11px 12px;background:#fff;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}
+textarea{min-height:90px;resize:vertical}
+.field-note{font-size:10px;color:#98a2b3;margin-top:4px}
+.accordion{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.accordion+.accordion{margin-top:10px}
+.acc-head{width:100%;border:0;background:#fff;padding:14px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;text-align:left}
+.acc-head:hover{background:#fafcff}
+.acc-title{display:flex;align-items:center;gap:10px;font-weight:900}
+.acc-icon{width:34px;height:34px;border-radius:10px;background:#f1f5f9;display:grid;place-items:center}
+.acc-arrow{transition:.2s}.accordion.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{display:none;padding:0 15px 15px}.accordion.open .acc-body{display:block}
+.switches{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.switch{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff}
+.switch input{width:auto;margin:2px 0 0}.switch b{display:block;font-size:12px}.switch small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
+.paid{font-size:9px!important;color:#995f00!important;background:#fff3d6;padding:3px 6px;border-radius:999px;display:inline-block!important;margin-top:5px!important;font-weight:900!important}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.primary,.secondary,.danger,.success{border:0;border-radius:11px;padding:11px 14px;font-weight:850;cursor:pointer}
+.primary{background:var(--b);color:#fff}.primary:hover{background:var(--b2)}
+.secondary{background:#edf3fb;color:#24415f}.danger{background:#fff0f0;color:var(--danger)}.success{background:#eaf8ef;color:#137a39}
+.msg{margin-top:10px;font-weight:700;font-size:12px}.ok{color:#067647}.err{color:#b42318}
 .login{max-width:460px;margin:60px auto}.hidden{display:none!important}
-.switches{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.switch{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px}.switch input{width:auto;margin:0}
-.preview{position:sticky;top:88px}.qrwrap{display:grid;place-items:center;padding:16px;border:1px dashed #c7d2e2;border-radius:16px;background:#fafcff}.url{font-size:12px;word-break:break-all;background:#f6f8fb;border-radius:9px;padding:10px;margin-top:10px}
-.list{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:14px}.row{padding:12px;border-bottom:1px solid #edf1f6;display:flex;justify-content:space-between;gap:10px;align-items:center}.row:last-child{border-bottom:0}.row b{display:block}.row small{color:var(--muted)}.row button{border:0;background:#eef4ff;color:#155db8;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer}
-.search{margin-bottom:10px}
-@media(max-width:850px){.shell{grid-template-columns:1fr}.preview{position:static}.grid,.switches{grid-template-columns:1fr}}
+.preview{position:sticky;top:78px;height:max-content}
+.qrwrap{display:grid;place-items:center;padding:14px;border:1px dashed #c7d2e2;border-radius:16px;background:#fafcff}
+.url{font-size:11px;word-break:break-all;background:#f6f8fb;border-radius:9px;padding:9px;margin-top:9px;color:#475467}
+.preview-status{margin-bottom:12px;padding:12px;border-radius:12px;background:#f5f9ff;border:1px solid #d9e8ff}
+.preview-status small{display:block;color:#667085;font-size:10px;font-weight:800}.preview-status b{display:block;margin-top:4px}
+.list{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:14px}
+.row{padding:11px 12px;border-bottom:1px solid #edf1f6;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.row:last-child{border-bottom:0}.row b{display:block;font-size:13px}.row small{color:var(--muted);font-size:11px}
+.row button{border:0;background:#eef4ff;color:#155db8;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer}
+.search{margin:0 0 10px}
+.sticky-save{position:fixed;left:0;right:0;bottom:0;background:#fffffff2;backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:30;padding:10px 16px}
+.sticky-inner{max-width:1240px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sticky-info b{display:block;font-size:12px}.sticky-info span{font-size:11px;color:var(--muted)}
+.sticky-actions{display:flex;gap:8px}
+.mini-badge{font-size:10px;font-weight:900;background:#eaf2ff;color:#155db8;padding:5px 8px;border-radius:999px}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.preview{position:static}.grid,.switches{grid-template-columns:1fr}.sticky-info{display:none}.sticky-inner{justify-content:flex-end}}
+@media(max-width:560px){.top{padding:10px 12px}.brand span:last-child{display:none}.shell{padding:0 10px 90px;margin-top:12px}.card{padding:14px}.active-banner{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.sticky-actions{width:100%}.sticky-actions button{flex:1}}
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="admin.html"><span class="mark">D</span><span>DijiyeSor · QR Demo Kart</span></a><a class="btn" href="admin.html">Yönetim Paneli</a></header>
+<header class="top">
+  <a class="brand" href="admin.html"><span class="mark">D</span><span>DijiyeSor · QR Demo Kart</span></a>
+  <div class="top-actions"><a class="btn" href="admin.html">Ana Yönetim</a><button id="logoutTop" class="danger">Çıkış</button></div>
+</header>
 
 <section id="loginBox" class="card login">
-<h2>Yönetici Girişi</h2><p class="muted">Demo kart bilgisini değiştirmek için giriş yapın.</p>
-<label>E-posta<input id="email" type="email"></label><br>
-<label>Şifre<input id="password" type="password"></label>
-<div class="actions"><button id="loginBtn" class="primary">Giriş Yap</button></div><div id="loginMsg" class="msg"></div>
+  <h2>Yönetici Girişi</h2>
+  <p class="muted">Demo kartını yönetmek için giriş yapın.</p>
+  <label>E-posta<input id="email" type="email"></label><br>
+  <label>Şifre<input id="password" type="password"></label>
+  <div class="actions"><button id="loginBtn" class="primary">Giriş Yap</button></div>
+  <div id="loginMsg" class="msg"></div>
 </section>
 
 <main id="app" class="shell hidden">
-<div>
-<section class="card">
-<h1>Aktif Demo Firması</h1><p class="muted">Fiziksel karttaki QR kod değişmez. Burada hangi firma aktifse QR okutulduğunda o firma görünür.</p>
-<div class="grid">
-<label>Firma Adı<input id="name"></label>
-<label>Sektör<input id="category" placeholder="Örn. Sürücü Kursu"></label>
-<label>Telefon<input id="phone" placeholder="05..."></label>
-<label>WhatsApp<input id="whatsapp" placeholder="905..."></label>\n<label>E-posta<input id="emailContact" type="email" placeholder="firma@ornek.com"></label>
-<label class="full">Adres<input id="address"></label>
-<label>Instagram<input id="instagram" placeholder="https://instagram.com/..."></label>
-<label>Web Sitesi<input id="website" placeholder="https://..."></label>
-<label>Google Maps / Yol Tarifi<input id="maps" placeholder="https://maps.google.com/..."></label>
-<label>Google Yorum Linki<input id="review" placeholder="https://g.page/r/.../review"></label>
-<label class="full">Logo URL<input id="logo" placeholder="https://..."></label>
-<label class="full">Kapak Görseli URL<input id="cover" placeholder="https://..."></label>
-<label class="full">Kısa Slogan<input id="slogan" placeholder="Örn. Güvenle keşfet, kolayca ulaş."></label>
-<label class="full">Kısa Açıklama<textarea id="description"></textarea></label>
-<label>Çalışma Saatleri<input id="hours" placeholder="Örn. Pzt-Cmt 09:00-19:00"></label>
-<label>Hizmetler<input id="services" placeholder="Örn. B Sınıfı, A2, Direksiyon Eğitimi"></label>
-<label>Facebook<input id="facebook" placeholder="https://facebook.com/..."></label>
-<label>TikTok<input id="tiktok" placeholder="https://tiktok.com/@..."></label>
-<label>YouTube<input id="youtube" placeholder="https://youtube.com/..."></label>
-<label class="full">Galeri Görselleri<input id="gallery" placeholder="3 görsel URL'sini virgülle ayırın"></label>
-<label>Kampanya Linki<input id="campaign"></label>
-<label>Konum Videosu<input id="routeVideo"></label>
-<label>360° Tur Linki<input id="tour360"></label>
-<label>Tanıtım Videosu<input id="promoVideo"></label>
-</div>
-<h3 style="margin-top:18px">Butonları Göster</h3>
-<div class="switches">
-<label class="switch"><input id="showReview" type="checkbox">Google Yorum <b>Ücretli</b></label>
-<label class="switch"><input id="showContact" type="checkbox">Rehbere Kaydet <b>Ücretli</b></label>
-<label class="switch"><input id="showCampaign" type="checkbox">Kampanya <b>Ücretli</b></label>
-<label class="switch"><input id="showRoute" type="checkbox">Konum Videosu <b>Ücretli</b></label>
-<label class="switch"><input id="show360" type="checkbox">360° Mekan Turu <b>Ücretli</b></label>
-<label class="switch"><input id="showPromo" type="checkbox">Tanıtım Videosu <b>Ücretli</b></label>
-<label class="switch"><input id="showGallery" type="checkbox">Geniş Galeri <b>Ücretli</b></label>
-<label class="switch"><input id="showInfoRequest" type="checkbox">Bilgi Al Butonu <b>Ücretli</b></label>
-</div>
-<div class="actions"><button id="saveBtn" class="primary">Demo Sayfasını Güncelle</button><button id="previewBtn" class="secondary">Demo Sayfasını Aç</button></div>
-<div id="saveMsg" class="msg"></div>
-</section>
+  <div class="main">
+    <div class="active-banner">
+      <div><span>ŞU AN QR'DA GÖRÜNEN FİRMA</span><b id="activeFirmName">Yükleniyor...</b></div>
+      <button id="previewTop" class="secondary">Kartı Görüntüle</button>
+    </div>
 
-<section class="card" style="margin-top:20px">
-<h2>Kayıtlı Kurumlardan Tek Tıkla Demoya Al</h2><p class="muted">DijiyeSor'daki mevcut kurumları buradan seçebilirsiniz.</p>
-<input id="search" class="search" placeholder="Firma ara...">
-<div id="institutionList" class="list"><div class="row">Kurumlar yükleniyor...</div></div>
-</section>
-</div>
+    <section class="card">
+      <div class="step"><span class="step-num">1</span><div><h2>Firma Seç</h2><p class="helper">DijiyeSor'daki kayıtlı firmayı bulup tek tıkla forma aktar.</p></div></div>
+      <input id="search" class="search" placeholder="Firma adı, sektör, il veya ilçe ara...">
+      <div id="institutionList" class="list"><div class="row">Kurumlar yükleniyor...</div></div>
+    </section>
 
-<aside class="card preview">
-<h2>Tek ve Sabit QR Kod</h2><p class="muted">Bu QR'ı DijiyeSor logolu örnek karta bir kez bastırın. 50 firmada aynı kartı kullanabilirsiniz.</p>
-<div class="qrwrap"><div id="qrcode"></div></div>
-<div id="demoUrl" class="url"></div>
-<div class="actions"><button id="downloadQr" class="primary">QR PNG İndir</button><button id="copyUrl" class="secondary">Linki Kopyala</button></div>
-<p class="muted" style="margin-top:14px;font-size:13px">Firma değiştiğinde QR kod değişmez; sadece açılan demo sayfasının içeriği değişir.</p>
-<button id="logoutBtn" class="danger">Çıkış Yap</button>
-</aside>
+    <section class="card">
+      <div class="step"><span class="step-num">2</span><div><h2>Demo Kart Bilgileri</h2><p class="helper">Sadece ihtiyacın olan bölümü açıp düzenle. Diğerleri kapalı kalsın.</p></div></div>
+
+      <div class="accordion open">
+        <button class="acc-head" type="button"><span class="acc-title"><span class="acc-icon">🏢</span>Temel Bilgiler</span><span class="acc-arrow">⌄</span></button>
+        <div class="acc-body">
+          <div class="grid">
+            <label>Firma Adı<input id="name"></label>
+            <label>Sektör<input id="category" placeholder="Örn. Sürücü Kursu"></label>
+            <label>Telefon<input id="phone" placeholder="05xx xxx xx xx"></label>
+            <label>WhatsApp<input id="whatsapp" placeholder="05xx xxx xx xx"></label>
+            <label>E-posta<input id="emailContact" type="email" placeholder="firma@ornek.com"></label>
+            <label>Çalışma Saatleri<input id="hours" placeholder="Pzt-Cmt 09:00-19:00"></label>
+            <label class="full">Adres<input id="address"></label>
+            <label class="full">Kısa Slogan<input id="slogan" placeholder="Kısa ve akılda kalıcı slogan"></label>
+            <label class="full">Kısa Açıklama<textarea id="description" placeholder="Firma hakkında kısa açıklama"></textarea></label>
+            <label class="full">Hizmetler<input id="services" placeholder="Virgülle ayırın: B Sınıfı, A2, Direksiyon Eğitimi"></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="acc-head" type="button"><span class="acc-title"><span class="acc-icon">🔗</span>Hızlı Bağlantılar</span><span class="acc-arrow">⌄</span></button>
+        <div class="acc-body">
+          <div class="grid">
+            <label>Instagram<input id="instagram" placeholder="@kullaniciadi veya tam link"></label>
+            <label>Web Sitesi<input id="website" placeholder="https://..."></label>
+            <label>Google Maps / Yol Tarifi<input id="maps" placeholder="Boş kalırsa adresle aranır"></label>
+            <label>Google Yorum Linki<input id="review" placeholder="Doğrudan yorum linki"></label>
+            <label>Facebook<input id="facebook" placeholder="https://facebook.com/..."></label>
+            <label>TikTok<input id="tiktok" placeholder="https://tiktok.com/@..."></label>
+            <label class="full">YouTube<input id="youtube" placeholder="https://youtube.com/..."></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="acc-head" type="button"><span class="acc-title"><span class="acc-icon">🖼️</span>Logo ve Görseller</span><span class="acc-arrow">⌄</span></button>
+        <div class="acc-body">
+          <div class="grid">
+            <label class="full">Logo URL<input id="logo" placeholder="https://..."></label>
+            <label class="full">Kapak Görseli URL<input id="cover" placeholder="https://..."></label>
+            <label class="full">Galeri Görselleri<input id="gallery" placeholder="Görsel linklerini virgülle ayırın"></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <button class="acc-head" type="button"><span class="acc-title"><span class="acc-icon">⭐</span>Ücretli / Özel Özellikler</span><span class="acc-arrow">⌄</span></button>
+        <div class="acc-body">
+          <div class="grid" style="margin-bottom:12px">
+            <label>Kampanya Linki<input id="campaign" placeholder="https://..."></label>
+            <label>Konum Videosu<input id="routeVideo" placeholder="https://..."></label>
+            <label>360° Tur Linki<input id="tour360" placeholder="https://..."></label>
+            <label>Tanıtım Videosu<input id="promoVideo" placeholder="https://..."></label>
+          </div>
+          <div class="switches">
+            <label class="switch"><input id="showReview" type="checkbox"><span><b>Google Yorum</b><small>Doğrudan yorum bağlantısı</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showContact" type="checkbox"><span><b>Rehbere Kaydet</b><small>VCF kişi kartı oluşturur</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showCampaign" type="checkbox"><span><b>Kampanya</b><small>Aktif kampanya sayfası</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showRoute" type="checkbox"><span><b>Konum Videosu</b><small>Video ile yol tarifi</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="show360" type="checkbox"><span><b>360° Mekan Turu</b><small>Sanal mekan gezisi</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showPromo" type="checkbox"><span><b>Tanıtım Videosu</b><small>Firma tanıtım videosu</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showGallery" type="checkbox"><span><b>Geniş Galeri</b><small>Ek fotoğraf alanı</small><span class="paid">ÜCRETLİ</span></span></label>
+            <label class="switch"><input id="showInfoRequest" type="checkbox"><span><b>Bilgi Al</b><small>WhatsApp bilgi talebi</small><span class="paid">ÜCRETLİ</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div id="saveMsg" class="msg"></div>
+    </section>
+  </div>
+
+  <aside class="preview card">
+    <div class="preview-status"><small>AKTİF DEMO</small><b id="sideFirmName">-</b></div>
+    <h2>Sabit QR Kod</h2>
+    <p class="muted" style="font-size:12px">Bu QR fiziksel demo kartına bir kez basılır. Firma değişse bile QR değişmez.</p>
+    <div class="qrwrap"><div id="qrcode"></div></div>
+    <div id="demoUrl" class="url"></div>
+    <div class="actions">
+      <button id="previewBtn" class="primary">Demo Kartı Aç</button>
+      <button id="copyUrl" class="secondary">Linki Kopyala</button>
+      <button id="downloadQr" class="secondary">QR PNG İndir</button>
+    </div>
+    <p class="helper" style="margin-top:12px">Firma bilgilerini değiştirdikten sonra alttaki <b>Demo Sayfasını Güncelle</b> butonuna bas.</p>
+  </aside>
 </main>
+
+<div id="stickyBar" class="sticky-save hidden">
+  <div class="sticky-inner">
+    <div class="sticky-info"><b>Demo kartı düzenliyorsun</b><span>Değişiklikler kaydedilmeden QR sayfasına yansımaz.</span></div>
+    <div class="sticky-actions">
+      <button id="clearBtn" class="secondary">Formu Temizle</button>
+      <button id="saveBtn" class="primary">Demo Sayfasını Güncelle</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -103,8 +209,7 @@ label{display:block;font-size:13px;font-weight:800;color:#344054}input,textarea,
 <script>
 const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
 const appFb=firebase.apps.find(a=>a.name==="demoCardAdmin")||firebase.initializeApp(firebaseConfig,"demoCardAdmin");
-const auth=appFb.auth(),db=appFb.firestore();
-const $=id=>document.getElementById(id);
+const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);
 const fields=["name","category","phone","whatsapp","emailContact","address","instagram","website","maps","review","logo","cover","slogan","description","hours","services","facebook","tiktok","youtube","gallery","campaign","routeVideo","tour360","promoVideo"];
 const toggles=["showReview","showContact","showCampaign","showRoute","show360","showPromo","showGallery","showInfoRequest"];
 const DEMO_URL=new URL("demo-kart.html",location.href).href;
@@ -113,30 +218,55 @@ new QRCode($("qrcode"),{text:DEMO_URL,width:220,height:220,colorDark:"#111827",c
 
 function val(id){return $(id).value.trim()}
 function formData(){const o={};fields.forEach(k=>o[k]=val(k));toggles.forEach(k=>o[k]=$(k).checked);o.updatedAt=new Date().toISOString();return o}
-function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k])}
+function fill(d={}){fields.forEach(k=>$(k).value=d[k]||"");toggles.forEach(k=>$(k).checked=!!d[k]);updateNames(d.name||"")}
+function updateNames(name){$("activeFirmName").textContent=name||"Henüz firma seçilmedi";$("sideFirmName").textContent=name||"-"}
 async function loadDemo(){const s=await db.collection("siteSettings").doc("home").get();fill((s.data()||{}).demoCard||{})}
 async function saveDemo(data=formData()){await db.collection("siteSettings").doc("home").set({demoCard:data},{merge:true});fill(data)}
-async function loadInstitutions(){
- const snap=await db.collection("institutions").limit(200).get();
- const arr=snap.docs.map(d=>({id:d.id,...d.data()})); window._inst=arr; renderInstitutions(arr);
-}
+async function loadInstitutions(){const snap=await db.collection("institutions").limit(200).get();const arr=snap.docs.map(d=>({id:d.id,...d.data()}));window._inst=arr;renderInstitutions(arr)}
 function renderInstitutions(arr){
- const box=$("institutionList"); if(!arr.length){box.innerHTML='<div class="row">Kayıtlı kurum bulunamadı.</div>';return}
- box.innerHTML=arr.map((x,i)=>'<div class="row"><div><b>'+esc(x.name||x.institutionName||"İsimsiz kurum")+'</b><small>'+esc([x.category,x.city,x.district].filter(Boolean).join(" · "))+'</small></div><button data-i="'+i+'">Demoya Al</button></div>').join("");
+ const box=$("institutionList");
+ if(!arr.length){box.innerHTML='<div class="row">Kayıtlı kurum bulunamadı.</div>';return}
+ box.innerHTML=arr.map((x,i)=>'<div class="row"><div><b>'+esc(x.name||x.institutionName||"İsimsiz kurum")+'</b><small>'+esc([x.category||x.mainCategory,x.city,x.district].filter(Boolean).join(" · "))+'</small></div><button data-i="'+i+'">Demoya Al</button></div>').join("");
  box.querySelectorAll("button").forEach(b=>b.onclick=()=>useInstitution(arr[+b.dataset.i]));
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function useInstitution(x){
- fill({name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",emailContact:x.email||x.contactEmail||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",cover:x.coverUrl||x.coverImage||"",slogan:x.slogan||"",description:x.description||x.about||"",hours:x.workingHours||x.hours||"",services:Array.isArray(x.services)?x.services.join(", "):(x.services||""),facebook:x.facebook||"",tiktok:x.tiktok||"",youtube:x.youtube||"",gallery:Array.isArray(x.gallery)?x.gallery.join(", "):(x.gallery||""),campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:true,showCampaign:false,showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl,showGallery:false,showInfoRequest:true});
- window.scrollTo({top:0,behavior:"smooth"}); $("saveMsg").textContent="Firma forma alındı. Kontrol edip Demo Sayfasını Güncelle'ye basın."; $("saveMsg").className="msg ok";
+ fill({
+  name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",
+  emailContact:x.email||x.contactEmail||"",address:x.address||"",instagram:x.instagram||"",website:x.website||"",
+  maps:x.mapsUrl||x.googleMapsUrl||x.mapUrl||"",review:x.googleReviewUrl||"",logo:x.logoUrl||x.logo||"",
+  cover:x.coverUrl||x.coverImage||"",slogan:x.slogan||"",description:x.description||x.about||"",hours:x.workingHours||x.hours||"",
+  services:Array.isArray(x.services)?x.services.join(", "):(x.services||""),facebook:x.facebook||"",tiktok:x.tiktok||"",youtube:x.youtube||"",
+  gallery:Array.isArray(x.gallery)?x.gallery.join(", "):(x.gallery||""),campaign:x.campaignUrl||"",routeVideo:x.locationVideoUrl||x.routeVideoUrl||"",
+  tour360:x.tour360Url||x.virtualTourUrl||"",promoVideo:x.videoUrl||"",showReview:false,showContact:true,showCampaign:false,
+  showRoute:!!(x.locationVideoUrl||x.routeVideoUrl),show360:!!(x.tour360Url||x.virtualTourUrl),showPromo:!!x.videoUrl,showGallery:false,showInfoRequest:true
+ });
+ window.scrollTo({top:0,behavior:"smooth"});
+ $("saveMsg").textContent="Firma forma alındı. Bilgileri kontrol edip Demo Sayfasını Güncelle'ye bas.";
+ $("saveMsg").className="msg ok";
 }
-$("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}}
-$("saveBtn").onclick=async()=>{try{await saveDemo();$("saveMsg").textContent="Kaydedildi. Sabit QR kod artık bu firmayı açacak.";$("saveMsg").className="msg ok"}catch(e){$("saveMsg").textContent="Kaydedilemedi: "+e.message;$("saveMsg").className="msg err"}}
-$("previewBtn").onclick=()=>window.open(DEMO_URL,"_blank");
-$("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı"};
-$("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas");const a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()}
-$("logoutBtn").onclick=()=>auth.signOut();
-$("search").oninput=e=>{const q=e.target.value.toLocaleLowerCase("tr");renderInstitutions((window._inst||[]).filter(x=>JSON.stringify(x).toLocaleLowerCase("tr").includes(q)))}
-auth.onAuthStateChanged(async user=>{if(user){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");try{await Promise.all([loadDemo(),loadInstitutions()])}catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
+document.querySelectorAll(".acc-head").forEach(btn=>btn.onclick=()=>btn.closest(".accordion").classList.toggle("open"));
+$("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword(val("email"),val("password"))}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
+$("saveBtn").onclick=async()=>{
+ try{
+  const d=formData();await saveDemo(d);$("saveMsg").textContent="Kaydedildi. Sabit QR artık "+(d.name||"bu firma")+" kartını açıyor.";$("saveMsg").className="msg ok"
+ }catch(e){$("saveMsg").textContent="Kaydedilemedi: "+e.message;$("saveMsg").className="msg err"}
+};
+$("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor musunuz?"))fill({showContact:true,showInfoRequest:true})};
+$("previewBtn").onclick=$("previewTop").onclick=()=>window.open(DEMO_URL,"_blank");
+$("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı";setTimeout(()=>$("copyUrl").textContent="Linki Kopyala",1400)};
+$("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas"),a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
+$("logoutTop").onclick=()=>auth.signOut();
+$("search").oninput=e=>{const q=e.target.value.toLocaleLowerCase("tr");renderInstitutions((window._inst||[]).filter(x=>JSON.stringify(x).toLocaleLowerCase("tr").includes(q)))};
+$("name").addEventListener("input",e=>updateNames(e.target.value.trim()));
+auth.onAuthStateChanged(async user=>{
+ if(user){
+  $("loginBox").classList.add("hidden");$("app").classList.remove("hidden");$("stickyBar").classList.remove("hidden");
+  try{await Promise.all([loadDemo(),loadInstitutions()])}catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}
+ }else{
+  $("loginBox").classList.remove("hidden");$("app").classList.add("hidden");$("stickyBar").classList.add("hidden")
+ }
+});
 </script>
-</body></html>
+</body>
+</html>
