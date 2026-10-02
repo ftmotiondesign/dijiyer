@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DijiyeSor | Firma Arama ve Tanıtım</title>
+  <meta name="description" content="DijiyeSor ile bulunduğun bölgedeki firmaları ara, incele ve tanıtım sayfalarına ulaş.">
+  <link rel="icon" type="image/png" href="assets/brand/diji-favicon.png">
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f6f8fc;color:#182033}
+    a{text-decoration:none;color:inherit}button,input,select{font:inherit}
+    .topbar{height:74px;background:#fff;border-bottom:1px solid #e8ecf3;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:20}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}.brand-d{width:40px;height:40px;border-radius:13px;background:#1677ff;color:#fff;display:grid;place-items:center;font-size:22px}.brand span{font-size:20px}
+    .top-actions{display:flex;gap:10px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.btn-light{background:#eef4ff;color:#1677ff}.btn-primary{background:#1677ff;color:#fff}
+    .hero{padding:70px 5% 42px;background:linear-gradient(135deg,#eef5ff 0%,#fff 55%,#f6fbff 100%)}
+    .hero-inner{max-width:1180px;margin:auto;display:grid;grid-template-columns:1.25fr .75fr;gap:36px;align-items:center}
+    .eyebrow{font-size:13px;letter-spacing:.12em;color:#1677ff;font-weight:800}.hero h1{font-size:50px;line-height:1.05;margin:14px 0 16px}.hero p{font-size:18px;line-height:1.65;color:#647089;max-width:720px}
+    .search-panel{background:#fff;border:1px solid #e6ebf3;border-radius:22px;padding:18px;box-shadow:0 18px 50px rgba(27,55,100,.1);margin-top:28px}
+    .search-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px}.field{height:52px;border:1px solid #dfe5ee;border-radius:12px;padding:0 14px;background:#fff;outline:none;width:100%}.field:focus{border-color:#1677ff;box-shadow:0 0 0 3px rgba(22,119,255,.1)}
+    .search-btn{height:52px;padding:0 24px;border:0;border-radius:12px;background:#1677ff;color:#fff;font-weight:800;cursor:pointer}
+    .hero-card{background:#17223d;color:#fff;border-radius:28px;padding:30px;min-height:320px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 22px 55px rgba(22,34,61,.2)}
+    .hero-card-badge{display:inline-flex;width:max-content;background:rgba(255,255,255,.12);padding:8px 11px;border-radius:999px;font-size:12px;font-weight:800}.hero-card h3{font-size:28px;margin:18px 0 10px}.hero-card p{color:#cbd5e6;font-size:15px;margin:0}.hero-card .mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}.mini div{background:rgba(255,255,255,.08);padding:14px;border-radius:15px;font-size:13px}
+    .section{max-width:1180px;margin:auto;padding:42px 5%}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.section-head h2{margin:0;font-size:30px}.section-head p{margin:6px 0 0;color:#768197}
+    .chips{display:flex;gap:10px;flex-wrap:wrap}.chip{border:1px solid #dde5f0;background:#fff;border-radius:999px;padding:10px 14px;font-weight:700;cursor:pointer}.chip.active,.chip:hover{border-color:#1677ff;color:#1677ff;background:#f3f8ff}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:#fff;border:1px solid #e4e9f1;border-radius:20px;padding:20px;transition:.2s;position:relative}.card:hover{transform:translateY(-3px);box-shadow:0 14px 35px rgba(30,55,90,.1)}
+    .card-top{display:flex;gap:14px;align-items:center}.logo{width:58px;height:58px;border-radius:16px;background:#eef4ff;color:#1677ff;display:grid;place-items:center;font-size:24px;font-weight:900}.card h3{margin:0 0 6px;font-size:18px}.meta{font-size:13px;color:#7a8498}.tag{display:inline-block;margin-top:12px;background:#f4f6f9;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;color:#5e687b}.desc{color:#687287;line-height:1.55;font-size:14px;min-height:66px}.card-actions{display:flex;gap:10px;margin-top:16px}.card-actions a,.card-actions button{flex:1;text-align:center;border-radius:11px;padding:11px 12px;font-weight:800;border:0;cursor:pointer}.detail{background:#1677ff;color:#fff}.contact{background:#eef4ff;color:#1677ff}
+    .promo{max-width:1180px;margin:10px auto 54px;padding:0 5%}.promo-inner{background:linear-gradient(135deg,#1677ff,#4c93ff);color:#fff;border-radius:26px;padding:34px;display:flex;align-items:center;justify-content:space-between;gap:24px}.promo h2{margin:0 0 8px;font-size:30px}.promo p{margin:0;color:#e8f2ff}.promo .btn{background:#fff;color:#1677ff}
+    .empty{display:none;text-align:center;padding:42px;background:#fff;border:1px dashed #cad3e0;border-radius:18px;color:#687287}
+    footer{padding:28px 5%;background:#fff;border-top:1px solid #e8ecf3;text-align:center;color:#7d8798;font-size:13px}
+    @media(max-width:900px){.hero-inner{grid-template-columns:1fr}.hero h1{font-size:39px}.search-row{grid-template-columns:1fr 1fr}.search-row .search-main{grid-column:1/-1}.search-btn{grid-column:1/-1}.grid{grid-template-columns:1fr 1fr}.top-actions .btn-light{display:none}}
+    @media(max-width:620px){.topbar{padding:0 18px}.hero{padding:45px 18px 28px}.section{padding:32px 18px}.promo{padding:0 18px}.hero h1{font-size:34px}.search-row{grid-template-columns:1fr}.search-row .search-main,.search-btn{grid-column:auto}.grid{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.promo-inner{align-items:flex-start;flex-direction:column}.hero-card{min-height:auto}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="DijiyeSor ana sayfa">
+      <div class="brand-d">D</div><span>DijiyeSor</span>
+    </a>
+    <div class="top-actions">
+      <a class="btn btn-light" href="index.html">Ana Sayfa</a>
+      <a class="btn btn-primary" href="#firmaTanitim">Firmanı Tanıt</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">DİJİYESOR · FİRMA ARAMA</div>
+        <h1>Aradığın firmayı<br>kolayca bul.</h1>
+        <p>Firma adı, sektör veya hizmete göre ara. İl ve ilçe seçerek bulunduğun bölgedeki işletmeleri görüntüle, tanıtım bilgilerini incele.</p>
+
+        <div class="search-panel">
+          <div class="search-row">
+            <input id="searchInput" class="field search-main" type="search" placeholder="Firma, sektör veya hizmet ara...">
+            <select id="citySelect" class="field">
+              <option value="">Tüm İller</option>
+              <option>Çanakkale</option>
+              <option>Manisa</option>
+              <option>Balıkesir</option>
+              <option>İzmir</option>
+            </select>
+            <select id="sectorSelect" class="field">
+              <option value="">Tüm Sektörler</option>
+              <option>Eğitim</option>
+              <option>Otomotiv</option>
+              <option>Yeme & İçme</option>
+              <option>Sağlık & Güzellik</option>
+              <option>Ev & Yapı</option>
+            </select>
+            <button class="search-btn" id="searchBtn">Firma Ara</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-card">
+        <div>
+          <span class="hero-card-badge">FİRMA TANITIM VİTRİNİ</span>
+          <h3>İşletmeni daha görünür hale getir.</h3>
+          <p>DijiyeSor firma profili ile hizmetlerini, konumunu, iletişim bilgilerini ve kampanyalarını tek sayfada göster.</p>
+        </div>
+        <div class="mini">
+          <div>📍 Konum bilgisi</div>
+          <div>☎️ Hızlı iletişim</div>
+          <div>🎯 Hizmetler</div>
+          <div>📣 Kampanyalar</div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <main class="section">
+    <div class="section-head">
+      <div>
+        <h2>Firmaları keşfet</h2>
+        <p>Arama kriterlerine göre işletmeleri görüntüle.</p>
+      </div>
+      <div class="chips">
+        <button class="chip active" data-sector="">Tümü</button>
+        <button class="chip" data-sector="Eğitim">Eğitim</button>
+        <button class="chip" data-sector="Otomotiv">Otomotiv</button>
+        <button class="chip" data-sector="Yeme & İçme">Yeme & İçme</button>
+        <button class="chip" data-sector="Ev & Yapı">Ev & Yapı</button>
+      </div>
+    </div>
+
+    <div class="grid" id="companyGrid">
+      <article class="card" data-name="Kale Truva Sürücü Kursu" data-city="Çanakkale" data-sector="Eğitim" data-keywords="ehliyet sürücü kursu eğitim">
+        <div class="card-top"><div class="logo">KT</div><div><h3>Kale Truva Sürücü Kursu</h3><div class="meta">📍 Çanakkale · Ezine</div></div></div>
+        <span class="tag">Eğitim · Sürücü Kursu</span>
+        <p class="desc">Ehliyet eğitimleri, sürüş programları ve kayıt dönemleri hakkında bilgi alın.</p>
+        <div class="card-actions"><a class="detail" href="#">Firmayı İncele</a><button class="contact">Bilgi Al</button></div>
+      </article>
+
+      <article class="card" data-name="Tek Seçenek Akademi" data-city="Manisa" data-sector="Eğitim" data-keywords="kurs lgs yks ydt ingilizce eğitim">
+        <div class="card-top"><div class="logo">TS</div><div><h3>Tek Seçenek Akademi</h3><div class="meta">📍 Manisa · Şehzadeler</div></div></div>
+        <span class="tag">Eğitim · Kurs Merkezi</span>
+        <p class="desc">5-12. sınıflar, YDT dil sınıfı ve İngilizce programlarıyla eğitim hizmetleri.</p>
+        <div class="card-actions"><a class="detail" href="#">Firmayı İncele</a><button class="contact">Bilgi Al</button></div>
+      </article>
+
+      <article class="card" data-name="Dost Pen" data-city="Çanakkale" data-sector="Ev & Yapı" data-keywords="pvc pencere kapı cam balkon imalat montaj">
+        <div class="card-top"><div class="logo">DP</div><div><h3>Dost Pen</h3><div class="meta">📍 Çanakkale · Ezine</div></div></div>
+        <span class="tag">Ev & Yapı</span>
+        <p class="desc">PVC doğrama, pencere, kapı ve yapı uygulamalarında imalat ve montaj hizmetleri.</p>
+        <div class="card-actions"><a class="detail" href="#">Firmayı İncele</a><button class="contact">Bilgi Al</button></div>
+      </article>
+    </div>
+
+    <div class="empty" id="emptyState">Aradığın kriterlere uygun firma bulunamadı.</div>
+  </main>
+
+  <section class="promo" id="firmaTanitim">
+    <div class="promo-inner">
+      <div>
+        <h2>Firman DijiyeSor’da yer alsın.</h2>
+        <p>İşletme profilini oluştur, müşterilerin seni daha kolay bulsun ve hizmetlerini tek sayfada tanıt.</p>
+      </div>
+      <a class="btn" href="institution-register.html">Firma Ekle</a>
+    </div>
+  </section>
+
+  <footer>© 2026 DijiyeSor · Firma Arama ve Tanıtım</footer>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const citySelect = document.getElementById('citySelect');
+    const sectorSelect = document.getElementById('sectorSelect');
+    const searchBtn = document.getElementById('searchBtn');
+    const cards = [...document.querySelectorAll('.card')];
+    const emptyState = document.getElementById('emptyState');
+    const chips = [...document.querySelectorAll('.chip')];
+
+    function normalizeText(value){
+      return (value || '').toLocaleLowerCase('tr-TR').trim();
+    }
+
+    function filterCompanies(){
+      const q = normalizeText(searchInput.value);
+      const city = citySelect.value;
+      const sector = sectorSelect.value;
+      let visible = 0;
+
+      cards.forEach(card => {
+        const haystack = normalizeText(card.dataset.name + ' ' + card.dataset.keywords + ' ' + card.dataset.city + ' ' + card.dataset.sector);
+        const qOk = !q || haystack.includes(q);
+        const cityOk = !city || card.dataset.city === city;
+        const sectorOk = !sector || card.dataset.sector === sector;
+        const show = qOk && cityOk && sectorOk;
+        card.style.display = show ? '' : 'none';
+        if(show) visible++;
+      });
+
+      emptyState.style.display = visible ? 'none' : 'block';
+    }
+
+    searchBtn.addEventListener('click', filterCompanies);
+    searchInput.addEventListener('keydown', e => { if(e.key === 'Enter') filterCompanies(); });
+    citySelect.addEventListener('change', filterCompanies);
+    sectorSelect.addEventListener('change', () => {
+      chips.forEach(c => c.classList.toggle('active', c.dataset.sector === sectorSelect.value));
+      filterCompanies();
+    });
+
+    chips.forEach(chip => chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      sectorSelect.value = chip.dataset.sector;
+      filterCompanies();
+    }));
+  </script>
+</body>
+</html>
