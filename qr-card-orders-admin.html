@@ -24,6 +24,13 @@ input{width:100%;border:1px solid #cfd8e5;border-radius:11px;padding:11px;margin
 .settings-grid label{font-size:10px;font-weight:800;color:#475467}
 .settings-grid input{margin-top:5px}
 .small-note{font-size:10px;color:var(--muted);line-height:1.45}
+.order-search-wrap{margin:14px 0 10px}
+.order-search-box{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:0 10px;box-shadow:0 4px 14px rgba(17,43,78,.04)}
+.order-search-icon{font-size:18px;color:#64748b}
+.order-search-box input{flex:1;min-width:0;border:0!important;box-shadow:none!important;margin:0;padding:12px 4px;background:transparent}
+.order-search-clear{width:30px;height:30px;border:0;border-radius:9px;background:#eef3f8;color:#5f6f82;font-size:18px;line-height:1}
+.order-search-clear:hover{background:#e2eaf3}
+#orderSearchInfo{min-height:14px;margin-top:5px}
 @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.settings-grid{grid-template-columns:1fr}.order-top{flex-direction:column}.head{align-items:flex-start;flex-direction:column}}
 body.embed-mode header{display:none!important}
 body.embed-mode .wrap,body.embed-mode main{margin-top:0!important;padding-top:12px!important}
@@ -55,6 +62,14 @@ body.embed-mode .login{margin-top:12px!important}
 
   <section class="card">
     <div class="head"><div><h1>QR / NFC Kart Siparişleri</h1><p class="muted">Yeni siparişleri kontrol edin, kartı hazırlayın ve kalıcı QR kartını aktifleştirin.</p></div><span id="count" class="count">0 sipariş</span></div>
+    <div class="order-search-wrap">
+      <div class="order-search-box">
+        <span class="order-search-icon">⌕</span>
+        <input id="orderSearchInput" type="search" autocomplete="off" placeholder="Firma, müşteri, telefon veya sipariş no ara...">
+        <button type="button" id="orderSearchClear" class="order-search-clear" aria-label="Aramayı temizle">×</button>
+      </div>
+      <div id="orderSearchInfo" class="small-note"></div>
+    </div>
     <div class="toolbar">
       <button class="secondary active" data-filter="new">Yeni</button>
       <button class="secondary" data-filter="preparing">Hazırlanıyor</button>
@@ -73,7 +88,7 @@ body.embed-mode .login{margin-top:12px!important}
 const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
 const appFb=firebase.apps.find(a=>a.name==="qrOrdersAdmin")||firebase.initializeApp(firebaseConfig,"qrOrdersAdmin");
 const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);
-let orders=[],filter="new";
+let orders=[],filter="new",searchTerm="";
 async function loadSettings(){
  try{
   const s=await db.collection("siteSettings").doc("home").get();
@@ -122,10 +137,43 @@ function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function fmt(s){try{return new Date(s).toLocaleString("tr-TR")}catch(e){return s||""}}
 function statusText(s){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal"})[s]||s}
 function features(d){const m=[["showReview","Google Yorum"],["showContact","Rehbere Kaydet"],["showGallery","Galeri"],["show360","360° Tur"],["showRoute","Konum Videosu"],["showPromo","Tanıtım Videosu"],["showCampaign","Kampanya"],["showInfoRequest","Bilgi Al"]];return m.filter(x=>d&&d[x[0]]).map(x=>'<span class="chip">'+x[1]+'</span>').join("")}
+function normalizeSearch(v){
+ return String(v||"").toLocaleLowerCase("tr-TR").replace(/\s+/g," ").trim();
+}
+function orderMatchesSearch(o){
+ if(!searchTerm)return true;
+ const haystack=[
+  o.id,
+  o.orderCode,
+  o.cardId,
+  o.businessName,
+  o.customerName,
+  o.customerPhone,
+  o.whatsappPhone,
+  o.address,
+  o.instagram,
+  o.website,
+  o.businessInfo,
+  o.permanentUrl,
+  o.cardData?.name,
+  o.cardData?.phone,
+  o.cardData?.whatsapp,
+  o.cardData?.address,
+  o.cardData?.description,
+  ...(Array.isArray(o.productCategoryNames)?o.productCategoryNames:[])
+ ].map(normalizeSearch).join(" ");
+ return haystack.includes(searchTerm);
+}
 function render(){
- const arr=orders.filter(x=>filter==="all"||x.status===filter);
+ const statusFiltered=orders.filter(x=>filter==="all"||x.status===filter);
+ const arr=statusFiltered.filter(orderMatchesSearch);
  $("count").textContent=arr.length+" sipariş";
- if(!arr.length){$("list").innerHTML='<div class="muted">Bu durumda sipariş yok.</div>';return}
+ if($("orderSearchInfo")){
+  $("orderSearchInfo").textContent=searchTerm
+   ? arr.length+" sonuç bulundu"
+   : "";
+ }
+ if(!arr.length){$("list").innerHTML='<div class="muted">'+(searchTerm?'Aramanızla eşleşen sipariş bulunamadı.':'Bu durumda sipariş yok.')+'</div>';return}
  $("list").innerHTML=arr.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||o.cardData?.name||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status)+'">'+esc(statusText(o.status))+'</span></div><div class="grid"><div class="mini"><span>MÜŞTERİ</span><b>'+esc(o.customerName)+'</b></div><div class="mini"><span>ARA / TELEFON</span><b>'+esc(o.customerPhone)+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsappPhone||o.cardData?.whatsapp||o.customerPhone)+'</b></div><div class="mini"><span>KATEGORİ</span><b>'+esc((o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join ? (o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join(", ") : (o.productCategoryNames||"QR & NFC Kart"))+'</b></div><div class="mini"><span>TOPLAM</span><b>'+esc((o.totalPrice!=null?o.totalPrice+" TL":"-"))+'</b></div><div class="mini"><span>ŞABLONLAR</span><b>'+esc([
   (o.productCategoryNames||[]).includes("QR & NFC Kart")?"QR: "+(o.templateName||o.cardData?.templateName||"Klasik"):"",
   (o.productCategoryNames||[]).includes("Google Yorum Kartı")?"Yorum: "+(o.reviewTemplateName||o.cardData?.reviewTemplateName||"Google Temiz"):"",
@@ -163,6 +211,17 @@ async function activate(o){
 }
 $("saveSettingsBtn").onclick=saveSettings;
 document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-filter]").forEach(x=>x.classList.remove("active"));b.classList.add("active");filter=b.dataset.filter;render()});
+$("orderSearchInput")?.addEventListener("input",e=>{
+ searchTerm=normalizeSearch(e.target.value);
+ render();
+});
+$("orderSearchClear")?.addEventListener("click",()=>{
+ const input=$("orderSearchInput");
+ if(input)input.value="";
+ searchTerm="";
+ render();
+ input?.focus();
+});
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="msg err"}};
 auth.onAuthStateChanged(user=>{if(user){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");loadSettings();load()}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
 </script>
