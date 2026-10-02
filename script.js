@@ -3426,18 +3426,21 @@ function renderDesktopFeaturedBusinesses(){
     const image=inst.coverUrl || inst.logoUrl || '';
     const location=inst.location || [inst.city,inst.district].filter(Boolean).join(', ') || 'Konum bilgisi';
     const category=institutionCategoryLabel(inst);
-    return '<a class="desktop-featured-card" href="kurum.html?id='+encodeURIComponent(inst.id)+'">'+
-      '<div class="desktop-featured-card-media">'+
-        (image?'<img src="'+safePublicProfileUrl(image)+'" alt="'+escapeHtml(inst.name)+'">':'<span>'+escapeHtml(inst.emoji||'🏢')+'</span>')+
-        (inst.vip?'<em class="featured-sponsored">Sponsorlu</em>':'')+
-      '</div>'+
-      '<div class="desktop-featured-card-body">'+
-        '<strong>'+escapeHtml(inst.name)+'</strong>'+
-        '<span>'+escapeHtml(category)+'</span>'+
-        '<div class="desktop-featured-meta">⭐ '+Number(inst.rating||0).toFixed(1)+' <span>('+Number(inst.reviewCount||0)+')</span></div>'+
-        '<div class="desktop-featured-location">📍 '+escapeHtml(location)+'</div>'+
-      '</div>'+
-    '</a>';
+    return '<article class="desktop-featured-card">'+
+      '<a class="desktop-featured-card-link" href="kurum.html?id='+encodeURIComponent(inst.id)+'">'+
+        '<div class="desktop-featured-card-media">'+
+          (image?'<img src="'+safePublicProfileUrl(image)+'" alt="'+escapeHtml(inst.name)+'">':'<span>'+escapeHtml(inst.emoji||'🏢')+'</span>')+
+          (inst.vip?'<em class="featured-sponsored">Sponsorlu</em>':'')+
+        '</div>'+
+        '<div class="desktop-featured-card-body">'+
+          '<strong>'+escapeHtml(inst.name)+'</strong>'+
+          '<span>'+escapeHtml(category)+'</span>'+
+          '<div class="desktop-featured-meta">⭐ '+Number(inst.rating||0).toFixed(1)+' <span>('+Number(inst.reviewCount||0)+')</span></div>'+
+          '<div class="desktop-featured-location">📍 '+escapeHtml(location)+'</div>'+
+        '</div>'+
+      '</a>'+
+      '<button type="button" class="desktop-featured-compare compare-mini-btn '+(compareInstitutionIds.has(String(inst.id))?'selected':'')+'" data-compare-toggle="'+escapeHtml(String(inst.id))+'" aria-pressed="'+(compareInstitutionIds.has(String(inst.id))?'true':'false')+'">'+(compareInstitutionIds.has(String(inst.id))?'✓ Karşılaştırmada':'⚖ Kıyasla')+'</button>'+
+    '</article>';
   }).join('');
 }
 
