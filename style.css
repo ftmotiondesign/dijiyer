@@ -23280,3 +23280,211 @@ body.home-page .decision-alternatives-head strong{
 }
 /* === END DIJIYER HOME COLOR HIERARCHY V1 === */
 
+
+
+/* =========================================================
+   DIJIYESOR MOBIL UYGULAMA GORUNUMU V1
+   ========================================================= */
+.mobile-top-actions,
+.mobile-app-nav{display:none}
+
+@media(max-width:820px){
+  body.home-page{
+    padding-bottom:78px;
+    background:#f4f7fb;
+  }
+
+  body.home-page .topbar{
+    position:sticky;
+    top:0;
+    z-index:1400;
+    min-height:62px;
+    padding:8px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:rgba(255,255,255,.98);
+    border-bottom:1px solid #e6edf6;
+    box-shadow:0 5px 18px rgba(23,48,84,.07);
+  }
+
+  body.home-page .topbar .brand{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+
+  body.home-page .brand-pin{
+    width:40px;
+    height:40px;
+    border-radius:14px 14px 14px 5px;
+    font-size:19px;
+  }
+
+  body.home-page .brand-title{
+    font-size:20px;
+  }
+
+  body.home-page .brand-sub{
+    display:none!important;
+  }
+
+  .mobile-top-actions{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-left:auto;
+  }
+
+  .mobile-top-actions button{
+    width:40px;
+    height:40px;
+    display:grid;
+    place-items:center;
+    border:1px solid #dde7f3;
+    border-radius:13px;
+    background:#f8fbff;
+    font-size:17px;
+    cursor:pointer;
+  }
+
+  body.home-page .topbar > .searchbar,
+  body.home-page .topbar > .location-picker,
+  body.home-page .topbar > .quote-main-btn,
+  body.home-page .topbar > .my-offers-btn,
+  body.home-page .topbar > .top-all-requests-btn,
+  body.home-page .topbar > .tracking-floating-btn,
+  body.home-page .topbar > .opportunities-floating-btn,
+  body.home-page .topbar > .institution-actions,
+  body.home-page .desktop-market-nav{
+    display:none!important;
+  }
+
+  body.home-page .home-hero{
+    padding:10px 10px 0;
+  }
+
+  body.home-page .home-hero-inner{
+    padding:22px 18px;
+    border-radius:20px;
+    min-height:0;
+  }
+
+  body.home-page .home-hero h1,
+  body.home-page .home-hero-title{
+    margin:9px 0 8px;
+    font-size:30px;
+    line-height:1.03;
+    letter-spacing:-.035em;
+  }
+
+  body.home-page .home-hero-copy > p{
+    margin:0;
+    font-size:13px;
+    line-height:1.48;
+  }
+
+  body.home-page .home-hero-actions{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:15px;
+  }
+
+  body.home-page .home-hero-actions .hero-primary-btn{
+    grid-column:1/-1;
+  }
+
+  body.home-page .home-hero-actions .hero-primary-btn,
+  body.home-page .home-hero-actions .hero-secondary-btn,
+  body.home-page .home-hero-actions .hero-appointment-btn{
+    min-height:44px;
+    padding:0 12px;
+    border-radius:12px;
+    font-size:12px;
+  }
+
+  body.home-page .home-hero-note{
+    margin-top:10px;
+    font-size:9.5px;
+  }
+
+  body.home-page .home-hero-side{
+    display:none!important;
+  }
+
+  body.home-page .free-benefit-strip{
+    display:none!important;
+  }
+
+  body.home-page .mobile-discovery{
+    margin:10px;
+    padding:13px;
+    border-radius:18px;
+    box-shadow:0 8px 24px rgba(28,55,96,.06);
+  }
+
+  .mobile-app-nav{
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:8px;
+    z-index:2100;
+    height:64px;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    align-items:stretch;
+    padding:5px;
+    border:1px solid rgba(211,222,236,.92);
+    border-radius:20px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 12px 36px rgba(21,43,73,.18);
+    backdrop-filter:blur(16px);
+  }
+
+  .mobile-app-nav a,
+  .mobile-app-nav button{
+    min-width:0;
+    border:0;
+    background:transparent;
+    color:#7a879a;
+    text-decoration:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    border-radius:15px;
+    font:inherit;
+    cursor:pointer;
+  }
+
+  .mobile-app-nav span{
+    height:24px;
+    display:grid;
+    place-items:center;
+    font-size:20px;
+    font-weight:850;
+    line-height:1;
+  }
+
+  .mobile-app-nav small{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:9px;
+    font-weight:850;
+  }
+
+  .mobile-app-nav a.active,
+  .mobile-app-nav button.active{
+    background:#edf5ff;
+    color:#1267e8;
+  }
+
+  .mobile-back-to-top{
+    bottom:84px!important;
+  }
+}
