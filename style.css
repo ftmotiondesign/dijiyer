@@ -23538,3 +23538,19 @@ body.home-page .decision-alternatives-head strong{
     z-index:100100!important;
   }
 }
+
+/* Bilgi Al üst yardım butonu */
+.missing-service-top-btn{
+  white-space:nowrap;
+}
+@media(max-width:820px){
+  .standalone-quote-page .missing-service-top-btn{
+    min-height:38px;
+    padding:0 10px;
+    border-color:#cfe0f5;
+    background:#f8fbff;
+    color:#1268da;
+    font-size:9px;
+    font-weight:900;
+  }
+}
