@@ -687,6 +687,26 @@ function updateMobileCategoryResult() {
     activeMain,
     inferred: keyword ? inferQuoteCategory(keyword) : null
   });
+
+  // Bilgi Al sayfasında kategori/arama seçildiğinde kurumları otomatik göster.
+  if (
+    document.body.classList.contains('standalone-quote-page') &&
+    window.matchMedia('(max-width:820px)').matches
+  ) {
+    const instantRoot = document.getElementById('mobileInstantResults');
+
+    if (count > 0 && (selectedSub || keyword || (activeMain && !hasSubcategories))) {
+      setTimeout(() => {
+        try {
+          showMobileInstitutionResults(false);
+        } catch (error) {
+          console.error('Bilgi Al kurum sonuçları açılamadı:', error);
+        }
+      }, 30);
+    } else if (instantRoot && count < 1) {
+      instantRoot.classList.add('hidden');
+    }
+  }
 }
 
 function setMobileDiscoverySearch(value, options = {}) {
