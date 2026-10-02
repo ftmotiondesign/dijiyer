@@ -16,7 +16,7 @@
 input{width:100%;border:1px solid #cfd8e5;border-radius:11px;padding:11px;margin-top:6px}.primary,.secondary,.success,.danger{border:0;border-radius:10px;padding:10px 12px;font-weight:850;cursor:pointer}.primary{background:var(--b);color:#fff}.secondary{background:#edf3fb;color:#24415f}.success{background:#eaf8ef;color:#137a39}.danger{background:#fff0f0;color:var(--red)}
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}.count{background:#eaf2ff;color:#155db8;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.toolbar button.active{background:var(--b);color:#fff}
-.list{display:grid;gap:12px}.order{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}.order-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order h3{margin:0 0 4px;font-size:16px}.meta{font-size:11px;color:var(--muted);line-height:1.5}.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#fff3d6;color:#995f00}.status.active{background:#eaf8ef;color:#137a39}.status.preparing{background:#eaf2ff;color:#155db8}
+.list{display:grid;gap:12px}.order{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}.order-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.order h3{margin:0 0 4px;font-size:16px}.meta{font-size:11px;color:var(--muted);line-height:1.5}.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#fff3d6;color:#995f00}.status.active{background:#eaf8ef;color:#137a39}.status.preparing{background:#eaf2ff;color:#155db8}.status.cancelled{background:#fff4e5;color:#a35a00}.status.rejected{background:#fff0f0;color:#b42318}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.mini{background:#f8fafc;border-radius:11px;padding:9px}.mini span{display:block;font-size:9px;color:var(--muted);font-weight:800}.mini b{display:block;font-size:11px;margin-top:3px;word-break:break-word}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.details{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #edf1f6}.order.open .details{display:block}.features{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{font-size:10px;background:#eef4ff;color:#155db8;padding:5px 7px;border-radius:999px}.url{font-size:10px;word-break:break-all;background:#f6f8fb;padding:8px;border-radius:9px;margin-top:8px}
 .msg{font-size:12px;font-weight:700;margin-top:10px}.ok{color:#067647}.err{color:#b42318}
@@ -74,6 +74,8 @@ body.embed-mode .login{margin-top:12px!important}
       <button class="secondary active" data-filter="new">Yeni</button>
       <button class="secondary" data-filter="preparing">Hazırlanıyor</button>
       <button class="secondary" data-filter="active">Aktif</button>
+      <button class="secondary" data-filter="cancelled">İptal</button>
+      <button class="secondary" data-filter="rejected">Reddedildi</button>
       <button class="secondary" data-filter="all">Tümü</button>
     </div>
     <div id="list" class="list"><div class="muted">Siparişler yükleniyor...</div></div>
@@ -135,7 +137,7 @@ async function saveSettings(){
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function fmt(s){try{return new Date(s).toLocaleString("tr-TR")}catch(e){return s||""}}
-function statusText(s){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal"})[s]||s}
+function statusText(s){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal",rejected:"Reddedildi"})[s]||s}
 function features(d){const m=[["showReview","Google Yorum"],["showContact","Rehbere Kaydet"],["showGallery","Galeri"],["show360","360° Tur"],["showRoute","Konum Videosu"],["showPromo","Tanıtım Videosu"],["showCampaign","Kampanya"],["showInfoRequest","Bilgi Al"]];return m.filter(x=>d&&d[x[0]]).map(x=>'<span class="chip">'+x[1]+'</span>').join("")}
 function normalizeSearch(v){
  return String(v||"").toLocaleLowerCase("tr-TR").replace(/\s+/g," ").trim();
@@ -178,13 +180,15 @@ function render(){
   (o.productCategoryNames||[]).includes("QR & NFC Kart")?"QR: "+(o.templateName||o.cardData?.templateName||"Klasik"):"",
   (o.productCategoryNames||[]).includes("Google Yorum Kartı")?"Yorum: "+(o.reviewTemplateName||o.cardData?.reviewTemplateName||"Google Temiz"):"",
   (o.productCategoryNames||[]).includes("İşletme Menü")?"Menü: "+(o.menuTemplateName||o.cardData?.menuTemplateName||"Modern Beyaz Menü"):""
-].filter(Boolean).join(" · ")||o.templateName||"Klasik")+'</b></div></div><div class="actions"><button class="secondary detailBtn">Detay</button>'+(o.status==="new"?'<button class="primary prepBtn">Hazırlamaya Al</button>':"")+(o.status!=="active"?'<button class="success activateBtn">Kartı Aktifleştir</button>':'<button class="secondary openBtn">Kartı Aç</button>')+'</div><div class="details"><div class="meta"><b>Firma:</b> '+esc(o.businessName||o.cardData?.name)+'<br><b>Firma Bilgileri:</b> '+esc(o.businessInfo||o.cardData?.description||"-")+'<br><b>Ara:</b> '+esc(o.customerPhone||o.cardData?.phone)+'<br><b>WhatsApp:</b> '+esc(o.whatsappPhone||o.cardData?.whatsapp||"-")+'<br><b>Adres:</b> '+esc(o.address||o.cardData?.address||"-")+'<br><b>Instagram:</b> '+esc(o.instagram||o.cardData?.instagram||"-")+'<br><b>Web:</b> '+esc(o.website||o.cardData?.website||"-")+'<br><b>Kategori:</b> '+esc((o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join ? (o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join(", ") : (o.productCategoryNames||"QR & NFC Kart"))+'</div><div class="features">'+features(o.cardData)+'</div><div class="url">'+esc(o.permanentUrl)+'</div></div></article>').join("");
+].filter(Boolean).join(" · ")||o.templateName||"Klasik")+'</b></div></div><div class="actions"><button class="secondary detailBtn">Detay</button>'+(o.status==="new"?'<button class="primary prepBtn">Hazırlamaya Al</button>':"")+(["new","preparing"].includes(o.status)?'<button class="success activateBtn">Kartı Aktifleştir</button>':"")+(o.status==="active"?'<button class="secondary openBtn">Kartı Aç</button>':"")+(["new","preparing"].includes(o.status)?'<button class="secondary cancelBtn">İptal</button><button class="danger rejectBtn">Reddet</button>':"")+'</div><div class="details"><div class="meta"><b>Firma:</b> '+esc(o.businessName||o.cardData?.name)+'<br><b>Firma Bilgileri:</b> '+esc(o.businessInfo||o.cardData?.description||"-")+'<br><b>Ara:</b> '+esc(o.customerPhone||o.cardData?.phone)+'<br><b>WhatsApp:</b> '+esc(o.whatsappPhone||o.cardData?.whatsapp||"-")+'<br><b>Adres:</b> '+esc(o.address||o.cardData?.address||"-")+'<br><b>Instagram:</b> '+esc(o.instagram||o.cardData?.instagram||"-")+'<br><b>Web:</b> '+esc(o.website||o.cardData?.website||"-")+'<br><b>Kategori:</b> '+esc((o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join ? (o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join(", ") : (o.productCategoryNames||"QR & NFC Kart"))+'</div><div class="features">'+features(o.cardData)+'</div><div class="url">'+esc(o.permanentUrl)+'</div></div></article>').join("");
  document.querySelectorAll(".order").forEach(el=>{
   const o=orders.find(x=>x.id===el.dataset.id);
   el.querySelector(".detailBtn").onclick=()=>el.classList.toggle("open");
   const prep=el.querySelector(".prepBtn");if(prep)prep.onclick=()=>setStatus(o,"preparing");
   const act=el.querySelector(".activateBtn");if(act)act.onclick=()=>activate(o);
   const open=el.querySelector(".openBtn");if(open)open.onclick=()=>window.open(o.permanentUrl,"_blank");
+  const cancel=el.querySelector(".cancelBtn");if(cancel)cancel.onclick=()=>changeOrderStatus(o,"cancelled","Siparişi iptal etmek istiyor musunuz?");
+  const reject=el.querySelector(".rejectBtn");if(reject)reject.onclick=()=>changeOrderStatus(o,"rejected","Siparişi reddetmek istiyor musunuz?");
  });
 }
 function load(){
@@ -199,6 +203,20 @@ async function setStatus(o,status){
  await db.collection("siparisler").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
  o.status=status;render();
 }
+async function changeOrderStatus(o,status,message){
+ if(!confirm(message))return;
+ try{
+  await db.collection("siparisler").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});
+  o.status=status;
+  $("pageMsg").textContent=status==="cancelled"?"Sipariş iptal edildi.":"Sipariş reddedildi.";
+  $("pageMsg").className="msg ok";
+  render();
+ }catch(e){
+  $("pageMsg").textContent="Durum güncellenemedi: "+e.message;
+  $("pageMsg").className="msg err";
+ }
+}
+
 async function activate(o){
  if(!confirm((o.businessName||"Bu firma")+" için kalıcı kartı aktifleştirmek istiyor musunuz?"))return;
  try{
