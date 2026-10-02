@@ -47,6 +47,13 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .product-option input{width:18px;height:18px;margin:1px 0 0;flex:0 0 auto}
 .product-option b{display:block;font-size:12px}
 .product-option small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:3px}
+.gift-promo{margin-top:12px;border:1px solid #f4c76b;background:linear-gradient(135deg,#fff8e8,#fff 55%,#fff4d2);border-radius:18px;padding:14px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 24px rgba(245,158,11,.12);overflow:hidden}
+.gift-promo.hidden{display:none}
+.gift-anim{width:64px;height:64px;flex:0 0 64px;border-radius:18px;background:linear-gradient(135deg,#ffefb8,#ffd56b);display:grid;place-items:center;font-size:38px;animation:giftBounce 1.2s ease-in-out infinite;transform-origin:center bottom}
+.gift-copy b{display:block;font-size:13px;color:#7a4d00;margin-bottom:4px}
+.gift-copy strong{display:block;font-size:15px;color:#3b2a00;line-height:1.35}
+.gift-copy small{display:block;color:#7c5d18;font-size:10px;margin-top:5px;line-height:1.45}
+@keyframes giftBounce{0%,100%{transform:translateY(0) rotate(0) scale(1)}25%{transform:translateY(-4px) rotate(-5deg) scale(1.04)}50%{transform:translateY(0) rotate(5deg) scale(1.08)}75%{transform:translateY(-2px) rotate(-3deg) scale(1.03)}}
 .template-name{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;font-weight:900}
 .template-name span:last-child{font-size:9px;color:var(--muted);font-weight:700}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.feature{border:1px solid var(--line);border-radius:13px;padding:11px;display:flex;align-items:flex-start;gap:9px;font-size:12px}.feature input{width:auto;margin:2px 0 0}.feature b{display:block}.feature small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
@@ -91,20 +98,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
   <div id="formLayout" class="layout">
     <div>
       <section class="card">
-        <div class="step"><span class="num">1</span><div><h2>QR / NFC Kart Siparişi</h2><p class="help">Kartta kullanılacak iletişim bilgilerini girin.</p></div></div>
-        <div class="grid">
-          <label>İsim Soyisim *<input id="customerName" required placeholder="Adınız Soyadınız"></label>
-          <label>Ara / Telefon *<input id="customerPhone" placeholder="05xx xxx xx xx" required></label>
-          <label>WhatsApp<input id="whatsappPhone" placeholder="05xx xxx xx xx"></label>
-          <label>Instagram<input id="instagram" placeholder="@kullaniciadi"></label>
-          <label class="full">Web Sitesi<input id="website" placeholder="https://..."></label>
-          <label class="full">Adres *<textarea id="address" required placeholder="Firma adresi"></textarea></label>
-          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve kısa tanıtım bilgisi"></textarea></label>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="step"><span class="num">2</span><div><h2>Sipariş Kategorisi</h2><p class="help">İstediğiniz ürünlerin yanındaki kutuyu işaretleyin. Birden fazla seçim yapabilirsiniz.</p></div></div>
+        <div class="step"><span class="num">1</span><div><h2>Sipariş Kategorisi</h2><p class="help">İstediğiniz ürünlerin yanındaki kutuyu işaretleyin. Birden fazla seçim yapabilirsiniz.</p></div></div>
         <div class="product-grid">
           <label class="product-option">
             <input type="checkbox" name="productCategory" value="qr_nfc_card" data-name="QR & NFC Kart" checked>
@@ -119,7 +113,32 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
             <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small></span>
           </label>
         </div>
+        <div id="giftPromo" class="gift-promo">
+          <div class="gift-anim" aria-hidden="true">🎁</div>
+          <div class="gift-copy">
+            <b>QR & NFC Kart Siparişine Özel Hediye</b>
+            <strong>Konum Videosu + 1 Reels Video HEDİYE</strong>
+            <small>QR & NFC Kart seçili olduğu sürece bu hediye paketi siparişinize otomatik eklenir.</small>
+          </div>
+        </div>
       </section>
+
+      
+
+      <section class="card">
+        <div class="step"><span class="num">2</span><div><h2>QR / NFC Kart Siparişi</h2><p class="help">Kartta kullanılacak iletişim bilgilerini girin.</p></div></div>
+        <div class="grid">
+          <label>İsim Soyisim *<input id="customerName" required placeholder="Adınız Soyadınız"></label>
+          <label>Ara / Telefon *<input id="customerPhone" placeholder="05xx xxx xx xx" required></label>
+          <label>WhatsApp<input id="whatsappPhone" placeholder="05xx xxx xx xx"></label>
+          <label>Instagram<input id="instagram" placeholder="@kullaniciadi"></label>
+          <label class="full">Web Sitesi<input id="website" placeholder="https://..."></label>
+          <label class="full">Adres *<textarea id="address" required placeholder="Firma adresi"></textarea></label>
+          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve kısa tanıtım bilgisi"></textarea></label>
+        </div>
+      </section>
+
+      
 
       <section class="card">
         <div class="step"><span class="num">3</span><div><h2>Kart Şablonu</h2><p class="help">Siparişinizde kullanılmasını istediğiniz tasarımı seçin.</p></div></div>
@@ -207,6 +226,8 @@ function selectedProducts(){
 function updateProductSummary(){
  const p=selectedProducts();
  $("sumProducts").textContent=p.length?p.map(x=>x.name).join(", "):"Seçim yapılmadı";
+ const hasQr=p.some(x=>x.id==="qr_nfc_card");
+ if($("giftPromo"))$("giftPromo").classList.toggle("hidden",!hasQr);
 }
 document.querySelectorAll('input[name="productCategory"]').forEach(c=>c.onchange=updateProductSummary);
 updateProductSummary();
