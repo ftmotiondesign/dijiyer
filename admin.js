@@ -72,6 +72,10 @@ const homeSectionEditMessage = document.getElementById("homeSectionEditMessage")
 
 const applicationsTabBtn = document.getElementById("applicationsTabBtn");
 const institutionsTabBtn = document.getElementById("institutionsTabBtn");
+const institutionsMainNavBtn = document.getElementById("institutionsMainNavBtn");
+const institutionApplicationsShortcut = document.getElementById("institutionApplicationsShortcut");
+const institutionAccountsShortcut = document.getElementById("institutionAccountsShortcut");
+const institutionUnmatchedShortcut = document.getElementById("institutionUnmatchedShortcut");
 const quotesTabBtn = document.getElementById("quotesTabBtn");
 const quoteRoutingTabBtn = document.getElementById("quoteRoutingTabBtn");
 const offerReportTabBtn = document.getElementById("offerReportTabBtn");
@@ -1855,6 +1859,16 @@ institutionsTabBtn.addEventListener("click", async () => {
   unmatchedSearchesTabBtn?.classList.remove("active");
   await loadInstitutions();
 });
+
+institutionsMainNavBtn?.addEventListener("click",(event)=>{
+  if(adminLinkShouldOpenNormally(event))return;
+  event.preventDefault();
+  institutionsTabBtn?.click();
+});
+
+institutionApplicationsShortcut?.addEventListener("click",()=>applicationsTabBtn?.click());
+institutionAccountsShortcut?.addEventListener("click",()=>accountsTabBtn?.click());
+institutionUnmatchedShortcut?.addEventListener("click",()=>unmatchedSearchesTabBtn?.click());
 
 quotesTabBtn.addEventListener("click", async () => {
   applicationsSection.hidden = true;
