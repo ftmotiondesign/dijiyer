@@ -3439,7 +3439,7 @@ function renderDesktopFeaturedBusinesses(){
           '<div class="desktop-featured-location">📍 '+escapeHtml(location)+'</div>'+
         '</div>'+
       '</a>'+
-      '<button type="button" class="desktop-featured-compare compare-mini-btn '+(compareInstitutionIds.has(String(inst.id))?'selected':'')+'" data-compare-toggle="'+escapeHtml(String(inst.id))+'" aria-pressed="'+(compareInstitutionIds.has(String(inst.id))?'true':'false')+'">'+(compareInstitutionIds.has(String(inst.id))?'✓ Karşılaştırmada':'⚖ Kıyasla')+'</button>'+
+      '<button type="button" class="desktop-featured-compare compare-mini-btn '+(compareInstitutionIds.has(String(inst.id))?'selected':'')+'" data-compare-toggle="'+escapeHtml(String(inst.id))+'" aria-pressed="'+(compareInstitutionIds.has(String(inst.id))?'true':'false')+'">'+(compareInstitutionIds.has(String(inst.id))?'✓ Karşılaştırmada':'⚖ Karşılaştır')+'</button>'+
     '</article>';
   }).join('');
 }
