@@ -22928,3 +22928,162 @@ body.home-page .decision-alternatives-head strong{
   }
 }
 /* === END HIDE LEGACY DESKTOP RESULTS SECTION === */
+
+
+/* === DIJIYER DESKTOP SHOWCASE V2 TIGHT LAYOUT === */
+@media(min-width:821px){
+  .desktop-home-showcase{
+    max-width:1440px;
+    padding:0 14px 24px;
+  }
+
+  .desktop-trust-strip{
+    padding:10px 14px;
+    border-radius:14px;
+  }
+
+  .desktop-trust-strip article{
+    padding:0 13px;
+    gap:8px;
+  }
+
+  .trust-icon{
+    width:28px;
+    height:28px;
+    flex-basis:28px;
+    font-size:17px;
+    border-radius:8px;
+  }
+
+  .desktop-trust-strip strong{
+    font-size:10px;
+  }
+
+  .desktop-trust-strip small{
+    font-size:7.5px;
+  }
+
+  .desktop-showcase-head{
+    margin:15px 1px 8px;
+  }
+
+  .desktop-showcase-head h2{
+    font-size:17px;
+  }
+
+  .desktop-showcase-main{
+    grid-template-columns:minmax(0,1fr) 300px;
+    gap:10px;
+  }
+
+  .desktop-featured-businesses{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:9px;
+  }
+
+  .desktop-featured-card{
+    border-radius:12px;
+  }
+
+  .desktop-featured-card-media{
+    height:92px;
+  }
+
+  .desktop-featured-card-body{
+    padding:8px;
+  }
+
+  .desktop-featured-card-body strong{
+    font-size:10px;
+  }
+
+  .desktop-featured-card-body>span{
+    font-size:7px;
+  }
+
+  .desktop-featured-meta{
+    margin-top:5px;
+    font-size:7.8px;
+  }
+
+  .desktop-featured-location{
+    margin-top:4px;
+    font-size:7px;
+  }
+
+  .desktop-app-promo{
+    min-height:166px;
+    padding:14px 14px 12px 16px;
+    grid-template-columns:minmax(0,1fr) 96px;
+    border-radius:13px;
+  }
+
+  .desktop-app-promo h3{
+    font-size:15px;
+  }
+
+  .desktop-app-promo p{
+    font-size:8px;
+  }
+
+  .desktop-app-badges{
+    margin-top:8px;
+    gap:4px;
+  }
+
+  .desktop-app-badges span{
+    min-width:96px;
+    padding:5px 8px;
+    font-size:6.8px;
+  }
+
+  .desktop-phone-mockup{
+    width:73px;
+    height:136px;
+    border-width:4px;
+    border-radius:17px;
+  }
+
+  .desktop-products-head{
+    margin-top:14px;
+  }
+
+  .desktop-product-rail{
+    grid-template-columns:repeat(8,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .desktop-product-card{
+    border-radius:11px;
+  }
+
+  .desktop-product-visual{
+    height:78px;
+    font-size:31px;
+  }
+
+  .desktop-product-card>strong{
+    padding:6px 7px 0;
+    font-size:8px;
+  }
+
+  .desktop-product-card>span{
+    padding:2px 7px 0;
+    font-size:6.5px;
+  }
+
+  .desktop-product-card>b{
+    padding:6px 28px 0 7px;
+    font-size:8px;
+  }
+
+  .desktop-product-card>i{
+    width:21px;
+    height:21px;
+    right:6px;
+    bottom:6px;
+    border-radius:6px;
+    font-size:9px;
+  }
+}
+/* === END DIJIYER DESKTOP SHOWCASE V2 TIGHT LAYOUT === */
