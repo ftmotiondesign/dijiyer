@@ -14,7 +14,7 @@
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.toolbar input,.toolbar select{border:1px solid #cfd8e5;border-radius:10px;padding:10px;background:#fff}
 .toolbar input{flex:1;min-width:220px}.orders{display:grid;gap:10px}
 .order{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff}.order-top{display:flex;justify-content:space-between;gap:12px}.order h3{margin:0;font-size:15px}.meta{font-size:11px;color:var(--muted);line-height:1.55;margin-top:4px}
-.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#eef2f7}.status.new{background:#fff7e6;color:#a15c00}.status.preparing{background:#eef5ff;color:#155db8}.status.completed{background:#eaf8ef;color:#15803d}.status.cancelled{background:#fff0f0;color:#b42318}
+.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#eef2f7}.status.new{background:#fff7e6;color:#a15c00}.status.preparing{background:#eef5ff;color:#155db8}.status.active{background:#eaf8ef;color:#15803d}.status.cancelled{background:#fff0f0;color:#b42318}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.mini{background:#f8fafc;border-radius:10px;padding:9px}.mini span{display:block;color:#98a2b3;font-size:9px;font-weight:900}.mini b{display:block;font-size:11px;margin-top:3px}
 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.actions button{border:0;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer;background:#eef4ff;color:#155db8}.actions .ok{background:#eaf8ef;color:#15803d}.actions .danger{background:#fff0f0;color:#b42318}
 .details{display:none;margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}.order.open .details{display:block}.details p{font-size:12px;line-height:1.6;margin:4px 0;word-break:break-word}.empty{padding:20px;text-align:center;color:var(--muted)}
@@ -51,7 +51,7 @@
         <option value="">Tüm Durumlar</option>
         <option value="new">Yeni</option>
         <option value="preparing">Hazırlanıyor</option>
-        <option value="completed">Tamamlandı</option>
+        <option value="active">Aktif</option>
         <option value="cancelled">İptal</option>
       </select>
     </div>
@@ -68,15 +68,35 @@ const appFb=firebase.apps.find(a=>a.name==="digitalCardAdmin")||firebase.initial
 const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);let rows=[];
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function fmt(v){try{return new Date(v).toLocaleString("tr-TR")}catch(_){return v||"-"}}
-function statusText(v){return ({new:"Yeni",preparing:"Hazırlanıyor",completed:"Tamamlandı",cancelled:"İptal"})[v]||v||"Yeni"}
+function statusText(v){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal"})[v]||v||"Yeni"}
 function render(){
  const q=String($("search").value||"").toLocaleLowerCase("tr-TR").trim(),st=$("status").value;
  const list=rows.filter(x=>(!st||x.status===st)&&(!q||JSON.stringify(x).toLocaleLowerCase("tr-TR").includes(q)));
  $("count").textContent=list.length+" sipariş";
- $("orders").innerHTML=list.length?list.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status||"new")+'">'+esc(statusText(o.status||"new"))+'</span></div><div class="grid"><div class="mini"><span>İSİM</span><b>'+esc(o.name||"-")+'</b></div><div class="mini"><span>ÜNVAN</span><b>'+esc(o.title||"-")+'</b></div><div class="mini"><span>TELEFON</span><b>'+esc(o.phone||"-")+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsapp||o.phone||"-")+'</b></div></div><div class="actions"><button class="detail">Detay</button>'+(o.status==="new"?'<button class="prep">Hazırlamaya Al</button>':"")+(o.status!=="completed"?'<button class="ok done">Tamamlandı</button>':"")+(o.status!=="cancelled"?'<button class="danger cancel">İptal</button>':"")+'</div><div class="details"><p><b>E-posta:</b> '+esc(o.email||"-")+'</p><p><b>Instagram:</b> '+esc(o.instagram||"-")+'</p><p><b>Web:</b> '+esc(o.website||"-")+'</p><p><b>Adres:</b> '+esc(o.address||"-")+'</p><p><b>Tanıtım:</b> '+esc(o.description||"-")+'</p></div></article>').join(""):'<div class="empty">Sipariş bulunamadı.</div>';
- document.querySelectorAll(".order").forEach(el=>{const o=rows.find(x=>x.id===el.dataset.id);el.querySelector(".detail").onclick=()=>el.classList.toggle("open");const p=el.querySelector(".prep");if(p)p.onclick=()=>setStatus(o,"preparing");const d=el.querySelector(".done");if(d)d.onclick=()=>setStatus(o,"completed");const c=el.querySelector(".cancel");if(c)c.onclick=()=>setStatus(o,"cancelled")});
+ $("orders").innerHTML=list.length?list.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||o.cardData?.name||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status||"new")+'">'+esc(statusText(o.status||"new"))+'</span></div><div class="grid"><div class="mini"><span>MÜŞTERİ</span><b>'+esc(o.customerName||"-")+'</b></div><div class="mini"><span>TELEFON</span><b>'+esc(o.customerPhone||"-")+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsappPhone||o.cardData?.whatsapp||o.customerPhone||"-")+'</b></div><div class="mini"><span>KART ID</span><b>'+esc(o.cardId||"-")+'</b></div></div><div class="actions"><button class="detail">Detay</button>'+(o.status==="new"?'<button class="prep">Hazırlamaya Al</button>':"")+(o.status!=="active"?'<button class="ok activate">Aktifleştir</button>':'<button class="ok open">Kartı Aç</button>')+(o.status!=="cancelled"?'<button class="danger cancel">İptal</button>':"")+'</div><div class="details"><p><b>Instagram:</b> '+esc(o.instagram||"-")+'</p><p><b>Web:</b> '+esc(o.website||"-")+'</p><p><b>Adres:</b> '+esc(o.address||"-")+'</p><p><b>Firma Bilgileri:</b> '+esc(o.businessInfo||o.cardData?.description||"-")+'</p><p><b>QR Adresi:</b> '+esc(o.permanentUrl||"-")+'</p></div></article>').join(""):'<div class="empty">Sipariş bulunamadı.</div>';
+ document.querySelectorAll(".order").forEach(el=>{
+  const o=rows.find(x=>x.id===el.dataset.id);
+  el.querySelector(".detail").onclick=()=>el.classList.toggle("open");
+  const p=el.querySelector(".prep");if(p)p.onclick=()=>setStatus(o,"preparing");
+  const act=el.querySelector(".activate");if(act)act.onclick=()=>activate(o);
+  const open=el.querySelector(".open");if(open)open.onclick=()=>window.open(o.permanentUrl,"_blank");
+  const c=el.querySelector(".cancel");if(c)c.onclick=()=>setStatus(o,"cancelled");
+ });
 }
 async function setStatus(o,status){await db.collection("siparisler").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});o.status=status;render()}
+async function activate(o){
+ if(!confirm((o.businessName||"Bu kart")+" için dijital kartviziti aktifleştirmek istiyor musunuz?"))return;
+ try{
+  const now=new Date().toISOString();
+  const payload={...(o.cardData||{}),cardId:o.cardId,status:"active",createdAt:o.createdAt||now,updatedAt:now,sourceOrderId:o.id};
+  await db.collection("customerCards").doc(o.cardId).set(payload,{merge:true});
+  await db.collection("siparisler").doc(o.id).set({status:"active",activatedAt:now,updatedAt:now},{merge:true});
+  o.status="active";
+  render();
+ }catch(e){
+  alert("Kart aktifleştirilemedi: "+e.message);
+ }
+}
 function load(){return db.collection("siparisler").orderBy("createdAt","desc").limit(300).onSnapshot(s=>{rows=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.orderType==="digital_business_card"||x.source==="public_digital_business_card");render()})}
 $("search").oninput=render;$("status").onchange=render;
 $("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message}};
