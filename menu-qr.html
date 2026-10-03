@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Menü QR Siparişi | DijiyeSor</title>
+<meta name="description" content="İşletmeniz için hazır tasarımlardan Menü QR şablonu seçin ve sipariş oluşturun.">
+<style>
+:root{--b:#1677ff;--b2:#0f5fc9;--bg:#f4f7fb;--text:#172033;--muted:#667085;--line:#dbe3ee;--green:#16a34a}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+a{text-decoration:none;color:inherit}button,input,textarea{font:inherit}
+.top{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900}.mark{width:40px;height:40px;border-radius:13px;background:var(--b);color:#fff;display:grid;place-items:center;font-size:23px}
+.back{padding:10px 13px;border-radius:11px;background:#eef4ff;color:#155db8;font-weight:800}
+.hero{background:linear-gradient(135deg,#10213b,#1677ff 62%,#68a6ff);color:#fff;padding:46px 18px 64px}
+.hero-in{max-width:1120px;margin:auto}.kicker{display:inline-block;padding:7px 10px;border:1px solid #ffffff35;border-radius:999px;background:#ffffff16;font-size:11px;font-weight:900}
+.hero h1{font-size:42px;line-height:1.05;margin:14px 0 10px}.hero p{max-width:720px;color:#e8f1ff;line-height:1.6;margin:0}
+.wrap{max-width:1120px;margin:-34px auto 50px;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 12px 34px rgba(20,42,90,.08)}
+.section-head{text-align:center;margin-bottom:18px}.section-head span{font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--b)}.section-head h2{font-size:27px;margin:7px 0}.section-head p{margin:0;color:var(--muted);font-size:13px}
+.templates{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.tpl{border:2px solid transparent;border-radius:18px;padding:10px;background:#f8fafc;cursor:pointer;transition:.18s;text-align:left}
+.tpl:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(25,60,110,.10)}.tpl.active{border-color:var(--b);background:#eef5ff}
+.preview{height:180px;border-radius:14px;padding:14px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.preview b{font-size:16px}.preview small{font-size:10px;opacity:.8}.menu-line{height:9px;border-radius:999px;background:currentColor;opacity:.16;margin-top:10px}.menu-line.short{width:70%}.price-dot{margin-left:auto;font-weight:900;font-size:11px}
+.p1{background:#fff;color:#162033;border:1px solid #e5e7eb}.p2{background:#111827;color:#fff}.p3{background:#fff8ec;color:#7c2d12}.p4{background:#effbf4;color:#14532d}.p5{background:linear-gradient(160deg,#fff,#eef5ff);color:#0f3f78;border:1px solid #d8e7fb}
+.tpl-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:9px}.tpl-title b{font-size:12px}.tpl-title span{font-size:9px;color:var(--muted)}
+.form-card{margin-top:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
+label{font-size:12px;font-weight:800;color:#344054}input,textarea{width:100%;margin-top:6px;border:1px solid #cfd8e5;border-radius:11px;padding:12px;outline:none;background:#fff}
+textarea{min-height:96px;resize:vertical}input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}
+.selected-box{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7fbff;border:1px solid #d8e8fb;border-radius:14px;padding:12px;margin-bottom:14px}.selected-box span{font-size:11px;color:var(--muted)}.selected-box b{display:block;font-size:15px;margin-top:2px}
+.submit{border:0;background:var(--b);color:#fff;border-radius:13px;padding:14px 18px;font-weight:900;cursor:pointer;width:100%;margin-top:14px}.submit:disabled{opacity:.6}
+.msg{min-height:18px;margin-top:9px;font-size:12px}.msg.ok{color:#15803d}.msg.err{color:#b42318}
+.success{display:none;text-align:center;margin-top:16px}.success.show{display:block}.success-icon{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:#eaf8ef;color:#15803d;font-size:28px;font-weight:900;margin:0 auto 10px}
+.order-code{display:inline-block;background:#eef5ff;color:#155db8;border-radius:999px;padding:7px 10px;font-weight:900;font-size:11px}
+.footer{text-align:center;color:#98a2b3;font-size:11px;padding:0 16px 30px}
+@media(max-width:900px){.templates{grid-template-columns:repeat(2,1fr)}.preview{height:160px}}
+@media(max-width:620px){.templates,.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:32px}.preview{height:150px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="https://ftmotiondesign.github.io/dijiyesor/index.html"><span class="mark">D</span><span>DijiyeSor</span></a>
+  <a class="back" href="qr-kart-siparis.html">← QR Çözümleri</a>
+</header>
+<section class="hero">
+  <div class="hero-in">
+    <span class="kicker">MENÜ QR</span>
+    <h1>Menünüz için bir tasarım seçin.</h1>
+    <p>5 hazır şablondan birini seçin. Siparişiniz geldikten sonra menünüz hazırlanır; daha sonra fiyat veya ürün değiştiğinde aynı QR kod üzerinden güncellenebilir.</p>
+  </div>
+</section>
+<main class="wrap">
+  <section class="card">
+    <div class="section-head">
+      <span>1 · ŞABLON SEÇ</span>
+      <h2>Hazır Menü Tasarımları</h2>
+      <p>İşletmenize en uygun görünümü seçin.</p>
+    </div>
+    <div class="templates" id="templates">
+      <button class="tpl active" data-template="modern-white" data-name="Modern Beyaz">
+        <div class="preview p1"><b>LEZZET MENÜ</b><small>Modern & sade</small><div class="menu-line"></div><div class="menu-line short"></div><div class="menu-line"></div><div class="menu-line short"></div></div>
+        <div class="tpl-title"><b>Modern Beyaz</b><span>Restoran / Kafe</span></div>
+      </button>
+      <button class="tpl" data-template="black-premium" data-name="Siyah Premium">
+        <div class="preview p2"><b>PREMIUM MENU</b><small>Şık & koyu</small><div class="menu-line"></div><div class="menu-line short"></div><div class="menu-line"></div><div class="menu-line short"></div></div>
+        <div class="tpl-title"><b>Siyah Premium</b><span>Premium işletme</span></div>
+      </button>
+      <button class="tpl" data-template="warm-cafe" data-name="Sıcak Kafe">
+        <div class="preview p3"><b>CAFE MENU</b><small>Sıcak & samimi</small><div class="menu-line"></div><div class="menu-line short"></div><div class="menu-line"></div><div class="menu-line short"></div></div>
+        <div class="tpl-title"><b>Sıcak Kafe</b><span>Kafe / Pastane</span></div>
+      </button>
+      <button class="tpl" data-template="fresh-green" data-name="Fresh Yeşil">
+        <div class="preview p4"><b>FRESH MENU</b><small>Doğal & ferah</small><div class="menu-line"></div><div class="menu-line short"></div><div class="menu-line"></div><div class="menu-line short"></div></div>
+        <div class="tpl-title"><b>Fresh Yeşil</b><span>Sağlıklı / Vegan</span></div>
+      </button>
+      <button class="tpl" data-template="blue-service" data-name="Mavi Hizmet">
+        <div class="preview p5"><b>HİZMETLER</b><small>Fiyat listesi</small><div class="menu-line"></div><div class="menu-line short"></div><div class="menu-line"></div><div class="menu-line short"></div></div>
+        <div class="tpl-title"><b>Mavi Hizmet</b><span>Berber / Hizmet</span></div>
+      </button>
+    </div>
+  </section>
+
+  <section class="card form-card" id="orderFormCard">
+    <div class="section-head">
+      <span>2 · SİPARİŞ BİLGİLERİ</span>
+      <h2>Menü QR Siparişi</h2>
+      <p>Seçtiğiniz şablonu işletme bilgilerinizle hazırlayalım.</p>
+    </div>
+    <div class="selected-box"><div><span>Seçilen şablon</span><b id="selectedTemplateName">Modern Beyaz</b></div><strong>✓</strong></div>
+    <div class="form-grid">
+      <label>İşletme Adı *<input id="businessName" placeholder="Örn. Dinapoli Pizza"></label>
+      <label>Yetkili Adı *<input id="contactName" placeholder="Ad Soyad"></label>
+      <label>Telefon *<input id="phone" placeholder="05xx xxx xx xx"></label>
+      <label>WhatsApp<input id="whatsapp" placeholder="05xx xxx xx xx"></label>
+      <label class="full">Adres<textarea id="address" placeholder="İşletme adresi"></textarea></label>
+      <label class="full">Menü / Ürün Bilgileri<textarea id="menuNote" placeholder="Örn. Pizza, hamburger, içecekler. Fiyat listesini daha sonra WhatsApp ile göndereceğim."></textarea></label>
+      <label class="full">Ek Not<textarea id="note" placeholder="Renk, logo, özel istek veya açıklama"></textarea></label>
+    </div>
+    <button id="submitOrder" class="submit" type="button">Menü QR Siparişini Gönder</button>
+    <div id="msg" class="msg"></div>
+  </section>
+
+  <section id="success" class="card success">
+    <div class="success-icon">✓</div>
+    <h2>Siparişiniz alındı</h2>
+    <p>Seçtiğiniz menü şablonu ve işletme bilgileriniz yönetim paneline iletildi.</p>
+    <span id="orderCode" class="order-code"></span>
+  </section>
+</main>
+<footer class="footer">DijiyeSor · Menü QR</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore(),$=id=>document.getElementById(id);
+let selectedTemplate="modern-white",selectedTemplateName="Modern Beyaz";
+function val(id){return String($(id)?.value||"").trim()}
+function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(5))).map(x=>x.toString(36).padStart(2,"0")).join("").slice(0,7).toUpperCase()}
+function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
+document.querySelectorAll(".tpl").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".tpl").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");selectedTemplate=btn.dataset.template;selectedTemplateName=btn.dataset.name;
+ $("selectedTemplateName").textContent=selectedTemplateName;
+ $("orderFormCard").scrollIntoView({behavior:"smooth",block:"start"});
+}));
+$("submitOrder").addEventListener("click",async()=>{
+ const msg=$("msg"),button=$("submitOrder");
+ const businessName=val("businessName"),contactName=val("contactName"),phone=val("phone");
+ if(!businessName||!contactName||!validPhone(phone)){msg.className="msg err";msg.textContent="İşletme adı, yetkili adı ve geçerli telefon numarası zorunludur.";return}
+ const code="MENU-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+randomId();
+ const payload={
+  orderType:"menu_qr",source:"public_menu_qr_order",status:"new",orderCode:code,
+  businessName,contactName,phone,whatsapp:val("whatsapp"),address:val("address"),
+  menuNote:val("menuNote"),note:val("note"),
+  templateId:selectedTemplate,templateName:selectedTemplateName,
+  createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+ };
+ try{
+  button.disabled=true;button.textContent="Gönderiliyor...";
+  await db.collection("siparisler").add(payload);
+  $("orderCode").textContent=code;$("success").classList.add("show");
+  $("success").scrollIntoView({behavior:"smooth",block:"center"});
+  msg.className="msg ok";msg.textContent="Sipariş yönetim paneline gönderildi.";
+ }catch(e){msg.className="msg err";msg.textContent="Sipariş gönderilemedi: "+e.message}
+ finally{button.disabled=false;button.textContent="Menü QR Siparişini Gönder"}
+});
+</script>
+</body>
+</html>
