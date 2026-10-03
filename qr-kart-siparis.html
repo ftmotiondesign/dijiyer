@@ -67,6 +67,29 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 @media(max-width:700px){.main-category-grid{grid-template-columns:1fr}.main-category-card{min-height:72px}}
 @media(max-width:820px){.hero-in,.layout{grid-template-columns:1fr}.hero{padding-top:32px}.hero h1{font-size:32px}.hero-card{display:none}.side{position:static}.wrap{margin-top:-42px}}
 @media(max-width:560px){.grid,.feature-grid,.upload-grid,.template-grid,.product-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
+
+.category-landing{max-width:1180px;margin:-34px auto 50px;padding:0 18px;position:relative;z-index:2}
+.category-landing-inner{background:#fff;border:1px solid var(--line);border-radius:28px;padding:30px;box-shadow:0 18px 45px rgba(20,42,90,.09)}
+.category-landing-head{text-align:center;margin-bottom:24px}
+.category-landing-head>span{font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--b)}
+.category-landing-head h2{font-size:28px;margin:8px 0 7px}
+.category-landing-head p{margin:0;color:var(--muted);font-size:14px}
+.main-category-grid.large{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.main-category-card.large-card{width:100%;min-height:210px;padding:28px 22px;border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:16px;cursor:pointer;position:relative}
+.main-category-card.large-card .main-category-icon{width:64px;height:64px;flex:0 0 64px;border-radius:18px;font-size:18px}
+.main-category-card.large-card .main-category-copy b{font-size:20px}
+.main-category-card.large-card .main-category-copy small{font-size:13px;line-height:1.55;margin-top:8px}
+.main-category-card.large-card .main-category-badge{top:18px;right:18px;font-size:10px;padding:5px 8px}
+.main-category-arrow{position:absolute;right:20px;bottom:18px;font-size:30px;line-height:1;color:#8aa0ba}
+.main-category-card.large-card.active{border-color:#8dbbfa;background:linear-gradient(145deg,#eef5ff,#fff);box-shadow:0 14px 34px rgba(22,119,255,.12)}
+.main-category-card.large-card.coming{opacity:.82}
+.main-category-card.large-card:hover{transform:translateY(-3px);transition:.18s ease;box-shadow:0 16px 34px rgba(20,42,90,.10)}
+@media(max-width:800px){
+  .main-category-grid.large{grid-template-columns:1fr}
+  .main-category-card.large-card{min-height:150px}
+  .category-landing-inner{padding:20px}
+  .category-landing-head h2{font-size:24px}
+}
 </style>
 </head>
 <body>
@@ -78,304 +101,62 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 <section class="hero">
   <div class="hero-in">
     <div>
-      <span class="kicker">İŞLETMENİZE ÖZEL QR / NFC KART</span>
-      <h1>Kartınızı oluşturun,<br>QR'nız size özel ayrılsın.</h1>
-      <p>Firma bilgilerinizi girin ve görsellerinizi yükleyin. Sipariş anında size özel kalıcı QR adresi ayrılır. Kartınız, bilgileriniz kontrol edildikten sonra Dijiyer tarafından aktif edilir.</p>
+      <span class="kicker">DİJİYESOR · QR ÇÖZÜMLERİ</span>
+      <h1>İşletmeniz için doğru QR çözümünü seçin.</h1>
+      <p>Menü QR, Google Yorum Kartı ve Dijital Kartvizit seçeneklerinden ihtiyacınıza uygun olanı seçin.</p>
     </div>
     <div class="hero-card">
-      <b>Nasıl çalışır?</b>
-      <span>1. Firma bilgilerinizi girin</span>
-      <span>2. Kart özelliklerinizi seçin</span>
-      <span>3. Sistem kalıcı QR adresinizi ayırsın</span>
-      <span>4. Dijiyer kontrol etsin ve kartı aktifleştirsin</span>
-      <span>5. Size özel baskılı QR / NFC kartınız hazırlansın</span>
+      <b>3 farklı çözüm</b>
+      <span>Menü QR · Menü ve fiyat listeniz</span>
+      <span>Google Yorum Kart · Daha kolay yorum alma</span>
+      <span>Dijital Kartvizit · Tüm iletişim bilgileriniz tek yerde</span>
     </div>
   </div>
 </section>
 
-<section class="main-category-wrap" aria-label="QR ürün kategorileri">
-  <h2 class="main-category-title">Ana Kategori</h2>
-  <div class="main-category-grid">
-    <div class="main-category-card coming">
-      <div class="main-category-icon">☰</div>
-      <div class="main-category-copy">
-        <b>Menü QR</b>
-        <small>Menü, fiyat listesi veya hizmet listesini QR ile açtır.</small>
-      </div>
-      <span class="main-category-badge">Yakında</span>
+<main class="category-landing">
+  <div class="category-landing-inner">
+    <div class="category-landing-head">
+      <span>DİJİYESOR QR ÇÖZÜMLERİ</span>
+      <h2>İhtiyacınız olan kartı seçin</h2>
+      <p>İşletmeniz için kullanmak istediğiniz QR çözümünü seçin.</p>
     </div>
-    <div class="main-category-card coming">
-      <div class="main-category-icon">★</div>
-      <div class="main-category-copy">
-        <b>Google Yorum Kart</b>
-        <small>Müşteriyi doğrudan Google yorum ekranına yönlendir.</small>
-      </div>
-      <span class="main-category-badge">Yakında</span>
+
+    <div class="main-category-grid large">
+      <button class="main-category-card large-card coming" type="button">
+        <div class="main-category-icon">☰</div>
+        <div class="main-category-copy">
+          <b>Menü QR</b>
+          <small>Menü, fiyat listesi veya hizmet listesini QR ile müşterilerinize gösterin.</small>
+        </div>
+        <span class="main-category-badge">Yakında</span>
+        <span class="main-category-arrow">›</span>
+      </button>
+
+      <button class="main-category-card large-card coming" type="button">
+        <div class="main-category-icon">★</div>
+        <div class="main-category-copy">
+          <b>Google Yorum Kart</b>
+          <small>Müşterinizi tek dokunuşla Google yorum ekranına yönlendirin.</small>
+        </div>
+        <span class="main-category-badge">Yakında</span>
+        <span class="main-category-arrow">›</span>
+      </button>
+
+      <button class="main-category-card large-card active" type="button">
+        <div class="main-category-icon">QR</div>
+        <div class="main-category-copy">
+          <b>Dijital Kartvizit</b>
+          <small>Telefon, WhatsApp, web sitesi, Instagram ve firma bilgilerinizi tek dijital kartta toplayın.</small>
+        </div>
+        <span class="main-category-badge">Aktif</span>
+        <span class="main-category-arrow">›</span>
+      </button>
     </div>
-    <a class="main-category-card active" href="qr-kart-siparis.html">
-      <div class="main-category-icon">QR</div>
-      <div class="main-category-copy">
-        <b>Dijital Kartvizit</b>
-        <small>Telefon, WhatsApp, web, Instagram ve firma bilgilerini tek kartta topla.</small>
-      </div>
-      <span class="main-category-badge">Aktif</span>
-    </a>
   </div>
-</section>
-
-<main class="wrap">
-  <div id="formLayout" class="layout">
-    <div>
-      <section class="card">
-        <div class="step"><span class="num">1</span><div><h2>Sipariş Kategorisi</h2><p class="help">İstediğiniz ürünlerin yanındaki kutuyu işaretleyin. Birden fazla seçim yapabilirsiniz.</p></div></div>
-        <div class="product-grid">
-          <label class="product-option">
-            <input type="checkbox" name="productCategory" value="qr_nfc_card" data-name="QR & NFC Kart" checked>
-            <span><b>QR & NFC Kart</b><small>Dijital iletişim ve yönlendirme kartı</small><span class="price-badge" id="priceQr">499 TL</span></span>
-          </label>
-          <label class="product-option">
-            <input type="checkbox" name="productCategory" value="google_review_card" data-name="Google Yorum Kartı">
-            <span><b>Google Yorum Kartı</b><small>Tek dokunuşla Google yorum sayfasını açar</small><span class="price-badge" id="priceReview">349 TL</span></span>
-          </label>
-          <label class="product-option">
-            <input type="checkbox" name="productCategory" value="business_menu" data-name="İşletme Menü">
-            <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small><span class="price-badge" id="priceMenu">599 TL</span></span>
-          </label>
-        </div>
-        <div id="giftPromo" class="gift-promo">
-          <div class="gift-anim" aria-hidden="true">🎁</div>
-          <div class="gift-copy">
-            <b>QR & NFC Kart Siparişine Özel Hediye</b>
-            <strong>Konum Videosu + 1 Reels Video HEDİYE</strong>
-            <small>QR & NFC Kart seçili olduğu sürece bu hediye paketi siparişinize otomatik eklenir.</small>
-          </div>
-        </div>
-      </section>
-
-      
-
-      <section class="card">
-        <div class="step"><span class="num">2</span><div><h2>QR / NFC Kart Siparişi</h2><p class="help">Kartta kullanılacak iletişim bilgilerini girin.</p></div></div>
-        <div class="grid">
-          <label>İsim Soyisim *<input id="customerName" required placeholder="Adınız Soyadınız"></label>
-          <label>Ara / Telefon *<input id="customerPhone" placeholder="05xx xxx xx xx" required></label>
-          <label>WhatsApp<input id="whatsappPhone" placeholder="05xx xxx xx xx"></label>
-          <label>Instagram<input id="instagram" placeholder="@kullaniciadi"></label>
-          <label class="full">Web Sitesi<input id="website" placeholder="https://..."></label>
-          <label class="full">Adres *<textarea id="address" required placeholder="Firma adresi"></textarea></label>
-          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve kısa tanıtım bilgisi"></textarea></label>
-        </div>
-      </section>
-
-    </div>
-
-    <aside class="side">
-      <section class="card summary">
-        <h3>Sipariş Özeti</h3>
-        <div class="summary-row"><span>Ürün</span><b>Özel QR / NFC Kart</b></div>
-        <div class="summary-row"><span>Müşteri</span><b id="sumCustomer">Henüz girilmedi</b></div>
-        <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
-        <div class="summary-row"><span>Ürünler</span><b id="sumProducts">QR & NFC Kart</b></div>
-        <div class="summary-row"><span>Toplam</span><b id="sumTotal">499 TL</b></div>
-        <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
-        <div class="notice"><b>Not:</b> Siparişiniz geldikten sonra kart bilgileri kontrol edilir ve Dijiyer ekibi tarafından hazırlanır.</div>
-        <button id="submitBtn" class="submit" type="button">Siparişi Oluştur</button>
-        <div class="privacy">Gönderdiğiniz bilgiler yalnızca siparişinizin hazırlanması ve sizinle iletişim kurulması amacıyla kullanılır.</div>
-        <div id="formMsg" class="upload-msg" style="margin-top:10px"></div>
-      </section>
-    </aside>
-  </div>
-
-  <section id="successBox" class="card success-box">
-    <div class="success-icon">✓</div>
-    <h2>Siparişiniz alındı</h2>
-    <p class="help" style="font-size:13px">Kartınız için kalıcı QR adresi ayrıldı. Dijiyer ekibi bilgilerinizi kontrol ettikten sonra kartınızı aktifleştirecek.</p>
-    <div id="orderNo" class="order-no"></div>
-    <div id="qrBox" class="qrbox"></div>
-    <div id="reservedUrl" class="order-url"></div>
-    <div class="notice" style="max-width:620px;margin:16px auto 0">Bu QR fiziksel kartınızda kullanılacak kalıcı adrese bağlıdır. Kartınız onaylanana kadar bağlantıda “henüz aktif değil” mesajı görülebilir.</div>
-  </section>
 </main>
 
 <footer class="footer">Dijiyer · İşletmenize özel QR / NFC dijital kart</footer>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
-const app=firebase.apps.find(a=>a.name==="qrOrder")||firebase.initializeApp(firebaseConfig,"qrOrder");
-const db=app.firestore(),$=id=>document.getElementById(id);
-let logo="",cover="",gallery=[];
-const ORDER_SETTINGS_DEFAULT={
- prices:{qr:499,review:349,menu:599,vipAddon:100,customAddon:200}
-};
-let ORDER_SETTINGS=JSON.parse(JSON.stringify(ORDER_SETTINGS_DEFAULT));
-function money(v){return new Intl.NumberFormat("tr-TR",{maximumFractionDigits:0}).format(Number(v)||0)+" TL"}
-function currentTotal(){
- const p=selectedProducts();
- let total=0;
- if(p.some(x=>x.id==="qr_nfc_card")) total+=Number(ORDER_SETTINGS.prices.qr)||0;
- if(p.some(x=>x.id==="google_review_card")) total+=Number(ORDER_SETTINGS.prices.review)||0;
- if(p.some(x=>x.id==="business_menu")) total+=Number(ORDER_SETTINGS.prices.menu)||0;
- return total;
-}
-function applyOrderSettings(){
- if($("priceQr"))$("priceQr").textContent=money(ORDER_SETTINGS.prices.qr);
- if($("priceReview"))$("priceReview").textContent=money(ORDER_SETTINGS.prices.review);
- if($("priceMenu"))$("priceMenu").textContent=money(ORDER_SETTINGS.prices.menu);
- if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
-}
-function startOrderSettingsSync(){
- db.collection("siteSettings").doc("home").onSnapshot(s=>{
-  const x=(s.data()||{}).qrOrderSettings||{};
-  ORDER_SETTINGS={
-    prices:{...ORDER_SETTINGS_DEFAULT.prices,...(x.prices||{})}
-  };
-  applyOrderSettings();
- },e=>{
-  console.warn("Fiyat ayarları okunamadı:",e);
-  applyOrderSettings();
- });
-}
-
-function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b=>b.toString(36).padStart(2,"0")).join("").slice(0,10)}
-function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,45)||"kart"}
-function val(id){return $(id).value.trim()}
-function now(){return new Date().toISOString()}
-function orderCode(){return "QR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+randomId().slice(0,5).toUpperCase()}
-function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
-
-async function prefillInstitutionFromQuery(){
- const params=new URLSearchParams(location.search);
- const institutionId=params.get("institutionId");
- if(!institutionId)return;
- try{
-  const snap=await db.collection("institutions").doc(institutionId).get();
-  if(!snap.exists)return;
-  const d=snap.data()||{};
-  const set=(id,value)=>{const el=$(id);if(el&&value!=null&&String(value).trim())el.value=String(value).trim()};
-  set("customerName",d.contactName||d.ownerName||d.name||"");
-  set("customerPhone",d.phone||"");
-  set("whatsappPhone",d.whatsapp||d.phone||"");
-  set("instagram",d.instagram||"");
-  set("website",d.website||"");
-  set("address",d.address||[d.city,d.district].filter(Boolean).join(" / "));
-  set("businessInfo",[d.name,d.description].filter(Boolean).join("\n"));
-  $("sumCustomer").textContent=$("customerName").value.trim()||"Henüz girilmedi";
-  $("sumPhone").textContent=$("customerPhone").value.trim()||"Henüz girilmedi";
- }catch(error){
-  console.warn("Firma bilgileri QR formuna yüklenemedi:",error);
- }
-}
-
-$("customerName").oninput=e=>$("sumCustomer").textContent=e.target.value.trim()||"Henüz girilmedi";
-$("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"Henüz girilmedi";
-function selectedProducts(){
- return [...document.querySelectorAll('input[name="productCategory"]:checked')].map(x=>({id:x.value,name:x.dataset.name}));
-}
-function updateProductSummary(){
- const p=selectedProducts();
- $("sumProducts").textContent=p.length?p.map(x=>x.name).join(", "):"Seçim yapılmadı";
- const hasQr=p.some(x=>x.id==="qr_nfc_card");
- if($("giftPromo"))$("giftPromo").classList.toggle("hidden",!hasQr);
- if($("sumTotal"))$("sumTotal").textContent=money(currentTotal());
-}
-document.querySelectorAll('input[name="productCategory"]').forEach(c=>c.onchange=updateProductSummary);
-updateProductSummary();
-startOrderSettingsSync();
-prefillInstitutionFromQuery();
-
-$("submitBtn").onclick=async()=>{
- const required=["customerName","customerPhone","address","businessInfo"];
- for(const id of required){
-  if(!val(id)){
-   document.getElementById(id).focus();
-   $("formMsg").textContent="Lütfen zorunlu alanları doldurun.";
-   return;
-  }
- }
- if(!validPhone(val("customerPhone"))){
-  $("formMsg").textContent="Telefon numarasını kontrol edin.";
-  return;
- }
- if(val("whatsappPhone")&&!validPhone(val("whatsappPhone"))){
-  $("formMsg").textContent="WhatsApp numarasını kontrol edin.";
-  return;
- }
-
- const products=selectedProducts();
- if(!products.length){
-  $("formMsg").textContent="Lütfen en az bir sipariş kategorisi seçin.";
-  return;
- }
-
- const btn=$("submitBtn");
- btn.disabled=true;
- btn.textContent="Sipariş oluşturuluyor...";
- $("formMsg").textContent="";
-
- try{
-  const code=orderCode();
-  const businessInfo=val("businessInfo");
-  const businessName=(businessInfo.split(/\n|,|-/)[0]||"firma").trim();
-  const cardId=slugify(businessName)+"-"+randomId().slice(0,8);
-  const permanentUrl=new URL("customer-card.html?id="+encodeURIComponent(cardId),location.href).href;
-  const whatsapp=val("whatsappPhone")||val("customerPhone");
-
-  const cardData={
-   name:businessName,
-   phone:val("customerPhone"),
-   whatsapp,
-   address:val("address"),
-   instagram:val("instagram"),
-   website:val("website"),
-   description:businessInfo,
-   productCategories:products.map(x=>x.id),
-   productCategoryNames:products.map(x=>x.name),
-   showContact:true,
-   showInfoRequest:true
-  };
-
-  const payload={
-   orderCode:code,
-   cardId,
-   permanentUrl,
-   status:"new",
-   source:"public_qr_order",
-   customerName:val("customerName"),
-   customerPhone:val("customerPhone"),
-   whatsappPhone:whatsapp,
-   address:val("address"),
-   instagram:val("instagram"),
-   website:val("website"),
-   businessName,
-   businessInfo,
-   productCategories:products.map(x=>x.id),
-   productCategoryNames:products.map(x=>x.name),
-   totalPrice:currentTotal(),
-   priceSnapshot:{...ORDER_SETTINGS.prices},
-   quantity:1,
-   cardType:"qr_nfc",
-   cardData,
-   createdAt:now(),
-   updatedAt:now()
-  };
-
-  await db.collection("siparisler").doc(code).set({...payload,orderType:"qr_card"});
-
-  $("formLayout").style.display="none";
-  $("successBox").classList.add("show");
-  $("orderNo").textContent="Sipariş No: "+code;
-  $("reservedUrl").textContent=permanentUrl;
-  new QRCode($("qrBox"),{text:permanentUrl,width:220,height:220,colorDark:"#111827",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.H});
-  window.scrollTo({top:0,behavior:"smooth"});
- }catch(err){
-  $("formMsg").textContent="Sipariş gönderilemedi: "+err.message;
-  btn.disabled=false;
-  btn.textContent="Siparişi Oluştur";
- }
-}
-</script>
 </body>
 </html>
