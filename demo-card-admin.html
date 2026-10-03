@@ -323,6 +323,7 @@ function val(id){return $(id).value.trim()}
 function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"kart"}
 let CUSTOMER_URL="";
 let ACTIVE_CUSTOMER_CARD_ID="";
+let ACTIVE_ORDER_ID="";
 function setActiveCustomerCard(id){
  ACTIVE_CUSTOMER_CARD_ID=id||"";
  if($("saveBtn"))$("saveBtn").textContent=ACTIVE_CUSTOMER_CARD_ID?"QR Kartı Güncelle":"Demo Sayfasını Güncelle";
@@ -409,6 +410,42 @@ function renderInstitutions(arr){
  box.querySelectorAll("button").forEach(b=>b.onclick=()=>useInstitution(arr[+b.dataset.i]));
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+async function loadOrderIntoEditor(orderId){
+ try{
+  const snap=await db.collection("siparisler").doc(orderId).get();
+  if(!snap.exists)throw new Error("Sipariş bulunamadı.");
+  const o=snap.data()||{};
+  const d=o.cardData||{};
+  const cardId=o.cardId||slugify(o.businessName||d.name||"kart");
+  ACTIVE_ORDER_ID=orderId;
+  setActiveCustomerCard(cardId);
+  $("customCardSlug").value=cardId;
+  $("customTargetUrl").value=d.targetUrl||"";
+  fill({
+    ...d,
+    name:d.name||o.businessName||o.customerName||"",
+    phone:d.phone||o.customerPhone||"",
+    whatsapp:d.whatsapp||o.whatsappPhone||o.customerPhone||"",
+    address:d.address||o.address||"",
+    instagram:d.instagram||o.instagram||"",
+    website:d.website||o.website||"",
+    description:d.description||o.businessInfo||"",
+    showContact:d.showContact!==false,
+    showInfoRequest:d.showInfoRequest!==false
+  });
+  showCustomerQr(cardId,d.name||o.businessName||o.customerName||cardId);
+  if($("saveBtn"))$("saveBtn").textContent="Kartı Hazırla / Güncelle";
+  if($("stickyInfoText"))$("stickyInfoText").textContent="Sipariş bilgilerini kontrol et, kartı hazırla; ardından siparişler ekranından aktifleştir.";
+  $("saveMsg").textContent="Sipariş düzenlemeye açıldı. Bilgileri kontrol edip Kartı Hazırla / Güncelle'ye bas.";
+  $("saveMsg").className="msg ok";
+  return true;
+ }catch(e){
+  $("saveMsg").textContent="Sipariş yüklenemedi: "+e.message;
+  $("saveMsg").className="msg err";
+  return false;
+ }
+}
+
 function useInstitution(x){
  fill({
   name:x.name||x.institutionName||"",category:x.category||x.mainCategory||"",phone:x.phone||x.telephone||"",whatsapp:x.whatsapp||x.phone||"",
@@ -456,10 +493,23 @@ $("saveBtn").onclick=async()=>{
   const d=formData();
   if(ACTIVE_CUSTOMER_CARD_ID){
    const targetUrl=normalizeTargetUrl($("customTargetUrl").value);
-   await db.collection("customerCards").doc(ACTIVE_CUSTOMER_CARD_ID).set({...d,cardId:ACTIVE_CUSTOMER_CARD_ID,status:"active",targetUrl,updatedAt:new Date().toISOString()},{merge:true});
+   const now=new Date().toISOString();
+   const cardStatus=ACTIVE_ORDER_ID?"preparing":"active";
+   await db.collection("customerCards").doc(ACTIVE_CUSTOMER_CARD_ID).set({...d,cardId:ACTIVE_CUSTOMER_CARD_ID,status:cardStatus,targetUrl,updatedAt:now},{merge:true});
+   if(ACTIVE_ORDER_ID){
+     await db.collection("siparisler").doc(ACTIVE_ORDER_ID).set({
+       status:"preparing",
+       cardId:ACTIVE_CUSTOMER_CARD_ID,
+       cardData:{...d,cardId:ACTIVE_CUSTOMER_CARD_ID,targetUrl},
+       permanentUrl:customerUrlFor(ACTIVE_CUSTOMER_CARD_ID),
+       updatedAt:now
+     },{merge:true});
+   }
    showCustomerQr(ACTIVE_CUSTOMER_CARD_ID,d.name);
    await loadCustomerCards();
-   $("saveMsg").textContent="QR kartı güncellendi: "+(d.name||ACTIVE_CUSTOMER_CARD_ID);
+   $("saveMsg").textContent=ACTIVE_ORDER_ID
+     ?"Kart hazırlandı. Şimdi QR / NFC Kart Siparişleri ekranından Kartı Aktifleştir'e basabilirsiniz."
+     :"QR kartı güncellendi: "+(d.name||ACTIVE_CUSTOMER_CARD_ID);
   }else{
    await saveDemo(d);
    $("saveMsg").textContent="Demo sayfası güncellendi. Sabit demo QR artık "+(d.name||"bu firma")+" kartını açıyor.";
@@ -467,7 +517,7 @@ $("saveBtn").onclick=async()=>{
   $("saveMsg").className="msg ok";
  }catch(e){$("saveMsg").textContent="Kaydedilemedi: "+e.message;$("saveMsg").className="msg err"}
 };
-$("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor musunuz?")){setActiveCustomerCard("");$("customCardSlug").value="";$("customTargetUrl").value="";fill({showContact:true,showInfoRequest:true})}};
+$("clearBtn").onclick=()=>{if(confirm("Formdaki alanları temizlemek istiyor musunuz?")){ACTIVE_ORDER_ID="";setActiveCustomerCard("");$("customCardSlug").value="";$("customTargetUrl").value="";fill({showContact:true,showInfoRequest:true})}};
 $("previewBtn").onclick=$("previewTop").onclick=()=>window.open(DEMO_URL,"_blank");
 $("copyUrl").onclick=async()=>{await navigator.clipboard.writeText(DEMO_URL);$("copyUrl").textContent="Kopyalandı";setTimeout(()=>$("copyUrl").textContent="Linki Kopyala",1400)};
 $("downloadQr").onclick=()=>{const img=$("qrcode").querySelector("img"),canvas=$("qrcode").querySelector("canvas"),a=document.createElement("a");a.download="dijiyesor-demo-qr.png";a.href=img&&img.src?img.src:canvas.toDataURL("image/png");a.click()};
@@ -495,6 +545,7 @@ $("createCustomerCard").onclick=async()=>{
 };
 
 $("newFirmBtn").onclick=()=>{
+ ACTIVE_ORDER_ID="";
  setActiveCustomerCard("");
  fill({showContact:true,showInfoRequest:true});
  $("customCardSlug").value="";
@@ -545,7 +596,11 @@ $("name").addEventListener("input",e=>updateNames(e.target.value.trim()));
 auth.onAuthStateChanged(async user=>{
  if(user){
   $("loginBox").classList.add("hidden");$("app").classList.remove("hidden");$("stickyBar").classList.remove("hidden");
-  try{await Promise.all([loadDemo(),loadInstitutions(),loadCustomerCards()])}catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}
+  try{
+   await Promise.all([loadDemo(),loadInstitutions(),loadCustomerCards()]);
+   const orderId=new URLSearchParams(location.search).get("orderId");
+   if(orderId)await loadOrderIntoEditor(orderId);
+  }catch(e){$("saveMsg").textContent=e.message;$("saveMsg").className="msg err"}
  }else{
   $("loginBox").classList.remove("hidden");$("app").classList.add("hidden");$("stickyBar").classList.add("hidden")
  }
