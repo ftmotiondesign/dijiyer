@@ -561,6 +561,7 @@ const qrCenterSection=document.getElementById("qrCenterSection");
 const qrMainNavBtn=document.getElementById("qrMainNavBtn");
 const qrSideOrdersBtn=document.getElementById("qrSideOrdersBtn");
 const qrSideDemoBtn=document.getElementById("qrSideDemoBtn");
+const digitalCardSideBtn=document.getElementById("digitalCardSideBtn");
 const qrCenterOrdersTab=document.getElementById("qrCenterOrdersTab");
 const qrCenterCreateTab=document.getElementById("qrCenterCreateTab");
 const qrOrdersOverview=document.getElementById("qrOrdersOverview");
@@ -595,6 +596,7 @@ function setQrCenterMode(mode){
 qrMainNavBtn?.addEventListener("click",(e)=>{e.preventDefault();setQrCenterMode("orders")});
 qrSideOrdersBtn?.addEventListener("click",()=>setQrCenterMode("orders"));
 qrSideDemoBtn?.addEventListener("click",()=>setQrCenterMode("demo"));
+digitalCardSideBtn?.addEventListener("click",()=>{window.location.href="dijital-kartvizit-admin.html"});
 qrCenterOrdersTab?.addEventListener("click",()=>setQrCenterMode("orders"));
 qrCenterCreateTab?.addEventListener("click",()=>setQrCenterMode("demo"));
 
