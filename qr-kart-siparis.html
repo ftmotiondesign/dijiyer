@@ -54,6 +54,17 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .qrbox{display:grid;place-items:center;margin:18px auto 12px;padding:14px;border:1px dashed #cbd5e1;border-radius:16px;background:#fafcff;width:max-content;max-width:100%}.order-url{font-size:11px;word-break:break-all;background:#f6f8fb;padding:9px;border-radius:9px;color:#475467}
 .order-no{display:inline-block;margin-top:8px;background:#eef4ff;color:#155db8;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900}
 .footer{text-align:center;color:#98a2b3;font-size:11px;padding:10px 16px 30px}
+.main-category-wrap{max-width:1050px;margin:18px auto 0;padding:0 16px}
+.main-category-title{margin:0 0 10px;font-size:14px;font-weight:900;color:#344054}
+.main-category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.main-category-card{position:relative;display:flex;align-items:center;gap:12px;min-height:86px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(20,42,90,.05)}
+.main-category-card.active{border-color:#9fc2f8;background:linear-gradient(135deg,#eef5ff,#fff);box-shadow:0 10px 26px rgba(22,119,255,.10)}
+.main-category-icon{width:44px;height:44px;border-radius:13px;background:#eef4ff;color:#155db8;display:grid;place-items:center;font-weight:900;flex:0 0 44px}
+.main-category-copy b{display:block;font-size:13px}.main-category-copy small{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.35}
+.main-category-badge{position:absolute;right:10px;top:10px;font-size:9px;font-weight:900;padding:4px 7px;border-radius:999px;background:#eaf8ef;color:#15803d}
+.main-category-card.coming{opacity:.72;cursor:default}
+.main-category-card.coming .main-category-badge{background:#fff7e6;color:#b26a00}
+@media(max-width:700px){.main-category-grid{grid-template-columns:1fr}.main-category-card{min-height:72px}}
 @media(max-width:820px){.hero-in,.layout{grid-template-columns:1fr}.hero{padding-top:32px}.hero h1{font-size:32px}.hero-card{display:none}.side{position:static}.wrap{margin-top:-42px}}
 @media(max-width:560px){.grid,.feature-grid,.upload-grid,.template-grid,.product-grid{grid-template-columns:1fr}.full,.upload.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
 </style>
@@ -79,6 +90,36 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
       <span>4. Dijiyer kontrol etsin ve kartı aktifleştirsin</span>
       <span>5. Size özel baskılı QR / NFC kartınız hazırlansın</span>
     </div>
+  </div>
+</section>
+
+<section class="main-category-wrap" aria-label="QR ürün kategorileri">
+  <h2 class="main-category-title">Ana Kategori</h2>
+  <div class="main-category-grid">
+    <div class="main-category-card coming">
+      <div class="main-category-icon">☰</div>
+      <div class="main-category-copy">
+        <b>Menü QR</b>
+        <small>Menü, fiyat listesi veya hizmet listesini QR ile açtır.</small>
+      </div>
+      <span class="main-category-badge">Yakında</span>
+    </div>
+    <div class="main-category-card coming">
+      <div class="main-category-icon">★</div>
+      <div class="main-category-copy">
+        <b>Google Yorum Kart</b>
+        <small>Müşteriyi doğrudan Google yorum ekranına yönlendir.</small>
+      </div>
+      <span class="main-category-badge">Yakında</span>
+    </div>
+    <a class="main-category-card active" href="qr-kart-siparis.html">
+      <div class="main-category-icon">QR</div>
+      <div class="main-category-copy">
+        <b>Dijital Kartvizit</b>
+        <small>Telefon, WhatsApp, web, Instagram ve firma bilgilerini tek kartta topla.</small>
+      </div>
+      <span class="main-category-badge">Aktif</span>
+    </a>
   </div>
 </section>
 
