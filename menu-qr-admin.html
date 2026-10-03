@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DijiyeSor | Menü QR Siparişleri</title>
+<style>
+:root{--b:#1677ff;--bg:#f4f7fb;--text:#172033;--muted:#667085;--line:#dbe3ee;--green:#16a34a;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}button,input,select{font:inherit}
+body.embed .top{display:none}body.embed .wrap{margin-top:0}
+.top{height:62px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.wrap{max-width:1180px;margin:18px auto;padding:0 16px 50px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(20,42,90,.05)}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.head h1{font-size:22px;margin:0 0 5px}.head p{margin:0;color:var(--muted);font-size:12px}.count{background:#eef5ff;color:#155db8;padding:7px 10px;border-radius:999px;font-weight:900;font-size:11px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.toolbar input,.toolbar select{border:1px solid #cfd8e5;border-radius:10px;padding:10px;background:#fff}
+.toolbar input{flex:1;min-width:220px}.orders{display:grid;gap:10px}
+.order{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff}.order-top{display:flex;justify-content:space-between;gap:12px}.order h3{margin:0;font-size:15px}.meta{font-size:11px;color:var(--muted);line-height:1.55;margin-top:4px}
+.status{font-size:10px;font-weight:900;padding:6px 8px;border-radius:999px;background:#eef2f7}.status.new{background:#fff7e6;color:#a15c00}.status.preparing{background:#eef5ff;color:#155db8}.status.completed{background:#eaf8ef;color:#15803d}.status.cancelled{background:#fff0f0;color:#b42318}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.mini{background:#f8fafc;border-radius:10px;padding:9px}.mini span{display:block;color:#98a2b3;font-size:9px;font-weight:900}.mini b{display:block;font-size:11px;margin-top:3px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.actions button{border:0;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer;background:#eef4ff;color:#155db8}.actions .ok{background:#eaf8ef;color:#15803d}.actions .danger{background:#fff0f0;color:#b42318}
+.details{display:none;margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}.order.open .details{display:block}.details p{font-size:12px;line-height:1.6;margin:4px 0}.empty{padding:20px;text-align:center;color:var(--muted)}
+.login{max-width:420px;margin:60px auto}.login input{width:100%;margin:6px 0;border:1px solid var(--line);border-radius:10px;padding:11px}.login button{width:100%;border:0;background:var(--b);color:#fff;padding:12px;border-radius:10px;font-weight:900}.hidden{display:none!important}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:500px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<script>if(new URLSearchParams(location.search).get("embed")==="1")document.body.classList.add("embed")</script>
+<header class="top"><b>DijiyeSor · Menü QR</b><span>Yönetim</span></header>
+<section id="loginBox" class="card login">
+  <h2>Yönetici Girişi</h2>
+  <input id="email" type="email" placeholder="E-posta">
+  <input id="password" type="password" placeholder="Şifre">
+  <button id="loginBtn">Giriş Yap</button><div id="loginMsg" class="meta"></div>
+</section>
+<main id="app" class="wrap hidden">
+  <section class="card">
+    <div class="head"><div><h1>Menü QR Siparişleri</h1><p>Gelen menü QR siparişlerini, seçilen şablonu ve müşteri bilgilerini yönetin.</p></div><span id="count" class="count">0 sipariş</span></div>
+    <div class="toolbar">
+      <input id="search" placeholder="Firma, telefon veya sipariş no ara...">
+      <select id="status"><option value="">Tüm Durumlar</option><option value="new">Yeni</option><option value="preparing">Hazırlanıyor</option><option value="completed">Tamamlandı</option><option value="cancelled">İptal</option></select>
+    </div>
+    <div id="orders" class="orders"><div class="empty">Yükleniyor...</div></div>
+  </section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+const appFb=firebase.apps.find(a=>a.name==="menuQrAdmin")||firebase.initializeApp(firebaseConfig,"menuQrAdmin");
+const auth=appFb.auth(),db=appFb.firestore(),$=id=>document.getElementById(id);let rows=[];
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function fmt(v){try{return new Date(v).toLocaleString("tr-TR")}catch(_){return v||"-"}}
+function statusText(v){return ({new:"Yeni",preparing:"Hazırlanıyor",completed:"Tamamlandı",cancelled:"İptal"})[v]||v||"Yeni"}
+function render(){
+ const q=String($("search").value||"").toLocaleLowerCase("tr-TR").trim(),st=$("status").value;
+ const list=rows.filter(x=>(!st||x.status===st)&&(!q||JSON.stringify(x).toLocaleLowerCase("tr-TR").includes(q)));
+ $("count").textContent=list.length+" sipariş";
+ $("orders").innerHTML=list.length?list.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status||"new")+'">'+esc(statusText(o.status||"new"))+'</span></div><div class="grid"><div class="mini"><span>ŞABLON</span><b>'+esc(o.templateName||"-")+'</b></div><div class="mini"><span>YETKİLİ</span><b>'+esc(o.contactName||"-")+'</b></div><div class="mini"><span>TELEFON</span><b>'+esc(o.phone||"-")+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsapp||o.phone||"-")+'</b></div></div><div class="actions"><button class="detail">Detay</button>'+(o.status==="new"?'<button class="prep">Hazırlamaya Al</button>':"")+(o.status!=="completed"?'<button class="ok done">Tamamlandı</button>':"")+(o.status!=="cancelled"?'<button class="danger cancel">İptal</button>':"")+'</div><div class="details"><p><b>Adres:</b> '+esc(o.address||"-")+'</p><p><b>Menü / Ürün Bilgileri:</b> '+esc(o.menuNote||"-")+'</p><p><b>Ek Not:</b> '+esc(o.note||"-")+'</p><p><b>Şablon ID:</b> '+esc(o.templateId||"-")+'</p></div></article>').join(""):'<div class="empty">Sipariş bulunamadı.</div>';
+ document.querySelectorAll(".order").forEach(el=>{const o=rows.find(x=>x.id===el.dataset.id);el.querySelector(".detail").onclick=()=>el.classList.toggle("open");const p=el.querySelector(".prep");if(p)p.onclick=()=>setStatus(o,"preparing");const d=el.querySelector(".done");if(d)d.onclick=()=>setStatus(o,"completed");const c=el.querySelector(".cancel");if(c)c.onclick=()=>setStatus(o,"cancelled")});
+}
+async function setStatus(o,status){await db.collection("siparisler").doc(o.id).set({status,updatedAt:new Date().toISOString()},{merge:true});o.status=status;render()}
+function load(){return db.collection("siparisler").orderBy("createdAt","desc").limit(300).onSnapshot(s=>{rows=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.orderType==="menu_qr"||x.source==="public_menu_qr_order");render()})}
+$("search").oninput=render;$("status").onchange=render;
+$("loginBtn").onclick=async()=>{try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}catch(e){$("loginMsg").textContent=e.message}};
+auth.onAuthStateChanged(u=>{if(u){$("loginBox").classList.add("hidden");$("app").classList.remove("hidden");load()}else{$("loginBox").classList.remove("hidden");$("app").classList.add("hidden")}});
+</script>
+</body>
+</html>
