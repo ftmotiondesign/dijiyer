@@ -139,6 +139,12 @@ function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function fmt(s){try{return new Date(s).toLocaleString("tr-TR")}catch(e){return s||""}}
 function statusText(s){return ({new:"Yeni",preparing:"Hazırlanıyor",active:"Aktif",cancelled:"İptal",rejected:"Reddedildi"})[s]||s}
 function features(d){const m=[["showReview","Google Yorum"],["showContact","Rehbere Kaydet"],["showGallery","Galeri"],["show360","360° Tur"],["showRoute","Konum Videosu"],["showPromo","Tanıtım Videosu"],["showCampaign","Kampanya"],["showInfoRequest","Bilgi Al"]];return m.filter(x=>d&&d[x[0]]).map(x=>'<span class="chip">'+x[1]+'</span>').join("")}
+function orderCategoryNames(o){
+ if(Array.isArray(o.productCategoryNames)&&o.productCategoryNames.length)return o.productCategoryNames;
+ if(Array.isArray(o.cardData?.productCategoryNames)&&o.cardData.productCategoryNames.length)return o.cardData.productCategoryNames;
+ if(o.orderType==="digital_business_card"||o.source==="public_digital_business_card")return ["Dijital Kartvizit"];
+ return ["QR & NFC Kart"];
+}
 function normalizeSearch(v){
  return String(v||"").toLocaleLowerCase("tr-TR").replace(/\s+/g," ").trim();
 }
@@ -176,11 +182,11 @@ function render(){
    : "";
  }
  if(!arr.length){$("list").innerHTML='<div class="muted">'+(searchTerm?'Aramanızla eşleşen sipariş bulunamadı.':'Bu durumda sipariş yok.')+'</div>';return}
- $("list").innerHTML=arr.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||o.cardData?.name||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status)+'">'+esc(statusText(o.status))+'</span></div><div class="grid"><div class="mini"><span>MÜŞTERİ</span><b>'+esc(o.customerName)+'</b></div><div class="mini"><span>ARA / TELEFON</span><b>'+esc(o.customerPhone)+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsappPhone||o.cardData?.whatsapp||o.customerPhone)+'</b></div><div class="mini"><span>KATEGORİ</span><b>'+esc((o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join ? (o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join(", ") : (o.productCategoryNames||"QR & NFC Kart"))+'</b></div><div class="mini"><span>TOPLAM</span><b>'+esc((o.totalPrice!=null?o.totalPrice+" TL":"-"))+'</b></div><div class="mini"><span>ŞABLONLAR</span><b>'+esc([
+ $("list").innerHTML=arr.map(o=>'<article class="order" data-id="'+esc(o.id)+'"><div class="order-top"><div><h3>'+esc(o.businessName||o.cardData?.name||"-")+'</h3><div class="meta">'+esc(o.orderCode||o.id)+' · '+esc(fmt(o.createdAt))+'</div></div><span class="status '+esc(o.status)+'">'+esc(statusText(o.status))+'</span></div><div class="grid"><div class="mini"><span>MÜŞTERİ</span><b>'+esc(o.customerName)+'</b></div><div class="mini"><span>ARA / TELEFON</span><b>'+esc(o.customerPhone)+'</b></div><div class="mini"><span>WHATSAPP</span><b>'+esc(o.whatsappPhone||o.cardData?.whatsapp||o.customerPhone)+'</b></div><div class="mini"><span>KATEGORİ</span><b>'+esc(orderCategoryNames(o).join(", "))+'</b></div><div class="mini"><span>TOPLAM</span><b>'+esc((o.totalPrice!=null?o.totalPrice+" TL":"-"))+'</b></div><div class="mini"><span>ŞABLONLAR</span><b>'+esc([
   (o.productCategoryNames||[]).includes("QR & NFC Kart")?"QR: "+(o.templateName||o.cardData?.templateName||"Klasik"):"",
   (o.productCategoryNames||[]).includes("Google Yorum Kartı")?"Yorum: "+(o.reviewTemplateName||o.cardData?.reviewTemplateName||"Google Temiz"):"",
   (o.productCategoryNames||[]).includes("İşletme Menü")?"Menü: "+(o.menuTemplateName||o.cardData?.menuTemplateName||"Modern Beyaz Menü"):""
-].filter(Boolean).join(" · ")||o.templateName||"Klasik")+'</b></div></div><div class="actions"><button class="secondary detailBtn">Detay</button><button class="secondary editCardBtn">Kartı Düzenle</button>'+(o.status==="new"?'<button class="primary prepBtn">Hazırlamaya Al</button>':"")+(["new","preparing"].includes(o.status)?'<button class="success activateBtn">Kartı Aktifleştir</button>':"")+(o.status==="active"?'<button class="secondary openBtn">Kartı Aç</button>':"")+(["new","preparing"].includes(o.status)?'<button class="secondary cancelBtn">İptal</button><button class="danger rejectBtn">Reddet</button>':"")+'</div><div class="details"><div class="meta"><b>Firma:</b> '+esc(o.businessName||o.cardData?.name)+'<br><b>Firma Bilgileri:</b> '+esc(o.businessInfo||o.cardData?.description||"-")+'<br><b>Ara:</b> '+esc(o.customerPhone||o.cardData?.phone)+'<br><b>WhatsApp:</b> '+esc(o.whatsappPhone||o.cardData?.whatsapp||"-")+'<br><b>Adres:</b> '+esc(o.address||o.cardData?.address||"-")+'<br><b>Instagram:</b> '+esc(o.instagram||o.cardData?.instagram||"-")+'<br><b>Web:</b> '+esc(o.website||o.cardData?.website||"-")+'<br><b>Kategori:</b> '+esc((o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join ? (o.productCategoryNames||o.cardData?.productCategoryNames||["QR & NFC Kart"]).join(", ") : (o.productCategoryNames||"QR & NFC Kart"))+'</div><div class="features">'+features(o.cardData)+'</div><div class="url">'+esc(o.permanentUrl)+'</div></div></article>').join("");
+].filter(Boolean).join(" · ")||o.templateName||"Klasik")+'</b></div></div><div class="actions"><button class="secondary detailBtn">Detay</button><button class="secondary editCardBtn">Kartı Düzenle</button>'+(o.status==="new"?'<button class="primary prepBtn">Hazırlamaya Al</button>':"")+(["new","preparing"].includes(o.status)?'<button class="success activateBtn">Kartı Aktifleştir</button>':"")+(o.status==="active"?'<button class="secondary openBtn">Kartı Aç</button>':"")+(["new","preparing"].includes(o.status)?'<button class="secondary cancelBtn">İptal</button><button class="danger rejectBtn">Reddet</button>':"")+'</div><div class="details"><div class="meta"><b>Firma:</b> '+esc(o.businessName||o.cardData?.name)+'<br><b>Firma Bilgileri:</b> '+esc(o.businessInfo||o.cardData?.description||"-")+'<br><b>Ara:</b> '+esc(o.customerPhone||o.cardData?.phone)+'<br><b>WhatsApp:</b> '+esc(o.whatsappPhone||o.cardData?.whatsapp||"-")+'<br><b>Adres:</b> '+esc(o.address||o.cardData?.address||"-")+'<br><b>Instagram:</b> '+esc(o.instagram||o.cardData?.instagram||"-")+'<br><b>Web:</b> '+esc(o.website||o.cardData?.website||"-")+'<br><b>Kategori:</b> '+esc(orderCategoryNames(o).join(", "))+'</div><div class="features">'+features(o.cardData)+'</div><div class="url">'+esc(o.permanentUrl)+'</div></div></article>').join("");
  document.querySelectorAll(".order").forEach(el=>{
   const o=orders.find(x=>x.id===el.dataset.id);
   el.querySelector(".detailBtn").onclick=()=>el.classList.toggle("open");
@@ -198,7 +204,12 @@ function render(){
 }
 function load(){
  return db.collection("siparisler").orderBy("createdAt","desc").limit(300).onSnapshot(snap=>{
-  orders=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.orderType==="qr_card"||x.source==="public_qr_order");
+  orders=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>
+    x.orderType==="qr_card"||
+    x.source==="public_qr_order"||
+    x.orderType==="digital_business_card"||
+    x.source==="public_digital_business_card"
+  );
   const newCount=orders.filter(x=>x.status==="new").length;
   document.title=(newCount?"("+newCount+") ":"")+"Dijiyer | QR Kart Siparişleri";
   render();
