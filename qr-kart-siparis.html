@@ -32,6 +32,9 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .product-option{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:flex-start;gap:9px;background:#fff;cursor:pointer}
 .product-option:hover{border-color:#9fc2f8;background:#f9fbff}
+.product-link{color:inherit;text-decoration:none;align-items:center}
+.product-link-icon{width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:#eef4ff;color:#155db8;display:grid;place-items:center;font-weight:900}
+.product-link-cta{display:block;margin-top:7px;color:#155db8;font-size:10px;font-weight:900}
 .product-option input{width:18px;height:18px;margin:1px 0 0;flex:0 0 auto}
 .product-option b{display:block;font-size:12px}
 .product-option small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:3px}
@@ -168,6 +171,10 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
             <input type="checkbox" name="productCategory" value="business_menu" data-name="İşletme Menü">
             <span><b>İşletme Menü</b><small>QR / NFC ile dijital menü veya fiyat listesi</small><span class="price-badge" id="priceMenu">599 TL</span></span>
           </label>
+          <a class="product-option product-link" href="dijital-kartvizit.html">
+            <span class="product-link-icon">▣</span>
+            <span><b>Dijital Kartvizit</b><small>Telefon, WhatsApp, web, Instagram ve iletişim bilgilerini tek sayfada topla</small><span class="product-link-cta">Ayrı sayfada oluştur →</span></span>
+          </a>
         </div>
         <div id="giftPromo" class="gift-promo">
           <div class="gift-anim" aria-hidden="true">🎁</div>
