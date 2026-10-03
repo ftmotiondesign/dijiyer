@@ -34,6 +34,8 @@ input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}t
 .submit{width:100%;margin-top:14px;border:0;background:var(--b);color:#fff;padding:14px;border-radius:13px;font-weight:900;cursor:pointer}.submit:disabled{opacity:.6;cursor:wait}
 .msg{font-size:11px;color:var(--muted);margin-top:8px}
 .success{display:none;text-align:center}.success.show{display:block}.success-icon{width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:#eaf8ef;color:var(--green);display:grid;place-items:center;font-size:30px;font-weight:900}
+.qrbox{display:grid;place-items:center;margin:18px auto 12px;padding:14px;border:1px dashed #cbd5e1;border-radius:16px;background:#fafcff;width:max-content;max-width:100%}
+.order-url{font-size:11px;word-break:break-all;background:#f6f8fb;padding:9px;border-radius:9px;color:#475467;max-width:620px;margin:0 auto}
 .footer{text-align:center;color:#98a2b3;font-size:11px;padding:10px 16px 30px}
 @media(max-width:820px){.hero-in,.layout{grid-template-columns:1fr}.hero{padding-top:32px}.hero h1{font-size:32px}.preview{display:none}.side{position:static}.wrap{margin-top:-42px}}
 @media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.top{padding:0 12px}.hero{padding-left:12px;padding-right:12px}.card{padding:15px}}
@@ -69,16 +71,13 @@ input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}t
       <section class="card">
         <div class="step"><span class="num">1</span><div><h2>Kartvizit Bilgileri</h2><p class="help">Dijital kartvizitte görünmesini istediğiniz bilgileri girin.</p></div></div>
         <div class="grid">
-          <label>İsim Soyisim *<input id="name" required placeholder="Adınız Soyadınız"></label>
-          <label>Firma / Kurum *<input id="business" required placeholder="Firma adı"></label>
-          <label>Ünvan<input id="title" placeholder="Örn. Kurucu / Müdür"></label>
-          <label>Telefon *<input id="phone" required placeholder="05xx xxx xx xx"></label>
-          <label>WhatsApp<input id="whatsapp" placeholder="05xx xxx xx xx"></label>
-          <label>E-posta<input id="email" type="email" placeholder="ornek@firma.com"></label>
+          <label>İsim Soyisim *<input id="customerName" required placeholder="Adınız Soyadınız"></label>
+          <label>Ara / Telefon *<input id="customerPhone" required placeholder="05xx xxx xx xx"></label>
+          <label>WhatsApp<input id="whatsappPhone" placeholder="05xx xxx xx xx"></label>
           <label>Instagram<input id="instagram" placeholder="@kullaniciadi"></label>
-          <label>Web Sitesi<input id="website" placeholder="https://..."></label>
-          <label class="full">Adres<textarea id="address" placeholder="Firma adresi"></textarea></label>
-          <label class="full">Kısa Tanıtım<textarea id="description" placeholder="Firma veya kendiniz hakkında kısa bilgi"></textarea></label>
+          <label class="full">Web Sitesi<input id="website" placeholder="https://..."></label>
+          <label class="full">Adres *<textarea id="address" required placeholder="Firma adresi"></textarea></label>
+          <label class="full">Firma Bilgileri *<textarea id="businessInfo" required placeholder="Firma adı, sektör ve kısa tanıtım bilgisi"></textarea></label>
         </div>
       </section>
     </div>
@@ -87,11 +86,12 @@ input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}t
       <section class="card summary">
         <h3>Sipariş Özeti</h3>
         <div class="summary-row"><span>Ürün</span><b>Dijital Kartvizit</b></div>
-        <div class="summary-row"><span>İsim</span><b id="sumName">Henüz girilmedi</b></div>
-        <div class="summary-row"><span>Firma</span><b id="sumBusiness">Henüz girilmedi</b></div>
-        <div class="summary-row"><span>Bağlantı</span><b>Siparişle oluşturulur</b></div>
-        <div class="notice">Kartvizit hazırlandığında tek link üzerinden paylaşabilir, QR ve NFC kartınıza bağlayabilirsiniz.</div>
-        <button id="submitBtn" class="submit" type="button">Dijital Kartvizit Oluştur</button>
+        <div class="summary-row"><span>Müşteri</span><b id="sumCustomer">Henüz girilmedi</b></div>
+        <div class="summary-row"><span>Telefon</span><b id="sumPhone">Henüz girilmedi</b></div>
+        <div class="summary-row"><span>Ürün</span><b>Dijital Kartvizit</b></div>
+        <div class="summary-row"><span>QR Adresi</span><b>Siparişle birlikte ayrılır</b></div>
+        <div class="notice"><b>Not:</b> Sipariş oluşturulduğunda size özel kalıcı QR adresi ayrılır ve QR kodunuz anında ekranda gösterilir.</div>
+        <button id="submitBtn" class="submit" type="button">Siparişi Oluştur</button>
         <div id="msg" class="msg"></div>
       </section>
     </aside>
@@ -99,9 +99,12 @@ input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}t
 
   <section id="successBox" class="card success">
     <div class="success-icon">✓</div>
-    <h2>Talebiniz alındı</h2>
-    <p class="help" style="font-size:13px">Dijital kartvizit bilgileriniz kaydedildi. DijiyeSor ekibi kontrol ettikten sonra kartvizitiniz hazırlanacak.</p>
+    <h2>Siparişiniz alındı</h2>
+    <p class="help" style="font-size:13px">Dijital kartvizitiniz için kalıcı QR adresi ayrıldı. Aşağıdaki QR kodunu hemen kullanabilirsiniz.</p>
     <div id="orderNo" class="notice" style="max-width:520px;margin:14px auto 0"></div>
+    <div id="qrBox" class="qrbox"></div>
+    <div id="reservedUrl" class="order-url"></div>
+    <div class="notice" style="max-width:620px;margin:16px auto 0">Bu QR kodu dijital kartvizitinizin kalıcı bağlantısına bağlıdır.</div>
   </section>
 </main>
 
@@ -109,57 +112,101 @@ input:focus,textarea:focus{border-color:#80b4ff;box-shadow:0 0 0 3px #1677ff12}t
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
 const app=firebase.apps.find(a=>a.name==="digitalCardOrder")||firebase.initializeApp(firebaseConfig,"digitalCardOrder");
 const db=app.firestore(),$=id=>document.getElementById(id);
-const val=id=>$(id).value.trim();
-const now=()=>new Date().toISOString();
-const randomId=()=>Array.from(crypto.getRandomValues(new Uint8Array(5))).map(b=>b.toString(36).padStart(2,"0")).join("").slice(0,8).toUpperCase();
 
-$("name").oninput=e=>$("sumName").textContent=e.target.value.trim()||"Henüz girilmedi";
-$("business").oninput=e=>$("sumBusiness").textContent=e.target.value.trim()||"Henüz girilmedi";
+function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b=>b.toString(36).padStart(2,"0")).join("").slice(0,10)}
+function slugify(v){return String(v||"").toLocaleLowerCase("tr-TR").replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,45)||"kart"}
+function val(id){return $(id).value.trim()}
+function now(){return new Date().toISOString()}
+function orderCode(){return "DK-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+randomId().slice(0,5).toUpperCase()}
+function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
+
+$("customerName").oninput=e=>$("sumCustomer").textContent=e.target.value.trim()||"Henüz girilmedi";
+$("customerPhone").oninput=e=>$("sumPhone").textContent=e.target.value.trim()||"Henüz girilmedi";
 
 $("submitBtn").onclick=async()=>{
-  if(!val("name")||!val("business")||!val("phone")){
-    $("msg").textContent="Lütfen isim, firma ve telefon alanlarını doldurun.";
-    return;
+ const required=["customerName","customerPhone","address","businessInfo"];
+ for(const id of required){
+  if(!val(id)){
+   $(id).focus();
+   $("msg").textContent="Lütfen zorunlu alanları doldurun.";
+   return;
   }
-  const btn=$("submitBtn");
-  btn.disabled=true;
-  btn.textContent="Kaydediliyor...";
-  $("msg").textContent="";
-  try{
-    const code="DK-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+randomId().slice(0,5);
-    const payload={
-      orderCode:code,
-      orderType:"digital_business_card",
-      source:"public_digital_business_card",
-      status:"new",
-      name:val("name"),
-      businessName:val("business"),
-      title:val("title"),
-      phone:val("phone"),
-      whatsapp:val("whatsapp")||val("phone"),
-      email:val("email"),
-      instagram:val("instagram"),
-      website:val("website"),
-      address:val("address"),
-      description:val("description"),
-      createdAt:now(),
-      updatedAt:now()
-    };
-    await db.collection("siparisler").doc(code).set(payload);
-    $("formLayout").style.display="none";
-    $("successBox").classList.add("show");
-    $("orderNo").textContent="Sipariş No: "+code;
-    window.scrollTo({top:0,behavior:"smooth"});
-  }catch(err){
-    $("msg").textContent="Talep gönderilemedi: "+err.message;
-    btn.disabled=false;
-    btn.textContent="Dijital Kartvizit Oluştur";
-  }
-};
-</script>
+ }
+ if(!validPhone(val("customerPhone"))){
+  $("msg").textContent="Telefon numarasını kontrol edin.";
+  return;
+ }
+ if(val("whatsappPhone")&&!validPhone(val("whatsappPhone"))){
+  $("msg").textContent="WhatsApp numarasını kontrol edin.";
+  return;
+ }
+
+ const btn=$("submitBtn");
+ btn.disabled=true;
+ btn.textContent="Sipariş oluşturuluyor...";
+ $("msg").textContent="";
+
+ try{
+  const code=orderCode();
+  const businessInfo=val("businessInfo");
+  const businessName=(businessInfo.split(/\n|,|-/)[0]||"firma").trim();
+  const cardId=slugify(businessName)+"-"+randomId().slice(0,8);
+  const permanentUrl=new URL("customer-card.html?id="+encodeURIComponent(cardId),location.href).href;
+  const whatsapp=val("whatsappPhone")||val("customerPhone");
+
+  const cardData={
+   name:businessName,
+   contactName:val("customerName"),
+   phone:val("customerPhone"),
+   whatsapp,
+   address:val("address"),
+   instagram:val("instagram"),
+   website:val("website"),
+   description:businessInfo,
+   showContact:true,
+   showInfoRequest:true
+  };
+
+  const payload={
+   orderCode:code,
+   cardId,
+   permanentUrl,
+   status:"new",
+   source:"public_digital_business_card",
+   orderType:"digital_business_card",
+   customerName:val("customerName"),
+   customerPhone:val("customerPhone"),
+   whatsappPhone:whatsapp,
+   address:val("address"),
+   instagram:val("instagram"),
+   website:val("website"),
+   businessName,
+   businessInfo,
+   cardType:"digital_business_card",
+   cardData,
+   createdAt:now(),
+   updatedAt:now()
+  };
+
+  await db.collection("siparisler").doc(code).set(payload);
+
+  $("formLayout").style.display="none";
+  $("successBox").classList.add("show");
+  $("orderNo").textContent="Sipariş No: "+code;
+  $("reservedUrl").textContent=permanentUrl;
+  $("qrBox").innerHTML="";
+  new QRCode($("qrBox"),{text:permanentUrl,width:220,height:220,colorDark:"#111827",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.H});
+  window.scrollTo({top:0,behavior:"smooth"});
+ }catch(err){
+  $("msg").textContent="Sipariş gönderilemedi: "+err.message;
+  btn.disabled=false;
+  btn.textContent="Siparişi Oluştur";
+ }
+};</script>
 </body>
 </html>
