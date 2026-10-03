@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Yorum Kartı Siparişi | DijiyeSor</title>
+<style>
+:root{--b:#1677ff;--bg:#f4f7fb;--text:#172033;--muted:#667085;--line:#dbe3ee;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}a{text-decoration:none;color:inherit}button,input,textarea{font:inherit}
+.top{height:66px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px}.brand{font-weight:900}.back{padding:9px 12px;background:#eef4ff;color:#155db8;border-radius:10px;font-weight:800}
+.hero{background:linear-gradient(135deg,#2357b7,#1677ff);color:#fff;padding:42px 16px}.hero>div{max-width:960px;margin:auto}.hero span{font-size:10px;font-weight:900;letter-spacing:.1em}.hero h1{font-size:38px;margin:10px 0}.hero p{max-width:680px;line-height:1.6;color:#e9f2ff}
+.wrap{max-width:960px;margin:20px auto;padding:0 16px 50px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(20,42,90,.06)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}label{font-size:12px;font-weight:800;color:#344054}input,textarea{width:100%;margin-top:6px;padding:12px;border:1px solid #cfd8e5;border-radius:11px;outline:none}textarea{min-height:100px;resize:vertical}
+.note{margin-top:12px;padding:12px;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:11px;line-height:1.5}.submit{margin-top:14px;width:100%;border:0;border-radius:12px;background:var(--b);color:#fff;padding:14px;font-weight:900;cursor:pointer}.msg{margin-top:10px;font-size:12px}.ok{color:var(--green)}.success{display:none;text-align:center;margin-top:18px}.success.show{display:block}.order-code{display:inline-block;margin-top:9px;background:#eef4ff;color:#155db8;padding:7px 10px;border-radius:999px;font-weight:900;font-size:11px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="qr-kart-siparis.html">DijiyeSor · Google QR</a><a class="back" href="qr-kart-siparis.html">← QR Çözümleri</a></header>
+<section class="hero"><div><span>GOOGLE YORUM KARTI</span><h1>Tek dokunuşla Google yorum ekranına yönlendirin.</h1><p>İşletme bilgilerinizi ve Google yorum bağlantınızı gönderin. Siparişiniz yönetim panelindeki Google QR bölümüne düşer.</p></div></section>
+<main class="wrap">
+<section class="card" id="formCard">
+  <div class="grid">
+    <label>İşletme adı *<input id="businessName" required></label>
+    <label>Yetkili kişi *<input id="contactName" required></label>
+    <label>Telefon *<input id="phone" placeholder="05xx xxx xx xx" required></label>
+    <label>WhatsApp<input id="whatsapp" placeholder="05xx xxx xx xx"></label>
+    <label class="full">Google yorum bağlantısı<input id="reviewUrl" placeholder="https://g.page/r/.../review veya yorum bağlantınız"></label>
+    <label class="full">Adres<textarea id="address" placeholder="İşletme adresi"></textarea></label>
+    <label class="full">Not<textarea id="note" placeholder="Kartla ilgili ek notunuz varsa yazın."></textarea></label>
+  </div>
+  <div class="note"><b>Google yorum linkiniz hazır değilse boş bırakabilirsiniz.</b> Sipariş geldikten sonra işletmenin yorum bağlantısı ayrıca eklenebilir.</div>
+  <button id="submit" class="submit" type="button">Google Yorum Kartı Siparişini Gönder</button>
+  <div id="msg" class="msg"></div>
+</section>
+<section id="success" class="card success"><h2>Siparişiniz alındı</h2><p>Google Yorum Kartı siparişiniz yönetim paneline gönderildi.</p><span id="orderCode" class="order-code"></span></section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyD4SHYRiuSuHB-wSl8oWUFMCsfVu6j164E",authDomain:"dijiyer.firebaseapp.com",projectId:"dijiyer",storageBucket:"dijiyer.firebasestorage.app",messagingSenderId:"847787778815",appId:"1:847787778815:web:57058aa8dcc4143ec5a2ca"};
+const app=firebase.apps.find(a=>a.name==="googleQrOrder")||firebase.initializeApp(firebaseConfig,"googleQrOrder");
+const db=app.firestore(),$=id=>document.getElementById(id);
+const val=id=>String($(id).value||"").trim();
+function code(){return "GQR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+Math.random().toString(36).slice(2,7).toUpperCase()}
+function validPhone(v){return String(v||"").replace(/\D/g,"").length>=10}
+$("submit").onclick=async()=>{
+ const required=["businessName","contactName","phone"];
+ for(const id of required){if(!val(id)){ $(id).focus(); $("msg").textContent="Lütfen zorunlu alanları doldurun."; return;}}
+ if(!validPhone(val("phone"))){$("msg").textContent="Telefon numarasını kontrol edin.";return}
+ const btn=$("submit");btn.disabled=true;btn.textContent="Sipariş gönderiliyor...";$("msg").textContent="";
+ try{
+  const orderCode=code(),now=new Date().toISOString();
+  await db.collection("siparisler").add({
+   orderType:"google_review_qr",source:"public_google_review_qr_order",status:"new",orderCode,
+   businessName:val("businessName"),contactName:val("contactName"),phone:val("phone"),
+   whatsapp:val("whatsapp")||val("phone"),reviewUrl:val("reviewUrl"),address:val("address"),note:val("note"),
+   createdAt:now,updatedAt:now
+  });
+  $("formCard").style.display="none";$("success").classList.add("show");$("orderCode").textContent=orderCode;
+  window.scrollTo({top:0,behavior:"smooth"});
+ }catch(e){$("msg").textContent="Sipariş gönderilemedi: "+e.message;btn.disabled=false;btn.textContent="Google Yorum Kartı Siparişini Gönder"}
+};
+</script>
+</body>
+</html>
