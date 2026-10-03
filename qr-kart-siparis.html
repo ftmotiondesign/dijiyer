@@ -141,7 +141,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
       <span class="main-category-badge">Sipariş Ver</span>
       <span class="main-category-arrow">›</span>
     </a>
-    <button id="openDigitalCardOrder" class="main-category-card large-card active" type="button">
+    <a class="main-category-card large-card active" href="https://ftmotiondesign.github.io/dijiyer/dijital-kartvizit.html">
       <div class="main-category-icon">QR</div>
       <div class="main-category-copy">
         <b>Dijital Kartvizit</b>
@@ -149,7 +149,7 @@ input:focus,textarea:focus,select:focus{border-color:#80b4ff;box-shadow:0 0 0 3p
       </div>
       <span class="main-category-badge">Sipariş Ver</span>
       <span class="main-category-arrow">›</span>
-    </button>
+    </a>
   </div>
 </section>
 
@@ -412,19 +412,6 @@ $("submitBtn").onclick=async()=>{
 }
 </script>
 
-<script>
-(function(){
-  const btn=document.getElementById("openDigitalCardOrder");
-  const area=document.getElementById("digitalCardOrderArea");
-  if(btn&&area){
-    btn.addEventListener("click",()=>{
-      area.classList.remove("digital-order-hidden");
-      area.classList.add("digital-order-visible");
-      area.setAttribute("aria-hidden","false");
-      setTimeout(()=>area.scrollIntoView({behavior:"smooth",block:"start"}),50);
-    });
-  }
-})();
-</script>
+
 </body>
 </html>
